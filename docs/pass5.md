@@ -4,7 +4,11 @@
 *done*, *overtaken*, *ruled* or *second edition*, each with a word saying why, and
 `python tools/pass5_queue.py --summary` at zero open is the release's test (ruling R8,
 [pass8-brief.md](pass8-brief.md)). On 2026-09-26 it held 603 open units: 85 book, 42
-lecture, 28 figure, 320 voice, 128 record. Nothing is appended for a later pass.*
+lecture, 28 figure, 320 voice, 128 record, 75 of them the tool's guess; pass 8's session A
+tagged the 75 the same day, which made it 67 book, 43 lecture, 26 figure, 309 voice, 147
+record and **11 fact** — a sixth kind, a question of fact a reader asked and nobody
+answered, which `pass8_prompts.py` hands to the page's fact-check agent. Nothing is
+appended for a later pass.*
 
 *Opened when polish was pass 5 and kept under that name. The ten-pass plan of
 2026-09-05 ([plan.md](plan.md)) splits polish into four passes with one lens
@@ -21,7 +25,10 @@ entry is taken by the pass its kind belongs to:*
   a sentence, an orphan node, two figures for one mechanism, a lane — is
   **pass 7's, the figures**;*
 - *wording debt — a hook rewritten around a fix, a tic, a hedge, a term, an
-  ambiguous count, a data key's typesetting — is **pass 8's, the voice**.*
+  ambiguous count, a data key's typesetting — is **pass 8's, the voice**;*
+- *a question of fact a reader asked and no session answered — *does the
+  floor break the five-minute claim?* — is **pass 8's too, the check**, tagged
+  `[kind=fact]` (added by pass 8's session A).*
 
 *A session strikes an entry (`~~…~~`) when it settles it, whichever pass it
 is in; an entry a later pass finds already overtaken by an earlier pass's
@@ -52,11 +59,11 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Standing items
 
-- The "not X but Y" construction — pass 2's most common register error,
-  Part XIII its worst offender.
+- ~~The "not X but Y" construction — pass 2's most common register error,
+  Part XIII its worst offender. [kind=voice]~~ *Ruled: V2 in `docs/pass8-brief.md` Part 4 and `TEMPLATE.md`'s *Voice* — a contrast earns its place where the reader would otherwise believe X — pass 8, session A.*
 - The named-qualifier hedge ("with two exceptions", "five of the seven") —
   right precision, repetitive phrasing.
-- One voice sweep against the best page, chosen in pass 5's first session.
+- ~~One voice sweep against the best page, chosen in pass 5's first session. [kind=voice]~~ *Ruled: V1 — the sweep's page is `entities/entity-lifecycle`, and the voice it set is `TEMPLATE.md`'s *Voice* — pass 8, session A.*
 - The glossary as the terminology checklist.
 
 ## Entries
@@ -68,7 +75,7 @@ to a later pass's lens. Everything it acted on is struck in place above or
 logged in [pass9.md](pass9.md). The four reads behind this list were the
 introduction, `lectures.md`, **the thirteen landing pages read as one set** —
 the reading no session in the project had done, because every landing page was
-rewritten by its own part's session — and the glossary entry by entry.
+rewritten by its own part's session — and the glossary entry by entry. [kind=record]
 
 **Page-shape findings — pass 6, the lecture.**
 
@@ -257,7 +264,7 @@ rewritten by its own part's session — and the glossary entry by entry.
 
 What this session's reading raised for the sessions and passes that come after
 it. Everything it acted on itself is struck in place above, or logged in
-[pass9.md](pass9.md).
+[pass9.md](pass9.md). [kind=record]
 
 **Routed to a later part's session.**
 
@@ -366,7 +373,7 @@ it. Everything it acted on itself is struck in place above, or logged in
   which reads at first as a pointer into the source.~~ **Done, pass 6 session
   D**: now "the two area operations below". [kind=lecture]
 
-**From pass 6, session D — Part IV · The world** *(2026-09-10)*
+**From pass 6, session D — Part IV · The world** *(2026-09-10)* [kind=record]
 
 **For pass 7, the figures.**
 
@@ -432,7 +439,7 @@ it. Everything it acted on itself is struck in place above, or logged in
 - `lighting` says "the upward walk it is known for" — folklore corrected before
   it is stated. [kind=voice]
 
-**Cut, with the reason** *(pass 6, session D)*
+**Cut, with the reason** *(pass 6, session D)* [kind=record]
 
 - `fluids`, *Questions players ask*, "Why is my infinite pool not infinite?"
   and "Why does water refuse to run the way that looks downhill?" — both were
@@ -942,7 +949,7 @@ the corrections it made are in [pass9.md](pass9.md).*
 - `core/dispenser` (13 classes, 1,090 lines) is in Part II's packages by the
   atlas's `PARTS` mapping and is Part V's subject. Either the mapping moves it
   or `blocks/` names the family. **Session E**, with the mapping change if it
-  wants one.
+  wants one. [kind=book]
 - ~~`util/worldupdate` (5 classes, 736 lines — `RegionStorageUpgrader`,
   `UpgradeProgress`) is named nowhere in the book. It is the *Optimize World*
   button, and it is the last sizeable unowned mechanism in Part II's packages.
@@ -1073,7 +1080,7 @@ looser or more repetitive than it should be.
   means.
 - **`map_source.py`'s line counts are 18.4% blank lines** — 132,608 of 719,302
   — and neither the tool's docstring nor `src/maps/README.md` says so. "719k
-  lines" is 587k non-blank. One clause on the atlas's counting rule fixes it.
+  lines" is 587k non-blank. One clause on the atlas's counting rule fixes it. [kind=voice]
 - ~~**`TEMPLATE.md:112` is stricter than mermaid.** A `;` and a `#` in a
   *flowchart* label both parse and render correctly under 11.6.0; the rule that
   forbids them everywhere is true only of sequence diagrams (`#`) and state
@@ -1146,7 +1153,7 @@ mentions.
 
 Five entries are titled with a phrase the corpus does not use, against the
 page's own rule that "where a term is a class name, the class name is the
-entry":
+entry": [kind=voice]
 
 - **Blend alpha** — the corpus writes plain "alpha" or the JSON name [kind=record]
   *blend_alpha*.
@@ -1249,7 +1256,7 @@ drop the number.
 - `client/text-and-fonts.md:184` — "the one place in the pipeline where a
   character is invented" is true of the wrap path;
   `ComponentRenderUtils.clipText` in the same class appends
-  `CommonComponents.ELLIPSIS`.
+  `CommonComponents.ELLIPSIS`. [kind=fact]
 - `world/points-of-interest.md:124` — "**a dozen** shapes" of read-only query
   is 13 method names / 14 methods. The hedge covers it; *thirteen* reads better.
 - ~~`entities/ai-goals-and-brains.md:381,390` — "everything it will ever do" /
@@ -1334,7 +1341,7 @@ drop the number.
   `LevelRenderer.ENTITY_OUTLINE_POST_CHAIN_ID`,
   `LevelRenderer.TRANSPARENCY_POST_CHAIN_ID`) and the other three are inline
   literals in `GameRenderer.checkEntityPostEffect`'s switch. The count holds;
-  *constant* does not.
+  *constant* does not. [kind=fact]
 - ~~`rendering/the-window.md:244` — "(**both** reached from `KeyboardHandler`)".~~
   **Done, session K:** the parenthetical is cut; two other pages contradicted
   it independently.
@@ -1353,7 +1360,7 @@ drop the number.
   fallback: the prose names eleven distinct failure kinds, and twelve only if
   "bakes that throw" counts as its two `ModelBakery` catches.
 - `rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
-  (`ClientLevel.java:274`), stated as a fraction rather than hedged.
+  (`ClientLevel.java:274`), stated as a fraction rather than hedged. [kind=voice]
 
 - ~~`commands/functions-and-macros.md:158` — "**three** lines apart" is three~~ **Struck by the pass-6 planning session (2026-09-07):** overtaken, as the entry's own last line says (session M).
   lines *between* the two declarations (`CommandSourceStack.java` 124 and 128),
@@ -1377,7 +1384,7 @@ drop the number.
 - `commands/permissions.md:224` — "only **one** of those checks is a constant
   the server itself uses" is one under *shared `PermissionCheck` constant*, two
   if `Permissions.COMMANDS_GAMEMASTER` counts, which the server reads inside
-  `Commands.LEVEL_GAMEMASTERS`.
+  `Commands.LEVEL_GAMEMASTERS`. [kind=voice]
 - `commands/scoreboard-and-data.md:371` — "the nicest **ten** lines" is not [kind=voice]
   verifiable at that precision; decompiled formatting is not the source's.
 
@@ -1424,7 +1431,7 @@ which the same page states at :388;
 `blocks/block-interaction.md:182` "three outcomes" is three distinct returned
 states and four branches;
 `blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
-is four *named* steps over five statements.
+is four *named* steps over five statements. [kind=voice]
 
 **Two rules for the word *classes*, corpus-wide.** A package's class count is
 one number under two rules — `package-info.java` counted, or not — and the
@@ -1449,7 +1456,7 @@ sun goes under". 12542 is a real keyframe (*monsters_burn*,
 *bees_stay_in_hive*), but the geometric horizon crossing the page's own
 sun-angle Bézier implies is ~12782, and sunrise ~23218 against the 23460
 keyframe. The gameplay flip is about 240 ticks inside the geometric day at each
-end — a better sentence than the one there, if pass 5 wants it.
+end — a better sentence than the one there, if pass 5 wants it. [kind=voice]
 
 
 ## Session L — Part XII World generation (pass 4) *(2026-09-05)*
@@ -1475,9 +1482,9 @@ for voice.** Seven were rewritten because the fact under them fell:
 - `structure-placement`'s **verified line** and its *Whether it is worth
   laying out* section, which now explain a deferral that lasts one statement.
   The section's title still promises a decision the section no longer
-  describes.
+  describes. [kind=lecture]
 - `density-functions`' **opening**, which now names two files where it named
-  one, and loses some of the "small, honest, readable" rhythm it had.
+  one, and loses some of the "small, honest, readable" rhythm it had. [kind=voice]
 - ~~`biomes`' **world-spawn answer**, which went from two sentences to five and
   is now the longest *Questions players ask* answer on the page.~~ **Kept, pass 6
   session L**: it is the purest consequence on the page — a player asking why
@@ -1517,7 +1524,7 @@ for voice.** Seven were rewritten because the fact under them fell:
   is instead — the spelling of an empty slot in a data pack.
 - `hand-built-structures`' `StructurePiece.placeBlock` cast row is now three
   clauses long and contains a negation ("not a choke point"), which is the
-  *not X but Y* tic in a table cell.
+  *not X but Y* tic in a table cell. [kind=voice]
 - ~~**The *Questions players ask* closer** is on nine of the eleven Part XII
   pages, well over session P's at-most-half rule of thumb. `terrain`,
   `biomes` and `structure-placement` have five, five and six answers each.~~
@@ -1544,7 +1551,7 @@ fell, and none has had a wording pass:
 
 - `the-frame`'s acquire-failure paragraph and its minimize Q&A (the answer
   went from "three calls' worth" to a paragraph about the ten-frame limiter,
-  and it is now the longest Q&A on the page).
+  and it is now the longest Q&A on the page). [kind=lecture]
 - `the-frame`'s partial-tick table gained a sixth row and lost the "five [kind=voice]
   partial ticks" heading; the section is now called *six clocks in one frame*,
   which is accurate and may not be the best title.
@@ -1602,7 +1609,7 @@ fell, and none has had a wording pass:
   is interpretation of GLSL the book does not quote. It survived the
   fact-check because it is not falsifiable from the sources the book uses.
   Pass 5 should decide whether to keep it, and if so to say in the caption
-  that it is a reading rather than a citation.
+  that it is a reading rather than a citation. [kind=book]
 - The landing page's pipeline figure no longer claims to be frame order, and
   the paragraph under it now spends four lines saying what the arrows are
   *not*. That is honest and it is also the longest caption in the part.
@@ -1669,7 +1676,7 @@ duplicate a Reference page that has been checked row by row.
   stated confidently and wrongly; the new one states the mechanism *and* its
   exception (attack sounds do round trip) in the same breath, which makes the
   "three doors" framing land more slowly. The verified line still promises
-  three doors and only one naming the sound, which is still true.
+  three doors and only one naming the sound, which is still true. [kind=voice]
 - ~~**`prediction-and-acks`' state-diagram labels.** Both client exits were
   relabelled and are now long enough to crowd the figure — "endPredictionsUpTo(n),
   syncBlockState writes the absorbed state, which is a no-op if it is already
@@ -1686,7 +1693,7 @@ duplicate a Reference page that has been checked row by row.
   ("Does the client model the speed of sound?", "Who decides how hard it is
   raining?"). Neither is a question a player actually asks, which is what the
   section is for — pass 5 should either find the player-facing version or move
-  the material into the body.
+  the material into the body. [kind=lecture]
 - **The landing page's opening sentence** now spends a clause and two class
   names on the scheduler exception before reaching "no render thread", which
   is the sentence people will quote. Consider a footnote-shaped fix.
@@ -1836,7 +1843,7 @@ mark while the body never delivered it.
 ### For the terminology sweep
 
 - The part says *the wire*, *the connection* and *the network* for the same
-  thing, sometimes in one page (`containers-and-menus` uses all three).
+  thing, sometimes in one page (`containers-and-menus` uses all three). [kind=voice]
 - *Prototype* means the item's default `DataComponentMap` on `items-and-stacks`
   and nothing else anywhere; the glossary has it, but it reads as jargon on
   first use in `enchanting`.
@@ -1867,7 +1874,7 @@ mark while the body never delivered it.
   what the section at L35-42 says again.
 - **`authority`'s fall-damage paragraph** is four sentences where it was
   two, because the true statement needs both sides plus the
-  `ServerLevel`-gate reason.
+  `ServerLevel`-gate reason. [kind=voice]
 - ~~**`ai-goals-and-brains`'s control-flag paragraph** now carries two
   mechanisms (the five-tick refresh and the leash) where it carried one, and
   the boat sentence has to distinguish *a mob is steering me* from *I am in
@@ -1878,7 +1885,7 @@ mark while the body never delivered it.
   `entity-anatomy`'s.
 - **`entity-anatomy`'s registry paragraph** gained a second override
   direction (`getOptional` calls `super`), which is the subtlest thing on the
-  page and is currently one clause.
+  page and is currently one clause. [kind=voice]
 - **`damage-and-death`'s blocking sentence** now names `Hoglin` and [kind=voice]
   `Ravager` to prove who is knocked back. Good evidence, but it is an aside
   inside an aside.
@@ -1920,7 +1927,7 @@ mark while the body never delivered it.
 ## Session E — Part V Blocks (pass 4) *(2026-09-04)*
 
 Wording debt from sixty-one fact fixes across eight pages. Nothing here was
-acted on; pass 4 does not polish.
+acted on; pass 4 does not polish. [kind=record]
 
 **Rewrites to re-read.** Five fixes grew a sentence into a passage:
 
@@ -1983,7 +1990,7 @@ whether that is one table or two.
   *input* side. Both sentences are true — the `direction` parameter of `getSignal`
   is the direction from the asker to the answerer, so it equals FACING when the
   output block asks — but a reader meets them in the order that makes them look
-  contradictory.
+  contradictory. [kind=voice]
 - `block-interaction`'s bit-8 clause now carries a condition ("when the Chunk
   Builder option asks for it") inside the sentence that is supposed to be the
   page's payoff. It may want to be a parenthetical or a footnote instead.
@@ -2028,7 +2035,7 @@ fix the vocabulary before the pages.
 ## Session D — Part IV The world (pass 4) *(2026-09-04)*
 
 Wording debt from forty-nine fact fixes across eleven pages. Nothing here was
-acted on; pass 4 does not polish.
+acted on; pass 4 does not polish. [kind=record]
 
 **Rewrites to re-read.** Four fixes grew a sentence into a passage:
 
@@ -2110,7 +2117,7 @@ header should get its ticking image back around the true number.
 ## Session C — Part III The server (pass 4) *(2026-09-04)*
 
 Wording debt from twenty-eight fact fixes. Nothing here was acted on; pass 4
-does not polish.
+does not polish. [kind=record]
 
 **Rewrites to re-read.** Three fixes grew a sentence into a passage and each
 should be read again for rhythm rather than for truth:
@@ -2178,14 +2185,14 @@ instead ("`FallingBlockEntity` is the one place that …").
 - `server-tick`'s `tickChildren` table row about the player-info broadcast
   now reads "its own counter has not passed 600 — so every 601st call, not
   every 600th tick", which is two corrections in one cell and the longest
-  *skipped when* value in the table.
+  *skipped when* value in the table. [kind=voice]
 - The em dash count in `how-a-server-dies`'s durability section went up by
   four with the watchdog asterisk. Whole-page voice pass.
 
 ## Session B — Parts I and II (pass 4) *(2026-09-04)*
 
 Wording debt and structural findings from Part I and Part II's fact-check.
-Every factual fix is in `docs/pass4.md`; nothing below was acted on.
+Every factual fix is in `docs/pass4.md`; nothing below was acted on. [kind=record]
 
 **Wording to re-read** (a hook or an argument was rewritten around a
 correction):
@@ -2217,7 +2224,7 @@ correction):
 - `src/systems/foundations/codecs-nbt-json.md` — the *homogeneous numeric
   list* sub-section was inverted, so its bolded lead sentence is now a
   double negative ("A numeric array stays an array, but nothing turns a list
-  into one"). Worth one more pass.
+  into one"). Worth one more pass. [kind=voice]
 
 **Structural findings**, logged and not acted on:
 
@@ -2261,7 +2268,7 @@ correction):
 ## Session A — The frame (pass 4) *(2026-09-04)*
 
 Wording debt and structural findings from the frame's fact-check. Nothing
-here was acted on; every factual fix is in `docs/pass4.md`.
+here was acted on; every factual fix is in `docs/pass4.md`. [kind=record]
 
 **Wording to re-read** (a hook or an argument was rewritten around a
 correction):
@@ -2272,7 +2279,7 @@ correction):
 - `src/lectures.md` — the Part III "watch the environment page first"
   paragraph lost its superlative ("the page with the most dependants in the
   book") and gained a cost argument. It is true now; it is not as good a
-  sentence.
+  sentence. [kind=voice]
 - ~~`src/systems/server/README.md` — the *before you start* section grew a long
   second paragraph~~ **— done by session C of pass 5, in the rewrite to the
   landing-page role. The environment-attributes paragraph is cut from three
@@ -2358,7 +2365,7 @@ correction):
   and `WorldGenRegion.getChunk` throwing, both now stated only on
   `features-and-placement`, which is where they bite.
 
-  Wording debt:
+  Wording debt: [kind=record]
 
   - ~~**The *questions players ask* device is on six of the eight pages**,
     which is the ratio session K flagged in Part X and the trap the old
@@ -2540,7 +2547,7 @@ correction):
     Cosmetic only.
   - `diodes-and-observers` line 52 runs long after
     `HorizontalDirectionalBlock.FACING` replaced the shorter name the
-    verifier rejected.
+    verifier rejected. [kind=voice]
   - The three redstone pages were written by the session rather than by [kind=voice]
     drafting agents, so they have had one fewer pair of eyes on their prose
     than the rest of the corpus. They are the pages most likely to be carrying
@@ -2824,13 +2831,13 @@ was cut or moved, and why)*
   `tickCount + id`, **moved to `ai-goals-and-brains`**; `Marker.tick` being
   genuinely empty. The subpackage table stayed and its counts were corrected
   — the old rows summed to 639 of a stated 716.
-  **`entity-lifecycle`**: the nineteen-constant `EntitySpawnReason` list [kind=record]
+  ~~**`entity-lifecycle`**: the nineteen-constant `EntitySpawnReason` list [kind=record]
   (four survive, the rest want Reference — logged in pass3.md); the
   `SpawnPlacementTypes` list, folded into a cast row; the game-rule and tag
   roster from *Data-driven by*; and — the largest deliberate cut — the
   **Nether-fortress hard-coded spawn list and `Structure.spawnOverrides`**,
   which are verified true and are now stated **nowhere in the corpus**.
-  Session M or O should take them.
+  Session M or O should take them.~~ *Done: both are stated on the page again (the structure override and the fortress list, *The species it was about to build came from a list*), re-counted in 26.3's data — pass 8, session A.*
   **`synched-entity-data`**: the 43-constant serializer bullet (74 lines) to [kind=record]
   the generated Reference page, leaving three named in prose; the
   `defineId`/`defineSynchedData`/setter roster; the thirty-five-overrider
@@ -3062,7 +3069,7 @@ was cut or moved, and why)*
     for sessions L and M — removing a formula leaves a *count* of the thing it
     became, and the count is the next thing to rot: the landing page said ten
     of these twelve pages carry a 1.21 box and nine do, which is a correction
-    in [pass9.md](pass9.md).
+    in [pass9.md](pass9.md). [kind=lecture]
   - ~~**The *questions players ask* device is now doing a lot of work.** Six of
     the twelve pages use it, because it is the honest home for what used to
     be a bullet wall of invariants. That is one page in two, which is the
@@ -3105,7 +3112,7 @@ was cut or moved, and why)*
   - **"Record" and "extract" are used interchangeably across four pages** —
     `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud` —
     because the methods are all named *extract* and the concept reads better
-    as *record*. The glossary has *extract*. One of the two should win.
+    as *record*. The glossary has *extract*. One of the two should win. [kind=voice]
 
 ## Session N — Part XIII Commands and data packs *(2026-09-03)*
 
@@ -3235,7 +3242,7 @@ rubric — primary shape from the spine, secondary from the borrowed section,
 first figure's type, and whether the page ends on a questions section — and
 the session read their evidence lines against the pages' headings.
 
-**The menu held.** Primary shapes over ninety-eight pages: **trace 31 ·
+~~**The menu held.** Primary shapes over ninety-eight pages: **trace 31 ·
 vocabulary 25 · pipeline 17 · comparison 10 · policy 7 · pattern 6 · state
 machine 2.** The trace is a plurality at just under a third, not the
 majority the risk named; the vocabulary page is the surprise at a quarter,
@@ -3265,7 +3272,7 @@ marked dirty. What was wrong was not the shape but the lane: one
 `SynchedEntityData` stood for both machines' containers, which is the one thing the
 page exists to say there are two of. Split at the tick, one lane each, boxed by
 machine. **All three of pass 5's secondary-state-diagram questions and the
-vocabulary-page question are now answered; nothing here is open.** [kind=record]
+vocabulary-page question are now answered; nothing here is open.** [kind=record]~~ *Record: its own last line says nothing here is open — pass 8, session A.*
 
 **The closing device did not hold.** Sixty-three of ninety-eight pages end
 on a questions section (sixty *Questions players ask* verbatim, three
@@ -3418,7 +3425,7 @@ was an artefact of that, and was broken at H2 level on the merits anyway.
   was carrying three citations for three different subjects. Renaming both to
   what their sections are *about* sorted the citations by itself, and one of
   `biomes`' four was repointed to a different section entirely. Part XIII is all
-  that is left.
+  that is left. [kind=lecture]
 
 **Two structural outliers**, for the same sweep: `functions-and-macros`
 has no cast table (it opens on *The pipeline*), and ~~`hand-built-structures`
@@ -3473,7 +3480,7 @@ session's own pages score 3 of 4 on the device it just flagged.
 - `player-anatomy` — the *whose game mode arrives late* question was
   inverted and is now roughly twice as long, because the true version has to
   say why the other player's window cannot be observed before it can say the
-  window is yours. It reads as an argument rather than an answer.
+  window is yours. It reads as an argument rather than an answer. [kind=voice]
 - `the-two-phase-tick` — the Netty-threads paragraph grew from an absolute
   plus a throwaway ("a handful that touch nothing") to a count plus an
   exception plus the chat mechanism. Correct, but it is now the longest
@@ -3691,7 +3698,7 @@ it made are in [pass9.md](pass9.md).*
 
 ## From pass-4 session I (Part IX Networking), 2026-09-04
 
-Wording debt from fixes made in place, and structural findings not acted on.
+Wording debt from fixes made in place, and structural findings not acted on. [kind=record]
 
 - ~~`networking/README.md` — the opening's four player-visible failures now
   ends on "a grey bar down its left edge"…~~ **Done, session I (pass 5)**: the
@@ -3716,7 +3723,7 @@ Wording debt from fixes made in place, and structural findings not acted on.
   drifted", which is a different and slightly weaker point occupying the same
   space. Consider cutting it to one clause.
 - `the-connection.md` — the kick answer is now four sentences where the
-  question deserves two. The mechanism took three of them.
+  question deserves two. The mechanism took three of them. [kind=voice]
 - ~~`packets-and-stream-codecs.md` — the "three shapes of packet class"
   paragraph… the third is introduced twice on the page.~~ **Done, session I
   (pass 5)**, half overtaken: the bundle section's `StreamCodec.unit` is a
@@ -3764,7 +3771,7 @@ Structural findings, not acted on:
 
 ### Part XIII, after session M of pass 4 *(2026-09-05)*
 
-Wording debt, all of it created by a fact fix:
+Wording debt, all of it created by a fact fix: [kind=record]
 
 - `brigadier-and-commands.md` — the **hook and the whole round-trip section
   were rewritten**, because the page's central claim ("the round trip is not
@@ -3773,7 +3780,7 @@ Wording debt, all of it created by a fact fix:
   359, 64, 59 — where the old one carried two, and the "why they feel like
   all of them" turn is doing a lot of work in one clause. Pass 5 should read
   the opening and the *A node that asks for suggestions by hand* section
-  together and decide whether the argument now takes one paragraph too many.
+  together and decide whether the argument now takes one paragraph too many. [kind=voice]
 - `entity-selectors.md` — the **opening scenario was replaced** (a command [kind=voice]
   block, because a player typing `/tp @p` always selects themselves) and now
   carries a parenthetical explaining why the obvious version does not work.
@@ -3784,7 +3791,7 @@ Wording debt, all of it created by a fact fix:
   paragraph. It is accurate and it is the third place on the page that
   enumerates the box options. Pass 5 should decide which of the three keeps
   the enumeration.
-  **Session M (pass 5): done** — the closing paragraph keeps the count and *sort* and no longer re-lists the seven; the world-limited paragraph keeps the enumeration.
+  **Session M (pass 5): done** — the closing paragraph keeps the count and *sort* and no longer re-lists the seven; the world-limited paragraph keeps the enumeration. [kind=book]
 - `functions-and-macros.md` / `permissions.md` — the union paragraph on both
   pages grew to hold the level-based-versus-not distinction, which is a real
   and necessary qualifier and reads like a footnote promoted into the body.
@@ -3807,7 +3814,7 @@ Wording debt, all of it created by a fact fix:
   **Session M (pass 5): done** — cut back to the narrow claim, and the tail replaced by naming `TestInstanceBlock`, which no page had.
 - `commands/README.md` — the *before you start* server-tick entry is now the
   longest of the five and names three classes, because the short version was
-  wrong about which phase. It may be shortenable now that it is right.
+  wrong about which phase. It may be shortenable now that it is right. [kind=voice]
 
 Structural findings, not acted on:
 
@@ -3830,7 +3837,7 @@ Structural findings, not acted on:
   **Session O's audit (pass 5's close): settled and never struck** — the planning session did it: `map_source.py`'s `PARTS` writes `part-<dir>.md` and every landing page includes it.
 
 ---
-  **Session M (pass 5): fully discharged.** The include has been there since session A; the prose now names all nine packages, which is the half the entry asked for and the template requires.
+  **Session M (pass 5): fully discharged.** The include has been there since session A; the prose now names all nine packages, which is the half the entry asked for and the template requires. [kind=record]
 
 ## From pass 5, session F (Part VI · Entities), 2026-09-05
 
@@ -4033,7 +4040,7 @@ that takes it. Everything session F did act on is struck above or logged in
   two are a declared pair, so the repetition may be deliberate; it reads as an
   accident.
 - `client/the-client-level`:195 calls the interpolation window "three-tick"
-  where `movement-and-collision`:379 says "three steps". One number, two names.
+  where `movement-and-collision`:379 says "three steps". One number, two names. [kind=voice]
 - `entity-anatomy` uses *frozen* for three unrelated things on one page: the [kind=voice]
   registry freeze, an `EntityType`'s frozen dimensions, and
   `Entity.DATA_TICKS_FROZEN`.
@@ -4432,7 +4439,7 @@ left, by the pass that owns it.*
   reach thirteen. [kind=record]
 
 **For pass 7 — the figures.** Every one of these is a reader's complaint about a
-figure *as read against the paragraph under it*, which is the pass's own test.
+figure *as read against the paragraph under it*, which is the pass's own test. [kind=record]
 
 - ~~**`containers-and-menus`' shift-click sequence sits before every paragraph
   that explains it**, and four of its labels
@@ -5187,7 +5194,7 @@ for other passes and the cuts it logged.*
 
 Eleven readers, one per page, under the Part 1 brief. What the reading raised
 that this session did not act on, tagged by kind. The corrections it did act
-on are in [pass9.md](pass9.md).
+on are in [pass9.md](pass9.md). [kind=record]
 
 ### For pass 7 (the figures)
 
@@ -5269,16 +5276,16 @@ on are in [pass9.md](pass9.md).
 - **`codecs-nbt-json`, the four-paths table's *what is carried* row** puts
   four different kinds of answer in four cells (a document, a field order, a
   count of ints, a text form then a tag). Worth a check that each cell is
-  answering the same question.
+  answering the same question. [kind=voice]
 - **`text-components`, `Style.shadowColor`** is described as an integer whose
   absence is `Style.NO_SHADOW` = zero, inside a list of eleven fields
-  introduced as nullable with "null means *inherit*". Does the shadow inherit?
+  introduced as nullable with "null means *inherit*". Does the shadow inherit? [kind=fact]
 
 ## Session C — Part III · The server (pass 6) *(2026-09-10)*
 
 Six readers, one per page and one for the landing page, under the Part 1
 brief. What the reading raised that this session did not act on, tagged by
-kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
+kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [kind=record]
 
 ### For pass 7 (the figures)
 
@@ -5366,20 +5373,20 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   which makes random ticks reach the *narrower* of the two ranges while the
   page's own number line frames block-ticking as the wider one. The naming
   curiosity is probably the point; worth confirming which set
-  `ServerLevel.tickChunk` really runs over.
+  `ServerLevel.tickChunk` really runs over. [kind=fact]
 - **`server-level-tick`'s weather countdowns** — one `WeatherData` on the
   `MinecraftServer`, and `ServerLevel.advanceWeatherCycle` running once per
   dimension per tick. Does a three-dimension server count the rain timer down
   three times a tick? The reader derived the question from two of the page's
-  own sentences and the page does not answer it.
+  own sentences and the page does not answer it. [kind=fact]
 - **`server-tick`:420-421** — the autosave interval is the tick rate times
   300, floored at 100 ticks, and the page says an autosave is five wall-clock
   minutes. Check the floor does not break the five-minute claim at very low
-  tick rates.
+  tick rates. [kind=fact]
 - **`players-and-sessions`:62 against :173-179** —
   `DedicatedServer.isSingleplayerOwner` "returns false for everyone", and the
   singleplayer-owner save-file rescue is described as working once. Check the
-  second reads the same field as the first.
+  second reads the same field as the first. [kind=fact]
 - ~~**`players-and-sessions`, the `PLAYER_SPAWN` ticket** — the figure waits an
   unbounded number of ticks for the chunks, and the prose re-arms the
   twenty-tick ticket only once the task has reached `PrepareSpawnTask.Ready`.~~ **answered, pass 7 session C**: nothing has to hold them. `TicketType.PLAYER_SPAWN` carries `TicketType.FLAG_LOADING` and nothing else, so `TicketType.canExpireIfUnloaded` is false and its twenty-tick timeout does not begin while the chunks are still on their way — which is exactly why `ServerChunkCache.addTicketAndLoadWithRadius` accepts the type at all, since it throws for any type that could expire before it loads. The clock starts at `PrepareSpawnTask.Ready`, which is where `PrepareSpawnTask.keepAlive` starts re-arming. The page now says so.
@@ -5542,22 +5549,22 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   correction *replaces* what the client remembered, and the figure calls the same
   thing "the ledger". Session E named the owner (`BlockStatePredictionHandler`,
   held by `ClientLevel`) on `block-interaction` only. Check that both pages'
-  accounts of what the receipt does are the same account.
+  accounts of what the receipt does are the same account. [kind=voice]
 - **`block-breaking`'s delayed destroy across a disconnect** — `ServerPlayerGameMode`
   keeps `hasDelayedDestroy` and `delayedTickStart` and the delayed branch
   re-checks almost nothing. What happens if the player disconnects, dies, or
   switches to creative between the STOP and the server's clock crossing 1.0? The
-  page implies it must survive and never says.
+  page implies it must survive and never says. [kind=fact]
 - **`block-entities`' twenty synced types out of forty-nine** — the count maps
   nineteen declaring classes onto forty-nine registrations via
   `HangingSignBlockEntity`. Session E confirmed the nineteen (both lists, and
   that they differ by exactly `CopperGolemStatueBlockEntity` and
-  `PistonMovingBlockEntity`) but not the forty-nine or the twenty.
+  `PistonMovingBlockEntity`) but not the forty-nine or the twenty. [kind=voice]
 - **`block-interaction`'s upper half on a refused click** — the two corrective
   block updates cover the clicked position and its face neighbour, and the door's
   upper half is in neither. Session E's answer is that the prediction ledger holds
   both halves and rolls both back. Confirm that is what happens on a
-  spawn-protection refusal specifically, where the server writes nothing at all.
+  spawn-protection refusal specifically, where the server writes nothing at all. [kind=fact]
 
 ## Pass 6, session F — Part VI · Entities (2026-09-13)
 
@@ -5605,7 +5612,7 @@ type***, which its own cast row had promised for 350 lines and which
 compares equal***; `synched-entity-data`'s mods answer became
 ***Nothing may be inserted above you***, an H3 inside the anchor eight pages
 already land on, carrying the `Display.RENDER_STATE_IDS` paragraph with it,
-because between them they are the payoff of the page's own hook.
+because between them they are the payoff of the page's own hook. [kind=record]
 
 ### For pass 7 (the figures)
 
@@ -5677,15 +5684,15 @@ because between them they are the payoff of the page's own hook.
 - **`damage-and-death`'s cast "thread" column** says *server main thread* five
   times and, once, *—*. `authority`'s says *both* four times and once says
   something that is not a thread. Both readers skipped the column. [kind=voice]
-- **`entity-lifecycle`:166** — *"Reading a name and believing the number is how
+- ~~**`entity-lifecycle`:166** — *"Reading a name and believing the number is how
   a page gets this wrong"* is advice to this book's authors, inside the page.
-  [kind=voice]
+  [kind=voice]~~ *Done: the sentence went with the corrected section, now *The spawn distances, and one that is not the number it looks like* — pass 8, session A.*
 - **`attributes`:234** — the figure calls a post-pass-1 total "the base", one
   node after "base value" meant something else. [kind=voice]
 - **`ai-goals-and-brains`:319** — a bolded **One** — with no Two anywhere.
   [kind=voice]
-- **`entity-lifecycle`:291** — *"every arrow in this box"* reads as a diagram
-  arrow in a paragraph about `ClassInstanceMultiMap`. [kind=voice]
+- ~~**`entity-lifecycle`:291** — *"every arrow in this box"* reads as a diagram
+  arrow in a paragraph about `ClassInstanceMultiMap`. [kind=voice]~~ *Done: *so asking a section for every arrow in it costs one class lookup* — pass 8, session A.*
 
 ### For pass 9 (the fact-check), beyond this session's own claims
 
@@ -5702,30 +5709,30 @@ because between them they are the payoff of the page's own hook.
 - **`entity-anatomy`'s six-of-nine defaulted overrides** — `register`,
   `getId`, `getKey`, `getValue`, `getOptional`, `getAny`, `byId`, `getRandom`
   and `getDefaultKey` are the nine; six substitute the default. The page said
-  *nine lookups hand it back* and then named a tenth that does not.
-- **`entity-lifecycle`'s biome crowding budget** — new material this session:
+  *nine lookups hand it back* and then named a tenth that does not. [kind=voice]
+- ~~**`entity-lifecycle`'s biome crowding budget** — new material this session:
   two biomes (soul sand valley, warped forest) and four types declare
   `spawn_costs` in vanilla data. Re-derive from `reference/26.2/data`, not from
-  the page.
+  the page. [kind=fact]~~ *Done: two biomes and four types in 26.3's data — soul sand valley charges the enderman, ghast, skeleton and strider, warped forest the enderman alone; the page had the strider in the wrong biome and is corrected — pass 8, session A.*
 - **`entity-anatomy`'s 191 descendants against "the other 66"** — the numbers
   are the atlas's and they close only if `LivingEntity` itself is counted;
-  the page now says so. Check the sentence, not the numbers.
+  the page now says so. Check the sentence, not the numbers. [kind=voice]
 
 ### Answers a Part VI page still owes
 
 - **`authority`: what makes a passenger the *controlling* one**, and what
   happens with two riders or a dismount mid-tick. The page hangs the whole
   vehicle model on that delegation and never opens it. A sentence, or a
-  citation — but the book may not own the answer anywhere.
+  citation — but the book may not own the answer anywhere. [kind=book]
 - **`synched-entity-data`: what the six channels are**, asked from
   `entities/README`, whose figure says *one of the six channels* and never
   populates the other five until the reader reaches this page's table. Judge as
-  a seam in session O.
-- **`entity-lifecycle`: the tick it gets** — the section named for the tick
+  a seam in session O. [kind=book]
+- ~~**`entity-lifecycle`: the tick it gets** — the section named for the tick
   does not show one, and the page's most surprising fact (status is a property
   of a *section*, not an entity) is not what the opening prepares the reader
   for. Structural, and it is session O's or pass 10's, not this session's:
-  the opening's hook is about the spawn roll and it pays off.
+  the opening's hook is about the spawn roll and it pays off. [kind=lecture]~~ *Second edition: making the opening prepare the section-status fact is a restructure, not a sentence (R9) — pass 8, session A.*
 
 
 ## Pass 6, session H — Part VIII, the player
@@ -5810,14 +5817,14 @@ pass that owns it. Everything acted on this session is struck above.*
 - The thread column of a cast table takes three values, and one of them
   (*both*) is not a thread. Five of Part VIII's seven pages use it; readers
   stopped on it twice, once as *both threads at once* and once as *both
-  sides*. Corpus-wide wording decision, not this part's.
+  sides*. Corpus-wide wording decision, not this part's. [kind=voice]
 - `status-effects` wrote its rhythms as *25 ≫ amplifier*, and neither reader
   could tell a right shift from *much greater than*. Session H wrote it out in
   words; the question of how a shift is typeset in this book is pass 8's, and
   `≫` should be grepped for.
 - `player-anatomy`'s "fifty-seven lines" and "the 470-line matcher": a reader
   could not tell whether a line count is evidence or colour. The book uses the
-  device often enough to want one rule.
+  device often enough to want one rule. [kind=voice]
 - `the-spear` uses *charge* for two different things — the attack-strength
   meter in the `MINIMUM_ATTACK_CHARGE` row, and the right-click hold
   everywhere else. One of the two needs another word.
@@ -5827,7 +5834,7 @@ pass that owns it. Everything acted on this session is struck above.*
 - *Where to look* became a reading route on all seven pages here, as in
   sessions E, F and G. The register of those routes is now a corpus-wide
   question: seven sessions have written them and nobody has read them as a
-  set.
+  set. [kind=voice]
 
 ### For pass 9, the fact-check (raised by session H, not acted on)
 
@@ -5836,12 +5843,12 @@ pass that owns it. Everything acted on this session is struck above.*
   when the difficulty is not Peaceful — so the Peaceful branch of the
   starvation rule may be unreachable in practice. The page states the code
   correctly; whether it should say the branch is dead is a question for the
-  adversary.
+  adversary. [kind=fact]
 - `player-anatomy`: the ranking of ability accessors ("more call sites than
   every other such accessor put together") is a count whose population is
   *methods on `Player` that read `Abilities`*. Session H checked that
   `Player.isSwimming` and `Player.isPushedByFluid` do read it, so the
-  population holds; the ranking itself was not re-counted.
+  population holds; the ranking itself was not re-counted. [kind=voice]
 - `input-to-movement`: *the 4096-blocks-squared jump test that gates
   interpolation* is named only to say it is not reached on this path. Worth
   confirming against `ClientPacketListener` in pass 9, since nothing on the
@@ -6006,7 +6013,7 @@ the only way to see it is to rename the heading and read what breaks.
 
 ## Part X · The client — raised by pass 6, session J (2026-09-14)
 
-**Logged cuts** (nothing dropped except by moving it or logging it).
+**Logged cuts** (nothing dropped except by moving it or logging it). [kind=record]
 
 - `the-client-level`'s field roll-call in *What else it holds*: six fields [kind=record]
   walked one by one. Three are now one sentence naming what each *is* the whole
@@ -6350,7 +6357,7 @@ the only way to see it is to rename the heading and read what breaks.
   comes out with pages that *measure* more alike than they did going in. Three
   of Part XII's four within-part twin pairs are artefacts of this session's own
   dissolutions. Two of the four rulings now change what `pass6_shape.py`
-  reports; the audit should say so once rather than thirteen times.
+  reports; the audit should say so once rather than thirteen times. [kind=record]
 - **A cut on this part's page moved another part's coverage number.**
   `creating-a-world` is a Part XII page, but the classes its trimmed *rest of
   the family* section named — `OptimizeWorldScreen` and
@@ -6584,11 +6591,11 @@ Part 3; these are the pieces of work that ruling created.
   drawing a conversation about objects that do not talk.
   `render/gallery/gallery--f5.png` is what one looks like here. Not a quota —
   the rule is still *fewer marks than the old one* (F10). [kind=figure]~~ — **overtaken**: the book has ten class diagrams after session M.
-- **The captions have no register yet.** Four exist, all written in one sitting
+- ~~**The captions have no register yet.** Four exist, all written in one sitting
   by one session; they are the first sentences in the book with a fixed job
   (*what the picture shows and what to look for in it*) and pass 8 should read
   them as a set once there are two hundred. The first four are on
-  `entities/entity-lifecycle`. [kind=voice]
+  `entities/entity-lifecycle`. [kind=voice]~~ *Ruled: V12 — the captions read as a set (204, 63 of one sentence, 102 of two), and a caption is at most two sentences; the exemplar's four now are — pass 8, session A.*
 - **mdBook's floating chapter chevrons sat on top of the prose at 1440px** and
   had done since pass 3 widened the column: the left chevron is painted twelve
   pixels inside the text. Fixed here in `custom.css` by moving mdBook's own

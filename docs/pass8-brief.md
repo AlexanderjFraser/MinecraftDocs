@@ -156,10 +156,19 @@ has errors, find them, and quote the evidence.
   entry in the ledger `docs/pass9.md` that names this page — the claims the
   writing sessions of passes 5, 6 and 7 introduced and the corrections they
   made, oldest pass first, each with the session that wrote it; (2) every
-  caption on the page; (3) the figure gate's notes for the page; (4) the
-  page's confident sentences by category; (5) every diagram on the page as a
-  numbered list of arrows. Those five are your opening work; the rest of the
-  page is the second half.
+  question of fact a reader of an earlier pass asked about this page and no
+  session answered (the `[kind=fact]` units of `docs/pass5.md`); (3) every
+  caption on the page; (4) the figure gate's notes for the page; (5) the
+  page's confident sentences by category; (6) every diagram on the page as a
+  numbered list of arrows. Those six are your opening work; the rest of the
+  page is the second half. Two things about them the rehearsal on the
+  exemplar found: a ledger entry's decompile lines are the release its
+  session read (26.2 or earlier), so re-locate each in this tree rather than
+  trusting the number; and a confident sentence's line (`L5`) is its
+  paragraph's first line, so report the sentence's own line.
+- **Another release's tree** (`reference/26.2/`, the sibling project's
+  1.21.11) may be opened only to tell whether an error is new; it never
+  settles a claim about this page.
 
 ### The order of work
 
@@ -171,7 +180,10 @@ has errors, find them, and quote the evidence.
    with it**, because a fix that made one sentence true often left the next
    one wrong. Where a later entry overturns an earlier one, the later entry is
    the claim. An entry that quotes a claim is re-derived from the decompile,
-   never re-read for plausibility.
+   never re-read for plausibility. Then **the readers' questions**, the same
+   way: each is a question an earlier reader asked and nobody answered, so
+   answer it from the decompile with the file and line, or call it
+   *overtaken* with the page line that shows its premise is gone.
 2. **The page against itself.** Before the source: every count in a lead-in
    against the list, table or paragraphs that follow it; every *both*, *the
    two*, *all three* against what is actually enumerated; every figure
@@ -191,7 +203,9 @@ has errors, find them, and quote the evidence.
    the figure pass found, in eleven parts of eleven, and the gate's notes in
    your prompt mark where it can hide (a qualified head on a lane that owns
    neither class is legitimate only for a static helper, an object with no
-   lane, or the lane's own inner class). A note or bar naming a tick phase is
+   lane, or the lane's own inner class; a bare lower-case head that is a word
+   rather than a member, *claim* or *load*, is prose on its owner's lane). A
+   caption that counts arrows is checked against the arrows one by one. A note or bar naming a tick phase is
    checked against the tick method that runs that phase; a flowchart branch
    against the condition that decides it; a state transition against the code
    that triggers it. One verdict per number. A number you cannot settle is
@@ -199,7 +213,10 @@ has errors, find them, and quote the evidence.
 5. **Every count, re-counted.** For each count in the *count* list, name the
    population (the enum, the registry, the class list, the callers) and quote
    how you enumerated it (`grep -c`, the file and lines — call sites, not
-   lines). Report the number you got even when it matches. A count of
+   lines), and **say what you counted as one**: comparisons or methods, the
+   class's own helpers in or out. The exemplar's spawn-reason count was 11
+   or 13 depending on exactly that, and the page's number was right only
+   under a definition it never stated. Report the number you got even when it matches. A count of
    classes, files or lines is checked against the tree, and its population
    said (with or without `package-info.java`, with or without nested types).
 6. **Every only, never, always, all, none, every**: name the population the
@@ -221,10 +238,19 @@ has errors, find them, and quote the evidence.
     that the token appears somewhere in the named class's file); a causal
     *so* or *because* whose reason is not in the code; a fact that was true of
     an earlier version and is not true of this one — the version in the page's
-    header is the only version that exists.
-11. **The completeness question** (asked only when the prompt says so): what
-    is in this page's scope in the decompile that the page never mentions?
-    Name the classes and what they do, one line each.
+    header is the only version that exists; and **a claim about Mojang's source
+    that the decompile cannot see**. The decompile is the compiled game: a
+    `static final` primitive or `String` initialized with a literal is a
+    compile-time constant, and javac writes its value in at every use site, so
+    every such constant looks unread in the decompile whatever the source did.
+    A sentence saying such a constant is unread, unused or referenced by
+    nothing, or that the code "writes the literal instead of" it, is WRONG — it
+    reports the compiler, not the game — and so is anything inferred from it
+    (that the two can drift apart, that the constant is dead). Quote the
+    declaration's line. A field computed when the class loads, or an object,
+    is visible to the decompile and is checked like any other claim.
+11. **The completeness question** is not asked in pass 8 (ruling R10: the
+    pass adds nothing), and no prompt asks it; skip it.
 
 ### What to report
 
@@ -235,6 +261,10 @@ A single markdown report in this shape. Nothing else.
 - [pass N, session X] — <the entry, shortened> — CONFIRMED | WRONG | UNVERIFIABLE | MISLEADING
   evidence: <path relative to the decompile>:<line>, <what it says in one sentence>
   beside it: <the sentence next to the corrected one, and whether it still agrees>
+
+## The readers' questions
+- pass5.md:N — <the question, shortened> — ANSWERED: <the answer in one sentence> | OVERTAKEN
+  evidence: <path relative to the decompile>:<line>, or the page line that removed the premise
 
 ## The page against itself
 - L<page line> against L<page line> — <what the two say> — AGREE | DISAGREE (<which is right, and the evidence>)
@@ -260,14 +290,11 @@ A single markdown report in this shape. Nothing else.
 - L<page line> — "<the claim>" — runs on: <side/thread, evidence>; authoritative: <side, evidence>
 
 ## Everything else
-- L<page line> — WRONG | MISLEADING | UNVERIFIABLE — <what the page says> — <what the decompile says> — <file:line>
+- L<page line> — WRONG | MISLEADING | UNVERIFIABLE — <what the page says> — <what the decompile says> — <file:line> — severity: <what stands and what falls with it>
 
 ## Names
 Every backticked identifier that is declared somewhere other than where the
 page attributes it, or does not exist: <name> — page says <class>, declared in <class> (<file:line>)
-
-## Completeness (only if asked)
-- <class or mechanism> — <what it does in one line> — <file>
 
 ## Could not verify
 - <claim> — <what you looked for and where>
@@ -333,8 +360,12 @@ python tools/pass8_prompts.py --part entities --out <scratchpad>/pass8-entities
 ```
 
 One file per page, `<part>--<slug>.prompt.md`: Part 2 above, then the page's
-ledger entries, its captions, the figure gate's notes for it, its confident
-sentences (`claims.py`) and its diagrams arrow by arrow (`diagram_arrows.py`).
+ledger entries (a bullet names its page itself, or under a `###` sub-heading or
+bold lead-in that names it — session A taught `pass8_queue.py` the last two,
+which routed 115 entries the planning session's count left page-less), the
+readers' questions of fact from the queue, its captions, the figure gate's
+notes for it, its confident sentences (`claims.py`) and its diagrams arrow by
+arrow (`diagram_arrows.py`).
 Beside each, `<part>--<slug>.session.md` for the session alone: the page's
 open queue units of every kind, its voice measure with every sentence listed,
 and every inbound link by anchor. `_part-notes.md` carries the ledger's and the
@@ -344,11 +375,14 @@ the part's voice table. The frame session uses `--part frame` and
 
 ### 3. Launch
 
-One background agent per page, all at once, on Opus. The prompt is one line:
-*Read `<prompt file>` and do what it says; the page is at `<path>`. Write your
-report to `<scratchpad>/pass8-<part>/<slug>.report.md`.* Reports are not
-committed. One agent per page, never per part — a part-wide brief hit the
-spend limit in pass 3.
+One background agent per page, on Opus, in waves of at most twenty (the
+harness's ceiling on concurrent agents). The prompt is one line: *Read
+`<prompt file>` and do what it says; the page is at `<path>`. Do not edit any
+file; return your whole report, in the brief's shape, as your final message.*
+Agents here cannot write files, so the session saves each report as
+`<scratchpad>/pass8-<part>/<slug>.report.md` when it arrives (session A's
+rehearsal). Reports are not committed. One agent per page, never per part — a
+part-wide brief hit the spend limit in pass 3.
 
 ### 4. Read the part whole while they run
 
@@ -357,8 +391,17 @@ Before opening a single report, write down every sentence that disagrees with
 another sentence in the part — a count, a name, an ordering, a direction, an
 owner, a thread — and every place a page contradicts its own figure, table or
 opening. Then read `_part-notes.md` and decide which page each note belongs to,
-or that it is *(no claim)*. This list is the session's own checklist and is
-worked before the reports are, because it is the class the reports cannot see.
+or that it is *(no claim)*; a note that names pages only on its continuation
+lines is usually several pages' and is checked on each. This list is the
+session's own checklist and is worked before the reports are, because it is the
+class the reports cannot see. Two things no agent sees are the session's here:
+the landing page's generated size and coverage phrases (the agent reads the
+`{{#include}}` line, not the number), each read in `src/generated/` and its
+population re-derived once from `map_source.py`'s `PARTS`; and every page's
+statements about another page, which is where the whole-part read finds what
+the agents cannot (session A's read of the exemplar found one: *Ending two*'s
+"three clauses decide the whole file" against `chunk-storage`'s list, where
+`Player` overrides the method).
 
 ### 5. Audit the reports
 
@@ -369,6 +412,19 @@ corrections, pass 2's cited methods that do not exist, and the ledger's own
 corrections were wrong three times in pass 4's audit. Suspect the tool once
 (`verify_names.py`, the generators, the extractors), then the agent once, then
 the page. Take the completeness findings on trust; take nothing else on trust.
+
+Pass 7's close found nine of its thirteen ledger entries could not be walked
+item by item, and four workarounds bind here ([pass9.md](pass9.md), *Pass 7,
+session O*): **captions** claimed and not listed (B, C, D, E, I, J, L) are
+read from the page, which is what the prompt's caption list already does; a
+**correction with no decompile file** (J's eighteen; C and D's bare `:NNN`; E,
+I and N's methods with no line) is usually the figure against its own prose,
+and is re-derived from the page first; **G's and H's figure bullets are their
+corrections**, since neither wrote a list; and eight **figures called redrawn
+with no orderings** — J's `text-and-fonts` f2 and f3 and `input-and-keybinds`
+f1, I's `protocol-phases` f2, L's `structure-placement` f1, `terrain` f2 and
+`worldgen/README` f1, C's `starting-a-server` f1 — have their orderings
+re-derived from the figure, which the agent's arrow list already asks.
 
 ### 6. Fix
 
@@ -461,212 +517,260 @@ labels).
 
 ---
 
-## Part 4 — The standard (recommendations with the numbers behind them, for session A)
+## Part 4 — The standard (the record: what session A ruled, 2026-09-26)
 
-*The planning session's recommendations, each with the count from
-`python tools/pass8_voice.py --summary` on 2026-09-26 over 19,094 sentences on
-137 pages, and where the count came from in the queue. Session A ratifies,
-amends or rejects each one against the exemplar and writes the rulings into
-`TEMPLATE.md` under a new section, *Voice*, which is where the part sessions
-read them; this Part becomes the record of what was decided and why, in pass
-7's Part 3's form. No count below is a target: a tic is kept wherever it earns
-its place, and the session says so in its log when it keeps one the ruling
-would remove.*
+*The planning session wrote this part as seventeen recommendations with the
+numbers behind them. Session A ruled on each — ratified, amended or reversed —
+against the exemplar and against the sentences the counts point at, and
+rewrote the part as **the record**, in pass 7's Part 3's form: what a part
+session applies and why it says what it says. The working form is
+`TEMPLATE.md`'s new section, **Voice**, with the three devices it amends (the
+number, the 1.21 blockquote, the caption); a session works from there and
+reads this for the reasons. Eleven were ratified, five amended, and **one
+reversed (V6)**, whose reversal is the session's main finding and a fact, not
+a register: it is written into Part 2 as an instruction to every agent. Every
+number below was re-measured on 2026-09-26 after V2 (`python
+tools/pass8_voice.py --summary`: 19,319 sentences on 137 pages), where the
+planning session's were taken before V1 and V2 rewrote 133 pages.*
 
-### V1. The exemplar
+**What session A did, in one paragraph.** It ruled the seventeen recommendations and added one (V18), wrote them into `TEMPLATE.md` as *Voice* and amended three devices; checked the exemplar under Part 2 and polished it after, and the page three passes had rewritten to their standards turned out to carry **twenty-nine errors**; reversed V6 into a fact every agent now carries, after finding that every constant the book calls unread is one javac writes in at its uses; rehearsed Part 2 on the exemplar and amended it from the agent's own account of where the brief failed it; routed the ledger's 56 frame-level notes (19 to their pages, 21 struck with verdicts) and taught the router the two forms that had kept 115 entries from their pages and 65 from every count; tagged the queue's 75 guessed kinds, which found a sixth kind, the reader's question of fact, and sent it to the agents; and wrote pass 7's ledger-shape workarounds into Part 3 where they bind a session.
 
-`entities/entity-lifecycle` again — the page passes 6 and 7 rewrote to their
-standards, so it is the one page where every device is already ruled and only
-the sentences are left. Session A checks it under Part 2 first (its own
-agent, its own whole-part read of Part VI's landing page and neighbours),
-polishes it under V2–V17, and writes the voice from what the polishing
-decided. Its measure today: 9 hedges, 9 *rather than*s, 1 correction-voice,
-0 dead-constant asides by the tool's regex (its *Three constants nobody reads*
-section is the page's own finding and stays), 0 possessive links, 2 counts
-that rot, 17 sentences over forty-five words, in 232 sentences.
+### V1. The exemplar — **ratified: `entities/entity-lifecycle`**
 
-### V2. The contrast — 57 *not X but Y*, 650 *rather than* and *instead of*
+**Measured.** The exemplar was checked under Part 2 by its own agent — 111 tool calls, a file and
+line for every verdict — and read against Part VI's landing page, `server/server-level-tick` and
+`world/chunk-storage`. The page passes 6 and 7 rewrote to their standards carried **twenty-nine
+errors**, each re-derived in the tree before it was fixed ([pass9.md](pass9.md), *Pass 8, session
+A*): four in its figures and captions (a state diagram missing an edge the code takes, a caption
+counting two arrows where its figure has three); two that were an earlier release's shape or a
+26.3 change V1 and V2 did not see (the spawn cost is now an environment attribute; `Mob.checkDespawn`
+no longer returns early for a persistent mob); a *not dead code* that was dead code (the local cap's
+no-player branch); a generated view whose population made the page contradict its own light-rule
+paragraph (the spawn reasons); and the section V6 reverses. The agent found all twenty-nine, one
+of them incompletely (seven of the eight `Animal` overrides); the session had found two before its
+report arrived — the javac constants from the voice counts, and `Entity.shouldBeSaved` by the
+whole-part read against `chunk-storage`'s list. Passes 2 and 4 found at least one wrong claim on every page; the exemplar says
+that has not changed, and that the part sessions' agents will be busy.
 
-Pass 2's most common register error, and Part XIII was its worst offender;
-by now the bare *not X but Y* is down to 57, and the milder spelling is
-everywhere. **Recommendation:** a contrast earns its place only where the
-reader would otherwise assume X — the forum's belief, the 1.21 fact, the
-obvious reading — and then X is named as that belief (*the wiki says…*, *a
-reader who knows 1.21 expects…*); elsewhere the sentence states Y. The 650
-are read, not hunted: most *rather than*s are the plain way to say a choice
-and stay. The tool lists them; the ruling is the test, not a number.
+**The ruling:** the exemplar stands, checked and then polished under V2–V17, and it is the page a
+part session reads before its own. **The rehearsal of Part 2** amended the brief in seven places,
+each from the agent's own *About the brief*: the readers' questions (V18); what a decompile cannot
+settle (V6); what counts as one call site, since the spawn-reason count was 11 or 13 by that alone;
+a prose message head on its owner's lane; another release's tree for diagnosis only; no
+completeness question in this pass; and a severity on every WRONG. It also found the prompt
+showing each ledger entry's first line only, and 65 paragraph-form entries no tool counted —
+both fixed in `pass8_queue.py`, so every later prompt carries more than the exemplar's first one did.
 
-### V3. The hedge — 650 of the *five of the seven* shape
+### V2. The contrast — **ratified**
 
-The named-qualifier hedge (*with two exceptions*, *all but the first*, *five
-of the seven*) is right precision in repetitive phrasing, and the queue's
-readers found its real fault: the population is often unnamed (*among the
-tick commands it is the only one*, over a command set no page enumerates;
-*ninety-one gates that name a level constant*, excluding two the next sentence
-explains without saying so). **Recommendation:** a hedge names its exception
-or its population — in the sentence, or in the table beside it — or becomes
-the plain rule. *Five of the seven* beside a seven-row table stays; *five of
-the seven* two screens from the seven is rewritten to name them or to drop the
-count. A count that admits two readings (the fifty-odd pass 5's close found;
-`claims.py --counts` lists every count) names its population once.
+**Measured.** 56 *not X but Y*, 638 *rather than* and *instead of*. On the
+exemplar, nine *rather than*s and no *not X but Y*; read one by one, eight are
+the plain way to say a choice or name a belief the reader holds (*a veto
+rather than a budget*, beside a cap that is a budget), and one was imprecise
+rather than a tic — *bans the category inside the box rather than replacing
+its list*, where an empty override *does* replace the list, with nothing.
 
-### V4. The em-dash chain — 43 sentences with three or more dashes
+**The ruling** (`TEMPLATE.md`, *State what is*): a contrast earns its place
+where the reader would otherwise believe X — the forum's belief, the 1.21
+fact, the obvious reading of a name, the case the page has just stated — and
+X is then named as that belief; elsewhere the sentence states Y. The tool's
+list is read, not hunted.
 
-Pass 3's pilots left them in the decision tables' gate cells and the frame's
-new prose carried more. **Recommendation:** at most one dash pair a sentence;
-a second aside becomes a sentence or a parenthesis. Forty-three is a morning.
+### V3. The hedge — **ratified**
 
-### V5. The correction written in the voice of a correction — 163
+**Measured.** 641. The exemplar's nine each have their population in the
+sentence or the table beside it (*almost every step … is a rejection*, over a
+fourteen-row table that shows it). **The ruling** (*A hedge names its
+population*): as recommended; a count that admits two readings says which
+once.
 
-*Actually* (150 of the 163), *in fact*, *contrary to*, *it turns out*,
-*despite its name*, and the parenthetical explaining why the obvious version
-does not work — the residue of two fact-checks whose fixes were written as
-fixes. **Recommendation:** the page states what is. Where the wrong belief is
-common enough to be worth naming, the myth table or the closer holds it; in
-the body, *actually* goes unless the sentence is contrasting a belief the
-page has just stated.
+### V4. The em-dash chain — **ratified**
 
-### V6. The dead-constant aside — 20, on ten pages
+**Measured.** 41 sentences with three or more dashes, none on the exemplar.
+**The ruling** (*One aside a sentence*): at most one dash pair a sentence.
 
-*The number is right; the constant that names it has no reader* — four to a
-part in Part IV, a Part VII habit, four on one page in Part VI; every reader
-skipped every one as a note about how the source reads. **Recommendation, to
-decide once:** the book names a constant nothing reads only where the page's
-number *is* that constant's value and a reader would grep for the name; then
-the name is given once, in the sentence with the number, as *`X.FOO`, which
-nothing reads* — and the sentence-long aside goes. A page whose finding is
-the dead constant (the exemplar's *Three constants nobody reads*) keeps its
-section; that is a fact about the system, not a tic.
+### V5. The correction in the voice of a correction — **ratified, amended to what it measures**
 
-### V7. The terminology — the glossary is the checklist
+**Measured.** 156, and **151 of them are *actually*** (*despite the name* 6,
+*contrary to* 1, *not what it looks* 1). Read as a set, *actually* is almost
+never a correction: it is an intensifier (*the subclass that actually reads
+the keyboard*, *what it actually gates*). **The ruling** (*State what is*):
+*actually* stays only where the sentence corrects a belief the page or the
+sentence has just stated, and goes elsewhere; the rest of the family follows
+it. Never in a heading or in link text that quotes a heading: those are
+anchors (V15). The exemplar's one — *what the server actually did is smaller
+and stranger than it looks*, after a sentence that says a zombie *appears* —
+is the sanctioned case and stays, and its heading *Entry: what addFreshEntity
+actually does* is an anchor.
 
-`python tools/pass8_voice.py --terms` finds **twenty-six glossary headwords the
-corpus spells two ways**, space against hyphen (*data pack* on 46 pages and
-*data-pack* on 31, *block entity* 33 and 18, *frame graph* 11 and 13, *old
-chunk* 5 and 7, *density function* 2 and 5). Most hyphens are the compound
-used as a modifier (*a data-pack field*), which is English, not drift.
-**Recommendation:** the noun takes the glossary's spelling everywhere; the
-hyphen is allowed only in the attributive position, and a page that uses the
-noun form hyphenated is corrected. And the words the queue found carrying two
-senses, with the ruling proposed for each:
+### V6. The dead-constant aside — **reversed: the book never says a constant is unread**
 
-| word | the two senses | the recommendation |
+**Measured.** The tool's regex finds 20 sentences, about half of them not
+about constants at all (*no reader of light ever waits*). Read for the claim
+rather than the words, the population is **twenty-odd sentences on sixteen
+pages** that say a named constant is unread, *referenced by nothing*, or that
+the code "writes the literal instead" — and **every constant they name is a
+compile-time constant**: a `static final` primitive or `String` initialized
+with a literal, which javac writes in at every use site. The decompile shows
+every such constant unread whatever Mojang's source did; the claims report
+the compiler, not the game. The exemplar's own section proves it: of
+`NaturalSpawner`'s five distance constants, the page said the three *nobody
+reads* are `MIN_SPAWN_DISTANCE`, `SPAWN_DISTANCE_CHUNK` and
+`SPAWN_DISTANCE_BLOCK` (each `static final int` = a literal) and the two
+that *are* read are `MAGIC_NUMBER` and `INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK`
+(each computed by a method call when the class loads) — the split is exactly
+javac's. One page already knew: `client/the-client-loop` says *a decompile can
+never tell a documented constant from a dead one*, beside a sentence that
+tells one anyway.
+
+**The ruling** (`TEMPLATE.md`, *The decompile is the compiled game*): the book
+never says a constant is unread, unused or dead. It gives the number, with the
+constant's name where a reader would grep for it (*the thirteen pixels
+`Item.MAX_BAR_WIDTH` names*). A field the decompile can see read or not — an
+object, a value computed when the class loads — may be called unread only
+where that is the page's point. The planning session's recommendation (keep
+the name once as *`X.FOO`, which nothing reads*) is reversed, and with it the
+exemplar's *Three constants nobody reads*, whose heading was false and is
+corrected. **It is a fact, not a register**, so it is also in Part 2's step 10:
+an agent that greps for a reader and finds none would otherwise CONFIRM every
+one of these.
+
+**For the part sessions — the sentences, by page** (each re-read against its
+declaration; the fix is the number with the name, and whatever the sentence
+inferred from the missing reader goes with it):
+
+| session | page | the claim |
 |---|---|---|
-| *extract* / *record* | `GuiGraphicsExtractor` and the render-state *extract* against the same stage called the *record pass* on four Part X pages | **extract**, because it is Mojang's word and the glossary's headword; *record* stays only as a plain verb |
-| *the hop* | a packet reaching the game thread (`ensureRunningOnSameThread`, `reference/threads`) against the post *out* to the sound thread (`sound-engine`) | *the hop* is the packet's crossing only; the sound engine's is *the post* |
-| *ledger* | the prediction ledger (18 uses, the through-line's) against `server-tick`'s *three ledgers* and a loose metaphor on two Part VII pages | the ledger is the prediction ledger; the other two want their own word (*the three tallies*; *a stack*) |
-| *level* | a ticket level that counts *down* toward loaded, on three Part IV pages, against the world and an enchantment's level on `loot-tables` | one sentence where a reader first meets the ticket level, on `tickets-and-loading`; `loot-tables` says *enchantment level* and *the world* |
-| *phase* | a `ConnectionProtocol` against a step of the server tick, both on `the-connection` | *protocol phase* and *tick phase* wherever the page has both |
-| *classes* / *files* | a package's count with or without `package-info.java`, three conventions inside Part XIII | the atlas's rule — a class is a file, nested types not counted — and the word is *classes*; a page that counts something else says what |
-| *client thread* / *Render thread* | the same thread on three Part XI pages, against their own cast tables | *Render thread*, the key's and `reference/threads`' name |
-| `Registries.X` / `BuiltInRegistries.X` | the same registry named both ways two hundred lines apart | one sentence on `identifiers-and-registries` saying which is the key and which the instance, and a glossary line |
-| *game time* / a clock's total ticks | the exemplar of pass 6's wire section | the clock page's own terms, `Timelines` and the game-time attribute, and *game time* only for `Level.getGameTime` |
-| *the shared worker pool* | shared with what — four pages, none says | *the worker pool* with the anatomy anchor, once per page |
-| *batch*, *context*, *inert*, *lane* | one word, two senses on one page each (`game-tests`, `contexts-and-predicates`, `enchantments`, `chunk-storage`) | the second sense gets a different word or a qualifier on that page |
+| D | `world/chunk-anatomy`:223 | `LevelChunkSection.BIOME_CONTAINER_BITS`, *no reader of the constant survives* |
+| D | `world/chunk-generation-pipeline`:134 | `ChunkStatus.MAX_STRUCTURE_DISTANCE`, *the pyramid writes the literal each time* |
+| D | `world/game-events-and-vibrations`:323 | `SculkSensorBlock.ACTIVE_TICKS`, *which nothing reads* |
+| D | `world/lighting`:160 | `ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE`, *the test is written as a literal* |
+| C | `server/starting-a-server`:311 | `MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS`, *spells it as literals rather than reading it* |
+| E | `blocks/block-entities`:292 | `HopperBlockEntity.MOVE_ITEM_SPEED`, *nothing reads it* |
+| E | `blocks/pistons-and-block-events`:209, :286 | `PistonStructureResolver.MAX_PUSH_DEPTH` *read nowhere*; `PistonMovingBlockEntity.TICKS_TO_EXTEND`, *no reader survives* |
+| F | `entities/synched-entity-data`:282 | `ClientboundSetEntityDataPacket.EOF_MARKER` and `SynchedEntityData.MAX_ID_VALUE`, *referenced by nothing* |
+| G | `items/items-and-stacks`:269 | `Item.MAX_BAR_WIDTH`, *spells the number out* |
+| G | `items/loot-tables`:305 | `LootTable.RANDOMIZE_SEED`, *nothing in the game reads the constant* |
+| H | `player/hunger-and-experience`:60–64, :69–70, :299 | **the bold claim** that no `FoodConstants` field *is referenced by anything* and that the file and the behaviour *can drift apart*; `FoodConstants.EXHAUSTION_WALK` *documents an intent nothing reads*; *the joke* in *Where to look* |
+| H | `player/README`:110 | the landing page's summary of the same claim, *because `FoodData` writes each number as a literal instead* |
+| H | `player/input-to-movement`:117–121 | *almost none of the thresholds have names*, and `ServerGamePacketListenerImpl.CLIENT_LOADED_TIMEOUT_TIME` *not read by anything* |
+| H | `player/the-spear`:213 | `KineticWeapon.HIT_FEEDBACK_TICKS`, *read by nothing* |
+| I | `networking/the-connection`:188–189 | `HandlerNames`, *nothing references it* — its drift (*no entry for hackfix*) is visible and stays; its unread-ness is not |
+| J | `client/the-client-loop`:116 | `Minecraft.MAX_TICKS_PER_UPDATE`: the page's own javac sentence is the true one; *written as a literal* is not |
+| M | `worldgen/density-functions`:302 | three constants *nothing anywhere reads*, *the routers spelling the same numbers as literals* |
 
-`pass8_voice.py --list terms --part <dir>` prints every sentence carrying one
-of these words, per page, so a session reads them for sense rather than
-searching.
+A reader's claim that a *literal in the source* is a literal (`networking/protocol-phases`:116,
+*below protocol 754 — a literal in the source*) is the same mistake in
+the other direction, and I's session reads it too.
 
-### V8. The possessive on a link — 97
+### V7. The terminology — **ratified, amended: the spelling half is already met**
 
-*"is [the server tick](…)'s"* — the citation form pass 5 settled, which three
-readers across three pages read as a typo before they parsed it and one
-reported as an error; one instance was missing its *s*. **Recommendation:**
-the possessive never hangs on a link's closing bracket. *Belongs to [the
-server tick](…)*, *is the server tick's ([the server tick](…))*, or the noun
-inside the link — whichever the sentence takes.
+**Measured.** `--terms` lists twenty-six glossary headwords spelled two ways,
+and read for position, **no page hyphenates a noun**: every hyphenated form is
+the compound used as a modifier (*a data-pack field*, *built-in, data-pack,
+synced*), which is English. The spelling rule is ratified and needs no sweep.
+The senses table is ratified with three rows amended against the pages as
+they stand: *the hop* (the sound engine's verified line says *one hop the
+sound cannot skip*, and V16 forbids touching a verified line, so the ruling is
+that *the hop* unqualified is the packet's and any other crossing names where
+it goes); *the shared worker pool* (it is shared — chunk work, meshing and the
+reload's prepare phases all run on `Util.backgroundExecutor` — so *shared*
+stays where the sentence says with what); and `Registries.X` against
+`BuiltInRegistries.X`, whose sentence is already on
+`foundations/identifiers-and-registries`:67 (the glossary line is session O's).
+The page-local rows — *game time* on the clock page, *batch*, *context*,
+*inert* and *lane* on `game-tests`, `contexts-and-predicates`, `enchantments`
+and `chunk-storage` — are ratified as the brief wrote them and are those
+sessions'. `TEMPLATE.md`'s table carries the corpus-wide rows.
 
-### V9. The number device — 24
+### V8. The possessive on a link — **ratified**
 
-`**Two** — writes to the socket per client per tick`: the noun the number
-counts arrives after the dash, so the bold word is unattached until the reader
-has read past it; both readers who met it said so. **Recommendation:** amend
-`TEMPLATE.md`'s device so the number and its noun are one phrase —
-`**Two writes** to the socket per client per tick (…)` — and rewrite the
-twenty-four. The device stays; its form changes.
+**Measured.** 92 (97 before V2). None on the exemplar. **The ruling** (*The
+possessive never hangs on a link*): as recommended.
 
-### V10. The counts that rot — 150 counts of classes, files or lines in prose
+### V9. The number device — **ratified, amended: the device changes now, the twenty-four in their parts**
 
-A count in a sentence survives an edit; an empty table cell does not (pass 6's
-lesson), and a count of classes or lines survives a *release* while going
-wrong — 26.3 moved 788 classes. **Recommendation:** a class, file or line
-count in prose either comes from a generated include (the size and coverage
-phrases already do) or is dropped in favour of the atlas link, unless the
-number is the page's argument (*one file of static methods*, *573 lines the
-book explains nowhere*), and then it is checked by the fact-check agent as a
-population and left. `pass8_voice.py --list rot` is the list.
+**Measured.** 24, one to two a part, none on the exemplar. Six already carry
+their noun in the bold (*One millisecond*, *Sixty-four blocks*) and read
+cleanly; the eighteen bare numbers are the fault. **The ruling:**
+`TEMPLATE.md`'s device is amended — the number and the noun it counts are one
+bold phrase and the sentence runs on from it (`**Two writes** to the socket
+per client per tick: …`). The twenty-four are rewritten by their part sessions
+in step 7, not here: each is a count the fact-check reads first, and a
+rewrite that restates a count is a claim.
 
-### V11. The long sentence — 1,178 over forty-five words
+### V10. The counts that rot — **ratified, amended: a size, not a population**
 
-A pacing signal, not a fault: the queue's readers named four passages they
-read slowest, and each was three or four steps of reasoning in as many
-clauses. **Recommendation:** no ruling on length. The session reads its part's
-longest sentences (the tool ranks them) and splits the ones where a step of
-reasoning is hidden in a subordinate clause; a long sentence that is one idea
-stays. This is the one recommendation where the count is only a place to
-look.
+**Measured.** 147 by the tool, which cannot tell a size (*102 classes*, *573
+lines*) from a population (*seven classes override it*). The exemplar's two
+are populations — how many classes override `Mob.getMaxSpawnClusterSize`, how
+many override `LevelWriter.addFreshEntity` — and are facts the agent
+re-counts, not sizes that rot. **The ruling** (*Counts say what they count, and
+sizes rot*): a size in prose comes from a generated include or gives way to
+the atlas link unless it is the page's argument; a population stays and is
+re-counted.
 
-### V12. The figures' register — 203 captions, 19 missing, 69 sentence labels on 48 figures
+### V11. The long sentence — **ratified**
 
-Pass 7 wrote the captions one part at a time and never read them as a set;
-the close found four spellings of the caption on the thirteen landing figures
-alone. **Recommendation:** a caption is one sentence in the present tense
-saying what the picture shows and what to look for, one italic run end to end
-(the gate checks the run); it names the shape first where the shape is the
-point; it never says *this figure* or *the diagram above*. The 48 figures with
-sentence labels are cut to F4's budgets where the label's sentence has a home
-in the prose, and left where the figure pass ruled them (three in Part I and
-II are ruled). The gate's 62 notes — bare-verb heads and third-class heads —
-are read by each part session with the caller's-method question (Part 2, step
-4) and stay notes where the head is a verb the lane does. Part XI's 19 missing
-captions are session K's.
+**Measured.** 1,227 over forty-five words; 17 on the exemplar, of which none
+hid a step of reasoning. **The ruling:** no rule on length (*Long sentences
+are a place to look*).
 
-### V13. The 1.21 blockquote — 47 pages
+### V12. The figures' register — **ratified, amended: at most two sentences**
 
-Pass 6 put every one at the foot; its register was left to this pass.
-**Recommendation:** one form corpus-wide — `> **For a 1.21-era reader.**` then
-what moved, as *X is now Y* or *X is gone; Y does its work* — at most eight
-lines, nothing that only says *this is new*, and no row that `naming-drift`
-already carries unless the page's mechanism depends on it (`blaze3d` restates
-six of the table's rows and `the-window` repeats one of them). After V2, the
-26.3 changes go in the same blockquotes where a 1.21 reader would hunt for the
-old name, and nowhere else: rule 3 allows a drift note, not a version history.
+**Measured.** 204 captions: **63 are one sentence, 102 two, 37 three, 2
+four** — the one-sentence form the recommendation (and pass 7's F5) asked for
+is what the corpus did least, and the exemplar's own four run two, three, two
+and two. The two-sentence caption is the job done: what the picture shows,
+then what to look for. A handful point at their own figure (*so the figure asks …*); the
+*above* and *below* the tool counts (41) are almost all a later figure or
+section and are fine. **The ruling** (`TEMPLATE.md`, *Figures*): a caption is
+at most two sentences in the present tense, one italic run, the first saying
+what the picture shows (its shape first where the shape is the point) and the
+second what to look for; it never points at its own figure. The thirty-nine
+of three or more are cut to two by their part sessions. The figure-label and
+gate-note half of the recommendation is ratified as written, and Part XI's
+missing captions are session K's.
 
-### V14. The second person — A1 stands, and is not re-decided
+### V13. The 1.21 blockquote — **ratified**
 
-44 pages open on *you*. Pass 6's ruling A1 says what varies is the way in, not
-whether the reader is addressed; no part opens most of its pages on the word.
-**Recommendation:** no corpus-wide change. A part whose session finds four or
-more of its pages opening on the same word varies one or two, as A1 already
-allows, and says so in its log.
+**Measured.** 55 blockquotes, every one opening in the one spelling; **13 run
+past eight lines**, nine of them Part XI's (`entity-rendering` 15,
+`lightmap-fog-and-sky` 14, `models-and-atlases` 19, `particles` 13,
+`post-processing` 15, `section-meshing` 12, `the-frame` 13,
+`visibility-and-the-frame-graph` 15, `block-entity-rendering` 9), two Part X's
+(`gui-and-screens` 9, `text-and-fonts` 10), one Part VI's (`ai-goals-and-brains`
+9) and one Part II's (`identifiers-and-registries` 9). The exemplar has none,
+correctly: nothing on it moved in a way a 1.21 reader would hunt for.
+**The ruling** (`TEMPLATE.md`, the device): the recommended form, and 26.3's
+drift goes in the same blockquote and nowhere else on the page.
 
-### V15. Headings are anchors — never reworded
+### V14. The second person — **ratified: A1 stands**
 
-27 links land on closers' anchors alone, and `blocks-and-states`' *The two
-update channels* is cited by nine pages. **Recommendation, as a rule:** the
-polish never rewords a heading. A heading that is *false* is a correction,
-made with `check_links.py --inbound` in hand and every link repointed in the
-same commit.
+**Measured.** 43 pages open on *you*. No change.
 
-### V16. What the polish never does
+### V15. Headings are anchors — **ratified, and exercised**
 
-No paragraph restructured, no section reordered, no list re-budgeted, no
-figure redrawn for its look, no cut beyond a sentence that repeats its
-neighbour, no fact changed without the decompile open, no heading reworded, no
-device added, no *Questions players ask* opened or closed (A2 is settled), no
-change to the verified line's scenario, no page moved. The rebuilt process is
-meant to produce the voice; this pass makes the present voice consistent and
-plain, and stops there.
+The exemplar's *Three constants nobody reads* was false (V6), so it was
+corrected as the ruling says a false heading is: `check_links.py --inbound`
+first (no link lands on it), then the new heading, which says what the section
+now says.
 
-### V17. Every polished sentence is a claim
+### V16. What the polish never does — **ratified**
 
-The session re-derives every polished sentence whose meaning could have moved
-before its commit (R4), lists those in [pass9.md](pass9.md) under *Polished*,
-and counts the rest by kind. Session P then reads **every** sentence changed
-since `pass-8-start`, from git (`python tools/pass8_diff.py`), against the
-decompile, page by page — the second reading nothing in passes 3 to 7 had, and
-the reason the polish is allowed into the last pass at all.
+### V17. Every polished sentence is a claim — **ratified**
+
+### V18. The reader's question of fact — **new**
+
+Reading the queue's seventy-five guessed units found eleven that are neither a
+lens nor a record: a question of fact a reader of an earlier pass asked and no
+session answered (*does the autosave floor break the five-minute claim?*, *does
+the shadow colour inherit?*, the exemplar's own *two biomes and four types*).
+They had been guessed *voice* or *book*, and the session file is the only place
+a queue unit reached — so nobody with the decompile open was ever asked them.
+**The ruling:** they are tagged `[kind=fact]`, a sixth kind that is pass 8's;
+`pass8_prompts.py` puts a page's in its agent prompt beside the ledger, and
+Part 2 asks the agent to answer each or call it overtaken.
 
 ---
 
@@ -679,8 +783,9 @@ the reason the polish is allowed into the last pass at all.
 - **R2 · The whole-part read is not optional.** It is step 4 of every part
   session, and its findings are logged even when the ledger is empty for the
   page, because that is where passes 5 and 6 found half their corrections.
-- **R3 · The ledger closes on itself.** Every one of the 1,333 entries is
-  struck by the close, each with its verdict (`python tools/pass8_queue.py
+- **R3 · The ledger closes on itself.** Every one of the 1,398 entries (1,333
+  by the planning session's count; session A's router found 65 paragraph-form
+  entries it missed) is struck by the close, each with its verdict (`python tools/pass8_queue.py
   --unstruck` is the test), and the pass's own corrections and polish are
   listed in the same file under its own headings, so that a return reads one
   file to know what was checked, by whom, and what was changed on purpose.
@@ -743,7 +848,7 @@ V2, or B into A, if either runs short.
 |---|---|---:|---|---|---:|---|---|
 | **V1** | **the version pass, mechanical.** `python tools/version_pass.py 26.3` has run (the tree is at `reference/26.3/`; run it again and it skips what is present); `git tag pass-8-start` before any page changes; `python tools/version_pass.py 26.3 --flip` and `python tools/mc_version.py`; `map_source.py`'s `PARTS` given `com/mojang/renderpearl` (Part XI) and read against 26.3's new packages (`level/blockscan`, `item/slot`, `attribute/modifier`); `python tools/map_source.py`, `gen_reference.py all`, `pass5_coverage.py --write`, `check_deps.py --write-figure`, and **the diff of `src/generated/` read** — a population that moved is a page that changed; `verify_names.py` and `check_figure_names.py --strict`: every rename resolved to the 26.3 name with the smallest edit, every removed name replaced by what does its work or the sentence cut, on the sixty pages outside V2's five; `claims.py --counts` over the touched pages; the header line on every page, `CLAUDE.md`, `README.md`, the introduction, `book.toml`, the issue template's placeholder, `fetch_libs.sh`'s defaults; the gates; deploy; every change logged in [pass9.md](pass9.md) under *Pass 8, session V1*, and every section whose *mechanism* changed listed for V2 or the part session | 517 names on 65 pages; 32 in figures | — | — | — | done 2026-09-26 | The tools read 26.3 and check each page against the release its own header names, so the site deployed with every header true: **91 pages moved to 26.3** (71 corrections, every finding re-derived; four history claims found false against the 1.21.11 tree; one heading corrected) and **42 left at 26.2 for V2**, with what changed under each in the ledger. Found on the way: the planning session's staging had dropped every `@Override` (26.3 re-decompiled with McDeob's own options), two generator bugs, and a release far larger than 517 names — SDL3 in place of GLFW, the reloadable registries, the swing and dig packets, entity movement sync |
 | **V2** | **the version pass, the systems that changed shape — the scope V1 set (2026-09-26): the 42 pages still verified against 26.2**, listed by system in [pass9.md](pass9.md) under *Pass 8, session V1*, *For session V2*, with what 26.3 does instead under each: world generation (the brief's four plus `features-and-placement`, `blending`, `biomes`, `structure-placement`, `trees`, Part XII's landing page), the reloadable registries (`identifiers-and-registries`, `resource-system`, `contexts-and-predicates`, `recipes`, `loot-tables`, `advancements`, Part VII's landing page, and the brief's two codec pages), the swing and the dig (`the-sword-swing`, `using-an-item`, `block-breaking`, `particles`), the window and the renderer (SDL3, `renderpearl`, OIT: `blaze3d`, Part XI's landing page, `the-window`, `the-frame`, `post-processing`, `visibility-and-the-frame-graph`, `lightmap-fog-and-sky`, `block-entity-rendering`, `submit-phases`, `the-client-loop`, `input-and-keybinds`), the singleplayer seam (`anatomy`, `permissions`), `packets-and-stream-codecs`, `items-and-stacks`, `chunk-storage`, `signal-and-dust`, `density-function-nodes` (hand-kept, not generated), and the summarisers (`glossary`, `what-this-book-skips`), read last. `python tools/verify_names.py --current` passes when none is left. The brief's original list, for the record: `worldgen/terrain`, `worldgen/density-functions`, `world/chunk-generation-pipeline` (the status ladder without `CARVERS` and `SURFACE`; the surface rules and carvers gone or moved), `rendering/blaze3d` and Part XI's landing page (`renderpearl`: `api`, `backend`, `frontend`, `util`), `foundations/codecs-nbt-json` and `data-driven-types` (the registry codecs), `world/chunk-storage` (`level/storage`), `blocks/signal-and-dust` (`RedStoneWireBlock`), `player/the-sword-swing` and the introduction (`ServerboundSwingPacket`), `items/using-an-item` (`ItemInHandRenderer`), `reference/density-function-nodes` regenerated and its prose re-read. Each page made true of 26.3 with the decompile open, figures included, in the smallest rewrite; what the part session must re-read deeper is written into the ledger under *Pass 8, session V2*; the 1.21 blockquotes gain the 26.3 drift where a reader would hunt for the old name (V13); `naming-drift` gains the rows. Gates, deploy, the paragraph | 42 pages; 455 names and 30 in figures still unresolved against 26.3 | — | — | — | done 2026-09-26 | **Every page says 26.3** and `verify_names.py --current` passes: the forty-two pages rewritten in one session (the owner set no split), one agent per page with every diff audited — 681 ledger entries, sixteen false headings corrected with their links, the lane key's removed classes replaced, sixty-four naming-drift rows. Found beyond V1's list: eight more 26.3 changes on pages V1 had moved (the hurt cooldown, `LocalPlayer.sendChanges`, `MoveSimulationType` among them), and two probable upstream bugs, written as what the code does (blending's carving filter, the delayed dig) |
-| **A** | **the standard.** Part 4 ruled against the exemplar (`entities/entity-lifecycle`: its own agent under Part 2, its polish under V2–V17), the rulings written into `TEMPLATE.md` as *Voice* and the device amended (V9), Part 4 rewritten as the record; the ledger's 56 frame-level notes (`pass8_queue.py --part Frame`) struck *(no claim)* or routed to a page; pass 7's close's audit of the ledger's shape ([pass9.md](pass9.md), session O's entry) read and its workarounds written into Part 3 where they bind a session; the queue's routing tags checked (`pass5_queue.py --unsure`) so that R8's count is honest; Part 2 rehearsed on the exemplar and amended if the report's shape failed it | 56 | — | 3·2·1·0 | 5.2k | — | |
+| **A** | **the standard.** Part 4 ruled against the exemplar (`entities/entity-lifecycle`: its own agent under Part 2, its polish under V2–V17), the rulings written into `TEMPLATE.md` as *Voice* and the device amended (V9), Part 4 rewritten as the record; the ledger's 56 frame-level notes (`pass8_queue.py --part Frame`) struck *(no claim)* or routed to a page; pass 7's close's audit of the ledger's shape ([pass9.md](pass9.md), session O's entry) read and its workarounds written into Part 3 where they bind a session; the queue's routing tags checked (`pass5_queue.py --unsure`) so that R8's count is honest; Part 2 rehearsed on the exemplar and amended if the report's shape failed it | 56 | — | 3·2·1·0 | 5.2k | done 2026-09-26 | Part 4 ruled (11 ratified, 5 amended, V6 reversed, V18 new) and written into `TEMPLATE.md` as *Voice*; **the exemplar carried twenty-nine errors**, all fixed and re-derived; the book's *constant nobody reads* asides found to be javac's inlining, listed by page for the part sessions and written into Part 2; Part 2 amended in seven places from the rehearsal; the router taught two page forms and paragraph entries (the ledger is 1,398 entries); the queue's 75 guesses tagged, a sixth kind (*fact*) sent to the agents |
 | **B** | I · Anatomy, II · Foundations and the Maps | 25+3 · 61 · 24 | 4·2·3·9 / 3·0·0·13 / maps in frame | 14·18·2·2 / 29·34·7·6 | 32.5k | — | |
 | **C** | III · The server | 81+3 | 6·1·1·22 | 28·34·5·11 | 20.9k | — | |
 | **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | — | |
@@ -757,7 +862,7 @@ V2, or B into A, if either runs short.
 | **L** | XI · Rendering — the check and the polish, after K | 82+8 | 1·5·0·25 | 82·72·21·21 | 35.7k | — | |
 | **M** | XII · World generation — the part V2 rewrote most; its agents read V2's ledger entries first | 77 | 6·1·0·18 | 69·61·19·2 | 30.7k | — | |
 | **N** | XIII · Commands and data packs | 72+24 | 6·7·1·22 | 39·38·14·0 | 25.6k | — | |
-| **O** | **Reference and the frame** — the introduction, `lectures.md`, the atlas's prose, `reference/README` and the hand-kept Reference pages, read *after* the parts (the summarisers are read last); the glossary against every owner page; `what-this-book-skips` and every *where the part stops* against [pass3.md](pass3.md) §7 | 85 · 28+56 | 18·8·1·49 | 43·38·7·2 / 17·12·1·0 | 55k + 9k | — | |
+| **O** | **Reference and the frame** — the introduction, `lectures.md`, the atlas's prose, `reference/README` and the hand-kept Reference pages, read *after* the parts (the summarisers are read last); the glossary against every owner page; `what-this-book-skips` and every *where the part stops* against [pass3.md](pass3.md) §7; and the eleven generated Reference views, which no other row names (session A's routing, 2026-09-26): each generator's typed prose in `gen_reference.py` read against the tree — V2 found two stale — and one population per view re-derived | 85 · 28+56 | 18·8·1·49 | 43·38·7·2 / 17·12·1·0 | 55k + 9k | — | |
 | **P** | **the second reading.** `python tools/pass8_diff.py` — every sentence changed since `pass-8-start`, by page, read against the decompile by a session that changed none of them; the ledger's *Polished* sections read against the pages; thirty strikes and thirty corrections audited (R4); `pass8_queue.py --unstruck` and `pass5_queue.py --summary` at zero, or the gaps listed for Q | — | — | — | — | — | |
 | **Q** | **the release.** `version_pass.py --latest` (R6; if 26.4 has shipped, a version session runs first and Q waits); the introduction's *verified* paragraph made true of every gate; the pass-number sweep of `README.md`, `CLAUDE.md`, `TEMPLATE.md` and the frame pages (R5); the lecture order as the owner confirmed it; the maintenance note in `README.md` and [plan.md](plan.md) — what is true of the site while nobody works on it, what a release triggers, how a reader's correction arrives and who answers it; `README.md`'s corrections paragraph rewritten for a site with no current pass; the tag `release-26.3`; deploy; pass 8 archived whole into this file's Part 8 and [plan.md](plan.md) closed with the verdict on whether the pass earned its cost | — | — | — | — | — | |
 
@@ -929,3 +1034,38 @@ note; four 1.21 blockquotes now past eight lines (L); `entities/authority`'s fig
 `Player`'s answer as a branch (F); the glossary's entries settled while their owners were being rewritten (O).
 Left for session K: three Part XI figures still under 11px, none of them V2's drawing (`entity-rendering` f2
 and `lightmap-fog-and-sky` f1, eight lanes each, and `models-and-atlases` f1, a flowchart 1,743px wide).
+
+**Session A — the standard (2026-09-26).** Part 4 is now the record: eleven recommendations ratified,
+five amended to what their counts actually measure, one reversed and one added, all written into
+`TEMPLATE.md` as *Voice* with the number device, the 1.21 blockquote and the caption amended. The
+exemplar was checked first, by its own agent under Part 2 and by a read of Part VI's landing page and
+the two pages that restate its mechanics, and **the page passes 6 and 7 had rewritten to their
+standards carried twenty-nine errors**, every one re-derived and fixed. Ledger entries checked: the
+exemplar's 25 and two Reference entries that state its numbers (11 confirmed, 2 overtaken, 1 no claim,
+13 confirmed only in part or wrong), and the 56 frame-level notes (19 routed to their pages, 21 struck, one of whose
+claims — that three saved-data classes were queued in pass3.md §7 — was false and is now true). The
+three worst corrections: the local mob cap's no-player branch was called live because *near* meant two
+things, where it is one test over the same players in the same tick; the visibility state diagram
+drew *up is one step at a time* and the page read an asymmetry off it, where a chunk promoted straight
+to entity-ticking takes its sections from hidden to ticking in one call; and the spawn-reason counts
+(eleven tested, eight labels) came from a generator that did not count `EntitySpawnReason`'s own
+helpers, so the page called `TRIAL_SPAWNER` a label a paragraph after saying the light rule exempts
+it. **The finding that reaches past the exemplar** is V6's: every constant the book calls unread —
+about twenty sentences on sixteen pages, one of them a bold claim on `player/hunger-and-experience`
+and its landing page — is a compile-time constant javac writes in at every use, so the decompile
+cannot show whether anything reads it; the ruling is reversed, the sentences are listed by page in
+Part 4 for sessions C to M, and Part 2's step 10 now tells every agent, which would otherwise have
+confirmed each one. What the whole-part read found that the report did not: nothing the report
+missed, but it found `Entity.shouldBeSaved`'s false absolute from `chunk-storage`'s list before the
+report arrived, which is the method working. The rehearsal of Part 2 went as the charter hoped: the
+agent's own account of where the brief failed it gave seven amendments, and two tool defects — the
+prompt showed each ledger entry's first line only, and 65 entries written as paragraphs were counted
+by nothing, so the ledger is 1,398 entries, not 1,333. The queue's 75 guessed kinds were tagged,
+which found eleven questions of fact nobody with the decompile had been asked; they are a sixth kind
+now and go to the agents. The polish on the exemplar changed five sentences whose meaning could move
+(listed in the ledger) and one caption's length. Also corrected: one landing page count
+(`entities/README`, six labels, not eight) and one generator (`gen_reference.py`'s spawn reasons). Left
+for the part sessions: V6's list, V9's twenty-four number devices, V12's thirty-nine long captions,
+V13's thirteen long blockquotes (nine of them L's), and the other rulings as each page is polished;
+for session O, the eleven generated views, which no row had. Left for session P: session A's 46 ledger
+items, and the exemplar's diff.

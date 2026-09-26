@@ -50,8 +50,10 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1 and V2 ran on 2026-09-26** — the tools read 26.3, and every page says
-26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2 — and the rest have not. After it, nothing more is done here except a
+`release-26.3`. **V1, V2 and A ran on 2026-09-26** — the tools read 26.3, and every page says
+26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
+`TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
+reads* asides to be javac's inlining rather than the game — and B onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -219,8 +221,8 @@ line on every page) and V2 (the pages whose systems changed shape — five by th
 planning brief's measure, forty-two by V1's — rewritten in the smallest true
 rewrite, with what the part session must re-read written into the ledger). (1) **The third fact-check**: pass 4's protocol —
 one adversarial agent per page with the decompile, given the ledger's entries
-for the page as its opening checklist (1,333 entries; `tools/pass8_queue.py`
-routes them by page and part) — while the session reads the whole part into
+for the page as its opening checklist (1,398 entries once session A taught the
+router the paragraph form; `tools/pass8_queue.py` routes them by page and part) — while the session reads the whole part into
 context and lists every sentence that disagrees with another, the class
 passes 5 and 6 found most of. (2) **The polish**, after the check on each
 part, under rulings session A makes from `tools/pass8_voice.py`'s counts:
@@ -440,3 +442,19 @@ understood; recording is after the release.
   `gen_reference.py`. Found beyond V1's list: eight more 26.3 changes on pages V1 had moved, and two probable
   upstream bugs written as mechanism (`worldgen/blending`, `blocks/block-breaking`). The class map's design is
   in the version pass above. Deployed.
+
+- **2026-09-26, pass 8, session A — the standard (Opus).** Part 4 ruled and written into `TEMPLATE.md` as
+  *Voice* (eleven ratified, five amended, V6 reversed, V18 new); the number device, the 1.21 blockquote and
+  the caption (at most two sentences, measured: 63 of 204 were one) amended. The exemplar,
+  `entities/entity-lifecycle`, checked under Part 2 by its own agent and read against its neighbours before
+  its polish: **twenty-nine errors** on the page passes 6 and 7 had made their model, every one re-derived
+  and fixed (a dead branch called live, a state diagram missing an edge the code takes, a 26.3 change V1
+  and V2 missed, a generator whose population made the page contradict itself). **V6 reversed into a fact**:
+  every constant the book calls unread is a compile-time constant javac writes in at its uses, so the
+  decompile cannot show a reader; about twenty sentences on sixteen pages, listed by page in the brief's
+  Part 4 for the part sessions, and Part 2 now tells every agent. Part 2 amended in seven places from the
+  rehearsal. `pass8_queue.py` taught two page forms and paragraph entries (115 entries reached their
+  pages; the ledger is 1,398, not 1,333; each entry now reaches the prompt whole); `pass5_queue.py` a sixth
+  kind, `fact`, which `pass8_prompts.py` sends to the agents; `gen_reference.py`'s spawn reasons count the
+  enum's own helpers. The 56 frame-level notes routed or struck; the queue's 75 guesses tagged; three
+  saved-data classes the ledger said were in pass3.md §7 put there. Deployed.

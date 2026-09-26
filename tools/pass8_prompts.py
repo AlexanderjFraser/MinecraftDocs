@@ -4,6 +4,8 @@
 Pass 8's agent is pass 4's adversary with the decompile (docs/pass8-brief.md, Part 2), and its
 prompt file is the brief, then the page's opening checklist: every ledger entry in docs/pass9.md
 that names the page (`pass8_queue.py`, oldest pass first, with the session that wrote it), every
+question of fact a reader raised about the page and no session answered (`pass5_queue.py`'s
+`[kind=fact]` units, added by pass 8's session A — the queue's other kinds are the session's), every
 caption on the page (`tools/pass7/captions.py` — a caption is a claim about what its figure shows,
 and most were never listed), the figure gate's notes for the page (`check_figure_names.py`: a bare
 head or a third class's method on a lane, which is where the caller's-method fault hides), then the
@@ -69,6 +71,17 @@ def ledger_md(md: str, detail: dict) -> str:
         out.append("- (no entry names this page; the whole page is the checklist)")
     for p, s, struck, line in rows:
         out.append(f"- [pass {p}, session {s}]{' (struck)' if struck else ''} {re.sub(r'^(?:[-*]|[0-9]+[.])[ ]+', '', line)}")
+    return "\n".join(out) + "\n"
+
+
+def facts_md(key: str, num, units, kinds) -> str:
+    """The page's open `[kind=fact]` queue units: questions of fact a reader raised and no session answered."""
+    mine, _pw = p5q.units_for(units, kinds, key, num, "fact", False)
+    out = [f"## The readers' questions: {len(mine)} in `docs/pass5.md` that name this page", "",
+           "Each is a question of fact a reader of an earlier pass asked about this page and no session answered. Answer each "
+           "from the decompile, with the file and line, under *The readers' questions* in your report. A question whose "
+           "premise the page no longer states is answered *overtaken*, with the line that shows it.", ""]
+    out += [p5q.render(u, kinds) for u in mine] or ["- (none)"]
     return "\n".join(out) + "\n"
 
 
@@ -150,7 +163,8 @@ def build(keys: list[str], out_dir: str, pages5, units, standing, kinds, detail,
         prompt = [f"# Pass-8 fact-check — `src/{rel}`", "",
                   f"The page to check is **`src/{rel}`** (repository root: `{ROOT}`).",
                   f"Sources: `{mc_version.source()}` (the {mc_version.VERSION} decompile), its `data/` and `assets/`, and `{mc_version.libs()}`.",
-                  "", brief, "", "---", "", ledger_md(rel, detail), "---", "", captions_md(path), "---", "",
+                  "", brief, "", "---", "", ledger_md(rel, detail), "---", "", facts_md(key, num, units, kinds), "---", "",
+                  captions_md(path), "---", "",
                   gate_md(checker, path, rel), "---", "", claims.render(path, rows, None), "", "---", "", arrows, ""]
         fname = os.path.join(out_dir, f"{key.replace('/', '--')}.prompt.md")
         with open(fname, "w", encoding="utf-8") as f:
@@ -206,7 +220,8 @@ def probe() -> int:
     build([key], tmp, pages5, units, standing, kinds, detail, notes, brief, checker)
     prompt = open(os.path.join(tmp, "entities--entity-lifecycle.prompt.md"), encoding="utf-8").read()
     sess = open(os.path.join(tmp, "entities--entity-lifecycle.session.md"), encoding="utf-8").read()
-    need_p = ["## Part 2 — The brief", "## The ledger:", "## The captions:", "## The figure gate:", "# Confident sentences", "arrow"]
+    need_p = ["## Part 2 — The brief", "## The ledger:", "## The readers' questions:", "## The captions:", "## The figure gate:",
+              "# Confident sentences", "arrow"]
     need_s = ["## The voice, measured", "inbound links", "queue"]
     missing = [h for h in need_p if h not in prompt] + [h for h in need_s if h.lower() not in sess.lower()]
     if missing:
@@ -215,7 +230,7 @@ def probe() -> int:
     if "[pass " not in prompt:
         print("probe FAILED: the exemplar has ledger entries and none was listed")
         return 1
-    print(f"probe ok: the exemplar's prompt carries the brief, its ledger entries, its captions, the gate, the claims and the arrows; "
+    print(f"probe ok: the exemplar's prompt carries the brief, its ledger entries, its readers' questions, its captions, the gate, the claims and the arrows; "
           f"the session file the queue, the voice and the links ({tmp})")
     return 0
 

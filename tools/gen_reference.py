@@ -378,8 +378,17 @@ def _enclosing_method(text: str, pos: int) -> str:
     return last
 
 
+# The enum's own static helpers compare constants too (`EntitySpawnReason.isSpawner` is SPAWNER or
+# TRIAL_SPAWNER), and a class that calls one is testing those constants: pass 8's session A found the
+# view printing *nothing tests it* for TRIAL_SPAWNER beside a blurb saying the light rule exempts it.
+REASON_HELPER = re.compile(r"public static boolean (\w+)\(final EntitySpawnReason \w+\) \{(.*?)\n    \}", re.S)
+
+
 def spawn_reasons() -> str:
-    order = [c.strip() for c in REASON_DECL.search(read("world", "entity", "EntitySpawnReason.java")).group(1).split(",")]
+    enum_text = read("world", "entity", "EntitySpawnReason.java")
+    order = [c.strip() for c in REASON_DECL.search(enum_text).group(1).split(",")]
+    helpers = {m.group(1): [c for c in REASON_TEST.findall(m.group(2)) if c in order] for m in REASON_HELPER.finditer(enum_text)}
+    helper_call = re.compile(r"EntitySpawnReason\.(" + "|".join(map(re.escape, helpers)) + r")\(") if helpers else None
     tests: dict[str, list[tuple[str, str]]] = {c: [] for c in order}
     passes: dict[str, set[str]] = {c: set() for c in order}
     for path in _walk(os.path.dirname(MC)):
@@ -400,12 +409,19 @@ def spawn_reasons() -> str:
                     tests[const].append(where)
             else:
                 passes[const].add(cls)
+        if helper_call and cls != "EntitySpawnReason":
+            for m in helper_call.finditer(text):
+                for const in helpers[m.group(1)]:
+                    where = (cls, _enclosing_method(text, m.start()), m.group(1))
+                    if where not in tests[const]:
+                        tests[const].append(where)
     out = header("Entity spawn reasons", "Every `EntitySpawnReason` constant, in declaration order, with **what each one gates** — the classes that compare against it and so behave differently for that reason — and how many other classes pass it. A reason with an empty *gates* column changes nothing by itself: it is a label the spawn path carries for other code to read. `EntitySpawnReason.isSpawner` folds `SPAWNER` and `TRIAL_SPAWNER` together and `EntitySpawnReason.ignoresLightRequirements` is true of `TRIAL_SPAWNER` alone. See [entity lifecycle](../systems/entities/entity-lifecycle.md#the-other-ways-in).")
     gated = sum(1 for c in order if tests[c])
     out += f"{len(order)} reasons · {gated} of them tested somewhere · {sum(len(v) for v in tests.values())} test sites\n\n"
     out += "| # | reason | what it gates | classes that pass it |\n|---:|---|---|---:|\n"
     for i, c in enumerate(order):
-        cells = "; ".join(f"`{k}.{m}`" if m else f"`{k}`" for k, m in tests[c]) or "*nothing tests it*"
+        cells = "; ".join((f"`{w[0]}.{w[1]}`" if w[1] else f"`{w[0]}`") + (f" (through `EntitySpawnReason.{w[2]}`)" if len(w) > 2 else "")
+                          for w in tests[c]) or "*nothing tests it*"
         out += f"| {i} | `EntitySpawnReason.{c}` | {cells} | {len(passes[c])} |\n"
     return out
 

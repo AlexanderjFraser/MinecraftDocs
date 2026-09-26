@@ -4,7 +4,9 @@
 passes 8, 9 and 10 became one, **pass 8, the release**, and this file is what its
 sessions check and strike ([pass8-brief.md](pass8-brief.md); `python
 tools/pass8_queue.py` routes the entries by page, part and session — 1,333 of them
-on 2026-09-26, none struck). Read "pass 9" below as pass 8. Pass 8's own sessions
+on 2026-09-26 by the planning session's count, **1,398** once pass 8's session A taught
+the router the paragraph entries it had missed, which the close must strike too). Read
+"pass 9" below as pass 8. Pass 8's own sessions
 write their corrections and their polished sentences here too, under `## Pass 8,
 session X — …`, in the form the next paragraph prescribes plus a *Polished*
 section, and `pass8_queue.py --pass 8` lists them for the second reading.*
@@ -71,6 +73,190 @@ listed claim names that session. Quote no source: say what the code does.
   the coverage queue, which seeds the second edition.
 
 ## Entries
+
+## Pass 8, session A — the standard *(2026-09-26)*
+
+Part 4 ruled against the exemplar, `entities/entity-lifecycle`, which was checked under Part 2 by its
+own agent and read against Part VI's landing page, `server/server-level-tick` and `world/chunk-storage`
+before a sentence of it was polished. Pages changed: `entities/entity-lifecycle` (the corrections and
+the polish below), `entities/README` (one count), `src/reference/spawn-reasons.md` (regenerated from a
+corrected generator). Page lines below are the exemplar's before this session's edits. Every
+correction was re-derived in `reference/26.3` by the session before it was made; the agent's report
+found all 29 (16 as unverifiable rather than wrong, 27 with seven of its eight classes), and the
+session had found 16 and 28 before the report arrived, 28 by the whole-part read.
+
+### Corrections
+
+1. `entities/entity-lifecycle`:25 — the cast said `NaturalSpawner` holds *every test between a chunk
+   and a mob* — the tests live in `ChunkMap`, `ServerLevel`, `EntityGetter`, `LocalMobCapCalculator`,
+   `EntityType` and `Mob` too; now *the cascade of tests … run from one file of static methods* —
+   *(page-internal: the table under it)*.
+2. `entities/entity-lifecycle`:28 — `SpawnPlacements` *read on the server main thread* — also read by
+   generation's spawn step on the worldgen executor — `world/level/chunk/status/ChunkStatusTasks.java`:139–141,
+   `world/level/NaturalSpawner.java`:410.
+3. `entities/entity-lifecycle`:32 — `EntityStorage` *deserialises and writes on the server main thread* —
+   the tag is built on the main thread and the file written on the IO pool —
+   `world/level/chunk/storage/EntityStorage.java`:43, :137.
+4. `entities/entity-lifecycle`:36–39 — the lead-in named four sizes of rejection — the table has a
+   fifth, *this group attempt* — `world/level/NaturalSpawner.java`:205–206, :231–232.
+5. `entities/entity-lifecycle`:58 — figure 1's caption, *before a position has even been rolled* — the
+   figure draws the roll and the position test — *(page-internal: figure 1)*.
+6. `entities/entity-lifecycle`:85–86 — figure 2's caption, *two arrows end only the group attempt* —
+   three do, the empty species list, the group filling and the tries running out; overturns the
+   caption pass 7's session O wrote — `world/level/NaturalSpawner.java`:205–206, :231–232, :244–245.
+7. `entities/entity-lifecycle`:97, :301 and figure 2 — `ServerLevel.addFreshEntityWithPassengers`, *the
+   door every other spawner in the game uses* — the method is `ServerLevelAccessor`'s default, and the
+   jockey chicken and `Mob.convertTo` call `LevelWriter.addFreshEntity` directly —
+   `world/level/ServerLevelAccessor.java`:14; `world/entity/monster/zombie/Zombie.java`:452;
+   `world/entity/Mob.java`:1354.
+8. `entities/entity-lifecycle`:117–118 — *in the order it runs* over rows putting the group check before
+   the cluster check — the cluster check runs first; rows swapped — `world/level/NaturalSpawner.java`:227, :231.
+9. `entities/entity-lifecycle`:107 and :193–200 — the local cap's *no nearby player at all* branch,
+   *not dead code, because near means something different here* — both gates use
+   `ChunkMap.playerIsCloseEnoughForSpawning` over the same players in the same tick, so the branch
+   is unreachable on the natural path; overturns pass 6 session F's claim —
+   `world/level/LocalMobCapCalculator.java`:24–28; `server/level/ChunkMap.java`:1015–1029, :1069–1103.
+10. `entities/entity-lifecycle`:120–123 — decided against the type: *the placement type, the heightmap* —
+    the per-type heightmap is read only by generation's spawn step and the wandering trader; the
+    cascade's is the fixed `WORLD_SURFACE`, so the heightmap link moved to the opening's surface
+    height — `world/level/NaturalSpawner.java`:322, :410;
+    `world/entity/npc/wanderingtrader/WanderingTraderSpawner.java`:140.
+11. `entities/entity-lifecycle`:138 — `NaturalSpawner.SpawnState.canSpawn` *asks the biome* — in 26.3 it
+    reads the position's `EnvironmentAttributes.NATURAL_MOB_SPAWNS`, which the biome files set — a 26.3
+    change V1 and V2 did not see — `world/level/NaturalSpawner.java`:454.
+12. `entities/entity-lifecycle`:143–145 — *soul sand valley, for ghasts, skeletons and endermen, and the
+    warped forest, for endermen and striders* — soul sand valley charges the enderman, ghast, skeleton
+    and strider, warped forest the enderman alone; overturns pass 6 session F's derivation —
+    `data/minecraft/worldgen/biome/soul_sand_valley.json`, `warped_forest.json`
+    (*attributes/minecraft:gameplay/natural_mob_spawns/argument/spawn_costs*).
+13. `entities/entity-lifecycle`:180 — *a mob must pass both caps* — each is checked per category (per
+    tick, and per chunk), and a whole cluster follows one check — `server/level/ServerChunkCache.java`:390;
+    `world/level/NaturalSpawner.java`:138.
+14. `entities/entity-lifecycle`:201–202 — *named, leashed or ridden* — `Mob.requiresCustomPersistence` is
+    being a passenger or leashed: riding, not ridden — `world/entity/Mob.java`:749–751.
+15. `entities/entity-lifecycle`:203–204 and :426–427 — the persistence pair *makes `Mob.checkDespawn`
+    return early*, and a persistent mob *has its `LivingEntity.noActionTime` pinned to zero and is done* —
+    an earlier release's shape: persistence guards each of the two discards, and the counter still
+    resets within 32 blocks of a player — `world/entity/Mob.java`:754–780.
+16. `entities/entity-lifecycle`:207–222 — the heading *Three constants nobody reads, …* and *not one of
+    the three is read anywhere in the game* — the three are compile-time constants, which javac writes
+    in at every use, so the decompile cannot show a read; the two *read* are the two computed at class
+    load. Heading corrected to *The spawn distances, and one that is not the number it looks like*
+    (`check_links.py --inbound`: no link landed on it), and *Reading a name and believing the number is
+    how a page gets this wrong* cut with it — `world/level/NaturalSpawner.java`:60–64. The class is
+    corpus-wide: Part 4, V6, lists the other sentences by page for the part sessions.
+17. `entities/entity-lifecycle`:231–232 — the jockey chicken sought *in a box five blocks wide and three
+    tall* — `AABB.inflate(5, 3, 5)` reaches five blocks out on each side and three up and down —
+    `world/entity/monster/zombie/Zombie.java`:436.
+18. `entities/entity-lifecycle`:243–244 — seven species pick a variant *before calling the base one* —
+    `Cat` calls it after — `world/entity/animal/feline/Cat.java`:411–412.
+19. `entities/entity-lifecycle`:259–261 — *the full moon is the fallback* — at priority 0 under a full
+    moon the black cat joins the ten unconditional variants in an even draw —
+    `data/minecraft/cat_variant/*.json` (eleven files; ten carry only `{"priority": 0}`).
+20. `entities/entity-lifecycle`:281–283 and `entities/README`:168 — *eleven of the nineteen are compared
+    somewhere, eight are labels no class tests, and every comparison but two is inside one method,
+    `Mob.finalizeSpawn`* — counting the enum's own helpers, thirteen are tested and six are labels:
+    `SPAWNER` and `TRIAL_SPAWNER` are tested through `EntitySpawnReason.isSpawner` and
+    `EntitySpawnReason.ignoresLightRequirements` in the spawn rules (the page's own light-rule
+    paragraph said so), and the direct comparisons sit in species' overrides, not `Mob.finalizeSpawn`;
+    `gen_reference.py` now counts a helper's call sites — `world/entity/EntitySpawnReason.java`:9–15;
+    `world/entity/Mob.java`:886; `src/reference/spawn-reasons.md` as regenerated.
+21. `entities/entity-lifecycle`:294 — `WorldGenRegion.addFreshEntity` is *the `CHUNK_GENERATION` path* —
+    and the `STRUCTURE` one, for mobs a structure piece places —
+    `world/level/levelgen/structure/structures/SwampHutPiece.java`:97–103.
+22. `entities/entity-lifecycle`:329 — *the one public step in that figure* — `ServerLevel.addFreshEntity`
+    and `EntityTickList.add` are public too; now *the manager's one public step* — *(page-internal: figure 3)*.
+23. `entities/entity-lifecycle`:332–334 — the private steps' *all they do is raise* the callbacks —
+    `PersistentEntitySectionManager.startTracking` first files the entity in the manager's
+    `EntityLookup` — `world/level/entity/PersistentEntitySectionManager.java`:133–136, :41.
+24. `entities/entity-lifecycle`:364–385 — figure 4 and its caption, *up is one step at a time*, and *the
+    asymmetry the figure draws is real* — a chunk promoted from inaccessible to entity-ticking in one
+    update announces only ENTITY_TICKING, so a section jumps HIDDEN to TICKING in one call —
+    `server/level/ChunkHolder.java`:284–297, :303–346; `world/level/entity/PersistentEntitySectionManager.java`:168–188.
+25. `entities/entity-lifecycle`:380 and :447–455 — the write *several ticks after* the client was told,
+    *two things … several ticks apart*, *some later* manager tick — `processUnloads` runs in the same
+    server tick's entity-manager tick, or the next, with no budget —
+    `server/level/ServerLevel.java`:387, :443; `world/level/entity/PersistentEntitySectionManager.java`:260–264, :278–281.
+26. `entities/entity-lifecycle`:387 — *that order holds only on the chunk-status path* — adding and
+    removing an entity keep it; only the section-crossing `Callback` differs, and it fires
+    `LevelCallback.onSectionChange` only into a findable section —
+    `world/level/entity/PersistentEntitySectionManager.java`:92–98, :440–462, :474–481.
+27. `entities/entity-lifecycle`:439 — *`Animal` returns false for every animal, tamed or not* — eight
+    classes below `Animal` override `Mob.removeWhenFarAway`: `Axolotl`, `CamelHusk`, `Chicken`,
+    `ZombieHorse`, `Cat`, `Ocelot`, `AbstractNautilus`, `Hoglin` — grep of `boolean removeWhenFarAway`
+    over `world/entity`, each file's `extends` chain read.
+28. `entities/entity-lifecycle`:468 — *three clauses … decide the whole contents of that file* —
+    `Player` and `EnderDragonPart` override it to refuse outright; found by the whole-part read against
+    `world/chunk-storage`:227 — `world/entity/player/Player.java`:1923–1925;
+    `world/entity/boss/enderdragon/EnderDragonPart.java`:70–73.
+29. `entities/entity-lifecycle`:483 — `UNLOADED_WITH_PLAYER` is *a vehicle travelling inside a player's
+    own save data* — the leaving player and its ender pearls take it too —
+    `server/players/PlayerList.java`:320, :331, :334.
+
+### Figures changed
+
+- `entities/entity-lifecycle` f4 — **one edge added**, `H --> K`, *straight up, tracking starts then
+  ticking*; the exit's label is now *the manager's unload pass* (it said *a later manager tick*). The
+  orderings it asserts: HIDDEN reaches TICKING in one call, tracking before ticking; TICKING falls to
+  HIDDEN in one call, ticking stopped before tracking; the write follows the status change. Rendered:
+  scale 1.0, 16px, one crossing.
+- `entities/entity-lifecycle` f2 — no arrow changed; the spawn box's label names
+  `ServerLevelAccessor.addFreshEntityWithPassengers` (correction 7).
+
+### Captions written
+
+- `entities/entity-lifecycle` f1: *Three sizes of giving up before the first jittered try: a category
+  can leave the whole tick, a chunk can leave every category, and the two of them can end together, at
+  the local cap or at the rolled position. The rejecting edges are the subject of this page; the
+  passing ones are only what is left.*
+- `entities/entity-lifecycle` f2: *After the roll the ways out are cheap: almost every failure jitters x
+  and z and tries again, three arrows end only the group attempt (a new one puts x and z back at the
+  roll), and three reach the box at the foot. The thick edge is the boundary the rest of this section is
+  about.*
+- `entities/entity-lifecycle` f4: *These are a section's states, not an entity's: an entity changes state
+  because its section did. A jump either way crosses the middle state inside one call, and the exit
+  comes after the client was told, not with it.*
+
+### Polished
+
+Sentences whose meaning could have moved, each re-read against the tree:
+
+- *eighteen name nothing at all, which replaces the list with an empty one and so bans the category
+  inside the box* (was *which bans the category inside the box rather than replacing its list*; an
+  empty override does replace the list — `world/level/chunk/ChunkGenerator.java`:514–534).
+- *so asking a section for every arrow in it costs one class lookup rather than a walk* (was *every
+  arrow in this box*, which a reader took for a figure's arrow; queue pass5.md:5694).
+- *server main, and the Render thread for `ClientLevel`* (was *the client's main thread*; V7).
+- *the figure draws every call through it* (was *every hop*; V7 keeps *the hop* for the packet's).
+- *What the jumps hide is an order.* (was *The asymmetry the figure draws is real*; correction 24).
+
+The rest, by kind: caption cut to two sentences 1. No heading reworded for its voice; one false heading
+corrected (16).
+
+### Tools, changed on purpose
+
+- `tools/pass8_queue.py` — a `###` sub-heading or a bold lead-in naming a page routes the page-less
+  bullets under it (115 entries reached their pages: 19 of the 56 frame-level notes, 80 of the 162
+  part-wide notes, and 16 more); a bold-lead paragraph whose bold names a page is an entry (65 such
+  entries, counted by nothing before: the ledger is **1,398** entries, not 1,333); an entry carries its
+  continuation lines into the prompt, which had shown each entry's first line only. Probe extended.
+- `tools/pass5_queue.py` — a sixth kind, `[kind=fact]`: a question of fact a reader asked and no
+  session answered, pass 8's, never guessed. Probe extended.
+- `tools/pass8_prompts.py` — a page's `fact` units go into its agent prompt as *The readers'
+  questions*; probe extended.
+- `tools/gen_reference.py` — the spawn-reasons view counts a call to one of `EntitySpawnReason`'s own
+  helpers as a test of the constants the helper compares (correction 20).
+
+### The ledger and the queue
+
+- The 56 frame-level notes: 19 were a page's, routed by the router's fix; the other 21 struck, with
+  their verdicts, three of them checked in the tree (the registries blurb, the two §7 claims), one of
+  which was false (`MapItemSavedData`, `MapIndex` and `WanderingTraderData` were not in pass3.md §7;
+  carried there now).
+- The exemplar's 25 entries and two Reference entries that state its numbers struck: 11 confirmed, 2 overtaken, 1 *(no claim)*, and 13 confirmed only in part or wrong, each pointing
+  at its correction above.
+- `docs/pass5.md`: the 75 guessed kinds tagged (11 of them `fact`); 9 units struck — the exemplar's 7
+  and the two standing voice items Part 4 ruled.
 
 ## Pass 8, session V2 — the version, the systems that changed shape *(2026-09-26)*
 
@@ -1812,25 +1998,25 @@ decompile reference). **Fit:** A and the planning session; **mostly fit:** F
 (the only one with a page line on every correction) and M; **gaps:** the rest.
 The gaps pass 9 has to work around:
 
-- **Captions claimed, not listed** in B, C, D, E, I, J and L (B's entry says
+- ~~**Captions claimed, not listed** in B, C, D, E, I, J and L (B's entry says
   every one of its nineteen is on the list and lists none). Use
-  `tools/pass7/captions.py` instead of the entries.
-- **Corrections without a decompile file and line**: J (none of its eighteen),
+  `tools/pass7/captions.py` instead of the entries.~~ *(no claim: a note on the ledger's shape; `pass8_prompts.py` lists every caption from the pages, and Part 3 step 5 says so — pass 8, session A)*
+- ~~**Corrections without a decompile file and line**: J (none of its eighteen),
   C and D (bare `:NNN` with no file), E, I and N (a method, no line). Many of
   these are page-internal — the figure against its own prose — and are not
-  marked as such; re-derive them from the page first.
-- **Corrections that are not a list**: G's *Corrections* heading points back
+  marked as such; re-derive them from the page first.~~ *(no claim; its workaround — a correction with no file is re-derived from the page first — is in Part 3 step 5 — pass 8, session A)*
+- ~~**Corrections that are not a list**: G's *Corrections* heading points back
   at its figure bullets, and H has none; read their figure bullets as the
-  corrections.
-- **Figures called redrawn or unchanged with no orderings**: J's
+  corrections.~~ *(no claim; its workaround — G's and H's figure bullets are read as their corrections — is in Part 3 step 5 — pass 8, session A)*
+- ~~**Figures called redrawn or unchanged with no orderings**: J's
   `text-and-fonts` f2 and f3 and `input-and-keybinds` f1; I's
   `protocol-phases` f2 (*the same ten transitions*, not listed); L's
   `structure-placement` f1, `terrain` f2 and `worldgen/README` f1; C's
   `starting-a-server` f1, the half left after its split. Re-derive those from
-  the figure.
-- **Supersession not cross-linked**: F's `entity-lifecycle` correction
-  overrides a caption A lists.
-- **Source quoted** in A, C, F, H, L and M, against rule 1's spirit.
+  the figure.~~ *(no claim; every arrow of every figure is in its page's prompt and checked by the agent (Part 2 step 4), and Part 3 step 5 names these eight figures — pass 8, session A)*
+- ~~**Supersession not cross-linked**: F's `entity-lifecycle` correction
+  overrides a caption A lists.~~ *(no claim: a process note; the caption it names is corrected again, see *Pass 8, session A*, correction 6 — pass 8, session A)*
+- ~~**Source quoted** in A, C, F, H, L and M, against rule 1's spirit.~~ *(no claim: a note on the entries' form — pass 8, session A)*
 
 ### Figures changed — each ordering a claim
 
@@ -1881,7 +2067,7 @@ The gaps pass 9 has to work around:
   `client/Minecraft.java`:919–920; the server's inner box is titled *one server
   tick* because a two-line subgraph title is clipped; the caption names
   `MinecraftServer.processPacketsAndTick`. No arrow changed.
-- `entities/entity-lifecycle` f2 (the exemplar's spawn loop, left to the
+- ~~`entities/entity-lifecycle` f2 (the exemplar's spawn loop, left to the
   close by session B): **two arrows added**, both into *all three attempts
   spent?* — *no species to pick* from the first decision (the node is now *the
   group's species, then the type filter*, because the empty list is tested
@@ -1891,7 +2077,7 @@ The gaps pass 9 has to work around:
   against the two `return`s at :217–219 and :229–231). Caption: *two arrows end
   only the group attempt, and three reach the box at the foot* — **correction**,
   it had said only three arrows leave the loop. The figure is taller for it
-  (1,692px, five crossings) and still reads at scale 1.
+  (1,692px, five crossings) and still reads at scale 1.~~ *(checked: both arrows are `break label53`, `NaturalSpawner.java`:205–206 and :231–232; the caption beside them counted two arrows into the group node where the figure has three — see *Pass 8, session A*, correction 6 — pass 8, session A)*
 - Qualified, no arrow changed: `foundations/identifiers-and-registries` f2
   (`LayeredRegistryAccess.getAccessForLoading`,
   `RegistryDataLoader.RegistryData`, `RegistryLoadTask.freezeRegistry`);
@@ -1904,7 +2090,7 @@ The gaps pass 9 has to work around:
   (`RenderTarget.blitAndBlendToTexture`, `client/renderer/LevelRenderer.java`:763);
   `rendering/the-window` f1 (`Window.setIcon`, `Window.setTitle`,
   `Window.setDefaultErrorCallback`, `client/Minecraft.java`:553, :681).
-- **Twenty names that mermaid hyphen-broke on screen**, each shortened or broken
+- ~~**Twenty names that mermaid hyphen-broke on screen**, each shortened or broken
   at a CamelCase boundary or a dot, no arrow changed: `blocks/block-entities`
   f1 (three, and the note about `ChunkHolder.broadcastBlockEntity` now says only
   that `BlockEntity.getUpdatePacket` answers nothing; *the two gates pass* and
@@ -1915,7 +2101,7 @@ The gaps pass 9 has to work around:
   `ServerConfigurationPacketListenerImpl.startNextTask`, which the prose
   owns), `world/chunk-storage` f2, `world/points-of-interest` f2,
   `world/scheduled-ticks` f3, `world/tickets-and-loading` f3,
-  `rendering/blaze3d` f2, `rendering/the-frame` f1.
+  `rendering/blaze3d` f2, `rendering/the-frame` f1.~~ *(no claim beyond the figures named, which are on their parts' pages, whose agents check every arrow — pass 8, session A)*
 - `flowchart TB` written `TD` (identical layout) on `entities/ai-goals-and-brains`,
   `entities/attributes` (two) and `rendering/blaze3d`.
 
@@ -1996,7 +2182,7 @@ hand-drawn mermaid figures left; no Mojang name is broken on screen.
 
 ### Figures redrawn, and the orderings they assert
 
-- **the parts-dependency figure** (`src/figures/parts-dependency.md`, on the
+- ~~**the parts-dependency figure** (`src/figures/parts-dependency.md`, on the
   introduction and `lectures.md`) — no longer a mermaid block: an SVG
   `check_deps.py --write-figure` draws from the landing pages. **It asserts no
   new edge**: its 25 solid and 2 dashed arcs are exactly the 27 arrows the
@@ -2007,7 +2193,7 @@ hand-drawn mermaid figures left; no Mojang name is broken on screen.
   page links (*Tickets and loading*, *Environment attributes and timelines*;
   *Prediction and acknowledgement*) rather than hand-written phrases. A table
   beside it, `src/generated/parts-dependency.md`, carries the same edges to
-  `llms-full.txt`.
+  `llms-full.txt`.~~ *(no claim the gate does not check: `check_deps.py` fails when the figure disagrees with the landing pages, and passes; what each landing page's *before you start* asserts is its part session's — pass 8, session A)*
 - **`introduction` figure 1** — four subgraphs, one per thread (Render
   thread, Netty event loop, Server thread, *Worker-Main-n*), where it had
   client, *the wire* and server, with the pool outside all three. Asserts:
@@ -2122,16 +2308,16 @@ where a parent has only one*).
 
 ### Tool changes
 
-- `check_deps.py --write-figure` (the figure and its table); `figure()` now
+- ~~`check_deps.py --write-figure` (the figure and its table); `figure()` now
   reads the SVG's `data-edge` attributes; a stale file is a failure; two probe
-  cases. `deploy.sh` runs `--write-figure` before the gates.
-- `llms_full.py` expanded only one level of `{{#include}}`, so the shared
+  cases. `deploy.sh` runs `--write-figure` before the gates.~~ *(no claim: a tool change; `check_deps.py --probe` passes — pass 8, session A)*
+- ~~`llms_full.py` expanded only one level of `{{#include}}`, so the shared
   figure file would have reached agents with its inner include unexpanded; it
   recurses now, resolving against the included file's directory as mdBook
-  does.
-- `map_source.py`: the bar charts' package text 9px to 11px, with the label
+  does.~~ *(no claim: a tool change — pass 8, session A)*
+- ~~`map_source.py`: the bar charts' package text 9px to 11px, with the label
   column sized from the text; the treemap's leaf labels and line counts at
-  11px or not at all; a group label falls back to its last segment.
+  11px or not at all; a group label falls back to its last segment.~~ *(no claim: a tool change — pass 8, session A)*
 
 ## Pass 7, session M — Part XIII · Commands and data packs: the figures *(2026-09-16)*
 
@@ -3597,19 +3783,19 @@ top are one virtual call going down the override chain”).
   order, arriving at `Sheep`. The prose italicises the ordering — *and then*
   marks the item dirty — and the two are now two messages, the second a
   self-message on the container.
-- `src/systems/entities/entity-lifecycle.md`:85 — the caption said “only
+- ~~`src/systems/entities/entity-lifecycle.md`:85 — the caption said “only
   three of **the eight** leave the loop at all”, a count nothing in the figure
   lets a reader check: three arrows reach the terminal box, but *the eight* is
   not a set the picture draws. Now “only three arrows leave the loop at all —
   the three that reach the box at the foot”. **The exemplar's figure is
   otherwise untouched and one real gap in it is logged for session O**
   ([pass5.md](pass5.md)): it draws neither of the two rejections the prose
-  under it says end a group attempt.
-- `src/systems/entities/entity-lifecycle.md`:312 — the message read
+  under it says end a group attempt.~~ *(overtaken: the caption was rewritten by session O and is corrected again, see *Pass 8, session A*, correction 6 — pass 8, session A)*
+- ~~`src/systems/entities/entity-lifecycle.md`:312 — the message read
   “`addFreshEntity`, once per **passenger**” while the prose says
   `ServerLevel.addFreshEntityWithPassengers` walks `Entity.getSelfAndPassengers`
   **vehicle first**; a reader of the figure alone concludes the vehicle is not
-  one of the bodies. Now “once per body, the vehicle first”.
+  one of the bodies. Now “once per body, the vehicle first”.~~ *(checked: `ServerLevelAccessor.java`:14–15 runs `Entity.getSelfAndPassengers`, self first; the method is declared on `ServerLevelAccessor`, not `ServerLevel` — see *Pass 8, session A*, correction 7 — pass 8, session A)*
 - `src/systems/rendering/visibility-and-the-frame-graph.md`:51-55 — five node
   labels beginning `1. ` … `5. ` rendered on the live site as the literal
   string *Unsupported markdown: list*, so five of the figure's six nodes were
@@ -4385,7 +4571,7 @@ back, and every arrow that changed was re-derived against
 
 ### Claims introduced
 
-- `systems/entities/entity-lifecycle` — **the spawn cascade is now two
+- ~~`systems/entities/entity-lifecycle` — **the spawn cascade is now two
   figures, and the second one loops.** The old figure drew every rejection
   below the position roll as a dead end into one sink, *this attempt is
   dropped*. The new figure 2 asserts a two-level loop: `while (groupCount < 3)`
@@ -4396,8 +4582,8 @@ back, and every arrow that changed was re-derived against
   `NaturalSpawner.getRandomSpawnMobAt` and `Mob.isMaxGroupSizeReached` do
   `break label53` (to *the next group attempt*); a null from
   `NaturalSpawner.getMobForSpawn` and `clusterSize >= Mob.getMaxSpawnClusterSize`
-  `return` (to *this category on this chunk is over*).
-- `systems/entities/entity-lifecycle` — **the four scopes of a rejection**, the
+  `return` (to *this category on this chunk is over*).~~ *(checked: `NaturalSpawner.java`:177–245 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle` — **the four scopes of a rejection**, the
   new figure 1 and the fourth column of the new table. The claim per scope:
   `NaturalSpawner.getFilteredSpawningCategories` drops a category for the whole
   tick (`ServerChunkCache.tickChunks` builds the list once,
@@ -4406,80 +4592,80 @@ back, and every arrow that changed was re-derived against
   (`ChunkMap.java:1017`, `ServerChunkCache.java:440`); everything from
   `NaturalSpawner.SpawnState.canSpawnForCategoryLocal` down is inside
   `NaturalSpawner.spawnForChunk`'s per-category loop and so ends only this
-  category on this chunk (`NaturalSpawner.java:130-150`).
-- `systems/entities/entity-lifecycle` — **the new table, *What each test drops,
+  category on this chunk (`NaturalSpawner.java:130-150`).~~ *(checked: `ServerChunkCache.java`:388–435 and `NaturalSpawner.java`:135–145; the lead-in named four scopes where the table has five — see *Pass 8, session A*, correction 4 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle` — **the new table, *What each test drops,
   in the order it runs*, is fifteen claims**, one per row: the test, the
   condition, and the scope. Thirteen of the conditions were the old figure's
   edge labels, moved word for word; two are new (`Mob.isMaxGroupSizeReached`
   and `Mob.getMaxSpawnClusterSize`, which the prose already had at *What
-  finalizeSpawn settles* but the figure did not).
-- `systems/entities/entity-lifecycle` — the opening paragraph now says each of
+  finalizeSpawn settles* but the figure did not).~~ *(checked on the count, fifteen rows; wrong on the order, cluster before group — see *Pass 8, session A*, correction 8; one row's second clause unreachable — see *Pass 8, session A*, correction 9 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle` — the opening paragraph now says each of
   the three group attempts "makes a handful of tries that jitter only x and z",
   where it said the three attempts themselves jitter. The inner bound is
   `Mth.ceil(level.random.nextFloat() * 4.0F)` until a species is picked and the
-  group-size roll after it (`NaturalSpawner.java:180, 205`).
-- `systems/entities/entity-lifecycle` — **the entry sequence now draws the
+  group-size roll after it (`NaturalSpawner.java:180, 205`).~~ *(checked: `NaturalSpawner.java`:183, :191–193, :210 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle` — **the entry sequence now draws the
   callback hop**: `PersistentEntitySectionManager.startTracking` and
   `.startTicking` are private and raise `LevelCallback.onTrackingStart` and
   `LevelCallback.onTickingStart`, which `ServerLevel.EntityCallbacks` implements
   as `ServerChunkCache.addEntity` and `EntityTickList.add`
   (`PersistentEntitySectionManager.java:124-139`, `ServerLevel.java:2040-2049`).
   The old figure sent `startTracking` straight to the `ChunkMap` lane, which
-  named a method `ChunkMap` does not have.
-- `systems/entities/entity-lifecycle` — **four captions, and a caption is a
+  named a method `ChunkMap` does not have.~~ *(checked: `PersistentEntitySectionManager.java`:125–136, `ServerLevel.java`:2053–2062; the sentence under it said the private steps only raise callbacks — see *Pass 8, session A*, correction 23 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle` — **four captions, and a caption is a
   claim**: figure 1's *three sizes of giving up*; figure 2's *only three of the
   eight leave the loop at all* and *a new group attempt puts x and z back at the
   roll*; figure 3's *the client is told in the middle: tracking, then the
   packet, then ticking*; figure 4's *these are a section's states, not an
-  entity's*.
+  entity's*.~~ *(checked: figure 3's caption holds; figures 1, 2 and 4's did not — see *Pass 8, session A*, correction 5, 6, 24 and 25 — pass 8, session A)*
 
 ### Corrections (the decompile open)
 
-- `systems/entities/entity-lifecycle`, the spawn figure — **the scope of three
+- ~~`systems/entities/entity-lifecycle`, the spawn figure — **the scope of three
   rejections was wrong.** `LocalMobCapCalculator.canSpawn` failing, the y roll
   landing at the world bottom and the redstone conductor at the rolled position
   were all drawn into *this chunk is skipped*. All three are inside
   `NaturalSpawner.spawnForChunk`'s loop over `spawningCategories`, so each ends
   **this category on this chunk** and the next category is still tried
-  (`NaturalSpawner.java:130-157`, `ServerChunkCache.java:441`).
-- `systems/entities/entity-lifecycle`, the spawn figure — **fourteen rejections
+  (`NaturalSpawner.java:130-157`, `ServerChunkCache.java:441`).~~ *(checked: `NaturalSpawner.java`:138, :153, :172 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle`, the spawn figure — **fourteen rejections
   were drawn as dead ends that are not.** Everything under the three group
   attempts except the two `break`s and the two `return`s is `++ll; continue`
-  (`NaturalSpawner.java:243-245`), and the figure had no edge back at all.
-- `systems/entities/entity-lifecycle`, the spawn figure — **two exits were
+  (`NaturalSpawner.java:243-245`), and the figure had no edge back at all.~~ *(checked: `NaturalSpawner.java`:239–240 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle`, the spawn figure — **two exits were
   missing**: `clusterSize >= mob.getMaxSpawnClusterSize()` returns from the
   whole call and `mob.isMaxGroupSizeReached(groupSize)` ends the group
   (`NaturalSpawner.java:227-232`). The prose had both at *What finalizeSpawn
-  settles*; the figure ended at `Mob.finalizeSpawn`.
-- `systems/entities/entity-lifecycle`, the entry sequence against the sentence
+  settles*; the figure ended at `Mob.finalizeSpawn`.~~ *(checked: `NaturalSpawner.java`:227–232 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle`, the entry sequence against the sentence
   under it — the page said "five of `LevelCallback`'s seven appear in the
   figure". One did: `LevelCallback.onCreated`. The other four were drawn under
   the manager's own private method names. `LevelCallback` declares seven
   (`LevelCallback.java`); the sentence now says which two the figure raises and
-  what they reach.
-- `systems/entities/entity-lifecycle`, the entry sequence — `startTicking` was
+  what they reach.~~ *(checked: `LevelCallback` declares seven — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle`, the entry sequence — `startTicking` was
   drawn as `PersistentEntitySectionManager → EntityTickList`. The manager does
   not hold the tick list: `ServerLevel.EntityCallbacks.onTickingStart` does
   `ServerLevel.entityTickList.add` (`ServerLevel.java:2040-2042`). The arrow now
-  goes through the `ServerLevel` lane.
-- `systems/entities/entity-lifecycle`, the visibility state diagram against the
+  goes through the `ServerLevel` lane.~~ *(checked: `ServerLevel.java`:2053–2055 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle`, the visibility state diagram against the
   sentence above it — the page says in italics that status is a property of a
   **section**, and all five transition labels said *it*, meaning one entity. The
-  caption now says whose states they are.
+  caption now says whose states they are.~~ *(checked: a section's status is `EntitySection`'s, `EntitySection.java`:18; the caption's *up is one step at a time* was false — see *Pass 8, session A*, correction 24 — pass 8, session A)*
 
 ### Cut, with the reason
 
-- `systems/entities/entity-lifecycle`, the entry sequence — **the second half
+- ~~`systems/entities/entity-lifecycle`, the entry sequence — **the second half
   was cut** (`checkDespawn`, `tickNonPassenger`, `stopTicking`, `stopTracking`,
   `ClientboundRemoveEntitiesPacket`, `storeEntities`, and the three later note
   bars). It was the page's whole second half drawn three sections early, and
   the same transitions are the state diagram's subject (F11). Every fact in it
   is in the prose of *The tick it gets*, *Ending two* and the state diagram; the
-  `Mob` and `EntityStorage` lanes went with it.
-- `systems/entities/entity-lifecycle`, the state diagram — the `note right of H`
+  `Mob` and `EntityStorage` lanes went with it.~~ *(checked as a cut; one sentence the moved prose carried, the persistent mob *pinned to zero and done*, was an earlier release's — see *Pass 8, session A*, correction 15 — pass 8, session A)*
+- ~~`systems/entities/entity-lifecycle`, the state diagram — the `note right of H`
   ("hidden is not written yet…") was cut: mermaid drew it at the far left of the
   figure joined by a long dashed line, and *Ending two* says the same thing in
-  prose. Its point is now the last clause of the figure's caption.
+  prose. Its point is now the last clause of the figure's caption.~~ *(checked as a cut; the clause it became, *several ticks after*, was false — see *Pass 8, session A*, correction 25 — pass 8, session A)*
 
 ## Pass 7, the planning session — between passes 6 and 7 *(2026-09-14)*
 
@@ -4504,7 +4690,7 @@ generated page changed and one tool now feeds it, which is what pass 9 checks.
 
 ### Claims introduced elsewhere, all of them about the book rather than the game
 
-- [pass7-brief.md](pass7-brief.md) Part 3 and Part 4 carry **the measurements**:
+- ~~[pass7-brief.md](pass7-brief.md) Part 3 and Part 4 carry **the measurements**:
   206 figures, 134 of 194 mermaid figures shrunk below their natural size, 89
   with type under 9px, 115 opening their section, 0 captioned, 51 pointed at by
   nothing, 139 introducing most of their names before the prose does, 151
@@ -4512,10 +4698,10 @@ generated page changed and one tool now feeds it, which is what pass 9 checks.
   sentence, 119 names failing the new gate, 44 unused lane-key rows, 214
   figure-less sections over forty lines. Each is a tool's output at a stated
   revision and is re-derivable by re-running the tool; none is a claim about
-  26.2. A pass-7 session that quotes one quotes it as *measured on 2026-09-14*.
-- [plan.md](plan.md)'s *Where we are* states pass 6's device outcome — the
+  26.2. A pass-7 session that quotes one quotes it as *measured on 2026-09-14*.~~ *(no claim: a dated measurement, as the entry says — pass 8, session A)*
+- ~~[plan.md](plan.md)'s *Where we are* states pass 6's device outcome — the
   closer 69 → 46 in one spelling, the trace heading 20 → 0, the blockquote 39 →
-  43 all at the foot — from `pass6_shape.py --summary` run on the same day.
+  43 all at the foot — from `pass6_shape.py --summary` run on the same day.~~ *(no claim: a dated measurement in a doc since rewritten — pass 8, session A)*
 
 ### Corrections
 
@@ -6330,22 +6516,22 @@ the session against `reference/26.2` before it landed.
    66". `src/generated/hierarchy-classes.md` gives `Entity` 191 descendants and
    `LivingEntity` 124, so the sum closes only if `LivingEntity` itself is the
    125th. Rewritten to say so, and the second telling of the count removed.
-3. **`entity-lifecycle`** said "**seven species change** [the cluster size] —
+3. ~~**`entity-lifecycle`** said "**seven species change** [the cluster size] —
    horses to 6, fish and wolves to 8, and ghasts, happy ghasts and pillagers
    down to 1", naming six. Seven **classes** override
    `Mob.getMaxSpawnClusterSize`: `AbstractHorse` 6, `Wolf` 8, `AbstractFish` 8,
    `AbstractSchoolingFish` (its own school size), `Ghast` 1, `HappyGhast` 1,
-   `Pillager` 1. The seventh is the schooling-fish override, now named.
-4. **`entity-lifecycle`**'s *Two rules decide what is in that file* was followed
+   `Pillager` 1. The seventh is the schooling-fish override, now named.~~ *(checked: `Mob.java`:897 and seven overrides — pass 8, session A)*
+4. ~~**`entity-lifecycle`**'s *Two rules decide what is in that file* was followed
    by three, the third introduced as "the clause that is easy to miss".
    `Entity.shouldBeSaved` (`Entity.java:4243`) is three clauses. Now *three
-   clauses*.
-5. **`entity-lifecycle`** said `Entity.setRemoved` fires
+   clauses*.~~ *(checked on the count, three clauses, `Entity.java`:4389; *the whole contents of that file* was false, `Player` overrides it — see *Pass 8, session A*, correction 28 — pass 8, session A)*
+5. ~~**`entity-lifecycle`** said `Entity.setRemoved` fires
    `EntityInLevelCallback.onRemove` "with the *new* reason" one sentence after
    saying a second call cannot change the reason, which reads as a
    contradiction. `Entity.java:4219–4231`: the dismount branch tests
    `this.removalReason` (the **stored** one) and `onRemove`/`onRemoval` are
-   passed the **argument**. Both are true and the page now says which is which.
+   passed the **argument**. Both are true and the page now says which is which.~~ *(checked: `Entity.java`:4364–4376 — pass 8, session A)*
 6. **`damage-and-death`** said "only **four** classes" read the damage number
    and named three, while
    [`reference/non-living-damage.md`](../src/reference/non-living-damage.md)
@@ -6416,7 +6602,7 @@ server has told your client about. The `SweetBerryBushBlock` paragraph became
 its own section, ***Authority is also about which of two numbers is real***.
 The unused `ServerLevel` lane was dropped from the boat sequence.
 
-**`entity-lifecycle`.** New material: the biome crowding budget explained —
+~~**`entity-lifecycle`.** New material: the biome crowding budget explained —
 `MobSpawnSettings.MobSpawnCost` is a *charge* and an *energy budget*,
 `PotentialCalculator` is the field, and **two** shipped biomes declare
 `spawn_costs` (soul sand valley: ghast, skeleton, enderman; warped forest:
@@ -6425,7 +6611,7 @@ over all 66 files. New claim: the local cap's no-nearby-player branch is
 reachable because *near* means the chunk-centre 128 blocks in
 `ChunkMap.playerIsCloseEnoughForSpawning` and the spawn-chunk neighbourhood in
 `LocalMobCapCalculator` — two different populations. Two figure labels
-rewritten to stop *persistent* meaning two things three lines apart.
+rewritten to stop *persistent* meaning two things three lines apart.~~ *(wrong in two of three: two biomes checked, but the species were misassigned (soul sand valley has the strider, warped forest the enderman alone — see *Pass 8, session A*, correction 12), and the local cap's no-player branch is not reachable, the two *near*s being one test — see *Pass 8, session A*, correction 9 — pass 8, session A)*
 
 **`synched-entity-data`.** Trace heading renamed to its scenario. Three H3s
 inside the existing `#nineteen-slots-and-where-the-numbers-come-from` anchor.
@@ -7527,7 +7713,7 @@ and `docs/pass6-brief.md` Part 3 changed too and are not pages.*
 *No page's prose was touched. What this session introduced that pass 9
 should know about, because each is a claim:*
 
-- **`src/generated/coverage-<dir>.md`**, thirteen generated phrases — *N% of
+- ~~**`src/generated/coverage-<dir>.md`**, thirteen generated phrases — *N% of
   the part's lines are named on no page in the book* — written by
   `pass5_coverage.py --write` from the atlas's `PARTS` mapping, with a name
   that appears only inside a figure counted as unnamed. A generated page is
@@ -7537,8 +7723,8 @@ should know about, because each is a claim:*
   *about 40%* against a generated 34%, `items/README` *about a third* against
   24%, `player/README` *97% named* against 0% unnamed, `worldgen/README` *a
   quarter* against 19%) — each swap is a correction of the prose to the
-  population, and the part session logs it here.
-- **Twenty strikes in [pass5.md](pass5.md)**, each a claim that an entry is
+  population, and the part session logs it here.~~ *(no claim here: the four landing pages named each include their phrase now, which is generated on every deploy (`pass5_coverage.py --probe` passes); Part 3 step 4 now has each part session re-derive its own landing page's phrase once — pass 8, session A)*
+- ~~**Twenty strikes in [pass5.md](pass5.md)**, each a claim that an entry is
   settled, verified before striking: `the-client-loop`:12 and :21 link
   `anatomy`; `chunk-generation-pipeline` no longer names
   `Util.maxAllowedExecutorThreads`; `Gizmos` is on
@@ -7548,15 +7734,15 @@ should know about, because each is a claim:*
   each; `reference/level-data-and-rules` has no *Responsibility*-era heading;
   four Part XII pages link the two Part II pages; `check_deps.py`'s header
   lists the Reference-parts-column check; the other nine are settlements the
-  entries' own last lines record (*Done, session …*).
-- **Two entries carried to [pass3.md](pass3.md) §7** that session E's log said
+  entries' own last lines record (*Done, session …*).~~ *(no claim: a record that strikes were verified; R4's audit at the close samples strikes — pass 8, session A)*
+- ~~**Two entries carried to [pass3.md](pass3.md) §7** that session E's log said
   were there and were not: the hopper, and four block-entity state machines.
   The claim beside them — that `blocks/README`'s *Where the part stops* names
   only the sculk spread as belonging to nobody — is read from the page's
-  second paragraph under that heading.
-- **The charter's device counts corrected from the tool**: five closer
+  second paragraph under that heading.~~ *(checked: both are in pass3.md §7, the hopper and the four block-entity state machines; the claim beside them is overtaken — `blocks/README`'s *Where the part stops* now declares three mechanisms that belong to nobody, the hopper, sculk spread and the beacon family — pass 8, session A)*
+- ~~**The charter's device counts corrected from the tool**: five closer
   spellings (an H2 starting *Questions*), not seven; 39 pages carry the 1.21
-  blockquote by its own form (`> **For a 1.21-era reader.**`), not 42.
+  blockquote by its own form (`> **For a 1.21-era reader.**`), not 42.~~ *(no claim: a dated measurement — pass 8, session A)*
 
 ## Pass 5, session O — the close: the frame, the summarisers and the pass's own queue *(2026-09-07)*
 
@@ -7744,7 +7930,7 @@ top-level rows against the treemap's fourteen hatched boxes, because the map's
 smallest box is a package four levels deep and
 `net/minecraft/client/multiplayer/chat/report` is six.
 
-**`entities/entity-lifecycle`** — a new subsection, *The variant that same
+~~**`entities/entity-lifecycle`** — a new subsection, *The variant that same
 method picks*: seven species (`Chicken`, `Cow`, `Pig`, `Cat`, `Frog`, `Wolf`,
 `ZombieNautilus`) call `VariantUtils.selectVariantToSpawn` from their own
 override of `Mob.finalizeSpawn`; `PriorityProvider.select` unpacks every
@@ -7757,7 +7943,7 @@ with no condition always matches; `SpawnConditions` registers `BiomeCheck`,
 for a moon brightness of at least 0.9. The `Entity.RemovalReason.DISCARDED` row
 gained "a `ConversionType.SINGLE` conversion (`Mob.convertTo` adds the new mob,
 then discards the old — `ConversionType.SPLIT_ON_DEATH` keeps it)", which pays
-off `points-of-interest`:375's link.
+off `points-of-interest`:375's link.~~ *(checked except two claims: `Cat` picks its variant after the base call — see *Pass 8, session A*, correction 18 — and under a full moon the black cat only joins an even draw — see *Pass 8, session A*, correction 19 — pass 8, session A)*
 
 **`blocks/block-entities`** — a new passage in *Loaded is not enough to tick*:
 `SpawnerBlockEntity` holds an anonymous `BaseSpawner` and hands it the tick, the
@@ -7886,13 +8072,13 @@ states.
    threads ← VI; level-data-and-rules ← IX; naming-drift ← VII, X; glossary ← II,
    V, VI). Derived from the thirteen landing pages' `## Reference this part uses`
    sections and now enforced by `check_deps.py`.
-8. **`tools/gen_reference.py`, the registries blurb** — "Every registry key
+8. ~~**`tools/gen_reference.py`, the registries blurb** — "Every registry key
    declared in `Registries`", printed above a total of **153**. 148 are declared
    in `Registries.java`; five are declared by their own class with the public
    `ResourceKey.createRegistryKey` (`ServerFunctionLibrary`, `ClockTimeMarkers`,
    `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) — which the
    tool's own comment already recorded. The blurb now names them and cites the
-   lecture's 148.
+   lecture's 148.~~ *(checked against 26.3: the blurb is now derived from the tree, 156 keys declared in `Registries` (its 156 `public static final` registry-key fields) and five by their own class (`ClockTimeMarkers`, `EquipmentAssets`, `RecipePropertySet`, `ServerFunctionLibrary`, `WaypointStyleAssets`), 161 in all, as the view prints — pass 8, session A)*
 9. **`reference/threads`:69** — RCON starts "when *enable-rcon* **and**
    *rcon.password* is set". `RconThread.create` (`RconThread.java`:61-76) also
    returns null when *rcon.port* is outside 1–65535, and tests the port **first**.
@@ -7968,21 +8154,21 @@ states.
 decompile or the shipped data on every deploy; the numbers below are what the
 generator printed on 26.2 and will move on a version bump):
 
-- `reference/spawn-reasons.md` — 19 reasons, **11 tested somewhere, 20 test
+- ~~`reference/spawn-reasons.md` — 19 reasons, **11 tested somewhere, 20 test
   sites**, and a *classes that pass it* count per reason. The claim behind the
   view is that a "test" is a comparison against the constant and everything else
   is a pass-through; the enclosing method is found by walking up to the nearest
   access-modifier-led signature. **Eight reasons are tested by nothing**, and all
   but two comparisons are inside `Mob.finalizeSpawn` — both stated on
-  `entities/entity-lifecycle`.
+  `entities/entity-lifecycle`.~~ *(wrong: the view's *test* left out `EntitySpawnReason`'s own helpers, so `SPAWNER` and `TRIAL_SPAWNER` read as untested beside a blurb naming the helpers that test them; with them, 13 reasons are tested and 6 are labels, and `gen_reference.py` now counts a helper's call sites — see *Pass 8, session A*, correction 20 — pass 8, session A)*
 - `reference/weapon-helpers.md` — 7 helpers, **42 items**. The claim: an item
   reaches a helper directly (`sword`, `pickaxe`, `spear`) or through the class
   that wraps it (`AxeItem`, `HoeItem`, `ShovelItem` each call theirs in `super`),
   and "components it sets" follows one hop into `ToolMaterial`.
-- `reference/structure-spawn-overrides.md` — **34 structures carry
+- ~~`reference/structure-spawn-overrides.md` — **34 structures carry
   `spawn_overrides`, six fill it in, 23 overrides, 18 of them empty.** The claim
   that an empty spawn list is a *ban* rather than a no-op is the view's argument
-  and is stated on `entities/entity-lifecycle` too.
+  and is stated on `entities/entity-lifecycle` too.~~ *(checked against 26.3: the view derives 52 structure files carrying the field (34 was an earlier release's), six filled, 23 overrides, 18 empty; an empty list ends every group attempt, `NaturalSpawner.java`:203–206 — pass 8, session A)*
 
 **New prose claims:**
 
@@ -8022,14 +8208,14 @@ generator printed on 26.2 and will move on a version bump):
 
 ### Rulings
 
-- **The shelf's *parts* column is derived, not kept.** `check_deps.py` gained a
-  fourth `F` check with a probe; the rule is the column header's own words.
+- ~~**The shelf's *parts* column is derived, not kept.** `check_deps.py` gained a
+  fourth `F` check with a probe; the rule is the column header's own words.~~ *(no claim: `check_deps.py`'s F check, which passes — pass 8, session A)*
 - **`hud-elements`' contextual bar keeps two rows.** The ordering *is* the fact.
-- **The glossary disambiguates**, for a word the corpus itself uses in more than
+- ~~**The glossary disambiguates**, for a word the corpus itself uses in more than
   one sense, and the entry is the disambiguation (A5's rule, applied to
-  *Occlusion*, *Frame*, *Criterion* and *Level*).
-- **`MapItemSavedData`, `MapIndex` and `WanderingTraderData` stay named-only** —
-  declared on the table rather than given a lecture. To [pass3.md](pass3.md) §7.
+  *Occlusion*, *Frame*, *Criterion* and *Level*).~~ *(no claim: a rule; the glossary is session O's — pass 8, session A)*
+- ~~**`MapItemSavedData`, `MapIndex` and `WanderingTraderData` stay named-only** —
+  declared on the table rather than given a lecture. To [pass3.md](pass3.md) §7.~~ *(checked: the three are on `reference/level-data-and-rules`' table and named on no other page — but they were **not** in pass3.md §7 as the entry says; carried there now — pass 8, session A)*
 - **`starting-a-server` keeps its boot thread table**; only the per-thread
   properties moved to the shelf.
 
@@ -10043,10 +10229,10 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   leash knot, the lightning bolt and the painting, and 37 types set an interval
   at all. The gloss "item frames, paintings, leash knots and their kin" was
   loose, not wrong; the list now lives once, on `entity-anatomy`.
-- `entity-lifecycle` "spends the chunk model throughout and links it nowhere"
+- ~~`entity-lifecycle` "spends the chunk model throughout and links it nowhere"
   ([pass5-brief.md](pass5-brief.md) Part 4, session F's row): **overtaken**.
   The page links `chunk-anatomy` at :83 for the heightmap, and now with the
-  anchor.
+  anchor.~~ *(overtaken: the page links `chunk-anatomy` twice — pass 8, session A)*
 - `pathfinding`:99-102's villager follow range against `entity-lifecycle`:148's
   `Mob.finalizeSpawn` bonus: the sentence was about which of two numbers
   `PathNavigation.updatePathfinderMaxVisitedNodes` takes the larger of, and 48
@@ -10074,7 +10260,7 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   the measured sixteen. `Player.isClientAuthoritative` named for the first time
   on the page three others cite for it. The `travelRidden` fork cut to the
   ninth predicate reading, the fork itself cited.
-- **`entity-lifecycle`.** Two new passages. The species list has a data-driven
+- ~~**`entity-lifecycle`.** Two new passages. The species list has a data-driven
   override and a hard-coded one in front of it: `ChunkGenerator.getMobsAt`
   (`ChunkGenerator.java`:481-511) replaces the biome's list with a structure's
   `StructureSpawnOverride` for the first structure at the position that
@@ -10087,7 +10273,7 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   `SectionPos`, held by `EntitySectionStorage`, each section carrying its own
   `Visibility` and a `ClassInstanceMultiMap`. Also: a raid named as a spawn
   source in *the other ways in*, and the overworld-only fact moved in from
-  `server-level-tick`.
+  `server-level-tick`.~~ *(checked: `ChunkGenerator.java`:508–537, `NaturalSpawner.java`:305–316; fifty-two, six, twenty-three and eighteen re-counted in 26.3's data — pass 8, session A)*
 - **`ai-goals-and-brains`.** The leash given its own paragraph (it is a lever
   that takes `Goal.Flag.MOVE` away, not a control flag), with
   `Leashable.tickLeash` cited to `entity-anatomy`. A family paragraph for the
@@ -11039,7 +11225,7 @@ atlas:
   sessions switch them to the include; until then a landing page's hand
   count and its row may differ (Part XIII: 473 / 43,900 by hand, 470 /
   43,126 by the atlas).
-- `docs/pass5-brief.md` Part 4 — the measured tables (coverage per part, the
+- ~~`docs/pass5-brief.md` Part 4 — the measured tables (coverage per part, the
   queue by kind, the duplication pairs) are the tools' output on 2026-09-05
   and are claims about the corpus on that day, not about the game; pass 9
-  need not check them.
+  need not check them.~~ *(no claim: a dated measurement, as the entry says — pass 8, session A)*

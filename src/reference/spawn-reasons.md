@@ -4,13 +4,13 @@
 
 Every `EntitySpawnReason` constant, in declaration order, with **what each one gates** — the classes that compare against it and so behave differently for that reason — and how many other classes pass it. A reason with an empty *gates* column changes nothing by itself: it is a label the spawn path carries for other code to read. `EntitySpawnReason.isSpawner` folds `SPAWNER` and `TRIAL_SPAWNER` together and `EntitySpawnReason.ignoresLightRequirements` is true of `TRIAL_SPAWNER` alone. See [entity lifecycle](../systems/entities/entity-lifecycle.md#the-other-ways-in).
 
-19 reasons · 11 of them tested somewhere · 19 test sites
+19 reasons · 13 of them tested somewhere · 41 test sites
 
 | # | reason | what it gates | classes that pass it |
 |---:|---|---|---:|
 | 0 | `EntitySpawnReason.NATURAL` | `ZombieHorse.finalizeSpawn`; `Drowned.finalizeSpawn`; `Husk.finalizeSpawn`; `Raider.finalizeSpawn` | 4 |
 | 1 | `EntitySpawnReason.CHUNK_GENERATION` | *nothing tests it* | 2 |
-| 2 | `EntitySpawnReason.SPAWNER` | *nothing tests it* | 3 |
+| 2 | `EntitySpawnReason.SPAWNER` | `Mob.checkMobSpawnRules` (through `EntitySpawnReason.isSpawner`); `SkeletonHorse.checkSkeletonHorseSpawnRules` (through `EntitySpawnReason.isSpawner`); `Endermite.checkEndermiteSpawnRules` (through `EntitySpawnReason.isSpawner`); `Guardian.checkGuardianSpawnRules` (through `EntitySpawnReason.isSpawner`); `Monster.checkSurfaceMonstersSpawnRules` (through `EntitySpawnReason.isSpawner`); `Silverfish.checkSilverfishSpawnRules` (through `EntitySpawnReason.isSpawner`); `Slime.checkSlimeSpawnRules` (through `EntitySpawnReason.isSpawner`); `Stray.checkStraySpawnRules` (through `EntitySpawnReason.isSpawner`); `Drowned.checkDrownedSpawnRules` (through `EntitySpawnReason.isSpawner`) | 3 |
 | 3 | `EntitySpawnReason.STRUCTURE` | `PatrollingMonster.finalizeSpawn`; `Piglin.finalizeSpawn`; `Drowned.finalizeSpawn` | 9 |
 | 4 | `EntitySpawnReason.BREEDING` | `Villager.finalizeSpawn` | 41 |
 | 5 | `EntitySpawnReason.MOB_SUMMONED` | *nothing tests it* | 2 |
@@ -24,6 +24,6 @@ Every `EntitySpawnReason` constant, in declaration order, with **what each one g
 | 13 | `EntitySpawnReason.COMMAND` | *nothing tests it* | 2 |
 | 14 | `EntitySpawnReason.DISPENSER` | *nothing tests it* | 5 |
 | 15 | `EntitySpawnReason.PATROL` | `PatrollingMonster.finalizeSpawn` | 1 |
-| 16 | `EntitySpawnReason.TRIAL_SPAWNER` | *nothing tests it* | 3 |
+| 16 | `EntitySpawnReason.TRIAL_SPAWNER` | `Mob.checkMobSpawnRules` (through `EntitySpawnReason.isSpawner`); `Animal.checkAnimalSpawnRules` (through `EntitySpawnReason.ignoresLightRequirements`); `SkeletonHorse.checkSkeletonHorseSpawnRules` (through `EntitySpawnReason.isSpawner`); `SkeletonHorse.checkSkeletonHorseSpawnRules` (through `EntitySpawnReason.ignoresLightRequirements`); `Endermite.checkEndermiteSpawnRules` (through `EntitySpawnReason.isSpawner`); `Guardian.checkGuardianSpawnRules` (through `EntitySpawnReason.isSpawner`); `Monster.checkMonsterSpawnRules` (through `EntitySpawnReason.ignoresLightRequirements`); `Monster.checkSurfaceMonstersSpawnRules` (through `EntitySpawnReason.isSpawner`); `Silverfish.checkSilverfishSpawnRules` (through `EntitySpawnReason.isSpawner`); `Slime.checkSlimeSpawnRules` (through `EntitySpawnReason.isSpawner`); `Stray.checkStraySpawnRules` (through `EntitySpawnReason.isSpawner`); `Drowned.checkDrownedSpawnRules` (through `EntitySpawnReason.isSpawner`); `Drowned.checkDrownedSpawnRules` (through `EntitySpawnReason.ignoresLightRequirements`) | 3 |
 | 17 | `EntitySpawnReason.LOAD` | `Zombie.handleAttributes` | 6 |
 | 18 | `EntitySpawnReason.DIMENSION_TRAVEL` | `Zombie.handleAttributes` | 1 |

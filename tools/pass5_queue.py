@@ -19,7 +19,13 @@ An explicit tag wins over both: put `[kind=book]`, `[kind=lecture]`,
 and that is its kind. A fifth tag, `[kind=record]`, marks a unit no pass acts
 on — a pass-3 cut log, a count the close re-derived — so that it stops being
 counted as open work (pass 6's planning session, after pass 5's close found
-the guesser routing cut logs to `book`). A unit whose guess is a tie or has no
+the guesser routing cut logs to `book`). A sixth, `[kind=fact]`, marks a question
+of fact a reader raised and no session answered (*does the floor break the
+five-minute claim?*): it is pass 8's, because pass 8 is the fact-check, and
+`pass8_prompts.py` puts it in the page's agent prompt rather than only the
+session's notes (pass 8's session A, which found such questions tagged `voice` or
+guessed `book` and so asked of nobody with the decompile open). Like `record`, it
+is only ever tagged, never guessed. A unit whose guess is a tie or has no
 evidence is printed with `?` so a session can tag it. Struck units (`~~…~~`)
 are settled and are listed only with --settled. A *preamble* — a bare bold
 lead-in such as `**For pass 6, the lecture.**`, an italic preface paragraph,
@@ -44,11 +50,11 @@ import pass4_queue as q   # noqa: E402
 
 QUEUE = os.path.join(q.ROOT, "docs", "pass5.md")
 NUMERAL = {v: k for k, v in q.ROMAN.items()}
-KINDS = ("book", "lecture", "figure", "voice", "record")
-WORD_KINDS = ("book", "lecture", "figure", "voice")   # record is only ever tagged, never guessed
-PASS_OF = {"book": 5, "lecture": 6, "figure": 7, "voice": 8, "record": None}
-KIND_OF_PASS = {str(v): k for k, v in PASS_OF.items() if v}
-TAG = re.compile(r"\[kind=(book|lecture|figure|voice|record|[5-8])\]")
+KINDS = ("book", "lecture", "figure", "voice", "fact", "record")
+WORD_KINDS = ("book", "lecture", "figure", "voice")   # fact and record are only ever tagged, never guessed
+PASS_OF = {"book": 5, "lecture": 6, "figure": 7, "voice": 8, "fact": 8, "record": None}
+KIND_OF_PASS = {"5": "book", "6": "lecture", "7": "figure", "8": "voice"}
+TAG = re.compile(r"\[kind=(book|lecture|figure|voice|fact|record|[5-8])\]")
 PREAMBLE = (re.compile(r"^\*\*[^*]+\*\*\s*$"),          # a bare bold lead-in: **For pass 6, the lecture.**
             re.compile(r"^\*(?!\*).*[^*]\*$", re.S),     # a wholly italic preface paragraph
             re.compile(r"^-{3,}\s*$"))                   # a rule
@@ -165,7 +171,8 @@ def probe() -> int:
                 "- `lighting` and `chunk-anatomy` both explain the same thing.\n"
                 "- ~~`lighting`'s hook was rewritten; re-read it.~~\n"
                 "- `lighting`'s flowchart has sixteen edges and wants redrawing. [kind=voice]\n"
-                "- `lighting`'s field inventory went to the class index. [kind=record]\n\n"
+                "- `lighting`'s field inventory went to the class index. [kind=record]\n"
+                "- `lighting`: does the floor break the five-minute claim? [kind=fact]\n\n"
                 "### Wording to re-read\n\n"
                 "- `chunk-storage`'s hook is now three sentences.\n"
                 "- `chunk-storage`'s sequence figure gained a lane and a dashed arrow. [kind=7]\n"
@@ -181,12 +188,14 @@ def probe() -> int:
             ("an explicit tag beats the words (figure words, tagged voice)", kinds_for("world/lighting", "voice") == [11]),
             ("a record-tagged entry is its own kind and no pass's", kinds_for("world/lighting", "record") == [12]
              and 12 not in kinds_for("world/lighting", "book") and PASS_OF["record"] is None),
-            ("the heading prior routes wording debt to voice", kinds_for("world/chunk-storage", "voice") == [16]),
-            ("a numeric tag maps to its pass", kinds_for("world/chunk-storage", "figure") == [17]),
+            ("a fact-tagged entry is its own kind and pass 8's", kinds_for("world/lighting", "fact") == [13] and PASS_OF["fact"] == 8
+             and 13 not in kinds_for("world/lighting", "voice")),
+            ("the heading prior routes wording debt to voice", kinds_for("world/chunk-storage", "voice") == [17]),
+            ("a numeric tag maps to its pass, and 8 to voice", kinds_for("world/chunk-storage", "figure") == [18] and KIND_OF_PASS["8"] == "voice"),
             ("chunk-anatomy is named by the shared bullet", 9 in kinds_for("world/chunk-anatomy", "book")),
             ("an italic preface naming a page is not an entry", 5 not in kinds_for("world/lighting", None)),
             ("a bare bold lead-in is not a part-wide entry",
-             all(u.line != 18 for u in units_for(units, kinds, "", 4, None, False)[1])),
+             all(u.line != 19 for u in units_for(units, kinds, "", 4, None, False)[1])),
         ]
     finally:
         QUEUE = old
@@ -244,7 +253,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pages", nargs="*", help="part/slug")
     ap.add_argument("--part", help="a part directory under src/systems, or reference, or frame")
-    ap.add_argument("--kind", choices=KINDS, help="book (pass 5) · lecture (6) · figure (7) · voice (8) · record (no pass); default all")
+    ap.add_argument("--kind", choices=KINDS, help="book (pass 5) · lecture (6) · figure (7) · voice (8) · fact (8, the check) · record (no pass); default all")
     ap.add_argument("--out", help="write one <slug>.queue.md per page here, plus _part-notes.md")
     ap.add_argument("--settled", action="store_true", help="include struck units")
     ap.add_argument("--summary", action="store_true")
@@ -260,8 +269,8 @@ def main() -> int:
     content = [u for u in units if u.level >= 99 and not u.struck and not is_preamble(u)]
 
     if args.summary:
-        print("| part | book (5) | lecture (6) | figure (7) | voice (8) | record (no pass) | of which guessed |")
-        print("|---|---:|---:|---:|---:|---:|---:|")
+        print("| part | book (5) | lecture (6) | figure (7) | voice (8) | fact (8) | record (no pass) | of which guessed |")
+        print("|---|---:|---:|---:|---:|---:|---:|---:|")
         rows = {}
         for u in content:
             num = None
@@ -281,8 +290,8 @@ def main() -> int:
             r = rows[num]
             for k in tot:
                 tot[k] += r[k]
-            print(f"| {NUMERAL.get(num, 'frame/ref')} | {r['book']} | {r['lecture']} | {r['figure']} | {r['voice']} | {r['record']} | {r['guess']} |")
-        print(f"| **total** | {tot['book']} | {tot['lecture']} | {tot['figure']} | {tot['voice']} | {tot['record']} | {tot['guess']} |")
+            print(f"| {NUMERAL.get(num, 'frame/ref')} | {r['book']} | {r['lecture']} | {r['figure']} | {r['voice']} | {r['fact']} | {r['record']} | {r['guess']} |")
+        print(f"| **total** | {tot['book']} | {tot['lecture']} | {tot['figure']} | {tot['voice']} | {tot['fact']} | {tot['record']} | {tot['guess']} |")
         named = sum(1 for u in content if u.pages or u.owner)
         print(f"\n{len(content)} open units; {named} name a page; {len(content) - named} are part-wide. "
               f"Preambles (lead-ins, prefaces, rules) are not counted.")

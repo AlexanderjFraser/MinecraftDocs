@@ -34,6 +34,8 @@ SRC = os.path.join(HERE, "src")
 QUEUE = os.path.join(HERE, "docs", "pass9.md")
 
 SESSION = re.compile(r"^## (Pass (\d+), (?:session (\w+)|the planning session)[^\n]*)")
+SUBHEAD = re.compile(r"^#{3,6} ")
+LEAD = re.compile(r"^\*\*(.+?)\*\*")
 BULLET = re.compile(r"^\s*(?:[-*]|\d+\.) ")
 STRUCK = re.compile(r"^\s*(?:[-*]|\d+\.)\s*~~")
 TICK = re.compile(r"`([^`\n]+)`")
@@ -89,29 +91,76 @@ def resolve(tick: str, known: dict):
 
 
 def entries(text: str):
-    """(pass, session, session part or None, page keys, struck, line) per bullet under a session heading."""
-    out, cur, cur_part = [], None, None
-    for line in text.splitlines():
+    """(pass, session, session part or None, ticks, struck, line, heading ticks) per bullet under a session heading.
+
+    The heading ticks are the backticked names of the nearest `###` (or deeper) sub-heading inside the
+    session, or of a bold lead-in paragraph (`**\`src/introduction.md\`.**`) — the two forms in which
+    sessions named the page once for a run of bullets (`### Claims introduced —
+    \`world/environment-attributes-and-timelines\``); route() falls back to them only when the bullet
+    itself names no page. A sub-heading that names nothing clears them; a bold lead-in that names
+    nothing inside its bold leaves them alone, because it is usually a label (*Corrections*) under the
+    page's own sub-heading. (Pass 8 session A, which found 19 of the 56 frame-level notes were a page's.)
+
+    Two more things session A found the planning session's reader missing. **A paragraph can be an
+    entry**: several sessions wrote theirs as a bold lead-in naming the page followed by the entry's
+    text (`**\`entity-lifecycle\`.** New material: …`), 66 of them outside every count; such a
+    paragraph is an entry when its bold names a page (the eighth field is True), and route() drops one
+    whose bold resolves to nothing, which is a preamble. And **an entry is its whole text**: the line
+    returned carries the continuation lines, because the agent's prompt showed only each entry's first
+    line. The page an entry is routed by is still read from its first line (or its bold), since a
+    continuation line that names another page is usually a comparison, not an owner."""
+    out, cur, cur_part, sub = [], None, None, []
+    lines = text.splitlines()
+    prev_blank, i = True, 0
+    while i < len(lines):
+        line = lines[i]
         m = SESSION.match(line)
         if m:
             cur = (int(m.group(2)), m.group(3) or "planning")
             pm = PART_IN_HEADING.search(m.group(1))
             cur_part = pm.group(1) if pm else None
+            sub, prev_blank, i = [], False, i + 1
+            continue
+        if cur and SUBHEAD.match(line):
+            sub, prev_blank, i = TICK.findall(line), False, i + 1
+            continue
+        bare = line[2:] if line.startswith("~~") else line
+        lead = LEAD.match(bare) if cur and prev_blank and not BULLET.match(line) else None
+        if lead and TICK.search(lead.group(1)):
+            sub = TICK.findall(lead.group(1))
+            j = i + 1
+            while j < len(lines) and lines[j].strip() and not BULLET.match(lines[j]) and not lines[j].startswith("#"):
+                j += 1
+            if bare[lead.end():].strip(" .—:*") or j > i + 1:
+                body = "\n".join(l.rstrip() for l in lines[i:j])
+                out.append((cur[0], cur[1], cur_part, sub, line.startswith("~~"), body, sub, True))
+            prev_blank, i = False, j
             continue
         if cur and BULLET.match(line):
-            out.append((cur[0], cur[1], cur_part, TICK.findall(line), bool(STRUCK.match(line)), line.strip()))
+            j = i + 1
+            while (j < len(lines) and lines[j].strip() and not BULLET.match(lines[j])
+                   and not lines[j].startswith("#")):
+                j += 1
+            body = "\n".join([line.strip()] + [l.rstrip() for l in lines[i + 1:j]])
+            out.append((cur[0], cur[1], cur_part, TICK.findall(line), bool(STRUCK.match(line)), body, sub, False))
+            prev_blank, i = False, j
+            continue
+        prev_blank = not line.strip()
+        i += 1
     return out
 
 
 def route(text: str, known: dict, only_pass=None, skip_pass=8):
     per_page, per_part, partwide, unresolved = Counter(), Counter(), Counter(), Counter()
     detail, notes, frame_notes = defaultdict(list), defaultdict(list), []
-    for p, s, spart, ticks, struck, line in entries(text):
+    for p, s, spart, ticks, struck, line, sub, para in entries(text):
         if only_pass is not None and p != only_pass:
             continue
         if only_pass is None and skip_pass is not None and p == skip_pass:
             continue
-        keys = [k for k in (resolve(t, known) for t in ticks) if k]
+        if para and not any(resolve(t, known) for t in ticks):
+            continue  # a bold lead-in naming no page is a preamble, not an entry
+        keys = [k for k in (resolve(t, known) for t in ticks) if k] or [k for k in (resolve(t, known) for t in sub) if k]
         for t in ticks:
             if resolve(t, known) is None and re.search(r"\.md$|/README$|^(?:src/)?(?:systems|reference|maps)/", t):
                 unresolved[t] += 1
@@ -128,10 +177,12 @@ def route(text: str, known: dict, only_pass=None, skip_pass=8):
     return per_page, per_part, partwide, unresolved, detail, notes, frame_notes
 
 
-def strikes(text: str):
-    """per (pass, session): entries, struck."""
+def strikes(text: str, known: dict):
+    """per (pass, session): entries, struck. A bold lead-in paragraph naming no page is a preamble and not counted."""
     rows = Counter()
-    for p, s, _sp, _t, struck, _l in entries(text):
+    for p, s, _sp, ticks, struck, _l, _sub, para in entries(text):
+        if para and not any(resolve(t, known) for t in ticks):
+            continue
         rows[(p, s, "all")] += 1
         rows[(p, s, "struck")] += int(struck)
     return rows
@@ -140,41 +191,57 @@ def strikes(text: str):
 def probe():
     known = {"a-page": ("systems/x/a-page.md", "I"), "x/a-page": ("systems/x/a-page.md", "I"),
              "x": ("systems/x/README.md", "I"), "x/README": ("systems/x/README.md", "I"),
-             "reference/r": ("reference/r.md", "Reference"), "/": ("introduction.md", "Frame")}
+             "reference/r": ("reference/r.md", "Reference"), "/": ("introduction.md", "Frame"),
+             "introduction": ("introduction.md", "Frame")}
     text = ("## Pass 7, session A — Part I · x\n- `a-page` fine\n- `src/systems/x/a-page.md`:12 wrong\n"
             "- `x/README` the landing page\n- ~~`reference/r` struck~~\n- no page named here\n- `no-such/page.md` unknown\n"
             "## Pass 6, session N — the frame\n- `/` the introduction\n- a frame note\n"
+            "### Claims introduced — `x/a-page`\n- routed by its sub-heading\n- `reference/r` its own page wins\n\n"
+            "**Corrections.** a bold label naming no page, and not an entry\n\n- still routed by the sub-heading\n"
+            "  and this continuation line, naming `reference/r`, travels with it\n"
+            "### Tools\n- a frame note again, the sub-heading cleared\n\n"
+            "**`src/introduction.md`.**\n\n- routed by a bold lead-in\n\n"
+            "**`src/SUMMARY.md`** — not a page\n\n- a frame note: the lead-in named something, and not a page\n\n"
+            "**`x/a-page`.** A paragraph entry: the bold names its page\nand its text runs on.\n\n"
+            "~~**`x/a-page`.** A struck paragraph entry.~~ *(checked)*\n\n"
             "## Pass 8, session B — Part I\n- `a-page` pass 8's own\n")
     per_page, per_part, partwide, unresolved, detail, notes, frame_notes = route(text, known)
-    ok = (per_page == Counter({"systems/x/a-page.md": 2, "systems/x/README.md": 1, "reference/r.md": 1, "introduction.md": 1})
-          and partwide == Counter({"I": 2}) and unresolved == Counter({"no-such/page.md": 1}) and len(frame_notes) == 1
+    ok = (per_page == Counter({"systems/x/a-page.md": 6, "systems/x/README.md": 1, "reference/r.md": 2, "introduction.md": 2})
+          and partwide == Counter({"I": 2}) and unresolved == Counter({"no-such/page.md": 1}) and len(frame_notes) == 3
           and detail[("Reference", "reference/r.md")][0][2] is True)
     if not ok:
         sys.exit(f"probe FAILED: {per_page} {partwide} {unresolved} {len(frame_notes)}")
+    a_rows = detail[("I", "systems/x/a-page.md")]
+    if not any("travels with it" in r[3] for r in a_rows) or not any("its text runs on" in r[3] for r in a_rows):
+        sys.exit("probe FAILED: an entry's continuation lines were not carried with it")
+    if sum(1 for r in a_rows if r[2]) != 1:
+        sys.exit("probe FAILED: the struck paragraph entry was not counted as struck")
     if route(text, known, only_pass=8)[0] != Counter({"systems/x/a-page.md": 1}):
         sys.exit("probe FAILED: --pass 8 did not isolate pass 8's entries")
-    st = strikes(text)
-    if st[(7, "A", "all")] != 6 or st[(7, "A", "struck")] != 1:
+    st = strikes(text, known)
+    if st[(7, "A", "all")] != 6 or st[(7, "A", "struck")] != 1 or st[(6, "N", "all")] != 10 or st[(6, "N", "struck")] != 1:
         sys.exit(f"probe FAILED: strikes {st}")
-    print("probe ok: every page form resolves, a page-less note goes to its session's part, a frame note stays frame-level, "
-          "a strike is counted, pass 8's own entries are kept apart")
+    print("probe ok: every page form resolves, a sub-heading or a bold lead-in routes the page-less bullets under it, "
+          "a bold paragraph naming a page is an entry and one naming none is a preamble, an entry carries its continuation "
+          "lines, a page-less note goes to its session's part, a frame note stays frame-level, a strike is counted, "
+          "pass 8's own entries are kept apart")
 
 
 def print_part(want, detail, notes, frame_notes):
     if want == "Frame":
         print(f"### notes from the standard, frame and close sessions that name no page — {len(frame_notes)} entries")
         for p, s, struck, line in frame_notes:
-            print(f"  [pass {p} {s}]{' STRUCK' if struck else ''} {line[:200]}")
+            print(f"  [pass {p} {s}]{' STRUCK' if struck else ''} {line.split(chr(10))[0][:200]}")
     for (part, md), rows in sorted(detail.items()):
         if part != want:
             continue
         print(f"\n### {md} — {len(rows)} entries")
         for p, s, struck, line in sorted(rows, key=lambda r: (r[0], r[1])):
-            print(f"  [pass {p} {s}]{' STRUCK' if struck else ''} {line[:200]}")
+            print(f"  [pass {p} {s}]{' STRUCK' if struck else ''} {line.split(chr(10))[0][:200]}")
     if notes.get(want):
         print(f"\n### part-wide notes from Part {want}'s own sessions that name no page — {len(notes[want])} entries; route each to a page, or strike it *(no claim)*")
         for p, s, struck, line in notes[want]:
-            print(f"  [pass {p} {s}]{' STRUCK' if struck else ''} {line[:200]}")
+            print(f"  [pass {p} {s}]{' STRUCK' if struck else ''} {line.split(chr(10))[0][:200]}")
 
 
 if __name__ == "__main__":
@@ -189,7 +256,7 @@ if __name__ == "__main__":
     only_pass = int(sys.argv[sys.argv.index("--pass") + 1]) if "--pass" in sys.argv else None
     per_page, per_part, partwide, unresolved, detail, notes, frame_notes = route(text, known, only_pass=only_pass)
     if "--unstruck" in sys.argv:
-        st = strikes(text)
+        st = strikes(text, known)
         print(f"{'session':<20}{'entries':>8}{'struck':>8}{'unstruck':>9}")
         tot_all = tot_struck = 0
         for (p, s) in sorted({(p, s) for p, s, _k in st}):

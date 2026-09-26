@@ -1438,6 +1438,16 @@ closer, because the boundary is drawn before the investment, and
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
+- **Maps as saved data, and the wandering trader's timer.** *(pass 5, session
+  N; carried here by pass 8's session A, 2026-09-26 — the ledger said the
+  entry went here and it had not.)* `MapItemSavedData` (616 lines in 26.3) with
+  `MapIndex` (35), the per-map state behind a filled map and the counter that
+  numbers them, and `WanderingTraderData` (53), the trader's spawn timer, are
+  named in the book only as rows of `reference/level-data-and-rules`' table of
+  what a save holds: what a map records as a player walks, how its colours and
+  decorations reach the client, and when the trader is due are explained
+  nowhere. Declared, not taught; a second edition's.
+
 - **`net/minecraft/core/dispenser` has no owner, and Part II's landing page
   now says so.** *(pass 6, session B.)* Thirteen classes and 1,090 lines —
   `DispenseItemBehavior` and twelve implementations — sit inside Part II's

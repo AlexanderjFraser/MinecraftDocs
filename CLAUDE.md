@@ -32,9 +32,11 @@ wording done after the check and read again by a session that changed
 nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
 the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
 (sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
-that file's Part 6; **V1 and V2 have run** (the tools read 26.3 and every page
-says 26.3; V2 rewrote the 42 pages whose systems 26.3 reshaped), and session A
-is next. After it the production process is rebuilt from first
+that file's Part 6; **V1, V2 and A have run** (the tools read 26.3 and every
+page says 26.3; V2 rewrote the 42 pages whose systems 26.3 reshaped; A ruled the
+voice into `TEMPLATE.md` and found the book's *constant nobody reads* asides to
+be javac's inlining, not the game), and session B is next. After it the
+production process is rebuilt from first
 principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
 returns here with what it learned; until then only a version pass the owner
 asks for and the corrections readers file touch the site. Beside the passes,
@@ -182,7 +184,10 @@ A wrote in the devices that had become slots (the closer's one spelling and
 its test, the 1.21 blockquote at the foot, the way into a scenario); pass 7's
 rewrote *Figures* and *Lanes* to the figure standard (six lanes, the caption
 as one italic run, no colour in a page, the marks table); pass 8's session A
-adds *Voice*, the wording rulings, from `docs/pass8-brief.md` Part 4. What
+added *Voice*, the wording rulings (state what is; a hedge names its
+population; the book never calls a compile-time constant unread; one word, one
+sense; sizes rot and populations do not), and amended the number device, the
+blockquote's form and the caption (at most two sentences). What
 every page keeps: the verified line with the part and scenario; an opening
 paragraph that starts inside the scenario and ends on the hook (the
 surprising true thing the page explains); a cast of at most eight classes
@@ -204,8 +209,8 @@ archived whole (`docs/passN.md` for 1–4; `docs/passN-brief.md` Part 5 for
 5–7) — still worth grepping: pass 2's fact-check protocol and lessons and pass
 4's additions are what pass 8's agent brief descends from. **Pass 8's are
 [docs/pass8-brief.md](docs/pass8-brief.md)** — Part 1 the charter, Part 2 the
-agent brief, Part 3 the runbook, Part 4 the voice standard as recommendations
-with counts for session A to rule on, Part 5 the rulings, Part 6 the schedule
+agent brief, Part 3 the runbook, Part 4 the voice standard as session A ruled
+it (the record, with the numbers), Part 5 the rulings, Part 6 the schedule
 with the status column, Part 7 the charters it replaces — and its tools, each
 with a `--probe` that proves it fails on the construct it should:
 `tools/version_pass.py` (a release staged from Mojang's manifest, then

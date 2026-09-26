@@ -13,7 +13,11 @@ in what the menu had let become slots: the landing page's seventh section,
 the closer's one spelling and its test, the 1.21 blockquote's place, the way
 into a scenario, bold on the hook, one subject a section, *Where to look* as
 a reading list, and which of two look-alike pages varies. Its rulings are in
-`docs/pass6-brief.md` Part 3.*
+`docs/pass6-brief.md` Part 3. Pass 7's session A (2026-09-15) rewrote
+*Figures* and *Lanes*, with its rulings in `docs/pass7-brief.md` Part 3; pass
+8's (2026-09-26) added *Voice*, the rulings about sentences, and amended the
+number device, the blockquote's form and the caption, with its rulings in
+`docs/pass8-brief.md` Part 4.*
 
 ## One home per mechanism
 
@@ -247,12 +251,20 @@ shared skeleton is the point, and what has to read differently is the prose.
 Any page may use these; none must.
 
 - **The myth table** — `| what the forum says | what the decompile does |`.
-- **The number** — a count with its owner, set off on its own line:
-  `**Four** — player-view chunks loading at once (\`DistanceManager.ticketDispatcher\`).`
+- **The number** — a count with its owner, set off on its own line, the
+  number and the noun it counts one bold phrase and the sentence running on
+  from it: `**Four chunks** load at once for a player's view
+  (\`DistanceManager.ticketDispatcher\`).` Not `**Four** — chunks …`, whose bold
+  word hangs unattached until the reader is past the dash (pass 8, V9).
 - **For a 1.21-era reader** — a blockquote opening `> **For a 1.21-era
   reader.**`, replacing the names-you-will-hunt-for bullets; one per page at
-  most, at most eight lines, and only where a name or a mechanism actually
-  moved — a blockquote that only says *this is new* is not one. **Its place
+  most, at most eight lines, and only where a name or a mechanism moved — a
+  blockquote that only says *this is new* is not one. Each thing moved is said
+  as *X is now Y* or *X is gone; Y does its work*, and a rename
+  `reference/naming-drift` already carries is repeated only where the page's
+  mechanism turns on it. A later release's drift (26.2 to 26.3) goes in the
+  same blockquote, where a reader would hunt for the old name, and nowhere else
+  on the page. **Its place
   is the foot of the page**: the last thing before *Where to look*, after the
   closer if there is one. It addresses a reader the page is not otherwise
   written for, who should be able to find it without reading the page, and in
@@ -292,6 +304,91 @@ The enforceable part.
 - Every claim a rewrite introduces — a hook, a redrawn ordering, a new
   section — is listed in `docs/pass9.md` by the session that wrote it.
 
+## Voice
+
+The rulings about sentences, made by pass 8's session A (2026-09-26) from
+`python tools/pass8_voice.py`'s counts and the exemplar; the reasons and the
+numbers are in `docs/pass8-brief.md` Part 4. None of it is a quota: the tool
+lists sentences to read, a sentence that earns its place stays, and the
+session that keeps one a rule would change says so in its log. The one rule
+over all of them: **the voice never moves a fact** — a sentence polished is a
+claim, re-read against the decompile when its meaning could have moved, and
+listed in `docs/pass9.md`.
+
+**State what is.** A contrast — *not X but Y*, *rather than*, *instead of* —
+earns its place where the reader would otherwise believe X: the forum's
+belief, the 1.21 fact, the obvious reading of a name, the case the page has
+just stated. Then X is named as that belief. Elsewhere the sentence states Y,
+and most *rather than*s are the plain way to say a choice and stay. The same
+test takes *actually*, which is almost always an intensifier: it stays only
+where the sentence corrects a belief the page or the sentence itself has just
+stated, and never in the body for its own sake. *In fact*, *it turns out* and
+*despite its name* follow it; where a wrong belief is common enough to be
+worth naming, the myth table or the closer holds it.
+
+**A hedge names its population.** *Five of the seven*, *with two
+exceptions*, *all but one* are right where the seven are in the sentence or
+the table beside it; two screens away they name the seven or become the plain
+rule. A count that admits two readings (with or without the base class, the
+nested types, the constant itself) says which once.
+
+**One aside a sentence.** At most one pair of dashes; a second aside becomes a
+sentence or a parenthesis.
+
+**The decompile is the compiled game, not Mojang's source.** A `static final`
+primitive or string with a literal initializer is a compile-time constant,
+which javac writes in at every use site, so the decompile shows every such
+constant unread whatever the source did. **The book never says a constant is
+unread, unused or dead**: it gives the number, with the constant's name where
+a reader would grep for it (*the thirteen pixels `Item.MAX_BAR_WIDTH` names*).
+A field the decompile can see read or not — an object, or a value computed
+when the class loads — may be called unread only where that is the page's
+point. The same caution covers anything else the compiler or the decompiler
+writes: a synthetic name, and a line count, which the decompiler's options
+alone can move.
+
+**One word, one sense.** A glossary headword takes the glossary's spelling
+as a noun; the hyphen is for the compound used as a modifier (*a data-pack
+field*, *the data pack's field*). Where the corpus used one word two ways,
+the ruling is:
+
+| word | means only | the other sense becomes |
+|---|---|---|
+| *extract* | the render-state and GUI stage (`GuiGraphicsExtractor`), Mojang's word | *record*, only as a plain verb |
+| *the hop*, unqualified | a packet crossing onto the game thread (`PacketUtils.ensureRunningOnSameThread`) | any other crossing names where it goes (*the hop to the sound thread*) |
+| *the ledger* | the prediction ledger | a word of its own (*the three tallies*, *a stack*) |
+| *level* | the world, or a ticket's level where the page is about tickets | *enchantment level*, *permission level* in full |
+| *phase* | whichever the page is about | *protocol phase* and *tick phase* on a page that has both |
+| *classes* | files, as the atlas counts them (nested types not counted) | a page that counts something else says what |
+| *Render thread* | the client's one game thread, the key's and `reference/threads`' name | not *client thread* or *the client's main thread* |
+| *the worker pool* | `Util.backgroundExecutor`'s *Worker-Main-n* threads, linked once a page | *shared* only where the sentence says with what |
+
+**Counts say what they count, and sizes rot.** A count of classes, files or
+lines in prose — a *size* — goes wrong at a release without any sentence
+changing, so it comes from a generated include (the size and coverage
+phrases) or is dropped for the atlas link, unless the number is the page's
+argument, and then it is re-counted like any fact. A *population* — how many
+classes override a method, how many call sites a check has — is a fact, not a
+size, and stays.
+
+**The possessive never hangs on a link.** Not *is [the server
+tick](…)'s*: *belongs to [the server tick](…)*, *is the server tick's ([the
+server tick](…))*, or the noun inside the link — whichever the sentence takes.
+
+**Long sentences are a place to look, not a fault.** A sentence of one idea
+stays however long it is; one that hides a step of reasoning in a
+subordinate clause is split at the step.
+
+**What the polish never does.** It rewords no heading (an anchor moves every
+link that lands on it; a heading that is *false* is a correction, made with
+`check_links.py --inbound` in hand and every link repointed in the same
+commit). It restructures no paragraph, reorders no section, re-budgets no
+list, redraws no figure for its look, cuts nothing but a sentence that says
+what its neighbour says, adds no device, opens or closes no *Questions
+players ask*, changes no verified line's scenario and moves no page. A
+session that finds itself rewriting a paragraph for its voice has left the
+polish; it leaves the sentence and logs the finding.
+
 ## Figures
 
 A figure is the lecture's artefact: the thing a viewer screenshots, and the
@@ -308,9 +405,11 @@ tools/render_figures.js` is how any change to one is argued.
 - **The lead-in.** The sentence before a figure ends by saying what the figure
   will show. A **lead figure** — the page's own artefact, under the cast — may
   open its section with nothing above it; nothing else may.
-- **The caption** is the **italic paragraph directly after the figure**: one
-  sentence, in the book's voice, saying what the picture shows and what to look
-  for in it. It is markdown, so `verify_names.py` reads its names and
+- **The caption** is the **italic paragraph directly after the figure**: at
+  most two sentences in the present tense, the first saying what the picture
+  shows (naming its shape first where the shape is the point) and the second,
+  if there is one, what to look for in it. It never points at its own figure
+  (*this figure*, *the diagram above*): it is attached to it. It is markdown, so `verify_names.py` reads its names and
   `llms-full.txt` carries it; `custom.css` styles exactly that paragraph and
   numbers it (*Figure 3.*). A caption is a **claim about what the figure
   shows** and goes to `docs/pass9.md` like any other.
