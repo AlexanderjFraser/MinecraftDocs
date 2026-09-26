@@ -1,6 +1,6 @@
 # Environment attributes and timelines
 
-> Verified against **Minecraft 26.2** · Part IV · dusk falls over a taiga, and one value is resolved through a stack of layers — on the server for a mob, and again on the client for the sky.
+> Verified against **Minecraft 26.3** · Part IV · dusk falls over a taiga, and one value is resolved through a stack of layers — on the server for a mob, and again on the client for the sky.
 
 Dusk on the overworld clock is a stretch and not an instant. Between tick
 11867 and tick 13670 the sky over a taiga slides from its pale blue towards
@@ -8,9 +8,9 @@ black, and the sky over a pale garden slides from its grey towards black by
 the same proportion; part-way through, at tick 12542, every mob standing in
 the open stops being in danger of burning, and is not in danger again until
 tick 23460. A player would never
-connect the three, and in 26.2 they are one mechanism. An **environment
+connect the three, and in 26.3 they are one mechanism. An **environment
 attribute** is a named, typed, registered property of the world —
-`EnvironmentAttributes` puts 48 of them in
+`EnvironmentAttributes` puts 51 of them in
 `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` — and the world answers one for a
 position and an instant by running a short stack of **layers** over the
 attribute's default value: the dimension, the biome, the **timelines**, the
@@ -34,7 +34,7 @@ dusk through it twice, once on each side.
 | `EnvironmentAttributeSystem` | the baked per-level resolver: one `EnvironmentAttributeSystem.ValueSampler` for each attribute some layer mentions | built in the level constructor, read on that level's thread |
 | `Timeline` | a clock, an optional period, one `AttributeTrack` per attribute, and the named instants on that clock | — (loaded from data) |
 | `AttributeTrackSampler` | one track baked against a clock, with a one-tick cache of the sampled argument | Server or Render |
-| `ServerClockManager` | **the owner of day time** — one `ServerClockManager.ClockInstance` per registered `WorldClock`, saved as *world_clocks* | Server |
+| `ServerClockManager` | **the owner of day time** — one `ServerClockManager.ServerClockInstance` per registered `WorldClock`, saved as *world_clocks* | Server |
 | `ClientClockManager` | the client's copy: free-runs each clock forward between packets | Render |
 | `EnvironmentAttributeProbe` | the client's smoothing layer, living on `Camera`: 216 biome samples a tick, a lerp every frame | Render |
 
@@ -178,7 +178,7 @@ Three codecs then decide who may write what:
 `WorldClock` is a unit record. It holds nothing at all: it is an identity
 token in the `Registries.WORLD_CLOCK` registry, and vanilla registers two,
 `WorldClocks.OVERWORLD` and `WorldClocks.THE_END`. Every piece of state lives
-in `ServerClockManager.ClockInstance` — a total tick count, a fractional
+in `ServerClockManager.ServerClockInstance` — a total tick count, a fractional
 partial tick, a rate and a paused flag — and the manager holding those is a
 `SavedData` under `ServerClockManager.TYPE`, saved once for the whole server
 as *world_clocks*.
@@ -191,7 +191,8 @@ the map of them a save file holds. `ClockNetworkState` is the wire form and
 carries three — total ticks, partial tick and rate — and the one it leaves
 behind, the paused flag, is the whole of what the client does not get.
 `ClockManager` is the one thing the two managers share, an interface with a
-single method: *what is the total tick count of this clock*. Everything a
+single method, `ClockManager.getInstance`: *this clock's `ClockInstance`* —
+its total tick count, partial tick, rate and pause. Everything a
 reader of an attribute needs from a clock is behind that method, which is why
 `AttributeTrackSampler` can be the same class on both sides, and why
 **`ServerClockManager` is the owner of day time** in this book.
@@ -303,7 +304,7 @@ sequenceDiagram
     EAS->>EVS: getValue — is any layer of this attribute positional?
     EVS->>EVS: none is — start from the baked base, the default false
     EVS->>ATS: applyTimeBased(value, cache tick id)
-    ATS->>KTS: sample at ServerClockManager.getTotalTicks of the overworld clock
+    ATS->>KTS: sample at the overworld clock's ClockInstance.totalTicks
     KTS-->>ATS: the argument — false at 12542, true again at 23460
     ATS-->>EVS: the modifier is BooleanModifier.OR, applied to the value
     EVS->>EVS: the weather layer is on nine attributes, not this one
@@ -446,7 +447,7 @@ dimension type pins *gameplay/sky_light_level*, *gameplay/fast_lava*,
 never changes again.
 
 **Does setting the time in the overworld move the End?** No: each clock keeps
-its own `ServerClockManager.ClockInstance`. Every mutator does invalidate the
+its own `ServerClockManager.ServerClockInstance`. Every mutator does invalidate the
 cache on *every* level at once, though — `ServerClockManager` walks
 `MinecraftServer.getAllLevels` on each change, because a time jump must not
 leave half a tick of stale sky behind.

@@ -1,6 +1,6 @@
 # The spear
 
-> Verified against **Minecraft 26.2** · Part VIII · Two ways to hit something with the same item: jab it, and the client sends no target at all; charge it and run, and the damage comes from how fast the gap is closing.
+> Verified against **Minecraft 26.3** · Part VIII · Two ways to hit something with the same item: jab it, and the client sends no target at all; charge it and run, and the damage comes from how fast the gap is closing.
 
 A spear is one item with two weapons in it. Left-click and you **stab**: the
 client sends a packet with no entity id in it, and the server does its own
@@ -46,7 +46,7 @@ because it is *both* weapons at once plus the reach to use them:
 | `DataComponents.KINETIC_WEAPON` | a contact cooldown of ten ticks, a delay, three conditions, and a damage multiplier |
 | `DataComponents.ATTACK_RANGE` | `AttackRange.minReach` of 2.0 and `AttackRange.maxReach` of 4.5 — 2.0 and 6.5 in creative — with a hitbox margin and a mob factor |
 | `DataComponents.MINIMUM_ATTACK_CHARGE` | 1.0: no partial-charge stab |
-| `DataComponents.SWING_ANIMATION` | `SwingAnimationType.STAB`, with a per-material duration |
+| `DataComponents.ATTACK_ANIMATION` | `SwingAnimationType.STAB`, with a per-material duration |
 | `DataComponents.DAMAGE_TYPE` | `DamageTypes.SPEAR`, as a delayed holder component |
 | `DataComponents.USE_EFFECTS` | the whole component overridden: sprint allowed, vibrations off, speed multiplier one — the only item in the game that does not slow you down while you hold it out |
 | `DataComponents.WEAPON` | a durability cost of one per attack |

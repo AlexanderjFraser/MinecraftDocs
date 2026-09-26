@@ -1,6 +1,6 @@
 # X · The client
 
-> Verified against **Minecraft 26.2** · Part X · One thread, one loop, and everything else in the part answering the same question about itself: when in that loop does this happen?
+> Verified against **Minecraft 26.3** · Part X · One thread, one loop, and everything else in the part answering the same question about itself: when in that loop does this happen?
 
 A player already knows this part by its symptoms: the stutter where the world
 moves on without you, the block that appears and then disappears, the sound
@@ -37,7 +37,7 @@ flowchart LR
     DBG["12 · Debugging the running game"]
     LOOP -- "per tick, light per frame" --> LEVEL
     LOOP -- "per action, one window" --> PRED
-    LOOP -- "per GLFW callback" --> INPUT
+    LOOP -- "per SDL event" --> INPUT
     LOOP -- "per save" --> OPT
     LOOP -- "per frame" --> GUI
     LOOP -- "per event, then off-thread" --> SND
@@ -170,7 +170,7 @@ and [the glossary](../../reference/glossary.md) for *partial tick*,
 *prediction ledger* and *extract*. [Naming
 drift](../../reference/naming-drift.md) is the one to keep open beside this
 part in particular: nine of these twelve pages carry a *for a 1.21-era reader*
-box, because the client is where 26.2 renamed the most.
+box.
 
 ---
 

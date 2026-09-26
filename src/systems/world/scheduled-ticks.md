@@ -1,6 +1,6 @@
 # Scheduled ticks
 
-> Verified against **Minecraft 26.2** · Part IV · A repeater's input goes high, and the two ticks before its output follows are one entry in a queue.
+> Verified against **Minecraft 26.3** · Part IV · A repeater's input goes high, and the two ticks before its output follows are one entry in a queue.
 
 A repeater set to its shortest delay is not counting anything. When the wire
 behind it changes, `DiodeBlock.neighborChanged` runs on the server thread,

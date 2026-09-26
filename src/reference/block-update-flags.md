@@ -1,6 +1,6 @@
 # Block update flags
 
-> Verified against **Minecraft 26.2** · Reference · Hand-kept from `Block`'s
+> Verified against **Minecraft 26.3** · Reference · Hand-kept from `Block`'s
 > *UPDATE_* constants: the ten bits of `Level.setBlock`'s flag word, what
 > reads each, and the named combinations.
 

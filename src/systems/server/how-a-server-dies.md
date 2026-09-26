@@ -1,6 +1,6 @@
 # How a server dies
 
-> Verified against **Minecraft 26.2** · Part III · `/stop` typed at the console, an exception out of the tick loop, and a tick that never ends — three endings that write three different amounts of your world to disk.
+> Verified against **Minecraft 26.3** · Part III · `/stop` typed at the console, an exception out of the tick loop, and a tick that never ends — three endings that write three different amounts of your world to disk.
 
 An admin types `/stop`. The command sets one boolean and returns, and the
 tick already in progress carries on to its end. Everything a player would

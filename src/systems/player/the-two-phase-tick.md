@@ -1,6 +1,6 @@
 # The two-phase tick
 
-> Verified against **Minecraft 26.2** · Part VIII · One server tick of one player — which happens twice, from two different callers, and the second half throws its own answer away.
+> Verified against **Minecraft 26.3** · Part VIII · One server tick of one player — which happens twice, from two different callers, and the second half throws its own answer away.
 
 Every other entity on the server is ticked once, by the level it stands in.
 A player is ticked twice: once from the level's entity loop, and once from

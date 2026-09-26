@@ -1,6 +1,6 @@
 # Entity anatomy
 
-> Verified against **Minecraft 26.2** · Part VI · What an entity *is*: one `EntityType` from the registry, through a factory, to a live object the level ticks.
+> Verified against **Minecraft 26.3** · Part VI · What an entity *is*: one `EntityType` from the registry, through a factory, to a live object the level ticks.
 
 You type */summon pig*, and by the next tick there is a pig standing where
 you are. Between the command and the animal are three objects and one factory
@@ -33,7 +33,7 @@ save file.
 | class | what it decides | thread |
 |---|---|---|
 | `EntityType` | one registered kind: its factory, category, frozen dimensions, feature flags, and the two numbers that decide how it reaches clients | built in a class initialiser, read from both game threads after |
-| `EntityTypes` | which 158 kinds exist and what every one of them is *sized* like — the most useful single table in the package | class initialiser, once |
+| `EntityTypes` | which 161 kinds exist and what every one of them is *sized* like — the most useful single table in the package | class initialiser, once |
 | `Entity` | position, box, network id, synched values, vehicle, removal reason. Deliberately thin on behaviour | the tick thread of whichever level owns it |
 | `EntityDimensions` | width, height, eye height, attachment points, and whether `Attributes.SCALE` may touch them | immutable record, shared by every entity of a type |
 | `SynchedEntityData` | which of the entity's fields the other side is told about ([synched entity data](synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from)) | one container per side; the owning side's writes are the ones that travel |
@@ -57,7 +57,7 @@ is mutable by design.
 ```mermaid
 classDiagram
     class EntityType {
-        one object per registered kind, 158 of them
+        one object per registered kind, 161 of them
         EntityType.EntityFactory, the constructor reference
         MobCategory, the spawn cap and despawn distance
         clientTrackingRange in chunks, updateInterval in ticks
@@ -91,9 +91,9 @@ individual and changes.*
 which is a fair measure of how many systems reach into it. Health, AI, damage
 and inventory are all further down the tree.
 
-In 26.2 the type constants are **not on `EntityType`**. They live in two
-parallel files: `EntityTypeIds`, 158 `ResourceKey`s with no reference to any
-entity class, and `EntityTypes`, the 158 matching objects that
+In 26.3 the type constants are **not on `EntityType`**. They live in two
+parallel files: `EntityTypeIds`, 161 `ResourceKey`s with no reference to any
+entity class, and `EntityTypes`, the 161 matching objects that
 `EntityType.Builder` produced from them. `MobCategory` — `MobCategory.MONSTER`,
 `MobCategory.CREATURE`, `MobCategory.AMBIENT`, `MobCategory.AXOLOTLS`,
 `MobCategory.UNDERGROUND_WATER_CREATURE`, `MobCategory.WATER_CREATURE`,
@@ -165,9 +165,9 @@ cache, and the `Pose` overload recomputes.
 
 ## The tree, and the class that was inserted into it
 
-`Entity` has **18** direct subclasses and 191 descendants. `LivingEntity` and
+`Entity` has **18** direct subclasses and 192 descendants. `LivingEntity` and
 its own 124 make 125 of them — two thirds of the tree in one branch — and the
-seventeen non-living branches hold the other 66.
+seventeen non-living branches hold the other 67.
 
 <figure class="map">
 {{#include ../../generated/tree-Entity.svg}}
@@ -190,9 +190,9 @@ which is why `Ghast` and `Phantom` navigate without ever being one.
 `Animal` and `Monster` split by disposition, and `Monster` implements `Enemy`,
 a marker interface carrying nothing but XP-reward constants.
 
-The 66 outside `LivingEntity`'s branch are shallow, and the atlas draws them as
+The 67 outside `LivingEntity`'s branch are shallow, and the atlas draws them as
 four families and a scattering: `Projectile` with 26 descendants,
-`VehicleEntity` with 15, `BlockAttachedEntity` with 5, `Display` with 3, and
+`VehicleEntity` with 15, `BlockAttachedEntity` with 6, `Display` with 3, and
 thirteen direct subclasses of `Entity` with no
 children of their own, from `ItemEntity` to `LightningBolt`. Sharing a base class that thin is what lets
 them disagree so completely about being hit
@@ -206,7 +206,7 @@ against "`Player extends LivingEntity`" is now wrong by one level. Its point
 is `Mannequin`, a posable, profile-skinned, player-looking entity in the
 decoration package that is *not* a `Player` and carries none of the
 inventory, abilities or hunger. What the rung holds and who draws it are
-[player anatomy](../player/player-anatomy.md#the-ladder-and-the-class-262-put-in-the-middle)'s;
+[player anatomy](../player/player-anatomy.md#the-ladder-and-the-class-in-the-middle)'s;
 what matters here is that the tree gained a level.
 
 Cutting across the tree are the capability interfaces, where most of the
@@ -242,7 +242,7 @@ unload.
 
 ## From a registry entry to a live object
 
-`EntityTypes` runs `EntityType.Builder.build` for each of the 158 keys in
+`EntityTypes` runs `EntityType.Builder.build` for each of the 161 keys in
 `EntityTypeIds` and registers the result, and it is that call which freezes
 the `EntityDimensions` and its attachment points for the life of the type.
 Everything below happens per entity, long afterwards.
@@ -419,12 +419,14 @@ otherwise — and both decide how often a tracker is
 even asked about the entity, never mind what it says ([what the client is
 told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
 owns the asking, and a third parameter, `EntityType.trackDeltas`, which is
-true of every type but ten).
-Thirty-seven of the 158 types set an interval explicitly, most of them at 10
-or 20; seven set *Integer.MAX_VALUE*, so their interval branch never fires
+true of every type but eleven).
+Thirty-eight of the 161 types set an interval explicitly, most of them at 10
+or 20; eight set *Integer.MAX_VALUE* (most through
+`EntityType.Builder.noUpdateInterval`), so their interval branch never fires
 again after tick zero — `EntityTypes.ITEM_FRAME` and `EntityTypes.GLOW_ITEM_FRAME`,
 `EntityTypes.PAINTING`, `EntityTypes.LEASH_KNOT`, `EntityTypes.END_CRYSTAL`,
-`EntityTypes.LIGHTNING_BOLT` and `EntityTypes.AREA_EFFECT_CLOUD`. At the
+`EntityTypes.LIGHTNING_BOLT`, `EntityTypes.AREA_EFFECT_CLOUD` and
+`EntityTypes.CUSHION`. At the
 other end `EntityTypes.MARKER` has a tracking range of 0 and is never sent to
 anyone at all.
 
@@ -437,7 +439,7 @@ entities.
 
 ## Where to look
 
-Start at `EntityTypes`, which builds all 158 types and is the most useful
+Start at `EntityTypes`, which builds all 161 types and is the most useful
 single table in the package, and read `EntityType.Builder.build` beside it for
 what gets frozen. Then `EntityType.create` and `EntityType.loadEntityRecursive`
 for the chain this page traces, and `Entity` itself — its constructor,

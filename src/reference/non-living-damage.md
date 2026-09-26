@@ -1,6 +1,6 @@
 # Damage outside `LivingEntity`
 
-> Verified against **Minecraft 26.2** · Reference · Hand-kept from
+> Verified against **Minecraft 26.3** · Reference · Hand-kept from
 > `net/minecraft/world/entity/**`.
 
 `Entity.hurtServer` is **abstract**, so every branch has to answer for itself.

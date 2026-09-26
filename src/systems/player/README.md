@@ -1,6 +1,6 @@
 # VIII · The player
 
-> Verified against **Minecraft 26.2** · Part VIII · The one entity a human is steering: what it is made of, when it runs, and the five things it does that the rest of the world does differently.
+> Verified against **Minecraft 26.3** · Part VIII · The one entity a human is steering: what it is made of, when it runs, and the five things it does that the rest of the world does differently.
 
 Everything in Parts IV to VII happens to the world. This part is about the
 one object in it that argues back. You meet it as friction — the snap back
@@ -101,9 +101,8 @@ is that same machinery from the eater's end.
    hit against a cooldown twice in two different shapes — quadratically on the
    base damage, linearly on the enchantment bonus — and multiplying the mace's
    fall bonus by the critical hit.
-5. [The spear](the-spear.md) — the 26.2 combat change, and the part's most
-   surprising lecture. Two components on one item: a stab whose packet has
-   no target in it, and a charge whose damage comes from closing speed and
+5. [The spear](the-spear.md) — the part's most surprising lecture. Two
+   components on one item: a stab whose packet has no target in it, and a charge whose damage comes from closing speed and
    which ignores the attack cooldown entirely.
 6. [Hunger and experience](hunger-and-experience.md) — two bars the server
    owns outright. Walking costs exactly zero exhaustion; `FoodConstants` names

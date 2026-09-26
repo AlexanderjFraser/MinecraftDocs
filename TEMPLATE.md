@@ -155,7 +155,7 @@ symptoms.
 ## What every page keeps
 
 1. **The title** — the system, not the scenario.
-2. **The verified line** — `> Verified against **Minecraft 26.2** · Part N ·
+2. **The verified line** — `> Verified against **Minecraft 26.3** · Part N ·
    <the scenario in one line>`. The scenario is a sentence a player could
    act out, not a topic.
 3. **The opening paragraph** — starts *inside* the scenario (a player takes a
@@ -543,7 +543,9 @@ agents read.
 A lane in a sequence diagram is a class name, abbreviated once for the whole
 corpus. `python tools/check_lanes.py` reads the key below and every
 `participant X as Y` in `src/`, fails if a key entry is not a class in the
-decompile or if two key rows share a lane, and reports every page whose
+decompile (a row the book's release lacks is only a note while every page that
+declares the lane is still verified against an earlier release that has the
+class) or if two key rows share a lane, and reports every page whose
 lane means something other than the key says; `--strict` turns the report
 into a failure, and `tools/deploy.sh` runs it that way over the whole corpus,
 so a page whose lane disagrees with the key does not publish. `--index`

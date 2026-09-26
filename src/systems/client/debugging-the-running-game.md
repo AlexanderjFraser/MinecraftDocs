@@ -1,6 +1,6 @@
 # Debugging the running game
 
-> Verified against **Minecraft 26.2** · Part X · a villager's brain drawn over its head: one subscription mechanism, sixteen instances, all of them in the jar you downloaded and fifteen of them unreachable without a JVM flag.
+> Verified against **Minecraft 26.3** · Part X · a villager's brain drawn over its head: one subscription mechanism, sixteen instances, all of them in the jar you downloaded and fifteen of them unreachable without a JVM flag.
 
 Every one of these sixteen debug subscriptions is compiled into the shipped
 client and the shipped dedicated server. Every subscription is in the

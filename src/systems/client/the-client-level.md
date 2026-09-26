@@ -1,6 +1,6 @@
 # The client level
 
-> Verified against **Minecraft 26.2** · Part X · the same `Level` class the server runs, with its authority removed: what the client really simulates, and what it only pretends to.
+> Verified against **Minecraft 26.3** · Part X · the same `Level` class the server runs, with its authority removed: what the client really simulates, and what it only pretends to.
 
 Place a repeater on the client and it is *there* — drawn, collidable, part of
 the world. Ask the client whether that repeater has a tick scheduled and it
@@ -198,12 +198,12 @@ changed since last frame.
 ## Who interpolates, and who snaps
 
 An entity position arriving from the server does not simply become the
-entity's position. `Entity.moveOrInterpolateTo` asks
-`Entity.getInterpolation` for an `InterpolationHandler`; if there is one the
-new position is handed to it as a target, and if there is not the position,
-yaw and pitch are assigned directly. The base implementation returns
-**null**, so the default across the entity tree is to snap, and interpolation
-is opted into by exactly seven overrides.
+entity's position. `Entity.moveOrInterpolateTo` hands it as a target to the
+entity's `InterpolationHandler` (`Entity.getInterpolation`), and if the
+handler declines, the position, yaw and pitch are assigned directly. The base
+`Entity.createInterpolationHandler` returns `InterpolationHandler.NO_OP`, which
+declines everything, so the default across the entity tree is to snap, and
+interpolation is opted into by exactly seven overrides.
 
 | supplies an `InterpolationHandler` | snaps |
 |---|---|

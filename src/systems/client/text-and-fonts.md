@@ -1,6 +1,6 @@
 # Text and fonts
 
-> Verified against **Minecraft 26.2** · Part X · a chat line in a language whose characters are not in the default font: six stages from a `Component` to a quad, one of which uploads a texture while pretending to measure.
+> Verified against **Minecraft 26.3** · Part X · a chat line in a language whose characters are not in the default font: six stages from a `Component` to a quad, one of which uploads a texture while pretending to measure.
 
 Ask the client how wide a piece of text is and it will stitch a glyph into a
 texture sheet and upload it to the GPU. `Font.width` resolves each codepoint
@@ -174,8 +174,8 @@ What comes out is a `TextRenderable` per glyph inside a `Font.PreparedText`.
 In the GUI, `GuiGraphicsExtractor.text` and its siblings build a
 `GuiTextRenderState` that `GuiRenderer` later expands into
 `GlyphRenderState`s. In the world, `SubmitNodeCollection.submitText` and
-`SubmitNodeCollection.submitNameTag` feed `TextFeatureRenderer` and
-`NameTagFeatureRenderer`, and `GlyphRenderTypes.select` picks between the
+`SubmitNodeCollection.submitNameTag` both feed `TextFeatureRenderer`, and
+`GlyphRenderTypes.select` picks between the
 normal, see-through and polygon-offset render types by `Font.DisplayMode`.
 
 ## A chat line, through all six

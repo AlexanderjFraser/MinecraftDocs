@@ -1,6 +1,6 @@
 # Player anatomy
 
-> Verified against **Minecraft 26.2** · Part VIII · You open your own inventory and look at what you are made of: six classes deep on your own screen, forty-three slots wide, and one of those slots is not storage at all.
+> Verified against **Minecraft 26.3** · Part VIII · You open your own inventory and look at what you are made of: six classes deep on your own screen, forty-three slots wide, and one of those slots is not storage at all.
 
 You are a `LivingEntity` that a human is steering down a connection. Almost
 everything on this page follows from that sentence: the class ladder exists
@@ -27,7 +27,7 @@ the equipment container a horse also has.
 | `ServerPlayerGameMode` / `MultiPlayerGameMode` | what the current `GameType` allows, one object per side | server / client main |
 | `Mannequin` | the other `Avatar`: a posable dummy that gets the whole skin pipeline | both |
 
-## The ladder, and the class 26.2 put in the middle
+## The ladder, and the class in the middle
 
 ```mermaid
 classDiagram

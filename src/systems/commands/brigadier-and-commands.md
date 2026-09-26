@@ -1,6 +1,6 @@
 # Brigadier and commands
 
-> Verified against **Minecraft 26.2** · Part XIII · You type `/give @p diamond_sword[minecraft:damage=5]` into the chat box: three parsers see that string, two of them throw their answer away — and not one of the completions you accepted along the way left your machine.
+> Verified against **Minecraft 26.3** · Part XIII · You type `/give @p diamond_sword[minecraft:damage=5]` into the chat box: three parsers see that string, two of them throw their answer away — and not one of the completions you accepted along the way left your machine.
 
 Open the chat box and type a slash. Before you have finished the word, the
 text is coloured, a grey hint has appeared behind the cursor and a

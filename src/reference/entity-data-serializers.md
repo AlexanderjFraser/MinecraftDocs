@@ -1,10 +1,10 @@
 # Entity data serializers
 
-> Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
+> Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
 Every `EntityDataSerializer` in `EntityDataSerializers`, in **registration order, which is the wire id** — `EntityDataSerializers.registerSerializer` pushes each one into a `CrudeIncrementalIntIdentityHashBiMap` that hands out the next int. A `SynchedEntityData.DataValue` on the wire is an unsigned byte accessor id, this var-int, and the encoded value. *For value type* marks the ones built by `EntityDataSerializer.forValueType`, the immutable case where `EntityDataSerializer.copy` is identity. See [Synched entity data](../systems/entities/synched-entity-data.md).
 
-43 serializers, wire ids 0 to 42
+44 serializers, wire ids 0 to 43
 
 | id | constant | value type | built by |
 |---:|---|---|---|
@@ -51,3 +51,4 @@ Every `EntityDataSerializer` in `EntityDataSerializers`, in **registration order
 | 40 | `EntityDataSerializers.QUATERNION` | `Quaternionfc` | for value type |
 | 41 | `EntityDataSerializers.RESOLVABLE_PROFILE` | `ResolvableProfile` | for value type |
 | 42 | `EntityDataSerializers.HUMANOID_ARM` | `HumanoidArm` | for value type |
+| 43 | `EntityDataSerializers.DYE_COLOR` | `DyeColor` | for value type |

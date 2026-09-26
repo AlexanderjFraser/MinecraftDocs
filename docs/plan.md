@@ -50,7 +50,8 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. None has run. After it, nothing more is done here except a
+`release-26.3`. **V1 ran on 2026-09-26** — the tools read 26.3, ninety-one pages say so and
+forty-two, the systems 26.3 reshaped, say 26.2 until V2 — and the rest have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -289,6 +290,13 @@ day it was called stable. Its steps, each now a command:
    rewrite (V2's job); `claims.py --all --counts` over the touched pages,
    because a count whose population moved is wrong now. Every change logged
    in the ledger.
+Since pass 8's session V1 **each page is checked against the release its own header names**
+(`reference/<version>`, with the libraries that release pins, from the tree's `libraries.json`), so
+the flip breaks no gate: a page moves to the new release when it has been re-read, a page not yet
+re-read keeps saying — truthfully — the release it was checked against, and `python
+tools/verify_names.py --current` is the test that none is left behind. The tree is staged with McDeob's
+own decompiler options, so its line counts are comparable with the last one's.
+
 6. **The header line** on every page, `CLAUDE.md`, `README.md`, the
    introduction, `book.toml`, the issue template's placeholder,
    `fetch_libs.sh`'s defaults; the 1.21 blockquotes gain the new drift where a
@@ -392,3 +400,20 @@ understood; recording is after the release.
   file, `CLAUDE.md`, `README.md`, the heads of [pass9.md](pass9.md) and
   [pass5.md](pass5.md), and the memory brought current — the memory's plan
   entry cut from what the repo already records to what it cannot derive.
+
+- **2026-09-26, pass 8, session V1 — the version, mechanical (Opus).** The tag `pass-8-start` placed
+  at the planning session's commit; the tools flipped to 26.3. **The gates now check each page
+  against the release its own verified line names** (`mc_version.page_version`, `tree`, `lib_roots`;
+  `verify_names.py --probe` proves the routing; `--current` is the release's test), with library names
+  checked against the release's own pins. The 26.3 tree **re-decompiled with McDeob's own options**:
+  the planning session's staging had dropped all 16,652 `@Override`s and so shrunk every line count
+  (71.5% of shared files now byte-identical to 26.2, against 32.9%). Two generator bugs the 26.3 data
+  exposed fixed (the spawn-override view crashed and left its page empty; the registries view read a
+  renamed list and said "1 data-pack registry"); `renderpearl` mapped to Part XI and `level/blockscan`
+  to IV. Five research agents over the tree, every finding re-derived before use: **91 pages now say
+  26.3** with 71 corrections (the swing packet on `the-connection`'s hook, the block tools as a
+  component, the atlas's fan-in hook, four history claims false against the 1.21.11 tree, one false
+  heading corrected with its links), and **42 say 26.2**, the systems 26.3 reshaped — SDL3 for GLFW,
+  `renderpearl` and OIT, the reloadable registries, the swing and dig packets, world generation — each
+  listed with what changed in [pass9.md](pass9.md) for V2. The owner's decision on V2 is now about 42
+  pages. Deployed.

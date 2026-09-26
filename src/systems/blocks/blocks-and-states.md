@@ -1,6 +1,6 @@
 # Blocks and states
 
-> Verified against **Minecraft 26.2** · Part V · A player right-clicks the top of a stone block holding oak stairs: one of the stair's eighty pre-built states is chosen, and then written — and the tail of that write is the figure the rest of this part points back at.
+> Verified against **Minecraft 26.3** · Part V · A player right-clicks the top of a stone block holding oak stairs: one of the stair's eighty pre-built states is chosen, and then written — and the tail of that write is the figure the rest of this part points back at.
 
 You are standing on stone with a stack of oak stairs, and you right-click the
 top of the block. A moment later a stair is up there, facing away from you,
@@ -83,7 +83,7 @@ classDiagram
         the caches initCache fills
     }
     class BlockState {
-        twenty lines: a constructor, asState, CODEC
+        twenty-nine lines: a constructor, asState, two codecs
     }
     BlockBehaviour.Properties ..> BlockBehaviour : read by the constructor, never copied out
     BlockBehaviour <|-- Block
@@ -123,9 +123,8 @@ must first be given an identity: `BlockBehaviour.Properties.setId` supplies the
 and the `BlockBehaviour` constructor throws *Block id not set* without one.
 So a block cannot be built from `BlockBehaviour.Properties.of` outside
 `Blocks.register`, which takes the id from `BlockItemIds` or `BlockIds` and
-hands it to the builder on the way past. None of that is data:
-`BlockBehaviour.Properties.CODEC` is a unit codec, so `Block.CODEC` is a
-constructor dispatch and hardness, sound and map colour never serialise.
+hands it to the builder on the way past. None of that is data: a block has
+no codec at all, so hardness, sound and map colour never serialise.
 
 ### The table, sorted by name
 
@@ -214,8 +213,10 @@ faces built for every block without a dynamic shape — is filled later, by
 `BlockBehaviour.BlockStateBase.initCache`, because those questions may look
 at other blocks and so cannot be answered until every block exists.
 
-`BlockState` itself is **twenty lines**: a constructor, a `BlockState.asState`
-that returns *this*, and `BlockState.CODEC`. It exists so the generic
+`BlockState` itself is **twenty-nine lines**: a constructor, a
+`BlockState.asState` that returns *this*, and two codecs —
+`BlockState.FULL_CODEC`, and `BlockState.CODEC`, which writes a default state
+as the bare block id. It exists so the generic
 plumbing has a concrete type to name. `BlockBehaviour.BlockStateBase` is the
 class people mean when they say *block state*.
 

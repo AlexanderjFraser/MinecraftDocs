@@ -1,6 +1,6 @@
 # Enchantment hooks
 
-> Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
+> Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
 Every public entry point of `EnchantmentHelper`, with the classes that call it. The enchantment package barely calls anything and everything calls it, so this table is the system's real interface: each row is a moment at which some other system asks whether an enchantment wants to change what happens. Callers are the declaring files, one per class, excluding `EnchantmentHelper` itself. See [Enchantments](../systems/items/enchantments.md) for what an enchantment is and [Enchanting](../systems/items/enchanting.md) for the selection half.
 
@@ -15,7 +15,7 @@ Every public entry point of `EnchantmentHelper`, with the classes that call it. 
 | `EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak` | 1 | `ThrownTrident` |
 | `EnchantmentHelper.doPostPiercingAttackEffects` | 1 | `LivingEntity` |
 | `EnchantmentHelper.enchantItem` | 2 | `EnchantWithLevelsFunction` |
-| `EnchantmentHelper.enchantItemFromProvider` | 1 | `EnderMan`, `Mob`, `Pillager`, `SkeletonTrapGoal`, `Vindicator` |
+| `EnchantmentHelper.enchantItemFromProvider` | 1 | `Enderman`, `Mob`, `Pillager`, `SkeletonTrapGoal`, `Vindicator` |
 | `EnchantmentHelper.filterCompatibleEnchantments` | 1 | *nothing outside the class* |
 | `EnchantmentHelper.forEachModifier` | 2 | `ItemStack` |
 | `EnchantmentHelper.getAvailableEnchantmentResults` | 1 | *nothing outside the class* |

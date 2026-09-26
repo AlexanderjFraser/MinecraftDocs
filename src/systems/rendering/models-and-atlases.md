@@ -1,6 +1,6 @@
 # Models and atlases
 
-> Verified against **Minecraft 26.2** · Part XI · a resource pack changes one texture, and every stone block in the world redraws.
+> Verified against **Minecraft 26.3** · Part XI · a resource pack changes one texture, and every stone block in the world redraws.
 
 You drop a pack into the folder, move it above the default, and the screen
 goes to the loading overlay for a second. The pack replaced exactly one

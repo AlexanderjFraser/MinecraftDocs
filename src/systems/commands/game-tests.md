@@ -1,6 +1,6 @@
 # Game tests
 
-> Verified against **Minecraft 26.2** · Part XIII · Run `/test run *` on a vanilla server and one test runs, and passes. The suite is not in the game — a test is a data-pack file, the Java body is a value the JSON points at, and the shipped jar declares exactly one of each.
+> Verified against **Minecraft 26.3** · Part XIII · Run `/test run *` on a vanilla server and one test runs, and passes. The suite is not in the game — a test is a data-pack file, the Java body is a value the JSON points at, and the shipped jar declares exactly one of each.
 
 Game tests are how Mojang checks that a piston still pushes and a hopper
 still pulls: a small structure is pasted into a spare corner of a world, a

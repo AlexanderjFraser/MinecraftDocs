@@ -1,6 +1,6 @@
 # Prediction and acknowledgement
 
-> Verified against **Minecraft 26.2** · Part X · a block placed against a wall the server will not allow: the client shows it, the server refuses it, and a numbered receipt decides when the lie ends.
+> Verified against **Minecraft 26.3** · Part X · a block placed against a wall the server will not allow: the client shows it, the server refuses it, and a numbered receipt decides when the lie ends.
 
 The client cannot wait a round trip to show you the block you just placed, so
 it places it locally and tells the server afterwards. Everybody who has
@@ -71,8 +71,8 @@ advances several times per tick, once per position touched. The server's
 advances on every packet that reaches a
 `ServerGamePacketListenerImpl.ackBlockChangesUpTo` call. There are three such
 call sites: `ServerboundUseItemOnPacket`, `ServerboundUseItemPacket`, and the
-three destroying actions inside `ServerboundPlayerActionPacket`'s handler.
-`ServerboundPlayerActionPacket` carries eight actions in all, and the other
+four destroying actions inside `ServerboundPlayerActionPacket`'s handler.
+`ServerboundPlayerActionPacket` carries nine actions in all, and the other
 five — dropping one item, dropping a stack, releasing a use, swapping hands
 and the stab — raise nothing.
 The counter then *empties* once per connection tick, which is why five acked
@@ -219,7 +219,7 @@ at all.
   nothing for them. They are corrected by other means: the living-entity
   flags in synched data, `ClientboundCooldownPacket`, and the menu resend the
   server performs when the stack changed.
-- **Dropping.** `LocalPlayer.drop` predicts the removal from the selected
+- **Dropping.** `MultiPlayerGameMode.dropItem` predicts the removal from the selected
   slot and sends its action packet with sequence **zero** — a local mutation
   with no rollback path at all.
 - **Movement.** Rubber-banding is a different mechanism entirely: an

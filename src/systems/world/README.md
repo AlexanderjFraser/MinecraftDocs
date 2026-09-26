@@ -1,6 +1,6 @@
 # IV · The world
 
-> Verified against **Minecraft 26.2** · Part IV · The machinery that turns a place you have walked to into a place that exists: chunks asked for, made, lit, saved and forgotten, and the five pages off that line — what the place and the hour decide, and the four systems that make the world the line delivers feel alive.
+> Verified against **Minecraft 26.3** · Part IV · The machinery that turns a place you have walked to into a place that exists: chunks asked for, made, lit, saved and forgotten, and the five pages off that line — what the place and the hour decide, and the four systems that make the world the line delivers feel alive.
 
 Part III was one thread going round. This part is what it goes round *on*.
 A world is too big to hold, so the server holds a moving window of it, and

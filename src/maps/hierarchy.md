@@ -1,8 +1,8 @@
 # What extends what
 
-> Verified against **Minecraft 26.2** · Maps · The widest inheritance trees, four of them drawn with the number of descendants on every node.
+> Verified against **Minecraft 26.3** · Maps · The widest inheritance trees, four of them drawn with the number of descendants on every node.
 
-`Block` has 293 descendants and `Entity` 191 — *descendants*, not direct
+`Block` has 297 descendants and `Entity` 192 — *descendants*, not direct
 subclasses, which is the count both tables below use — and those are the two
 trees a reader of this book will climb most often. But neither is the widest
 hierarchy in the game. That is `FeatureElement`, with 386 descendants from
@@ -22,7 +22,7 @@ class table is where the real trees are, and four of them are drawn below.
 </figure>
 
 The shape is a spine with a few branches. `LivingEntity` holds 124 of the
-191, `Mob` 114 of those, `PathfinderMob` 108 of those: a mob is four
+192, `Mob` 114 of those, `PathfinderMob` 108 of those: a mob is four
 classes deep before it is a species, and Part VI's
 [entity anatomy](../systems/entities/entity-anatomy.md) is that spine.
 The non-living entities are two families and a scattering — `Projectile`
@@ -44,7 +44,7 @@ blocks that own a block entity extend — the interface that actually decides is
 all, `ComparatorBlock` and `JigsawBlock` among them. Part V's
 [block entities](../systems/blocks/block-entities.md#create-keep-replace-remove)
 is the branch in prose.
-The table's first row, `BlockBehaviour` at 294, is the same tree seen from
+The table's first row, `BlockBehaviour` at 298, is the same tree seen from
 one class higher — `Block` is its only subclass, and it exists so that a
 block's behaviour and its registry identity can be separate classes.
 
@@ -55,7 +55,7 @@ block's behaviour and its registry identity can be separate classes.
 <figcaption>The <code>Item</code> tree to three levels. Click to enlarge.</figcaption>
 </figure>
 
-Seventy-one types descend from `Item`, for over a thousand registered items. The tree is
+Sixty-seven types descend from `Item`, for over a thousand registered items. The tree is
 small because an item's behaviour mostly is not in its class: what a stack
 does is in its data components, and `Items` registers most of the game
 as a plain `Item` with a `Item.Properties` describing it. Part VII's
@@ -66,23 +66,23 @@ is this shape.
 
 <figure class="map">
 {{#include ../generated/tree-Screen.svg}}
-<figcaption>The <code>Screen</code> tree to three levels; 60 of its 72 direct subclasses have no subclasses of their own. Click to enlarge.</figcaption>
+<figcaption>The <code>Screen</code> tree to three levels; 59 of its 71 direct subclasses have no subclasses of their own. Click to enlarge.</figcaption>
 </figure>
 
-`Screen` (158) is `Block`'s shape again — 72 direct subclasses, 60 of
+`Screen` (161) is `Block`'s shape again — 71 direct subclasses, 59 of
 them terminal — with one deep branch, `AbstractContainerScreen` (27), the
 screens that show a menu ([GUI and
 screens](../systems/client/gui-and-screens.md) is Part X's), and one branch that
-is not in this book, `RealmsScreen` (23). The row above it in the table,
-`AbstractContainerEventHandler` at 159, is `Screen`'s parent with `Screen`
+is not in this book, `RealmsScreen` (27). The row above it in the table,
+`AbstractContainerEventHandler` at 162, is `Screen`'s parent with `Screen`
 as its only subclass, the same one-class-higher effect as
 `BlockBehaviour`.
 
 ## Two trees the table shows and the figures do not
 
-`Goal` has 200 descendants from 99 direct subclasses, and 130 of the 200
+`Goal` has 202 descendants from 99 direct subclasses, and 132 of the 202
 are nested classes inside the mob they serve — a fox's goals are declared
-in `Fox`, not in `world/entity/ai/goal`. `Packet` is an interface with 236 descendants from 227
+in `Fox`, not in `world/entity/ai/goal`. `Packet` is an interface with 240 descendants from 229
 direct implementers, and almost nothing below them: the packet catalogue is
 flat, and the [packets](../reference/packets.md) reference is its list.
 

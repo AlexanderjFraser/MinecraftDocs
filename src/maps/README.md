@@ -1,6 +1,6 @@
 # The atlas
 
-> Verified against **Minecraft 26.2** · Maps · Four views of the whole decompile, drawn by `tools/map_source.py` from the source tree on every deploy.
+> Verified against **Minecraft 26.3** · Maps · Four views of the whole decompile, drawn by `tools/map_source.py` from the source tree on every deploy.
 
 Before any system page makes sense you want the answer to a newcomer's
 question: *where is everything?* The atlas is that answer, looked at once.
@@ -10,7 +10,7 @@ on *what extends what*, one and one on the two bar charts, one and three on
 *where the code is*. Take them in any order; none of the four needs another.
 
 No number in the atlas is counted by hand — every one of them comes from
-`tools/map_source.py`, which reads all 7,055 files — but the four pages are
+`tools/map_source.py`, which reads all 7,301 files — but the four pages are
 not all one thing, and the distinction matters as much here as on the
 [Reference shelf](../reference/README.md). **The figures and the tables are
 generated**: they live in *src/generated/*, are rewritten on every deploy, and
@@ -23,7 +23,7 @@ Reference tier's generated half does not.
 
 ```mermaid
 flowchart LR
-    D[("the 26.2 decompile")] --> T["map_source.py, on every deploy"] --> G["seven figures, seven tables"]
+    D[("the 26.3 decompile")] --> T["map_source.py, on every deploy"] --> G["seven figures, seven tables"]
     G -- "included as they are" --> P["the four map pages"]
     G -- "read and typed by a person" --> S["the sentences"] --> P
 ```

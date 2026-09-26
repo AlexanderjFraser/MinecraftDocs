@@ -1,6 +1,6 @@
 # Tags
 
-> Verified against **Minecraft 26.2** · Part II · A parrot flies down through the canopy looking for a log to perch on, a moment after a data pack put a new block in the logs tag.
+> Verified against **Minecraft 26.3** · Part II · A parrot flies down through the canopy looking for a log to perch on, a moment after a data pack put a new block in the logs tag.
 
 A parrot is looking for somewhere to sit. `Parrot.ParrotWanderGoal` scans
 the blocks around it and asks the block state beneath each one a single
@@ -39,7 +39,7 @@ set-contains on identity. The keys are declared once, in catalogues that
 hold no contents — `BlockTags`, `ItemTags`, `EntityTypeTags`, `BiomeTags`,
 `FluidTags` and their siblings, twenty files in `net/minecraft/tags`
 including `DamageTypeTags`, `EnchantmentTags`, `StructureTags`,
-`PoiTypeTags` and the two 26.2 arrivals `FeatureTags` and `TimelineTags`.
+`PoiTypeTags`, `FeatureTags` and `TimelineTags`.
 A key that a block and its item share is declared once as a
 `BlockItemTagId` in `BlockItemTags` and projected into both catalogues:
 `BlockTags.LOGS` is the block half of `BlockItemTags.LOGS`.

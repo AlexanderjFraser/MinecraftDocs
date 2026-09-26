@@ -1,9 +1,9 @@
 # Where the mass is
 
-> Verified against **Minecraft 26.2** · Maps · The forty largest classes by lines of decompiled source, the top thirty of them drawn, coloured by which jar ships them.
+> Verified against **Minecraft 26.3** · Maps · The forty largest classes by lines of decompiled source, the top thirty of them drawn, coloured by which jar ships them.
 
 The two largest classes in the game are the top of one hierarchy: `Entity`
-and `LivingEntity`, 8,785 lines between them, the thing every mob and
+and `LivingEntity`, 9,078 lines between them, the thing every mob and
 player is before it is anything else. Third is `Minecraft`, the client
 itself. And then the list turns odd: two of the top ten never run while
 anyone is playing. `BlockModelGenerators` runs only inside the data
@@ -15,10 +15,10 @@ not where the game is.
 
 <figure class="map">
 {{#include ../generated/biggest.svg}}
-<figcaption>The thirty largest classes of 26.2. Blue ships in both jars, orange is client-only; the small grey text is the package under <code>net/minecraft</code>, or under <code>com/mojang</code> where it starts <code>mojang/</code>. Click to enlarge.</figcaption>
+<figcaption>The thirty largest classes of 26.3. Blue ships in both jars, orange is client-only; the small grey text is the package under <code>net/minecraft</code>, or under <code>com/mojang</code> where it starts <code>mojang/</code>. Click to enlarge.</figcaption>
 </figure>
 
-**The number:** 62,935 — the lines in these thirty classes, 8.7% of the
+**The number:** 64,082 — the lines in these thirty classes, 8.6% of the
 game in 0.4% of its files.
 
 ## Three kinds of big
@@ -29,7 +29,7 @@ the kind tells you how to read the class.
 **The god objects.** `Entity` and `LivingEntity` are the trunk, and each adds
 a couple of thousand lines because each is the base of everything below it. The
 fork above them is not one chain: `Mob` is one of `LivingEntity`'s direct
-subclasses and `Avatar` — inserted in 26.2 — is another, with `Player` under it
+subclasses and `Avatar` is another, with `Player` under it
 and `ServerPlayer` and `LocalPlayer` the two leaves
 ([entity anatomy](../systems/entities/entity-anatomy.md) has the tree). Those
 two leaves are long for the opposite reason to the trunk: nothing descends from
@@ -51,9 +51,7 @@ can say, which is why Part IX's pages keep coming back to them.
 
 **The catalogues written as code.** `SoundEvents`, `Blocks`, `Items` and
 `CreativeModeTabs` are registries populated one constant per line;
-`DensityFunctions` is the node types the vanilla noise graph is built from —
-the graph itself is `NoiseRouterData` and the worldgen JSON; `DataFixers` is the
-migration history; `OceanMonumentPieces` and `StrongholdPieces` are
+`DataFixers` is the migration history; `OceanMonumentPieces` and `StrongholdPieces` are
 structures built by hand, room by room, in Java rather than in a template;
 `Options` is every setting the client has, and `Hud` is the in-world overlay
 — the crosshair, the hotbar, the bars — inside the wider `Gui` that also

@@ -1,6 +1,6 @@
 # VI · Entities
 
-> Verified against **Minecraft 26.2** · Part VI · Everything in the world that is not a block: what one is, who is allowed to move it, how it is described to the other side, and how it stops.
+> Verified against **Minecraft 26.3** · Part VI · Everything in the world that is not a block: what one is, who is allowed to move it, how it is described to the other side, and how it stops.
 
 A zombie glides where your own movement is crisp. A sheared sheep changes on
 every screen at once. A mob you named never despawns, a hit that lands during

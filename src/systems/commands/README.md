@@ -1,6 +1,6 @@
 # XIII · Commands and data packs
 
-> Verified against **Minecraft 26.2** · Part XIII · a string typed into a chat box becomes a call with typed arguments, on a queue, with a permission attached — and four whole systems are built on top of that and nothing else.
+> Verified against **Minecraft 26.3** · Part XIII · a string typed into a chat box becomes a call with typed arguments, on a queue, with a permission attached — and four whole systems are built on top of that and nothing else.
 
 Type a slash. The text turns grey and green and red as you type, a hint
 appears behind the cursor, and pressing Enter sends the *string* — the

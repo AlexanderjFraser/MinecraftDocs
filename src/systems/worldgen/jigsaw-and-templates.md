@@ -1,6 +1,6 @@
 # Jigsaw and templates
 
-> Verified against **Minecraft 26.2** · Part XII · A village assembles itself: pieces that find each other through connector blocks, a priority queue instead of a stack, and a growth limit that works by taking the right pool away.
+> Verified against **Minecraft 26.3** · Part XII · A village assembles itself: pieces that find each other through connector blocks, a priority queue instead of a stack, and a growth limit that works by taking the right pool away.
 
 A village stops somewhere. Follow a street out from the town centre and the
 houses run out and the path ends in a stub of dirt path with nothing on it.

@@ -1,6 +1,6 @@
 # The GUI render tree
 
-> Verified against **Minecraft 26.2** · Part X · a chest full of the same item: how the 2D UI decides what is in front of what, without anybody ever saying so.
+> Verified against **Minecraft 26.3** · Part X · a chest full of the same item: how the 2D UI decides what is in front of what, without anybody ever saying so.
 
 Nothing in the client's 2D UI draws anything. Every call a screen, a widget
 or the HUD makes appends a *render state* to a tree; later in the same frame

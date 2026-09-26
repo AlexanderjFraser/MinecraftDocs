@@ -1,6 +1,6 @@
 # Text components
 
-> Verified against **Minecraft 26.2** · Part II · A player dies: the message that names the killer is built on the server, crosses the wire as a translation key, and is worded on the client.
+> Verified against **Minecraft 26.3** · Part II · A player dies: the message that names the killer is built on the server, crosses the wire as a translation key, and is worded on the client.
 
 An arrow lands and a player drops. A line appears in everyone's chat, and
 on the victim's screen the death screen says who did it. The server built

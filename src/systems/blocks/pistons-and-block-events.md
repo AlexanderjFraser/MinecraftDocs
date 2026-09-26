@@ -1,6 +1,6 @@
 # Pistons and block events
 
-> Verified against **Minecraft 26.2** · Part V · A powered piston pushes one stone block, and the client is never told where the moving blocks are.
+> Verified against **Minecraft 26.3** · Part V · A powered piston pushes one stone block, and the client is never told where the moving blocks are.
 
 A piston cannot act when it is asked. A repeater told about a change books a
 turn in the appointment book and a wire recomputes itself on the spot;
@@ -214,10 +214,11 @@ with `PistonStructureResolver.canStickToEachOther` refusing the one pairing
 everybody tests first — slime against honey does not stick.
 
 `PistonBaseBlock.isPushable` is the per-block veto and it is a longer list
-than folklore suggests: outside the build height or the world border, obsidian
-and its three relatives, a block whose destroy speed is −1, a `PushReaction`
-of `PushReaction.BLOCK`, a `PushReaction.DESTROY` where the caller did not
-allow destruction, a `PushReaction.PUSH_ONLY` being moved the wrong way, an
+than folklore suggests: outside the build height or the world border, a
+block whose destroy speed is −1, a `PushReaction` of `PushReaction.IMMOVEABLE`
+(which is how obsidian and its three relatives say it, as data), a
+`PushReaction.POPPED` where the caller did not allow destruction, a
+`PushReaction.PUSH` being moved the wrong way, an
 already-extended piston, and — the clause that explains the most —
 **anything with a block entity**. A push straight down at the bottom of the
 world or straight up at the top is refused too, and a piston itself skips the

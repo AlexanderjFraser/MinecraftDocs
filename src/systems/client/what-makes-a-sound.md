@@ -1,6 +1,6 @@
 # What makes a sound happen
 
-> Verified against **Minecraft 26.2** · Part X · you break a block and you hear it: three doors a sound can come through, and only one of them says what the sound is.
+> Verified against **Minecraft 26.3** · Part X · you break a block and you hear it: three doors a sound can come through, and only one of them says what the sound is.
 
 Watch someone place a block and the server sends `ClientboundSoundPacket`,
 naming the sound. Watch them break the same block and it sends nothing of the
@@ -117,7 +117,7 @@ volume and pitch through and ORs the streaming flag.
 And there are two kinds of silence, which is worth knowing because only one of
 them is a mistake. The identifier
 `SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION` is short-circuited by name in
-`AbstractSoundInstance.resolve` before the registry is consulted at all, so
+`AbstractSoundInstance.getOrResolve` before the registry is consulted at all, so
 anything asking for it is silenced with **no** log warning. An event that
 simply does not resolve is the other kind, and it logs — including a pack that
 empties an event's list, which gets the warning rather than the quiet.
@@ -190,7 +190,7 @@ the exclusion check.
 
 ## Music and ambience are environment attributes
 
-This is the biggest 26.2 change in the system and the one a 1.21-era reader
+This is the biggest change in the system and the one a 1.21-era reader
 will get wrong. *BiomeSpecialEffects* no longer carries music, ambient loops,
 additions or mood — it is block tint only. Every one of those is now an
 `EnvironmentAttribute` (see [environment attributes and

@@ -32,7 +32,8 @@ wording done after the check and read again by a session that changed
 nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
 the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
 (sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
-that file's Part 6. After it the production process is rebuilt from first
+that file's Part 6; **V1 has run** (the tools read 26.3, 91 pages say 26.3 and 42
+say 26.2 until V2), and V2's scope — 42 pages, by system — is the owner's to set. After it the production process is rebuilt from first
 principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
 returns here with what it learned; until then only a version pass the owner
 asks for and the corrections readers file touch the site. Beside the passes,
@@ -54,16 +55,20 @@ next session that touches it.
    (the one allowed drift note is the *For a 1.21-era reader* blockquote at a
    page's foot). When a release lands, the version pass re-verifies the pages
    (`docs/plan.md`, *The version pass*; `tools/version_pass.py` stages the
-   tree). **The pages say 26.2 and the tools read 26.2 until pass 8's
-   sessions V1 and V2 run; 26.3 (2026-09-15) is staged at `reference/26.3/`
-   and is what they move the site to.** The version is one constant,
+   tree). **The tools read 26.3 (2026-09-15), and each page is checked against
+   the release its own header names**: since pass 8's session V1, 91 pages say
+   26.3 and 42 — the systems 26.3 reshaped — still say 26.2 and are checked
+   against `reference/26.2/` until session V2 moves them; `verify_names.py
+   --current` fails any page left behind. The version is one constant,
    `tools/mc_version.py`.
 4. **Trace-driven.** A lecture follows a scenario through the system; the
    trace is the spine and the diagram is the artefact. A package tour is
    the boring version and the one you learn least from.
 5. **Verified names.** `python tools/verify_names.py` checks that every
-   backticked identifier on every page exists in the decompile. A page that
-   fails does not publish. "Verified against 26.2" is a test, not a claim.
+   backticked identifier on every page exists in the decompile of the release
+   the page's header names (library names in the versions that release pins).
+   A page that fails does not publish. "Verified against 26.3" is a test, not
+   a claim.
    `python tools/check_figure_names.py --strict` asks the same of every
    name *inside* a mermaid block — a lane, a node, a message, a class box —
    and has been a gate since pass 7's close: a member is `Class.member` in a
@@ -96,18 +101,20 @@ next session that touches it.
 The Mojang-mapped decompile is **not in this repo** (it can't be — this repo
 is public and the EULA/mappings licence forbids redistributing it). It lives
 under `reference/` (gitignored, with the jars it came from), one tree per
-version: `reference/26.2/`, the version the pages currently say, and
-`reference/26.3/`, staged 2026-09-26 for the version pass. Every tool reads
+version: `reference/26.3/`, the book's, and `reference/26.2/`, kept while any
+page still says 26.2 (the gates check such a page against it); each tree's
+`libraries.json` names the library versions its release pins. Every tool reads
 the tree `tools/mc_version.py` names (`MC_SOURCE` overrides). Since 26.x the
 game jar ships with Mojang's names in it, so a tree is a plain Vineflower
 decompile of the client jar — `python tools/version_pass.py <version>` does
 the whole staging from Mojang's manifest in about ten minutes, with the
-decompiler bundled in the sibling project's McDeob jar. The client jar is a
+decompiler bundled in the sibling project's McDeob jar, run with McDeob's own
+options (without them every `@Override` is dropped and every line count shrinks). The client jar is a
 strict superset of the server jar, so a tree is the client decompile plus
 `server-classes.txt`, the list of classes the dedicated server also ships —
 the oracle for "is this class server-side or client-only". 26.2: 7,055
-classes, 719k lines, Java 25; 26.3: 7,301 classes, 271 removed and 517 added,
-5,037 server classes, protocol 777.
+classes, 719k lines, Java 25; 26.3: 7,301 classes, 741k lines, 271 removed and
+517 added, 5,037 server classes, protocol 777.
 
 Beside the Java in each tree: **`data/` and `assets/`** — the jar's data
 packs and its non-texture assets (models, blockstates, items, atlases, fonts,
@@ -120,32 +127,37 @@ checks library names at member level from those trees, so
 `CommandDispatcher.execute` or `Codec.STRING` is verified, not allow-listed. A
 fact-check agent reads them rather than taking a library's behaviour on trust.
 
-Where the game is (26.2, from `python tools/map_source.py packages`; the
+Where the game is (26.3, from `python tools/map_source.py packages`; the
 full tables are in `src/maps/`, regenerated on every deploy):
 
 | package | classes | lines | |
 |---|---:|---:|---|
-| `world/level` | 1,312 | 146k | blocks, block states, chunks, lighting, world generation |
-| `world/entity` | 716 | 109k | the entity hierarchy, AI, attributes, players |
-| `client/gui` | 444 | 59k | screens, HUD |
-| `client/renderer` + `client/model` | 968 | 61k | the frame, section meshing, entity models, render pipelines |
-| `com/mojang/blaze3d` | 211 | 26k | the GPU abstraction — `opengl` **and `vulkan`** backends behind `GpuDevice`; **in 26.3 most of it moved to `com/mojang/renderpearl`** (146 classes: `api`, `backend`, `frontend`, `util`) |
-| `world/item` + `world/inventory` | 378 | 36k | items, containers, data components |
-| `network/protocol` | 293 | 13k | the packet catalogue (machinery in `network/`, `server/network`) |
+| `world/level` | 1,418 | 151k | blocks, block states, chunks, lighting, world generation |
+| `world/entity` | 727 | 111k | the entity hierarchy, AI, attributes, players |
+| `client/gui` | 445 | 60k | screens, HUD |
+| `client/renderer` + `client/model` | 983 | 63k | the frame, section meshing, entity models, render pipelines |
+| `com/mojang/renderpearl` + `com/mojang/blaze3d` | 146 + 86 | 19k + 10k | the GPU abstraction: `renderpearl`'s `api` interfaces, `frontend` implementations and `opengl` **and `vulkan`** backends behind `GpuDevice`; `blaze3d` keeps the window, the frame graph, the vertex formats and `RenderSystem` |
+| `world/item` + `world/inventory` | 387 | 38k | items, containers, data components |
+| `network/protocol` | 298 | 13k | the packet catalogue (machinery in `network/`, `server/network`) |
 | `server/level` | 42 | 12k | `ServerLevel`, `ChunkMap`, tickets — small package, huge classes |
-| `server/commands` + `commands/*` | ~220 | 26k | Brigadier, execution |
-| `util/datafix` + `util/filefix` | 453 | 30k | save migration — **out of scope by rule 3** |
-| `com/mojang/realmsclient` | 127 | 13k | Realms UI — out of scope |
+| `server/commands` + `commands/*` | 235 | 27k | Brigadier, execution |
+| `util/datafix` + `util/filefix` | 468 | 31k | save migration — **out of scope by rule 3** |
+| `com/mojang/realmsclient` | 137 | 15k | Realms UI — out of scope |
 | gametest, telemetry, profiling, jsonrpc, advancements… | ~1,000 | | one sentence each in *what this book skips* |
 
 Naming drift a 1.21-era reader will trip on: `ResourceLocation` is now
 `Identifier`; `Util` lives in `net.minecraft.util`; `LightTexture` is
 `Lightmap`; `Timer` is `DeltaTracker`; `Gui` and `Hud` both exist. 26.3 adds
-to the list: the GPU abstraction is `renderpearl`, world generation's surface
-rules and carvers and the `CARVERS` and `SURFACE` chunk statuses are gone,
-`level/storage` is reworked, and `ServerboundSwingPacket`, `RedStoneWireBlock`,
-`ItemInHandRenderer` and the registry codecs (`RegistryFileCodec`,
-`RegistryFixedCodec`, `HolderSetCodec`) no longer exist under those names.
+to the list: the GPU abstraction is `renderpearl`; the window and input layer
+is SDL3, not GLFW; world generation's configured features, surface rules and
+the `NOISE`, `SURFACE` and `CARVERS` chunk statuses are gone (`TERRAIN` does
+their work; surface rules are `levelgen/material`); loot tables, predicates,
+recipes and advancements are reloadable registries read by `RegistryDataLoader`;
+`level/storage` is reworked; `ServerboundSwingPacket` is `ServerboundPunchPacket`
+up and `ClientboundSwingAnimationPacket` down; `RedStoneWireBlock` is
+`RedstoneWireBlock`; and `ItemInHandRenderer`, `ConfiguredFeature` and
+`NameTagFeatureRenderer` are gone. The registry codecs (`RegistryFileCodec`,
+`RegistryFixedCodec`, `HolderSetCodec`) only moved, to `core/registries/codec`.
 
 ## The page (`TEMPLATE.md`)
 

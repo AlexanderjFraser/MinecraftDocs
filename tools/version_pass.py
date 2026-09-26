@@ -58,6 +58,13 @@ ROOT = mc_version.ROOT
 MANIFEST = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"
 MCDEOB = os.environ.get("MCDEOB_JAR", "D:/pvpmod/McDeob-3.4.1.jar")
 DECOMPILER_MAIN = "org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler"
+# The options McDeob 3.4.1's own GUI passes (`Util.getDecompilerParams`, read from its bytecode in pass 8's
+# session V1), so that a staged tree reads like the 26.2 tree the book was written against: generic
+# signatures, default constructors shown, non-ASCII escaped, synthetics removed, and @Override added.
+# The first 26.3 staging ran without `aoa`, `hdc` and `asc` and dropped all 16,652 @Override lines, which
+# shrank every line count on the site for a reason that was not the game. (`udv=0` is McDeob's only for a
+# remapped jar; a 26.x jar carries Mojang's names and debug variables, so the default is kept.)
+DECOMPILER_FLAGS = ("-dgs=1", "-hdc=0", "-asc=1", "-rsy=1", "-aoa=1")
 LIBS = ("authlib", "brigadier", "datafixerupper")
 TEXTURES = (".png", ".mcmeta")
 
@@ -173,7 +180,7 @@ def decompile(client_jar: str, out: str, mcdeob: str = MCDEOB) -> int:
                 zout.writestr(info, zin.read(info.filename))
                 n += 1
     print(f"  {n} classes staged; running Vineflower (this takes minutes)")
-    cmd = ["java", "-cp", mcdeob, DECOMPILER_MAIN, "-jrt=1", "-rsy=1", "-dgs=1", "-log=WARN", classes_jar, work]
+    cmd = ["java", "-cp", mcdeob, DECOMPILER_MAIN, *DECOMPILER_FLAGS, "-log=WARN", classes_jar, work]
     subprocess.run(cmd, check=True)
     produced = os.path.join(work, "classes.jar")  # Vineflower writes a jar of the same name beside the input
     count = 0
@@ -184,6 +191,19 @@ def decompile(client_jar: str, out: str, mcdeob: str = MCDEOB) -> int:
                 count += 1
     shutil.rmtree(work, ignore_errors=True)
     return count
+
+
+def write_pins(out: str, libs: dict) -> str:
+    """reference/<version>/libraries.json: the library versions the release pins, which the gates read
+    (`mc_version.lib_roots`) so that a page verified against this release has its Brigadier, DataFixerUpper
+    and authlib names checked against these trees only, not against every version staged beside them."""
+    path = os.path.join(out, mc_version.LIBRARIES_FILE)
+    os.makedirs(out, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({lib: ver for lib, (ver, _url) in sorted(libs.items())}, f)
+        f.write("\n")
+    print(f"  pins     {path}")
+    return path
 
 
 # --- the flip -----------------------------------------------------------------
@@ -201,8 +221,9 @@ def flip(version: str) -> None:
         text = f.read()
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(flip_text(text, version))
-    print(f"tools/mc_version.py -> {version}. Now: the header line on every page, CLAUDE.md, README.md, "
-          f"the introduction and the issue template; then the gates and deploy.sh.")
+    print(f"tools/mc_version.py -> {version}. Every page is still checked against the release its own verified line "
+          f"names, so the gates pass; move each page's line to {version} as it is re-read, then the introduction, "
+          f"the issue template and fetch_libs.sh's defaults; `verify_names.py --current` passes when none is left behind.")
 
 
 # --- the check -----------------------------------------------------------------
@@ -231,7 +252,16 @@ def check(version: str) -> int:
     r2 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "check_figure_names.py"), "--strict"], env=env,
                         capture_output=True, text=True, encoding="utf-8", errors="replace")
     print((r2.stdout.strip().splitlines() or ["(no output)"])[-1])
-    return 0 if r.returncode == 0 and r2.returncode == 0 else 1
+    # the lane key names a class per lane, and a release that renames one breaks the key, not a page
+    # (26.3: RedStoneWireBlock, ConfiguredFeature, ItemInHandRenderer) — pass 8, session V1
+    print(f"== check_lanes.py --strict against {tree}")
+    r3 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "check_lanes.py"), "--strict"], env=env,
+                        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    for line in r3.stdout.splitlines():
+        if line.startswith("key:"):
+            print(f"  {line}")
+    print((r3.stdout.strip().splitlines() or ["(no output)"])[-1])
+    return 0 if r.returncode == 0 and r2.returncode == 0 and r3.returncode == 0 else 1
 
 
 # --- the staging ---------------------------------------------------------------
@@ -270,6 +300,7 @@ def stage(version: str) -> int:
             f.write("\n".join(names) + "\n")
         print(f"  {len(names)} classes")
     print("== the libraries (tools/fetch_libs.sh)")
+    write_pins(out, p["libs"])
     env = dict(os.environ)
     for lib, (ver, url) in p["libs"].items():
         env[{"authlib": "AUTHLIB", "brigadier": "BRIGADIER", "datafixerupper": "DFU"}[lib]] = ver
@@ -338,6 +369,11 @@ def probe() -> int:
         vj["downloads"]["client_mappings"] = {"url": "m"}
         if pins(vj)["mapped"]:
             print("probe FAILED: client_mappings not noticed"); return 1
+        # the pins file the gates read
+        pins_path = write_pins(os.path.join(work, "tree"), p["libs"])
+        with open(pins_path, encoding="utf-8") as f:
+            if json.load(f) != {"authlib": "10.0.77", "brigadier": "1.3.11"}:
+                print("probe FAILED: libraries.json"); return 1
         # the flip
         if 'VERSION = "9.9"' not in flip_text('x = 1\nVERSION = "26.2"\ny = 2\n', "9.9"):
             print("probe FAILED: flip"); return 1
@@ -351,7 +387,7 @@ def probe() -> int:
     finally:
         shutil.rmtree(work, ignore_errors=True)
     print("probe ok: textures dropped and data kept, inner classes folded out of server-classes.txt, "
-          "library pins read, an obfuscated version refused, the flip exact")
+          "library pins read and written for the gates, an obfuscated version refused, the flip exact")
     return 0
 
 

@@ -1,13 +1,13 @@
 # The connection
 
-> Verified against **Minecraft 26.2** · Part IX · you swing at a pig: one round trip, from a value on one thread to bytes on a wire to a method call on another — and then the whole life of the channel that carried it.
+> Verified against **Minecraft 26.3** · Part IX · you swing at a pig: one round trip, from a value on one thread to bytes on a wire to a method call on another — and then the whole life of the channel that carried it.
 
-You swing. `ServerboundSwingPacket` — a small immutable value holding which
-hand you used and nothing else — is handed to `Connection.send` on the
-client's main thread, and some milliseconds later
-`ServerGamePacketListenerImpl.handleAnimate` runs on the server's game thread
+You swing. `ServerboundPunchPacket` — an immutable value holding nothing at
+all, not even which hand — is handed to `Connection.send` on the client's main
+thread, and some milliseconds later
+`ServerGamePacketListenerImpl.handlePunch` runs on the server's game thread
 with that value as its argument. What comes back is
-`ClientboundAnimatePacket`, and it goes to every player tracking you **except
+`ClientboundSwingAnimationPacket`, and it goes to every player tracking you **except
 you**: your own arm was already swinging, because the client moved it the
 moment you clicked. Now close the server list and open a singleplayer world.
 Every sentence above is still true. The integrated server is another thread

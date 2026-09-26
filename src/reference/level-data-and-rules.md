@@ -1,10 +1,10 @@
 # Level data and rules
 
-> Verified against **Minecraft 26.2** · Reference · Who owns the seed, the spawn, the rules, the border and the dimensions, where each is saved, and what tells the client — looked up, not watched.
+> Verified against **Minecraft 26.3** · Reference · Who owns the seed, the spawn, the rules, the border and the dimensions, where each is saved, and what tells the client — looked up, not watched.
 
 The facts about a world that are not blocks or entities: its seed and
 dimensions, its spawn, its game time, its difficulty, its rules, its
-border, its scoreboard and maps. In 26.2 about half of them have left
+border, its scoreboard and maps. In 26.3 about half of them have left
 *level.dat* — `PrimaryLevelData` is a stub and everything else is
 a `SavedData` file under a *data/* folder, one server-global and one per
 dimension — so the question this page answers is always the same one:
@@ -68,7 +68,7 @@ setter, `ServerLevelData.isAllowCommands` and its setter, and
 `WorldData.getKnownServerBrands`, `WorldData.overworldData`).
 
 `PrimaryLevelData` implements all of them — the overworld's level data and
-the whole server's — with eleven fields: `PrimaryLevelData.settings` (a
+the whole server's — with twelve fields: `PrimaryLevelData.settings` (a
 `LevelSettings`: name, `GameType`, a `LevelSettings.DifficultySettings` of
 difficulty, hardcore and lock, allow-commands, `WorldDataConfiguration`),
 `PrimaryLevelData.respawnData`, `PrimaryLevelData.gameTime`,
@@ -76,7 +76,9 @@ difficulty, hardcore and lock, allow-commands, `WorldDataConfiguration`),
 `PrimaryLevelData.wasModded`, `PrimaryLevelData.removedFeatureFlags`,
 `PrimaryLevelData.singlePlayerUUID`, `PrimaryLevelData.version`,
 `PrimaryLevelData.specialWorldProperty` (`PrimaryLevelData.SpecialWorldProperty.FLAT`
-/ `PrimaryLevelData.SpecialWorldProperty.DEBUG` / none), and
+/ `PrimaryLevelData.SpecialWorldProperty.DEBUG` / none),
+`PrimaryLevelData.versionHistory` (every data version that has saved the
+world, written as *version_history*), and
 `PrimaryLevelData.worldGenSettingsLifecycle`, the DFU `Lifecycle` that makes
 the world-select screen warn about experimental settings. That is the whole
 stub: seed, dimensions, rules, border, weather, dragon fight, boss bars,

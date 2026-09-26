@@ -54,7 +54,7 @@ overwrites its answer with the number your client sent. Five predicates on
 
 **Avatar** — the class between `LivingEntity` and `Player`, holding the
 player-shaped body and nothing else; a `Mannequin` is an `Avatar` that is not
-a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-and-the-class-262-put-in-the-middle)
+a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-and-the-class-in-the-middle)
 
 ## B
 

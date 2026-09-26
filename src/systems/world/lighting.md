@@ -1,6 +1,6 @@
 # Lighting
 
-> Verified against **Minecraft 26.2** · Part IV · A torch is placed on a cave wall: the write queues a task, a worker floods the change, and the sections it touched are published as a copy and mailed to the client.
+> Verified against **Minecraft 26.3** · Part IV · A torch is placed on a cave wall: the write queues a task, a worker floods the change, and the sections it touched are published as a copy and mailed to the client.
 
 A player right-clicks a torch onto stone. The block goes into its
 `LevelChunkSection` immediately, the heightmaps move, and then

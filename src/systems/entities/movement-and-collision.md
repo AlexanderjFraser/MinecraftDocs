@@ -1,6 +1,6 @@
 # Movement and collision
 
-> Verified against **Minecraft 26.2** · Part VI · One tick of a falling zombie: 0.08 of gravity, one swept box against a stone floor, and the four booleans everything downstream reads.
+> Verified against **Minecraft 26.3** · Part VI · One tick of a falling zombie: 0.08 of gravity, one swept box against a stone floor, and the four booleans everything downstream reads.
 
 A zombie has been falling for a few ticks and this is the one where it reaches
 the stone. Its
@@ -417,9 +417,9 @@ owns the choice between the two shapes). On the receiving side,
 ([authority](authority.md#the-boat-authoritative-on-exactly-one-machine)), and
 snaps rather than interpolates past 64
 blocks of correction — otherwise it feeds `InterpolationHandler`, three
-steps by default, which is the *interpolate* half of the fork
-`LivingEntity.aiStep` opens with; the coast branch is what runs when there is
-no handler.
+steps by default, which `Entity.commonTick` steps just before the entity's
+tick; the coast branch `LivingEntity.aiStep` opens with is what runs when
+nothing is interpolating.
 
 ## Where to look
 

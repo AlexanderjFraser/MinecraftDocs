@@ -1,6 +1,6 @@
 # Enchantments
 
-> Verified against **Minecraft 26.2** · Part VII · A player hits a zombie with a Fire Aspect sword, and everything that makes the zombie burn is data.
+> Verified against **Minecraft 26.3** · Part VII · A player hits a zombie with a Fire Aspect sword, and everything that makes the zombie burn is data.
 
 You swing a Fire Aspect sword at a zombie and the zombie catches fire. Go
 looking for the class that does that — the one with the *on hit, set them
@@ -319,7 +319,7 @@ two *values* do. `Enchantment.modifyUnfilteredValue` takes only a
 and `Enchantment.modifyTridentSpinAttackStrength`.
 
 Both are visible as gameplay. `CrossbowItem.getChargeDuration` is called by
-three entity renderers, by `ItemInHandRenderer` and by the `CrossbowPull` item
+three entity renderers, by `FirstPersonHandsAndItems` and by the `CrossbowPull` item
 property, so **Quick Charge is evaluated on the render thread every frame a
 crossbow is being drawn** — an enchantment hook in the frame loop, to pick one
 of three textures. And `MultiPlayerGameMode.releaseUsingItem` runs
@@ -339,7 +339,7 @@ and three kinds of drawing.
 
 At world load, and not again. `Registries.ENCHANTMENT` and
 `Registries.ENCHANTMENT_PROVIDER` are both in
-`RegistryDataLoader.WORLDGEN_REGISTRIES`, the dynamic registries built once
+`RegistryDataLoader.WORLD_REGISTRIES`, the dynamic registries built once
 when a world opens ([identifiers and
 registries](../foundations/identifiers-and-registries.md#when-a-world-opens)) —
 not in `RegistryLayer.RELOADABLE`, where the loot tables and predicates live.

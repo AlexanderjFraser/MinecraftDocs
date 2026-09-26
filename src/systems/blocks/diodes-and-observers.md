@@ -1,6 +1,6 @@
 # Diodes and the observer
 
-> Verified against **Minecraft 26.2** · Part V · A repeater, a comparator and an observer in one circuit — three blocks that learn about the world three different ways, and one of them is not listening to redstone at all.
+> Verified against **Minecraft 26.3** · Part V · A repeater, a comparator and an observer in one circuit — three blocks that learn about the world three different ways, and one of them is not listening to redstone at all.
 
 Put a repeater, a comparator and an observer side by side and they look like
 variations on one idea: flat-looking blocks that take a signal in one side and
@@ -41,7 +41,7 @@ entirely, which is why *nothing* is the honest answer in two of its cells.
 
 | | `RepeaterBlock` | `ComparatorBlock` | `ObserverBlock` |
 |---|---|---|---|
-| **what it reads from the front** | `DiodeBlock.getInputSignal` — the signal at the block it faces, and if that is under 15, the raw `RedStoneWireBlock.POWER` of a wire there | the same, then overridden: an analog output if the block in front has one, else one block further through a conductor | nothing. It reads no signal at all |
+| **what it reads from the front** | `DiodeBlock.getInputSignal` — the signal at the block it faces, and if that is under 15, the raw `RedstoneWireBlock.POWER` of a wire there | the same, then overridden: an analog output if the block in front has one, else one block further through a conductor | nothing. It reads no signal at all |
 | **what it reads from the sides** | `DiodeBlock.getAlternateSignal`, restricted to other diodes (`DiodeBlock.sideInputDiodesOnly` is true), and used only to lock | the same, unrestricted, and used as the second operand | nothing |
 | **how it books its turn** | `DiodeBlock.checkTickOnNeighbor` unchanged: `RepeaterBlock.DELAY` doubled, at one of the three priorities that method can choose | overrides it entirely: always a delay of 2, at `TickPriority.HIGH` or `TickPriority.NORMAL` | `ObserverBlock.startSignal` from a shape update: delay 2, no priority, and only if one is not already booked |
 | **what it stores** | everything, in the block state | the same, plus one int in a `ComparatorBlockEntity` | everything, in the block state |
@@ -87,7 +87,7 @@ propagates the change is `DiodeBlock.onPlace`, which
 ## What each one can see
 
 `DiodeBlock.getInputSignal` reads the block it faces and then, if that gave
-less than 15, takes the maximum with the raw `RedStoneWireBlock.POWER` of a
+less than 15, takes the maximum with the raw `RedstoneWireBlock.POWER` of a
 wire sitting there — the special case that lets a diode read a wire whose
 connection state does not point at it.
 

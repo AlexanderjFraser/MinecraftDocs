@@ -1,6 +1,6 @@
 # Options
 
-> Verified against **Minecraft 26.2** · Part X · the render-distance slider: a value that takes effect on a delay, rebuilds the world on a later frame, and reaches the server only when a screen closes — with no reply.
+> Verified against **Minecraft 26.3** · Part X · the render-distance slider: a value that takes effect on a delay, rebuilds the world on a later frame, and reaches the server only when a screen closes — with no reply.
 
 There is no settings-changed hook in the Minecraft client. **Saving is the
 event system.** The server learns your new view distance because something

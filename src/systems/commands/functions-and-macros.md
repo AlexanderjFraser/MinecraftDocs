@@ -1,6 +1,6 @@
 # Functions and macros
 
-> Verified against **Minecraft 26.2** · Part XIII · A macro function in `#minecraft:tick` is reached with no arguments: it fails, silently, twenty times a second, forever — nothing logged, nothing printed, nothing counted.
+> Verified against **Minecraft 26.3** · Part XIII · A macro function in `#minecraft:tick` is reached with no arguments: it fails, silently, twenty times a second, forever — nothing logged, nothing printed, nothing counted.
 
 Put a `$`-prefixed line in a function, add that function to
 `#minecraft:tick`, and the game will call it every tick with no argument
@@ -84,7 +84,7 @@ Only the map swap happens on the main thread, and the maps are volatile
 because the library object is built on a background thread and read from
 several. An argument type that dereferenced the world during parsing would
 break a reload — which is exactly why `FunctionArgument` reads an id and
-defers the lookup. In 26.2 no argument type actually tests the constraint:
+defers the lookup. In 26.3 no argument type actually tests the constraint:
 the four argument types whose parse reads the source at all consult only
 its permissions, and those come from the *function-permission-level* server
 property, gamemaster by default.
@@ -146,7 +146,7 @@ not yet materialised. Everything after this point is
 `MinecraftServer.tickChildren` opens — *commandFunctions*, with only the
 suspension of every player's packet flushing ahead of it — and so before the
 clocks, before the time sync, before any level ticks, and long before
-connections and players tick, which in 26.2 happen *after* the levels ([the
+connections and players tick, which in 26.3 happen *after* the levels ([the
 server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)). It no-ops entirely when the
 tick-rate manager is not running normally, so `/tick freeze` suspends data
 packs. `#minecraft:load` runs once after a reload or start, and

@@ -1,6 +1,6 @@
 # Chunk anatomy
 
-> Verified against **Minecraft 26.2** · Part IV · One block is placed, and the write travels down through the chunk until it lands in four bits of one long.
+> Verified against **Minecraft 26.3** · Part IV · One block is placed, and the write travels down through the chunk until it lands in four bits of one long.
 
 You place a single block of deepslate at y −40, in a section that until now
 held nothing but stone and air. The click ends in `LevelChunk.setBlockState`,
@@ -21,7 +21,7 @@ re-encodes all 4,096 entries into a wider storage before it can be written.**
 | class | what it decides | thread |
 |---|---|---|
 | `ChunkAccess` | everything a chunk has whatever its shape: position, height, sections, heightmaps, block entities, structures, the two volatile flags | abstract — whichever thread owns the shape below |
-| `ProtoChunk` | a chunk under construction: status, carving mask, entities as NBT, the light engine it reports to | written on the worker pool, one writer at a time |
+| `ProtoChunk` | a chunk under construction: status, entities as NBT, the light engine it reports to | written on the worker pool, one writer at a time |
 | `LevelChunk` | a chunk that is part of a `Level`: block entities, tickers, tick containers, the full-status supplier | the server thread — on the client, the client's main thread |
 | `ImposterProtoChunk` | what a still-generating neighbour sees when the chunk it asked for is already live | the server thread |
 | `LevelChunkSection` | 16×16×16: two palette containers and four counters that let a whole section be skipped | whichever thread holds its permit |
@@ -80,8 +80,7 @@ are, and the overworld's −64 and 384 give `LevelHeightAccessor.getSectionsCoun
 of **24**, section Y −4 through 19. Beside them sit the heightmaps, the block
 entities in two maps (`ChunkAccess.blockEntities` live, `ChunkAccess.pendingBlockEntities`
 still NBT, `ChunkAccess.getBlockEntitiesPos` the union),
-`ChunkAccess.structureStarts` and `ChunkAccess.structuresRefences` (Mojang's
-spelling), the per-section `ChunkAccess.postProcessing` offsets to revisit
+`ChunkAccess.structureStarts` and `ChunkAccess.structureReferences`, the per-section `ChunkAccess.postProcessing` offsets to revisit
 after load (`ProtoChunk.packOffsetCoordinates` packs four bits each of x, y
 and z into a short), `ChunkAccess.inhabitedTime` behind local difficulty
 ([the level tick](../server/server-level-tick.md#two-chunk-sets-and-two-different-mob-caps)), `ChunkAccess.upgradeData`
@@ -93,7 +92,7 @@ saver uses, and `ChunkAccess.isLightCorrect`, saved as *isLightOn*. It is
 also three interfaces at once — `LightChunk`, which is what the light engine
 reads through `LightChunk.findBlockLightSources` and
 `LightChunk.getSkyLightSources`, plus `StructureAccess` and
-`BiomeManager.NoiseBiomeSource` — and `ChunkAccess.getPersistedStatus` is
+`BiomeResolver` — and `ChunkAccess.getPersistedStatus` is
 the `ChunkStatus` that goes to disk, with `ChunkAccess.getHighestGeneratedStatus`
 folding in `BelowZeroRetrogen.targetStatus` for a chunk still being deepened.
 
@@ -102,8 +101,8 @@ A `ProtoChunk` adds what only generation needs: a volatile
 `BelowZeroRetrogen`), a `ProtoChunk.lightEngine` from
 `ProtoChunk.setLightEngine` that it reports to only once the status
 `ChunkStatus.isOrAfter` `ChunkStatus.INITIALIZE_LIGHT`, its entities as a
-list of `CompoundTag` (`ProtoChunk.addEntity` serialises on the spot), a
-`ProtoChunk.carvingMask`, and `ProtoChunkTicks` that
+list of `CompoundTag` (`ProtoChunk.addEntity` serialises on the spot), and
+`ProtoChunkTicks` that
 `ProtoChunk.unpackBlockTicks` turns into `LevelChunkTicks` on promotion
 ([appointments that survive a restart](scheduled-ticks.md#appointments-that-survive-a-restart)).
 The pool that fills all of that in
@@ -130,8 +129,8 @@ change without scanning. Its `LevelChunk.getPersistedStatus` is always
 holder for "the chunk at status X" and must be handed something
 `ProtoChunk`-typed even when that chunk is already live. Reads delegate to
 `ImposterProtoChunk.getWrapped`; writes are dropped unless *allowWrites*,
-which both of the two places that construct one pass as **false**, so in
-26.2 every write to an imposter is dropped — heightmaps, structure starts and
+which both of the two places that construct one pass as **false**, so
+every write to an imposter is dropped — heightmaps, structure starts and
 references and block-entity NBT unconditionally, and the rest for want of the
 flag. `ImposterProtoChunk.getSections` hands back the wrapped
 chunk's array unconditionally — only the single-section
@@ -357,7 +356,7 @@ tags. The writer pre-sizes that buffer from the sum of
 byte, and the reader refuses anything over two megabytes. Light rides beside
 it in `ClientboundLightUpdatePacketData`.
 
-The client applies the lot through `ClientPacketListener.updateLevelChunk` →
+The client applies the lot through `ClientPacketListener.handleLevelChunkWithLight` →
 `ClientChunkCache.replaceWithPacketData` → `LevelChunk.replaceWithPacketData`,
 which clears the block entities, gives each section `LevelChunkSection.read`,
 installs the raw heightmaps with `ChunkAccess.setHeightmap` and rebuilds the
@@ -393,13 +392,13 @@ transparent was the top one.
 
 Which of the six a chunk carries follows its status:
 `ChunkStatus.heightmapsAfter` is the two *_WG* maps through
-`ChunkStatus.SURFACE` and `ChunkStatus.FINAL_HEIGHTMAPS` — the other four —
-from `ChunkStatus.CARVERS` on, and a `LevelChunk` is constructed with
+`ChunkStatus.BIOMES` and `ChunkStatus.FINAL_HEIGHTMAPS` — the other four —
+from `ChunkStatus.TERRAIN` on, and a `LevelChunk` is constructed with
 exactly those four. A `ProtoChunk` primes any of its status's maps that are
 missing the first time a block is written. What is *saved*, though, is not
-`Heightmap.Types.keepAfterWorldgen`: the saver writes whatever the chunk's
-**persisted** status names, so a proto chunk stored below
-`ChunkStatus.CARVERS` does save its two *_WG* maps. Separately and privately,
+`Heightmap.Types.keepAfterWorldgen`: the saver writes every heightmap the
+chunk **holds**, so a proto chunk saves its two *_WG* maps along with any it
+has primed since, and a `LevelChunk` saves the four it was built with. Separately and privately,
 `ChunkAccess.skyLightSources` is a *second* 256-entry bit storage — a
 `ChunkSkyLightSources` — that only the sky-light engine reads
 ([the sky column is a table, not a flood](lighting.md#the-sky-column-is-a-table-not-a-flood)).

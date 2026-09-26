@@ -1,6 +1,6 @@
 # Data components
 
-> Verified against **Minecraft 26.2** · Part II · A player types `/give @s diamond_sword[enchantments={sharpness:3}]`, and later rolls Sharpness onto a plain sword at the enchanting table: what the square brackets are, and how the client finds out.
+> Verified against **Minecraft 26.3** · Part II · A player types `/give @s diamond_sword[enchantments={sharpness:3}]`, and later rolls Sharpness onto a plain sword at the enchanting table: what the square brackets are, and how the client finds out.
 
 A player types `/give @s diamond_sword[enchantments={sharpness:3}]`. The
 part in square brackets is a **patch**: one keyed, typed value laid over
@@ -98,8 +98,8 @@ is transient-versus-persistent, and it gates *saving*. Three types exist
 only on the wire: `DataComponents.CREATIVE_SLOT_LOCK`,
 `DataComponents.ADDITIONAL_TRADE_COST`, `DataComponents.MAP_POST_PROCESSING`.
 
-**111** — vanilla types, registered in `DataComponents` into
-`BuiltInRegistries.DATA_COMPONENT_TYPE`; 29 of them have slash-shaped ids
+**122** — vanilla types, registered in `DataComponents` into
+`BuiltInRegistries.DATA_COMPONENT_TYPE`; 30 of them have slash-shaped ids
 (*villager/variant* and its siblings). The catalogue is
 [reference/components](../../reference/components.md). Component *types*
 are code, in a registry data packs cannot extend; what data packs reach is
@@ -120,7 +120,7 @@ that `DataComponentMap.CODEC` and the predicates are built on.
 builds one and can carry a `DataComponentMap.Builder.addValidator`, which is
 where the prototype-time structural rule lives (below). `DataComponentMap.EMPTY`
 is the map every registry element gets when nothing declared one.
-`DataComponentMap.composite` is dead API: it exists, and nothing in 26.2
+`DataComponentMap.composite` is dead API: it exists, and nothing in 26.3
 calls it; the layering that actually happens is `PatchedDataComponentMap`'s
 prototype-plus-patch.
 
@@ -293,9 +293,12 @@ joins the two for `ItemPredicate`.
 `KineticWeapon`, `PiercingWeapon`, `AttackRange`, `SwingAnimation` and
 `Tool` are components; `Item.Properties.sword`, `Item.Properties.spear` and
 `Item.Properties.humanoidArmor` build whole kits, and *SwordItem* is gone.
-But the tools that act *on a block* are not: `AxeItem`, `ShovelItem` and
-`HoeItem` still exist as classes, purely for stripping, path-making and
-tilling — their combat and mining live in components like everything else.
+The tools that act *on a block* went the same way: stripping, path-making
+and tilling are `DataComponents.BLOCK_TRANSFORMER`, which
+`Item.Properties.axe`, `Item.Properties.shovel` and `Item.Properties.hoe`
+point at `BlockTransformers.AXE`, `BlockTransformers.SHOVEL` and
+`BlockTransformers.HOE`, and which `Item.useOn` runs for any item that
+carries it.
 
 ## Sharpness onto a sword, and how the client is told
 

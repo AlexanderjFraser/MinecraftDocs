@@ -1,6 +1,6 @@
 # Input to movement
 
-> Verified against **Minecraft 26.2** · Part VIII · W is pressed: the key becomes a boolean, the boolean becomes a velocity, the velocity becomes a packet, and the server decides whether to believe it.
+> Verified against **Minecraft 26.3** · Part VIII · W is pressed: the key becomes a boolean, the boolean becomes a velocity, the velocity becomes a packet, and the server decides whether to believe it.
 
 You press W. Nothing happens for up to a twentieth of a second, because the
 key was not pushed anywhere — it was written into a boolean that the next

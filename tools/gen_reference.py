@@ -116,14 +116,30 @@ def registries() -> str:
                     keys += [(e, c, k, f[:-5]) for e, c, k in REGKEY_ELSEWHERE.findall(fh.read())]
     builtin = set(BUILTIN.findall(read("core", "registries", "BuiltInRegistries.java")))
     lists = {name: set(re.findall(r"Registries\.(\w+)", body)) for name, body in LOADER_LIST.findall(read("resources", "RegistryDataLoader.java"))}
-    worldgen = lists.get("WORLDGEN_REGISTRIES", set())
+    # 26.3 renamed WORLDGEN_REGISTRIES to WORLD_REGISTRIES and added RELOADABLE_REGISTRIES, the loot tables,
+    # predicates, number providers, item modifiers, slot sources, advancements and recipes that
+    # ReloadableServerRegistries now loads through the same loader. A list this reads by the wrong name
+    # would leave every one of its registries "—", which is how 26.3's first regeneration read "1 data-pack".
+    world_list = "WORLD_REGISTRIES" if "WORLD_REGISTRIES" in lists else "WORLDGEN_REGISTRIES"
+    worldgen = lists.get(world_list, set())
     dimension = lists.get("DIMENSION_REGISTRIES", set())
+    reloadable = lists.get("RELOADABLE_REGISTRIES", set())
     synced = lists.get("SYNCHRONIZED_REGISTRIES", set())
-    out = header("Registries", "Every registry key in the game. **148 of them are declared in `Registries`**; five more are declared by the class that owns them (`ServerFunctionLibrary`, `ClockTimeMarkers`, `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the 148 [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLDGEN_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).")
-    out += f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension)} data-pack · {len(synced)} synced\n\n"
+    if not worldgen or not synced:
+        raise ValueError(f"RegistryDataLoader's lists are not where this view reads them: {sorted(lists)}")
+    in_registries = sum(1 for k in keys if k[3] == "Registries")
+    owners = sorted({k[3] for k in keys if k[3] != "Registries"})
+    words = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine"}
+    more = words.get(len(owners), str(len(owners)))
+    reload_note = (f", and the **reloadable** ones by the same loader on every data-pack reload (`RELOADABLE_REGISTRIES`, "
+                   f"read by `ReloadableServerRegistries`)" if reloadable else "")
+    out = header("Registries", f"Every registry key in the game. **{in_registries} of them are declared in `Registries`**; {more} more are declared by the class that owns them ({', '.join(f'`{o}`' for o in owners)}) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the {in_registries} [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`{world_list}`, or `DIMENSION_REGISTRIES` for level stems){reload_note}; **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).")
+    out += (f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension)} data-pack"
+            + (f" · {len(reloadable)} reloadable" if reloadable else "") + f" · {len(synced)} synced\n\n")
     out += "| key | element type | kind | synced |\n|---|---|---|---|\n"
     for elem, const, key, owner in sorted(keys, key=lambda k: k[2]):
-        kind = "built-in" if const in builtin else "data-pack" if const in worldgen else "data-pack (dimension)" if const in dimension else "—"
+        kind = ("built-in" if const in builtin else "data-pack" if const in worldgen else "data-pack (dimension)" if const in dimension
+                else "data-pack (reloadable)" if const in reloadable else "—")
         elem = re.sub(r"<.*", "<…>", elem)
         out += f"| `{key}` (`{owner}.{const}`) | `{elem}` | {kind} | {'yes' if const in synced else ''} |\n"
     return out
@@ -459,6 +475,20 @@ def weapon_helpers() -> str:
 
 
 # ------------------------------------------------- structure spawn overrides
+def spawn_count(entry: dict, where: str) -> str:
+    """A spawn entry's group size as `min–max`. 26.3 writes `count`, a constant or an int provider
+    (the shipped data uses a constant and `minecraft:uniform`); 26.2 wrote `minCount` and `maxCount`.
+    Any other provider fails here rather than be printed as something it is not."""
+    if "minCount" in entry:
+        return f"{entry['minCount']}–{entry['maxCount']}"
+    c = entry["count"]
+    if isinstance(c, int):
+        return f"{c}–{c}"
+    if isinstance(c, dict) and c.get("type") == "minecraft:uniform":
+        return f"{c['min_inclusive']}–{c['max_inclusive']}"
+    raise ValueError(f"{where}: a spawn count this view cannot print as min–max: {c!r}")
+
+
 def spawn_overrides() -> str:
     import json
     base = os.path.join(ROOT, "data", "minecraft", "worldgen", "structure")
@@ -473,7 +503,7 @@ def spawn_overrides() -> str:
         declared += 1
         for cat, v in sorted(d["spawn_overrides"].items()):
             spawns = v.get("spawns", [])
-            what = ", ".join(f"`{e['type'].split(':')[-1]}` ({e['weight']}, {e['minCount']}–{e['maxCount']})" for e in spawns) \
+            what = ", ".join(f"`{e['type'].split(':')[-1]}` ({e['weight']}, {spawn_count(e, f)})" for e in spawns) \
                 or "**nothing** — the category is suppressed inside the box"
             rows.append((f[:-5], cat, v.get("bounding_box", "?"), what))
     structures = sorted({r[0] for r in rows})
@@ -513,8 +543,9 @@ def main(argv: list[str]) -> int:
         os.makedirs(OUT, exist_ok=True)
         for name, fn in VIEWS.items():
             path = os.path.join(OUT, f"{name}.md")
+            text = fn()  # before the file is opened: a view that fails must not leave its page truncated
             with open(path, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write(fn())
+                fh.write(text)
             print(f"wrote {os.path.relpath(path)}")
         return 0
     sys.stdout.write(VIEWS[argv[1]]())

@@ -41,7 +41,7 @@ body:
     id: version
     attributes:
       label: The version you checked against
-      placeholder: "26.2"
+      placeholder: "26.3"
     validations:
       required: true
   - type: textarea

@@ -1,6 +1,6 @@
 # Dialogs
 
-> Verified against **Minecraft 26.2** · Part XIII · You click a server in the multiplayer list and, before the world has loaded — before you are in a world at all — a form appears with text boxes on it, and no vanilla server will ever send it to you.
+> Verified against **Minecraft 26.3** · Part XIII · You click a server in the multiplayer list and, before the world has loaded — before you are in a world at all — a form appears with text boxes on it, and no vanilla server will ever send it to you.
 
 A dialog is a data pack's form: a title, some body text, some inputs and
 some buttons, decoded from JSON and put on your screen. Nothing about that

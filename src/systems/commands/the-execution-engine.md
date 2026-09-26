@@ -1,6 +1,6 @@
 # The execution engine
 
-> Verified against **Minecraft 26.2** · Part XIII · `/execute as @a at @s run say hi` on a server with four players: a command engine with no Java recursion, a fan-out that materialises one player at a time, and a `/return` that deletes work out of a queue rather than unwinding a stack.
+> Verified against **Minecraft 26.3** · Part XIII · `/execute as @a at @s run say hi` on a server with four players: a command engine with no Java recursion, a fan-out that materialises one player at a time, and a `/return` that deletes work out of a queue rather than unwinding a stack.
 
 Write a data pack that calls a function that calls itself, load it, and the
 server does not crash. It runs a very large number of commands, logs one

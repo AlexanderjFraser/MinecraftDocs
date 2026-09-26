@@ -20,9 +20,9 @@
 # The launcher must have run that version once for the authlib jar to be present.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-BRIGADIER="${BRIGADIER:-1.3.10}"
+BRIGADIER="${BRIGADIER:-1.3.11}"
 DFU="${DFU:-10.0.21}"
-AUTHLIB="${AUTHLIB:-9.0.75}"
+AUTHLIB="${AUTHLIB:-10.0.77}"
 MCDEOB_JAR="${MCDEOB_JAR:-/d/pvpmod/McDeob-3.4.1.jar}"
 LIBS=reference/libs
 mkdir -p "$LIBS"

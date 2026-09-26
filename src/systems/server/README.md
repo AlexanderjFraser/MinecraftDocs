@@ -1,6 +1,6 @@
 # III · The server
 
-> Verified against **Minecraft 26.2** · Part III · The program that owns the world: one thread, one loop, twenty times a second, from the command line that starts it to the three different ways it stops.
+> Verified against **Minecraft 26.3** · Part III · The program that owns the world: one thread, one loop, twenty times a second, from the command line that starts it to the three different ways it stops.
 
 Everything a player thinks of as *the world* — the blocks, the mobs, the
 weather, the hunger bar — is state owned by one object on one thread, and

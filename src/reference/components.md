@@ -1,10 +1,10 @@
 # Data components
 
-> Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
+> Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
 Every `DataComponentType` registered in `DataComponents`. *Persistent* components have a `Codec` and are written to disk; *synced* ones have a `StreamCodec` and are sent to the client; *cache-encoded* ones use the shared `EncoderCache`. A type that is neither persistent nor synced is transient and lives only in memory. See [Data components](../systems/foundations/data-components.md).
 
-111 components
+122 components
 
 | id | value type | persistent | synced |
 |---|---|---|---|
@@ -48,12 +48,14 @@ Every `DataComponentType` registered in `DataComponents`. *Persistent* component
 | `blocks_attacks` (`DataComponents.BLOCKS_ATTACKS`) | `BlocksAttacks` | yes (cached) | yes |
 | `piercing_weapon` (`DataComponents.PIERCING_WEAPON`) | `PiercingWeapon` | yes (cached) | yes |
 | `kinetic_weapon` (`DataComponents.KINETIC_WEAPON`) | `KineticWeapon` | yes (cached) | yes |
-| `swing_animation` (`DataComponents.SWING_ANIMATION`) | `SwingAnimation` | yes | yes |
+| `attack_animation` (`DataComponents.ATTACK_ANIMATION`) | `SwingAnimation` | yes | yes |
+| `interact_animation` (`DataComponents.INTERACT_ANIMATION`) | `SwingAnimation` | yes | yes |
 | `additional_trade_cost` (`DataComponents.ADDITIONAL_TRADE_COST`) | `Integer` |  | yes |
+| `block_transformer` (`DataComponents.BLOCK_TRANSFORMER`) | `Holder<…>` | yes (cached) | yes |
+| `villager_food` (`DataComponents.VILLAGER_FOOD`) | `VillagerFood` | yes | yes |
 | `stored_enchantments` (`DataComponents.STORED_ENCHANTMENTS`) | `ItemEnchantments` | yes (cached) | yes |
 | `dye` (`DataComponents.DYE`) | `DyeColor` | yes | yes |
 | `dyed_color` (`DataComponents.DYED_COLOR`) | `DyedItemColor` | yes | yes |
-| `map_color` (`DataComponents.MAP_COLOR`) | `MapItemColor` | yes | yes |
 | `map_id` (`DataComponents.MAP_ID`) | `MapId` | yes | yes |
 | `map_decorations` (`DataComponents.MAP_DECORATIONS`) | `MapDecorations` | yes (cached) |  |
 | `map_post_processing` (`DataComponents.MAP_POST_PROCESSING`) | `MapPostProcessing` |  | yes |
@@ -90,6 +92,10 @@ Every `DataComponentType` registered in `DataComponents`. *Persistent* component
 | `lock` (`DataComponents.LOCK`) | `LockCode` | yes |  |
 | `container_loot` (`DataComponents.CONTAINER_LOOT`) | `SeededContainerLoot` | yes |  |
 | `break_sound` (`DataComponents.BREAK_SOUND`) | `Holder<…>` | yes (cached) | yes |
+| `compostable` (`DataComponents.COMPOSTABLE`) | `Compostable` | yes | yes |
+| `cooking_fuel` (`DataComponents.COOKING_FUEL`) | `CookingFuel` | yes | yes |
+| `brewing_fuel` (`DataComponents.BREWING_FUEL`) | `BrewingFuel` | yes | yes |
+| `mob_visibility` (`DataComponents.MOB_VISIBILITY`) | `MobVisibility` | yes | yes |
 | `villager/variant` (`DataComponents.VILLAGER_VARIANT`) | `Holder<…>` | yes | yes |
 | `wolf/variant` (`DataComponents.WOLF_VARIANT`) | `Holder<…>` | yes | yes |
 | `wolf/sound_variant` (`DataComponents.WOLF_SOUND_VARIANT`) | `Holder<…>` | yes | yes |
@@ -119,3 +125,8 @@ Every `DataComponentType` registered in `DataComponents`. *Persistent* component
 | `cat/collar` (`DataComponents.CAT_COLLAR`) | `DyeColor` | yes | yes |
 | `sheep/color` (`DataComponents.SHEEP_COLOR`) | `DyeColor` | yes | yes |
 | `shulker/color` (`DataComponents.SHULKER_COLOR`) | `DyeColor` | yes | yes |
+| `provides_pottery_pattern` (`DataComponents.PROVIDES_POTTERY_PATTERN`) | `Holder<…>` | yes | yes |
+| `sign_text_front` (`DataComponents.SIGN_TEXT_FRONT`) | `SignText` | yes (cached) | yes |
+| `sign_text_back` (`DataComponents.SIGN_TEXT_BACK`) | `SignText` | yes (cached) | yes |
+| `waxed` (`DataComponents.WAXED`) | `Unit` | yes | yes |
+| `cushion/color` (`DataComponents.CUSHION_COLOR`) | `DyeColor` | yes | yes |

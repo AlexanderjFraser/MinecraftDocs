@@ -1,6 +1,6 @@
 # What the client is told
 
-> Verified against **Minecraft 26.2** · Part IX · a creeper walks into view: everything the server decides to say, in order, and everything it decides not to.
+> Verified against **Minecraft 26.3** · Part IX · a creeper walks into view: everything the server decides to say, in order, and everything it decides not to.
 
 A creeper three chunks away steps across a section boundary, and inside that
 tick the server decides a player may know about it. One bundled packet goes
@@ -235,10 +235,10 @@ or it is a `LivingEntity` currently elytra-flying — `ServerEntity` compares th
 current delta movement against `ServerEntity.lastSentMovement` and sends
 `ClientboundSetEntityMotionPacket`, bundled with
 `ClientboundProjectilePowerPacket` for a hurtling projectile.
-`EntityType.trackDeltas` looks like a third tracking parameter but is a
-hardcoded exclusion list: players, llama spit, the wither, bats, item frames,
-leash knots, paintings, end crystals and evoker fangs are out, everything else
-is in.
+`EntityType.trackDeltas` is a third tracking parameter, switched off on the
+builder by `EntityType.Builder.dontTrackDeltas`: players, llama spit, the
+wither, bats, item frames, leash knots, paintings, end crystals, evoker fangs
+and cushions are out, everything else is in.
 
 ### Three feeds that skip gate 3, and one that skips ServerEntity
 
@@ -250,7 +250,7 @@ data](../entities/synched-entity-data.md#the-gate-that-holds-a-packet-back)).
 Below it, **three feeds ignore gate 3** — which is most of what still feels
 responsive about a distant mob, and is a smaller exemption than it sounds:
 all three live *inside* `ServerEntity.sendChanges`, so a mob that fails gate 2
-gets none of them either. `Entity.hurtMarked`
+gets none of them either. `Entity.syncVelocity`
 sends a motion packet to the trackers *and* the entity itself, which is why
 knockback is immediate on a creeper whose position otherwise updates slowly. A
 changed passenger list is diffed on every call and goes out as a

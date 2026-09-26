@@ -1,6 +1,6 @@
 # Reference
 
-> Verified against **Minecraft 26.2** · Reference · The shelf behind the lectures: everything a viewer would pause the video to read, kept where no lecture has to stop for it.
+> Verified against **Minecraft 26.3** · Reference · The shelf behind the lectures: everything a viewer would pause the video to read, kept where no lecture has to stop for it.
 
 A lecture explains one thing at a time, and it cannot stop to list the 43
 entity-data serializers or the ten bits of a flag word without losing the
@@ -37,9 +37,9 @@ I to XIII, as the [lecture map](../lectures.md) lists them.
 | [Data components](components.md) | every `DataComponentType`, persistent and synced | generated · decompile | II, V, VII, VIII, IX |
 | [Game rules](gamerules.md) | every rule, type, category, default | generated · decompile | III, IV, V, VI, VIII |
 | [Attributes](attributes.md) | every attribute: default, range, sentiment, syncable | generated · decompile | VI, VIII |
-| [Entity data serializers](entity-data-serializers.md) | all 43, in registration order, which is the wire id | generated · decompile | VI |
+| [Entity data serializers](entity-data-serializers.md) | all 44, in registration order, which is the wire id | generated · decompile | VI |
 | [Enchantment hooks](enchantment-hooks.md) | every public `EnchantmentHelper` entry point and its callers | generated · decompile | VII |
-| [Loot context parameter sets](loot-context-params.md) | all twenty-six, with required and optional keys | generated · decompile | VII, XIII |
+| [Loot context parameter sets](loot-context-params.md) | all thirty-one, with required and optional keys | generated · decompile | VII, XIII |
 | [Entity spawn reasons](spawn-reasons.md) | all nineteen, and which classes change behaviour for each | generated · decompile | VI |
 | [Structure spawn overrides](structure-spawn-overrides.md) | the six structures that replace a biome's spawn list, and with what | generated · decompile | VI, XII |
 | [The weapon helpers](weapon-helpers.md) | the seven `Item.Properties` helpers and every item built by one | generated · decompile | VII |
@@ -51,7 +51,7 @@ I to XIII, as the [lecture map](../lectures.md) lists them.
 | [Threads](threads.md) | every thread, who makes it, what may run on it | hand-kept | I, III, IV, VI, IX, X, XI |
 | [Math and primitives](math-and-primitives.md) | the coordinate spaces, packings, shapes and random sources | hand-kept | II, IV, V, VI, XII |
 | [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | III, IV, VIII, IX, XII |
-| [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.2 calls it | hand-kept | I, II, VII, X, XI, XII |
+| [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.3 calls it | hand-kept | I, II, VII, X, XI, XII |
 | [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | II, V, VI, X, XI, XII, XIII |
 | [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the nine that mean a thread, a process or a boundary instead | generated · corpus | every part |
 | [Class index](class-index.md) | every class backticked on a page, and the pages that name it | generated · corpus | — |

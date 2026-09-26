@@ -1,6 +1,6 @@
 # Game events and vibrations
 
-> Verified against **Minecraft 26.2** · Part IV · A footstep reaches a sculk sensor.
+> Verified against **Minecraft 26.3** · Part IV · A footstep reaches a sculk sensor.
 
 You walk across a stone floor and, eight blocks away, a sculk sensor's
 tendrils flick up and it pushes redstone power out of its side. Nothing

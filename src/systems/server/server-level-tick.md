@@ -1,6 +1,6 @@
 # The level tick
 
-> Verified against **Minecraft 26.2** · Part III · A player stands still for one twentieth of a second while a whole dimension advances — weather, scheduled ticks, spawns, every entity, every block entity.
+> Verified against **Minecraft 26.3** · Part III · A player stands still for one twentieth of a second while a whole dimension advances — weather, scheduled ticks, spawns, every entity, every block entity.
 
 Nobody moves. A wheat crop is one random tick short of ripe, a creeper is
 walking a fence line, rain has been falling for four minutes and a piston
@@ -193,7 +193,7 @@ clock and `GameRules.ADVANCE_TIME` is on,
 `ClockTimeMarkers.WAKE_UP_FROM_SLEEP`; `ServerLevel.wakeUpAllPlayers` gets
 everyone out of bed, and `ServerLevel.resetWeatherCycle` clears the storm.
 The `ClientboundSetTimePacket` that follows is sent by the clock manager,
-not by the level — day time is not the level's state in 26.2 at all.
+not by the level — day time is not the level's state in 26.3 at all.
 
 What the level does own is *gameTime*, and only in the overworld:
 `ServerLevel.tickTime` advances it when the level was built with its

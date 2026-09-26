@@ -1,6 +1,6 @@
 # Points of interest
 
-> Verified against **Minecraft 26.2** · Part IV · A villager claims a bed.
+> Verified against **Minecraft 26.3** · Part IV · A villager claims a bed.
 
 A villager standing in the middle of a field at noon decides which bed is
 his. He is not near it, he is not looking at it, and he will not walk to it
@@ -8,7 +8,7 @@ for another six thousand ticks. `AcquirePoi` asked the index for the beds
 with a free ticket within 48 blocks, took the five nearest, asked `PathNavigation` for a path to all five at once, and the
 moment `Path.canReach` came back true it called `PoiManager.take` and
 decremented that bed's ticket. Night has nothing to do with it. Hours later
-`SleepInBed` will finally put him in the bed and set `BedBlock.OCCUPIED`,
+`SleepInBed` will finally put him in the bed and set `AbstractBedBlock.OCCUPIED`,
 and because both occupied variants of a bed head are in `PoiTypes.BEDS` and
 map to the same `PoiTypes.HOME`, that block change does not touch the record
 at all: **the claim and the *occupied* flag speak in one direction only. Going
@@ -94,7 +94,7 @@ potential site.
 | types | the block | `PoiType.maxTickets` | `PoiType.validRange` |
 |---|---|---:|---:|
 | `PoiTypes.ARMORER` `PoiTypes.BUTCHER` `PoiTypes.CARTOGRAPHER` `PoiTypes.CLERIC` `PoiTypes.FARMER` `PoiTypes.FISHERMAN` `PoiTypes.FLETCHER` `PoiTypes.LEATHERWORKER` `PoiTypes.LIBRARIAN` `PoiTypes.MASON` `PoiTypes.SHEPHERD` `PoiTypes.TOOLSMITH` `PoiTypes.WEAPONSMITH` | one work block each — blast furnace, smoker, cartography table, brewing stand, composter, barrel, fletching table, lectern, stonecutter, loom, smithing table, grindstone, and for the leatherworker all four cauldrons | 1 | 1 |
-| `PoiTypes.HOME` | the bed's **head** half only — `PoiTypes.BEDS` filters `BedBlock.PART` to `BedPart.HEAD` | 1 | 1 |
+| `PoiTypes.HOME` | the bed's **head** half only — `PoiTypes.BEDS` filters `AbstractBedBlock.PART` to `BedPart.HEAD` | 1 | 1 |
 | `PoiTypes.MEETING` | the bell | 32 | 6 |
 | `PoiTypes.BEEHIVE` `PoiTypes.BEE_NEST` | hive and nest | 0 | 1 |
 | `PoiTypes.NETHER_PORTAL` | the portal block | 0 | 1 |
@@ -162,7 +162,7 @@ validated gets rescanned.
 neighbour updates, and on a `ServerLevel` that override compares
 `PoiTypes.forState` of the old and the new state. Equal types mean nothing
 happens — exactly the bed case, since a bed head that gains
-`BedBlock.OCCUPIED` is still `PoiTypes.HOME`. Different types mean a
+`AbstractBedBlock.OCCUPIED` is still `PoiTypes.HOME`. Different types mean a
 `PoiManager.remove` for the old and a `PoiManager.add` for the new, each
 wrapped in a `BlockableEventLoop.execute` on the server.
 
@@ -207,14 +207,14 @@ sequenceDiagram
     Brain->>Brain: SetWalkTarget<br/>FromBlockMemory<br/>writes WALK_TARGET
     Brain->>Brain: ValidateNearbyPoi, within 16 blocks: is the record still HOME
     Brain->>SIB: within 2 blocks, and the bed is not OCCUPIED
-    SIB->>SL: setBlock, BedBlock.OCCUPIED true
+    SIB->>SL: setBlock, AbstractBedBlock.OCCUPIED true
     SL->>SL: the state is HOME either way, so nothing is queued
     Note over Brain,SIB: morning, REST leaves the brain, WakeUp clears the flag, the ticket stays
 ```
 
 *A bed placed and a bed slept in, with the index consulted once at each end and
 not in between. The last self-message is the page's hook drawn as a non-event:
-sleeping wrote `BedBlock.OCCUPIED` straight to the block, and because the
+sleeping wrote `AbstractBedBlock.OCCUPIED` straight to the block, and because the
 before and after are both `MemoryModuleType.HOME` the manager was never asked
 about it. The
 ticket taken thousands of ticks earlier is still the only record that a villager
@@ -225,7 +225,7 @@ turns a 48-block radius into a chunk radius of four, walks every section of
 those chunks, filters by `PoiManager.Occupancy.HAS_SPACE` and sorts by
 distance; `AcquirePoi` takes the first five and only then runs
 `VillagerGoalPackages.validateBedPoi`, which re-reads each block to confirm it
-is in `BlockTags.BEDS` and not already `BedBlock.OCCUPIED`. Then
+is in `BlockTags.VILLAGERS_CAN_SLEEP_ON_BED` and not already `AbstractBedBlock.OCCUPIED`. Then
 `AcquirePoi.findPathToPois` hands all five positions to
 `PathNavigation.createPath` as one target set, at the reach range from
 `PoiType.validRange` — one, for a bed. A villager's constructor raises
@@ -282,7 +282,7 @@ what belongs here is its one effect on the index, which is that it gives up,
 ticks. `ValidateNearbyPoi` at priority 3 does
 nothing at all unless the bed is within 16 blocks and in this dimension: then
 it erases the memory if `PoiManager.exists` no longer agrees on the type, and
-if the bed is `BedBlock.OCCUPIED` while *this* villager is not asleep — asleep
+if the bed is `AbstractBedBlock.OCCUPIED` while *this* villager is not asleep — asleep
 anywhere, not asleep here — it erases the memory. Whether it also releases the
 ticket turns on a second question, asked of the world rather than of the
 block: is a `Villager` actually sleeping inside that block's box? If one is,
@@ -294,7 +294,7 @@ needs the villager within 2 blocks, the bed unoccupied and
 `SleepInBed.COOLDOWN_AFTER_BEING_WOKEN` ticks since
 `MemoryModuleType.LAST_WOKEN`; it calls `LivingEntity.startSleeping`, which is
 what actually sets the flag. That is the second of the three reads of
-`BedBlock.OCCUPIED` — a gate on entering the bed, not a change to the record —
+`AbstractBedBlock.OCCUPIED` — a gate on entering the bed, not a change to the record —
 and the third is `VillagerGoalPackages.validateBedPoi`, the filter
 `AcquirePoi` runs over its best five.
 

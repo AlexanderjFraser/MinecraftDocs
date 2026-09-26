@@ -1,6 +1,6 @@
 # Creating a world
 
-> Verified against **Minecraft 26.2** · Part XII · *Create New World*: a seed typed in, Superflat chosen, a layer deleted, an experiment switched on, and the settings object that comes out the other end.
+> Verified against **Minecraft 26.3** · Part XII · *Create New World*: a seed typed in, Superflat chosen, a layer deleted, an experiment switched on, and the settings object that comes out the other end.
 
 You click *Create New World* and nothing happens for a moment. Then a
 three-tab screen: a name, a game mode, a seed box, a world-type button, and
@@ -164,7 +164,7 @@ One thing the flat generator does not do is place all its own blocks.
 `FlatLevelGeneratorSettings.adjustGenerationSettings` walks the built layer
 stack and, for every layer whose block fails
 `Heightmap.Types.MOTION_BLOCKING`'s opacity test, replaces it with a null and
-re-adds it as an inline `Feature.FILL_LAYER` placed feature in the
+re-adds it as an inline `FillLayerFeature` placed feature in the
 *TOP_LAYER_MODIFICATION* decoration step. That test is *blocks motion or holds
 a fluid*, so the water in *Water World* stays terrain; what leaves it are the
 air of *The Void* and the snow layer on top of *Snowy Kingdom*, which arrive
@@ -177,7 +177,7 @@ walks the repository's available packs and keeps only those whose
 `Pack.getPackSource` is `PackSource.FEATURE` — a built-in pack that carries a
 feature-flag section and deliberately refuses to be selected automatically
 ([the repository and its packs](../foundations/resource-system.md#discover-the-repository-and-its-packs)).
-Three ship in 26.2 —
+Three ship —
 *minecart_improvements*, *redstone_experiments* and *trade_rebalance* — one per
 non-vanilla flag in `FeatureFlags`, and what a flag then gates is
 [feature flags](../foundations/identifiers-and-registries.md#feature-flags-the-same-registry-narrowed). Pressing *Done* rewrites the repository's

@@ -1,6 +1,6 @@
 # Pathfinding
 
-> Verified against **Minecraft 26.2** · Part VI · A mob walks into a fence, stands there, and then wanders off — a hundred ticks after a behaviour told it where to go.
+> Verified against **Minecraft 26.3** · Part VI · A mob walks into a fence, stands there, and then wanders off — a hundred ticks after a behaviour told it where to go.
 
 A behaviour has produced a position and stopped caring. Everything between
 that position and a mob actually leaning into a direction is this page: one
@@ -244,7 +244,7 @@ becomes movement, but it is neither the only method nor a single call site.
 the brain behaviour `BackUpIfTooClose`; `MoveControl.setWait` is a third.
 `MoveControl.setWantedPosition` itself has twelve callers outside the navigations, in
 eight classes: the shared goals `TemptGoal.ForNonPathfinders` and
-`TryFindWaterGoal`, the per-mob goals of `Bee`, `Blaze`, `Ghast` and `Vex`,
+`TryFindLiquidGoal`, the per-mob goals of `Bee`, `Blaze`, `Ghast` and `Vex`,
 `Rabbit` from the mob itself rather than from a goal, and `Fox` to pin a
 sleeping fox where it lies. The first of those is why a happy ghast follows a
 held item in a straight line through terrain a path search would have routed

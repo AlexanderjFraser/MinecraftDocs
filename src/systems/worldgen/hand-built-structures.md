@@ -1,6 +1,6 @@
 # Hand-built structures
 
-> Verified against **Minecraft 26.2** · Part XII · A stronghold is generated: a piece grammar written in Java, a graph assembled at an imaginary height and moved down afterwards, and a whole structure thrown away and rebuilt because it had no portal room.
+> Verified against **Minecraft 26.3** · Part XII · A stronghold is generated: a piece grammar written in Java, a graph assembled at an imaginary height and moved down afterwards, and a whole structure thrown away and rebuilt because it had no portal room.
 
 Every stronghold has exactly one end portal. Not usually, not almost always —
 exactly one, in every stronghold in every world, and the mechanism is not a
@@ -42,8 +42,7 @@ constructing its own neighbours.
 | `StructurePiece` | the base, and the reason the system holds together: a **mutable** `BoundingBox`, an orientation, a mirror, a rotation, a depth, and a registered `StructurePieceType` — which is how a piece comes back off disk, and the reason every one of these classes needs a loader beside it |
 | `StructurePiece.placeBlock` | the conventional write path — converts to world coordinates, drops anything outside the chunk box it was handed, applies the piece's mirror and rotation *to the block state*, and schedules a tick for whatever fluid is at the position **after** the write. Not a choke point: the structure classes call `LevelWriter.setBlock` on the level directly two dozen times |
 | `StructurePiece.BlockSelector` | a stateful per-block state chooser, and the entire visual character of a structure |
-| `StructurePieceAccessor` | eleven lines, two methods, and `StructurePiece.findCollisionPiece` is a **linear scan returning the first overlapping box**. There is no spatial index |
-| `StructurePiecesBuilder` | accumulates the pieces, and can move all of them vertically at once. It is also the `StructurePieceAccessor` every piece asks — the list being scanned is the list being built |
+| `StructurePiecesBuilder` | accumulates the pieces, can move all of them vertically at once, and is what every piece's `StructurePiece.addChildren` is handed: its `StructurePiecesBuilder.findCollisionPiece` is `StructurePiece.findCollisionPiece`, a **linear scan returning the first overlapping box** — there is no spatial index, and the list being scanned is the list being built |
 | `TemplateStructurePiece` | the bridge to [the `.nbt` machinery](jigsaw-and-templates.md#from-a-piece-to-blocks), for structures that are procedural in *layout* and templated in *content* |
 | `ScatteredFeaturePiece` | the base for one-shot surface buildings, with two ground-finders |
 | `SinglePieceStructure` | the forty-line `Structure` that places exactly one of those |
@@ -174,7 +173,7 @@ hit its limit.
 
 **Collision is the other brake, and some pieces negotiate.** Each candidate
 constructor computes its box and asks
-`StructurePieceAccessor.findCollisionPiece`; a hit means the candidate simply
+`StructurePiecesBuilder.findCollisionPiece`; a hit means the candidate simply
 is not built. A mineshaft corridor tries decreasing lengths until one fits,
 and a stronghold library falls back from its tall variant to its short one.
 
@@ -185,7 +184,7 @@ to run again. That record is also reachable as
 `StrongholdPieces.StartPiece.getLocatorPosition`, an override that returns the
 portal room's position where the base method returns the start chunk's corner —
 so a stronghold is the one structure in the game that knows where its own
-landmark is, and **nothing in 26.2 calls the method**
+landmark is, and **nothing in 26.3 calls the method**
 ([what `/locate` answers with](structure-placement.md#what-locate-asks-and-what-it-answers-with)).
 
 The whole-graph move that ends the loop is also the idiom on its way out.
@@ -205,7 +204,7 @@ every existing world moves.
 | family | how the pieces come to exist | members |
 |---|---|---|
 | **procedural piece graphs** | the pieces write their own blocks and construct their own neighbours — the pattern in its pure form | `StrongholdPieces`, `MineshaftPieces`, `NetherFortressPieces` |
-| **grid and graph solvers** | a layout is *solved* first and pieces are emitted afterwards, so neither ever calls `StructurePieceAccessor.findCollisionPiece` — the layout **is** the collision guarantee | `WoodlandMansionPieces`, `OceanMonumentPieces` |
+| **grid and graph solvers** | a layout is *solved* first and pieces are emitted afterwards, so neither ever calls `StructurePiecesBuilder.findCollisionPiece` — the layout **is** the collision guarantee | `WoodlandMansionPieces`, `OceanMonumentPieces` |
 | **template-backed pieces** | procedural placement, `.nbt` content, and therefore the same processors and the same `StructureTemplate.placeInWorld` the jigsaw path uses | `EndCityPieces`, `RuinedPortalPiece`, `OceanRuinPieces`, `ShipwreckPieces`, `IglooPieces`, `NetherFossilPieces`, `WoodlandMansionPieces` |
 | **one-shot surface buildings** | no graph and no children: one box, dropped on the ground, over `ScatteredFeaturePiece`, or — for buried treasure — no ground-finder at all | `DesertPyramidPiece`, `JungleTemplePiece`, `SwampHutPiece`, `BuriedTreasurePieces` |
 

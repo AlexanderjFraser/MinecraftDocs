@@ -1,6 +1,6 @@
 # Threads
 
-> Verified against **Minecraft 26.2** · Reference · Hand-kept from `net/minecraft/util/thread` and every `Thread` the game starts, beside [Anatomy](../systems/anatomy/anatomy.md)'s four — looked up, not watched.
+> Verified against **Minecraft 26.3** · Reference · Hand-kept from `net/minecraft/util/thread` and every `Thread` the game starts, beside [Anatomy](../systems/anatomy/anatomy.md)'s four — looked up, not watched.
 
 Every thread the game creates, who creates it, what runs on it, and what
 is *allowed* to run on it. The last column is the rule the rest of the

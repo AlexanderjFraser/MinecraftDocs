@@ -1,6 +1,6 @@
 # Damage and death
 
-> Verified against **Minecraft 26.2** · Part VI · An arrow hits a player in full iron with Protection II: six damage becomes two, and if it kills, a message, a loot drop and a death screen.
+> Verified against **Minecraft 26.3** · Part VI · An arrow hits a player in full iron with Protection II: six damage becomes two, and if it kills, a message, a loot drop and a death screen.
 
 The arrow lands, the screen goes red, the hearts drop by one, and a
 notification sound plays somewhere behind you. Six damage left the bow and

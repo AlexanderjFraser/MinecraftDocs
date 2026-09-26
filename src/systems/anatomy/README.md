@@ -1,6 +1,6 @@
 # I · Anatomy
 
-> Verified against **Minecraft 26.2** · Part I · The whole program at once: which threads exist, which loop each runs, and how the two halves talk.
+> Verified against **Minecraft 26.3** · Part I · The whole program at once: which threads exist, which loop each runs, and how the two halves talk.
 
 Part I is the program the other twelve parts run inside. Java Minecraft is
 one codebase running as two programs — a server whose whole life is a tick

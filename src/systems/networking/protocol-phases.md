@@ -1,6 +1,6 @@
 # Protocol phases
 
-> Verified against **Minecraft 26.2** · Part IX · A login: from clicking a server in the list to standing in the world.
+> Verified against **Minecraft 26.3** · Part IX · A login: from clicking a server in the list to standing in the world.
 
 Click a server in the multiplayer list and one TCP connection opens, and over
 the next second it speaks four different languages in turn: handshaking,
@@ -250,10 +250,7 @@ capacity; the compression switch; and
 `PlayerList.disconnectAllPlayersWithProfile` for a duplicate login, after
 which the machine waits in
 `ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT` until the
-old connection has actually died. It also compares the authenticated profile
-against `Connection.getIntendedProfileId`, which is set in exactly one place,
-`ServerConnectionListener.acceptChannel` — and nothing in the tree calls
-that, so it is an embedder's hook.
+old connection has actually died.
 
 **Login ends with a terminal packet in each direction**, and the two sides
 install their codecs in mirror order. `ClientboundLoginFinishedPacket` then

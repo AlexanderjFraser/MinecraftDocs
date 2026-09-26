@@ -1,6 +1,6 @@
 <svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 846 200" width="846" height="200" role="img" aria-label="The class hierarchy under EntityRenderState: each node shows how many types descend from it">
 <title>The class hierarchy under EntityRenderState: each node shows how many types descend from it</title>
-<text class="node" x="4.0" y="130.0" font-size="12">EntityRenderState (98)</text>
+<text class="node" x="4.0" y="130.0" font-size="12">EntityRenderState (99)</text>
 <path class="edge" d="M163.1 126.0 H204.0 V64.0 H211.0"/>
 <text class="node" x="214.0" y="68.0" font-size="12">LivingEntityRenderState (70)</text>
 <path class="edge" d="M414.9 64.0 H422.9 V20.0 H429.9"/>
@@ -44,5 +44,5 @@
 <path class="edge" d="M380.1 172.0 H422.9 V172.0 H429.9"/>
 <text class="node" x="432.9" y="176.0" font-size="12">MinecartTntRenderState</text>
 <path class="edge" d="M163.1 126.0 H204.0 V188.0 H211.0"/>
-<text class="fold" x="214.0" y="192.0" font-size="12">17 with no subclasses</text>
+<text class="fold" x="214.0" y="192.0" font-size="12">18 with no subclasses</text>
 </svg>

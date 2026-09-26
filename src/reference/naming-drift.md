@@ -1,14 +1,14 @@
 # Naming drift
 
-> Verified against **Minecraft 26.2** · Reference · The translation
-> layer: every name a 1.21-era reader will reach for that 26.2 does not have,
+> Verified against **Minecraft 26.3** · Reference · The translation
+> layer: every name a 1.21-era reader will reach for that 26.3 does not have,
 > and what it is called now.
 
 Rule three of this corpus is *newest version only*: no page says "in 1.21
 this was…", because version-difference prose is the first thing to rot and
 the last thing anyone rereads. That rule costs something, and this page is
 where the cost is paid back once. Every page assumes you are reading the
-26.2 tree; this page assumes you are not, yet, and are still typing the
+26.3 tree; this page assumes you are not, yet, and are still typing the
 names you learned somewhere else.
 
 Two audiences. A reader coming from **1.21** — the version most public
@@ -24,9 +24,9 @@ is probably on this page.*
 ## How to read the tables
 
 The left column is **italic, not backticked**. Most of these names do not
-exist in 26.2, and `tools/verify_names.py` — which checks every backticked
+exist in 26.3, and `tools/verify_names.py` — which checks every backticked
 identifier on every page against the decompile — would reject the page if
-they were. Italics is the corpus's mark for *a name, but not a 26.2 name*.
+they were. Italics is the corpus's mark for *a name, but not a 26.3 name*.
 The right column is backticked and therefore verified: those names are in
 the tree.
 
@@ -36,7 +36,7 @@ the entry names where it went. Those are the interesting rows — a rename is
 a nuisance, a disappearance is a design change, and the page named beside
 each part explains it.
 
-Every row here was found the same way: a fact-sheet agent reading the 26.2
+Every row here was found the same way: a fact-sheet agent reading the
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
 corpus needed. Two hundred and forty-seven rows, and the distribution is
@@ -61,7 +61,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Everywhere
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *ResourceLocation* | `Identifier` |
 | *LightTexture* | `Lightmap` |
@@ -69,7 +69,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part II — Foundations
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *TagManager* | gone |
 | *Minecraft.reloadResources* | `Minecraft.reloadResourcePacks` |
@@ -78,7 +78,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part III — The server
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *DO_DAYLIGHT_CYCLE* | `GameRules.ADVANCE_TIME` |
 | *DO_MOB_SPAWNING* | `GameRules.SPAWN_MOBS` |
@@ -114,7 +114,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part IV — The world
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *ChunkStorage* | gone — `ChunkMap extends SimpleRegionStorage` |
 | *ChunkSerializer* | `SerializableChunkData`, a record with its own parse and write halves — and a *blending_data* component |
@@ -137,7 +137,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part V — Blocks
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *ItemInteractionResult* | gone — `InteractionResult.TryEmptyHandInteraction` |
 | *DirectionProperty* | gone — `EnumProperty<Direction>` |
@@ -154,7 +154,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part VI — Entities
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *Player extends LivingEntity* | `Player extends Avatar extends LivingEntity` |
 | *EntityType.PIG* (constants) | `EntityTypes.PIG` + `EntityTypeIds.PIG` |
@@ -178,7 +178,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part VII — Items and inventories
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *InteractionResultHolder* | gone — `InteractionResult.Success.heldItemTransformedTo` |
 | *UseAnim* | `ItemUseAnimation` |
@@ -213,7 +213,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part VIII — The player
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *Inventory.armor* / *offhand* / *compartments* | one 36-slot `Inventory.items` + `Inventory.EQUIPMENT_SLOT_MAPPING` |
 | *Inventory.setPickedItem* | `Inventory.addAndPickItem` / `Inventory.pickSlot` |
@@ -227,7 +227,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part IX — Networking
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *Connection.setListener* / *setProtocol* / *getCurrentProtocol* | gone — `Connection.setupInboundProtocol` / `Connection.setupOutboundProtocol` |
 | *ConnectionProtocol.getById* / packet tables | gone — a bare enum; ids are `ProtocolInfoBuilder.addPacket` order in `IdDispatchCodec` |
@@ -256,7 +256,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part X — The client
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *Gui* (the HUD) | `Hud`, held as `Gui.hud`; the name `Gui` now means the screen/overlay manager |
 | *Minecraft.screen* / *Minecraft.setScreen* | `Gui.screen` / `Gui.setScreen` |
@@ -284,7 +284,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 Twenty-eight rows, and almost all of them are one refactor: extract then
 render.
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *MultiBufferSource* / *BufferSource* | `SubmitNodeCollector` / `SubmitNodeStorage` / `FeatureRenderDispatcher` |
 | *ShaderInstance*, *RenderStateShard* | `RenderPipeline` + `RenderPipelines` + `BindGroupLayouts` |
@@ -312,20 +312,20 @@ render.
 | *BakedQuad* as four vertices | a ten-component record, with a `BakedQuad.MaterialInfo` of six |
 | *LiquidBlockRenderer* | `FluidRenderer`, over a `FluidModel` |
 | *ItemOverrides* / *getPropertyOverride* | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` |
-| *ScreenManager* (the Blaze3D monitor manager) | `MonitorManager`, with `Monitor` and `VideoMode` — same package, same GLFW monitor callback |
+| *ScreenManager* (the Blaze3D monitor manager) | `MonitorManager`, with `Monitor` and `VideoMode` — same package, now fed by SDL's display events |
 | *Window.setVsync* | a `GpuSurface.PresentMode` in the surface configuration |
 
 ### Part XII — World generation
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *GenerationStep.Carving* | gone — `BiomeGenerationSettings.carvers` is one flat `HolderSet` |
-| *DensityFunctions.WeirdScaledSampler* | `DensityFunctions.IntervalSelect` |
+| *DensityFunctions.WeirdScaledSampler* | `IntervalSelectFunction` |
 | *StructureFeature* / *ConfiguredStructureFeature* | `Structure` / `Registries.STRUCTURE` |
-| *Feature.RANDOM_PATCH*, *Feature.FLOWER* | gone — composed from `Feature.SIMPLE_BLOCK` + placement |
-| *Feature.POINTED_DRIPSTONE* / *DRIPSTONE_CLUSTER* | `Feature.SPELEOTHEM` / `Feature.SPELEOTHEM_CLUSTER` |
+| *Feature.RANDOM_PATCH*, *Feature.FLOWER* | gone — composed from `SimpleBlockFeature` + placement |
+| *Feature.POINTED_DRIPSTONE* / *DRIPSTONE_CLUSTER* | `SpeleothemFeature` / `SpeleothemClusterFeature` |
 | *AbstractTreeGrower* and its subclasses | one final `TreeGrower` with constants |
-| *TreeConfiguration.dirtProvider* | `TreeConfiguration.belowTrunkProvider` |
+| *TreeConfiguration.dirtProvider* | `TreeFeature.belowTrunkProvider` |
 | *Biome.BiomeCategory* / *Biome.getDownfall* | gone |
 | *MultiNoiseBiomeSource.Preset* | `MultiNoiseBiomeSourceParameterList.Preset` |
 | *BiomeSpecialEffects.fogColor* / *skyColor* / music / ambient sound | `EnvironmentAttributes.*` via `Biome.getAttributes` |
@@ -340,7 +340,7 @@ integer permission level is gone from the whole command API, replaced by
 `PermissionSet` and `PermissionCheck` in `net/minecraft/server/permissions`.
 The ints survive only in *ops.json*, in *server.properties* and on the wire.
 
-| the name you remember | 26.2 |
+| the name you remember | 26.3 |
 |---|---|
 | *ResourceLocationArgument* | `IdentifierArgument` (the registry id is unchanged) |
 | *CommandSourceStack.hasPermission(int)* | `CommandSourceStack.permissions` + `PermissionSet.hasPermission` |
@@ -421,14 +421,14 @@ the corresponding page is about:
   does nothing on the client; *Player.attack* is still there but the packet that
   reaches it is `ServerboundAttackPacket`, a record of one integer, and
   `ServerboundInteractPacket` is right-click only. The general rule: where
-  1.21 had one method that checked `Level.isClientSide`, 26.2 tends to have
+  1.21 had one method that checked `Level.isClientSide`, 26.3 tends to have
   two methods — [damage and death](../systems/entities/damage-and-death.md),
   [the sword swing](../systems/player/the-sword-swing.md).
 
 ## Yarn
 
 Yarn is Fabric's community mapping set. It is not a different version of
-the game and nothing on this list is a *change*: it is the same 26.2 class
+the game and nothing on this list is a *change*: it is the same 26.3 class
 under the name a Fabric modder has in their head. Only the ones that
 actually trip people are listed — where the Yarn and Mojang names differ
 enough that grep fails.
@@ -455,7 +455,7 @@ verified on its own page.
 | *StringVisitable* | *FormattedText* |
 | *FontStorage* | *FontSet* |
 | *GlyphAtlasTexture* | *FontTexture* |
-| *DrawContext* | *GuiGraphicsExtractor* — and in 26.2 it does not draw; see the drift table |
+| *DrawContext* | *GuiGraphicsExtractor* — and in 26.3 it does not draw; see the drift table |
 | *NbtCompound* / *NbtList* / *NbtElement* | *CompoundTag* / *ListTag* / *Tag* |
 | *RegistryEntry* / *RegistryEntryList* | *Holder* / *HolderSet* |
 | *Registries* / *RegistryKeys* | *BuiltInRegistries* / *Registries* |
@@ -470,7 +470,7 @@ verified on its own page.
 | *EntityAttribute* / *EntityAttributeInstance* | *Attribute* / *AttributeInstance* |
 | *ParticleEffect* | *ParticleOptions* |
 | *BlockPos.Mutable* | *BlockPos.MutableBlockPos* |
-| *Identifier* | *Identifier* — Yarn was right first; Mojang renamed to match in 26.2 |
+| *Identifier* | *Identifier* — Yarn was right first; Mojang renamed to match |
 
 The last row is the joke that keeps giving: the single most-cited example
 of "Yarn names are better" stopped being an example, and a decade of
@@ -498,11 +498,11 @@ Fabric code now compiles against a Mojang-named class with the Yarn name.
   and a reader who cannot find one is not missing a row. Game tests are the
   opposite case — the *whole* 1.21 API is gone, which is why they have five.
 - ***Minecraft.setScreen* is a trap rather than a rename.**
-  `Minecraft.setScreenAndShow` exists in 26.2 and a 1.21-era reader grepping
+  `Minecraft.setScreenAndShow` exists in 26.3 and a 1.21-era reader grepping
   for the old name will land on it, then wonder why the screen stack behaves
   differently. The method that replaced the old one is `Gui.setScreen`.
 - **One name a 1.21 reader reaches for was never a class.** There is no
-  *DebugPackets* type in 26.2 and there is nothing it was renamed to: the debug
+  *DebugPackets* type in 26.3 and there is nothing it was renamed to: the debug
   traffic is a subscription protocol with one packet per kind
   ([debugging the running game](../systems/client/debugging-the-running-game.md)),
   not a static sender, so the grep that finds nothing is telling the truth.

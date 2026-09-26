@@ -98,7 +98,8 @@ PARTS = (
      ("net/minecraft/world/level/chunk", "net/minecraft/world/level/lighting", "net/minecraft/world/ticks",
       "net/minecraft/world/level/gameevent", "net/minecraft/world/level/entity",
       "net/minecraft/world/level/material", "net/minecraft/world/attribute", "net/minecraft/world/timeline",
-      "net/minecraft/world/clock", "net/minecraft/world/level/border", "net/minecraft/server/level")),
+      "net/minecraft/world/clock", "net/minecraft/world/level/border", "net/minecraft/server/level",
+      "net/minecraft/world/level/blockscan")),  # 26.3: LevelReader.findBlocksIn, a search over chunk sections' palettes
     ("blocks", "V", "Blocks",
      ("net/minecraft/world/level/block", "net/minecraft/world/level/redstone")),
     ("entities", "VI", "Entities",
@@ -118,7 +119,7 @@ PARTS = (
       "net/minecraft/client/input", "net/minecraft/client/server")),
     ("rendering", "XI", "Rendering",
      ("net/minecraft/client/renderer", "net/minecraft/client/model", "net/minecraft/client/particle",
-      "com/mojang/blaze3d")),
+      "com/mojang/blaze3d", "com/mojang/renderpearl")),  # 26.3 moved the GPU abstraction to renderpearl
     ("worldgen", "XII", "World generation",
      ("net/minecraft/world/level/levelgen", "net/minecraft/world/level/biome")),
     ("commands", "XIII", "Commands and data packs",

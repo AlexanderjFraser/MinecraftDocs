@@ -1,6 +1,6 @@
 # II · Foundations
 
-> Verified against **Minecraft 26.2** · Part II · The machinery every later part assumes: how anything becomes data, gets a name and a number, is loaded, and reaches into code.
+> Verified against **Minecraft 26.3** · Part II · The machinery every later part assumes: how anything becomes data, gets a name and a number, is loaded, and reaches into code.
 
 Part II is the vocabulary the other twelve parts speak without pausing to
 define it. Nothing here is a thing a player does; everything here is what

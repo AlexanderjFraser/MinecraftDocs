@@ -1,6 +1,6 @@
 # Enchanting: the five paths, and what each one is allowed to do
 
-> Verified against **Minecraft 26.2** · Part VII · A player reads three offers off an enchanting table and buys one, and then the same sword meets the four other paths that change what it is enchanted with — an anvil, a grindstone running backwards, a spawning pillager, and a command.
+> Verified against **Minecraft 26.3** · Part VII · A player reads three offers off an enchanting table and buys one, and then the same sword meets the four other paths that change what it is enchanted with — an anvil, a grindstone running backwards, a spawning pillager, and a command.
 
 A sword goes in the left slot of an enchanting table and three lapis in the
 right, and the table answers with three lines of Standard Galactic Alphabet,

@@ -1,6 +1,6 @@
 # What everything imports
 
-> Verified against **Minecraft 26.2** · Maps · The thirty most-imported Mojang classes: how many files name each one in an import statement.
+> Verified against **Minecraft 26.3** · Maps · The thirty most-imported Mojang classes: how many files name each one in an import statement.
 
 One file in six imports `BlockPos`. That is the least surprising fact on
 this page; the next one is not. The chart counts Mojang imports only —
@@ -8,15 +8,15 @@ this page; the next one is not. The chart counts Mojang imports only —
 and the nullability annotation outrank everything on it and say nothing
 about the game. Under that rule the second most-imported type is not
 Minecraft's: it is `Codec`, from Mojang's DataFixerUpper
-library, imported by 987 files, with `MapCodec` third and
-`RecordCodecBuilder` sixth. Three of the six classes the game most depends
+library, imported by 943 files, with `MapCodec` sixth and
+`RecordCodecBuilder` seventh. Three of the seven classes the game most depends
 on are the serialisation vocabulary that turns objects into NBT and JSON
 and back, which is why Part II teaches codecs before anything a player can
 see.
 
 <figure class="map">
 {{#include ../generated/fanin.svg}}
-<figcaption>The thirty most-imported Mojang classes of 26.2; JDK and annotation imports are not counted. Blue ships in both jars, orange is client-only, grey is a library outside the decompile. Click to enlarge.</figcaption>
+<figcaption>The thirty most-imported Mojang classes of 26.3; JDK and annotation imports are not counted. Blue ships in both jars, orange is client-only, grey is a library outside the decompile. Click to enlarge.</figcaption>
 </figure>
 
 ## Seven ideas, and where the book teaches them
@@ -25,9 +25,9 @@ The hubs are not thirty ideas; they are seven. The table below groups them,
 reading down the sixty rows rather than the thirty the figure draws, so that a
 family is not broken in half by the cut-off — `ByteBufCodecs` and `PacketType`
 are the wire's vocabulary whether or not they clear it. So the table holds
-thirty-two names: **twenty-four of the thirty**, plus eight more from ranks
-31 to 60 that their families would be incomplete without. The six of the
-thirty it leaves out are the two paragraphs after it, three each.
+thirty-two names: **twenty-five of the thirty**, plus seven more from ranks
+31 to 60 that their families would be incomplete without. The five of the
+thirty it leaves out are the two paragraphs after it, two and three.
 
 Part II teaches three of the seven, Reference two, Part IX one, and the
 seventh — the world's nouns — is the rest of the book. That is the more useful
@@ -44,24 +44,24 @@ before Part IV are not one part's worth.
 | chance | `RandomSource` | [Math and primitives](../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither) |
 | the world's nouns | `Level`, `ServerLevel`, `BlockState`, `Block`, `Blocks`, `Entity`, `LivingEntity`, `Player`, `EntityType`, `ItemStack`, `SoundEvents`, `SoundEvent`, `DataComponents` | Parts IV to VIII |
 
-Three of the thirty belong to no family and get no row above, and each is
-worth a look. `Minecraft`
-(280) is the only client-only class in the thirty, and it is twenty-ninth —
+Two of the thirty belong to no family and get no row above, and neither
+does the first class after them; each is worth a look. `Minecraft`
+(284) is thirty-first, the first client-only class on the list and just outside the figure —
 the client's hub is a hub for the client-only side alone, which is under a
 third of the files, and the shared seven tenths never name it. And `Schema`
-(389) and `DSL` (278) are the migration tree talking to itself: all but ten of
+(404) and `DSL` (289) are the migration tree talking to itself: all but ten of
 the files that import `Schema` are in `util/datafix`, and the ten are its
 sibling `util/filefix`. One pair *inside* the table earns the same second
-look: `ServerLevel` (726) is imported by nearly as many files as `Level`
-(750), because most code that touches the world knows it is on the server and
+look: `ServerLevel` (735) is imported by nearly as many files as `Level`
+(761), because most code that touches the world knows it is on the server and
 says so in its types.
 
 The last three of the thirty are the ones that are not vocabulary at all.
-*LogUtils* (470) is Mojang's logging library, the one line at the top of nearly
-every class that does anything. `Util` (454) is where the executors and the
+*LogUtils* (488) is Mojang's logging library, the one line at the top of nearly
+every class that does anything. `Util` (457) is where the executors and the
 static odds and ends live ([threads](../reference/threads.md#the-threads-a-lecture-leans-on)) —
 a hub because it is where the unclassifiable went, not because it is an idea.
-And `BlockBehaviour` (311) is the world's nouns seen one class higher — the
+And `BlockBehaviour` (313) is the world's nouns seen one class higher — the
 same one-class-higher shape [what extends what](hierarchy.md#block) draws for
 the `Block` tree.
 
@@ -69,7 +69,7 @@ the `Block` tree.
 
 An import is counted once per file, so the chart says *how many files
 name the class*, not how often. It also undercounts every class used
-inside its own package, because that needs no import: the 257 files that
+inside its own package, because that needs no import: the 260 files that
 import `Block` are the files outside `world/level/block` that use it, and
 the same is true of `BlockBehaviour` and `Minecraft`. A class's true
 reach is this number plus its package.

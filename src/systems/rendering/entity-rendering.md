@@ -1,6 +1,6 @@
 # Entity rendering
 
-> Verified against **Minecraft 26.2** · Part XI · a zombie is drawn: extract, submit, prepare, execute.
+> Verified against **Minecraft 26.3** · Part XI · a zombie is drawn: extract, submit, prepare, execute.
 
 A zombie shuffles out of the dark towards you, you hit it, and for a moment it
 flashes red. Between that zombie and those pixels stand four stages, each
@@ -25,7 +25,7 @@ everything drawn is a redrawing of what the server already told the client
 | class | what it decides | thread |
 |---|---|---|
 | `LevelExtractor` | which entities are visible at all, and when their states are built | Render thread |
-| `EntityRenderDispatcher` | which `EntityRenderer` an entity gets, and the hand's own lighting | Render thread |
+| `EntityRenderDispatcher` | which `EntityRenderer` an entity gets | Render thread |
 | `EntityRenderer` | what goes into the render state, and what gets submitted — it never draws | Render thread |
 | `EntityRenderState` | one entity's whole frame, copied by value, holding no `Entity` and no `Level` | a value object |
 | `RenderLayer` | the extras — armour, held items, eyes, capes — each submitting at its own order | Render thread |
@@ -119,7 +119,7 @@ target and a guardian firing one, each of which is drawn because something
 
 Light is not read at draw time. It comes from
 `EntityRenderer.getPackedLightCoords` during extract — the dispatcher has a
-method of the same name, but its one caller is the first-person hand — and
+method of the same name, and nothing calls it — and
 that method returns full brightness for a burning entity. Shadows are sampled here too,
 and never past sixteen blocks: the renderer walks the blocks under the entity,
 computes an alpha for each, and stores the shapes and alphas in the state, so
@@ -339,9 +339,10 @@ policy, a different partial tick and an empty block model —
 [block-entity rendering](block-entity-rendering.md) is the whole of the
 difference.
 
-**The first-person hand** is a second pipeline entirely: `ItemInHandRenderer`
-submits into its own `SubmitNodeStorage` and is drawn by
-`FeatureRenderDispatcher.renderAllFeatures`, outside the frame graph — see
+**The first-person hand** is a second pipeline from submit on: its state is
+extracted with the player's (`FirstPersonHandsAndItems`), then
+`FirstPersonHandsAndItemsRenderer` submits into its own `SubmitNodeStorage`,
+which is drawn by `FeatureRenderDispatcher.renderAllFeatures` outside the frame graph — see
 [the frame](the-frame.md).
 
 **Hitboxes** left the renderer. F3+B is a debug-entry toggle read by a

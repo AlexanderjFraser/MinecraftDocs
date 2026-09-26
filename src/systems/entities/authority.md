@@ -1,6 +1,6 @@
 # Authority: who is allowed to simulate
 
-> Verified against **Minecraft 26.2** · Part VI · A zombie, a player and a boat each take one step, on the server and on the client, and only one side of each pair does any arithmetic.
+> Verified against **Minecraft 26.3** · Part VI · A zombie, a player and a boat each take one step, on the server and on the client, and only one side of each pair does any arithmetic.
 
 A zombie walks towards you across a field. Both programs have a `Zombie`
 object; both tick it every twentieth of a second; both call the same
@@ -136,9 +136,10 @@ immovability flag of their own.
 A client-side zombie fails `Entity.isLocalInstanceAuthoritative` because
 nothing is riding it, so `Entity.canSimulateMovement` is false and
 `LivingEntity.aiStep` never reaches `LivingEntity.travel`. What it does
-instead is the branch `LivingEntity.aiStep` opens with: if an
-`InterpolationHandler` is running, step it; **otherwise scale the stored
-delta by 0.98** — and nothing then applies that delta, because the only thing
+instead is two things: `Entity.commonTick` steps its `InterpolationHandler`
+just before the zombie's own tick, and `LivingEntity.aiStep` opens with the
+other half — when nothing is interpolating, **scale the stored delta by
+0.98** — and nothing then applies that delta, because the only thing
 that would is `Entity.move`, which nothing in the mob's own tick reaches on
 this side — and this is precisely the seam where the client's other answer
 begins: what it may guess rather than simulate is [prediction and
@@ -185,7 +186,7 @@ you, and returns true, so your machine simulates the boat for real. On the
 server the same delegation makes `Entity.isClientAuthoritative` true, so the
 server's copy is *not* authoritative and does not simulate — it zeroes its
 own delta outright. Every other client's copy does the same, and is moved
-only by `AbstractBoat.interpolation`.
+only by its `LinearInterpolationHandler`.
 
 ```mermaid
 sequenceDiagram

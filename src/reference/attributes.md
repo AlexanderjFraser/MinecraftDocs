@@ -1,6 +1,6 @@
 # Attributes
 
-> Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
+> Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
 Every attribute registered in `Attributes`. All of them are `RangedAttribute`s, so every one clamps to its range once, at the end of `AttributeInstance.calculateValue`. **Syncable** attributes are the only ones `ClientboundUpdateAttributesPacket` ever carries: a mutation to one of the others changes the server's number and never reaches the client at all. The sentiment decides tooltip colour and nothing else. Defaults here are the registry's, and most entity types override them in their own `AttributeSupplier`. See [Attributes](../systems/entities/attributes.md).
 

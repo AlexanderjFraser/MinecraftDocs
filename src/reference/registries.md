@@ -1,22 +1,22 @@
 # Registries
 
-> Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
+> Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every registry key in the game. **148 of them are declared in `Registries`**; five more are declared by the class that owns them (`ServerFunctionLibrary`, `ClockTimeMarkers`, `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the 148 [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLDGEN_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).
+Every registry key in the game. **156 of them are declared in `Registries`**; five more are declared by the class that owns them (`ClockTimeMarkers`, `EquipmentAssets`, `RecipePropertySet`, `ServerFunctionLibrary`, `WaypointStyleAssets`) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the 156 [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLD_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems), and the **reloadable** ones by the same loader on every data-pack reload (`RELOADABLE_REGISTRIES`, read by `ReloadableServerRegistries`); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).
 
-153 keys · 95 built-in · 47 data-pack · 29 synced
+161 keys · 95 built-in · 52 data-pack · 8 reloadable · 32 synced
 
 | key | element type | kind | synced |
 |---|---|---|---|
 | `activity` (`Registries.ACTIVITY`) | `Activity` | built-in |  |
-| `advancement` (`Registries.ADVANCEMENT`) | `Advancement` | — |  |
+| `advancement` (`Registries.ADVANCEMENT`) | `Advancement` | data-pack (reloadable) |  |
 | `attribute` (`Registries.ATTRIBUTE`) | `Attribute` | built-in |  |
 | `attribute_type` (`Registries.ATTRIBUTE_TYPE`) | `AttributeType<…>` | built-in |  |
 | `banner_pattern` (`Registries.BANNER_PATTERN`) | `BannerPattern` | data-pack | yes |
 | `block` (`Registries.BLOCK`) | `Block` | built-in |  |
 | `block_entity_type` (`Registries.BLOCK_ENTITY_TYPE`) | `BlockEntityType<…>` | built-in |  |
 | `block_predicate_type` (`Registries.BLOCK_PREDICATE_TYPE`) | `BlockPredicateType<…>` | built-in |  |
-| `block_type` (`Registries.BLOCK_TYPE`) | `MapCodec<…>` | built-in |  |
+| `block_transformer` (`Registries.BLOCK_TRANSFORMER`) | `BlockTransformer` | data-pack | yes |
 | `cat_sound_variant` (`Registries.CAT_SOUND_VARIANT`) | `CatSoundVariant` | data-pack | yes |
 | `cat_variant` (`Registries.CAT_VARIANT`) | `CatVariant` | data-pack | yes |
 | `chat_type` (`Registries.CHAT_TYPE`) | `ChatType` | data-pack | yes |
@@ -26,6 +26,11 @@ Every registry key in the game. **148 of them are declared in `Registries`**; fi
 | `clock_time_marker` (`ClockTimeMarkers.ROOT_ID`) | `ClockTimeMarker` | — |  |
 | `command_argument_type` (`Registries.COMMAND_ARGUMENT_TYPE`) | `ArgumentTypeInfo<…>` | built-in |  |
 | `consume_effect_type` (`Registries.CONSUME_EFFECT_TYPE`) | `ConsumeEffect.Type<…>` | built-in |  |
+| `context_float_provider` (`Registries.CONTEXT_FLOAT_PROVIDER`) | `ContextFloatProvider` | data-pack (reloadable) |  |
+| `context_float_provider_type` (`Registries.CONTEXT_FLOAT_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
+| `context_int_provider` (`Registries.CONTEXT_INT_PROVIDER`) | `ContextIntProvider` | data-pack (reloadable) |  |
+| `context_int_provider_type` (`Registries.CONTEXT_INT_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
+| `context_key_set` (`Registries.CONTEXT_KEY_SET`) | `ContextKeySet` | built-in |  |
 | `cow_sound_variant` (`Registries.COW_SOUND_VARIANT`) | `CowSoundVariant` | data-pack | yes |
 | `cow_variant` (`Registries.COW_VARIANT`) | `CowVariant` | data-pack | yes |
 | `creative_mode_tab` (`Registries.CREATIVE_MODE_TAB`) | `CreativeModeTab` | built-in |  |
@@ -34,7 +39,7 @@ Every registry key in the game. **148 of them are declared in `Registries`**; fi
 | `data_component_predicate_type` (`Registries.DATA_COMPONENT_PREDICATE_TYPE`) | `DataComponentPredicate.Type<…>` | built-in |  |
 | `data_component_type` (`Registries.DATA_COMPONENT_TYPE`) | `DataComponentType<…>` | built-in |  |
 | `debug_subscription` (`Registries.DEBUG_SUBSCRIPTION`) | `DebugSubscription<…>` | built-in |  |
-| `decorated_pot_pattern` (`Registries.DECORATED_POT_PATTERN`) | `DecoratedPotPattern` | built-in |  |
+| `decorated_pot_pattern` (`Registries.DECORATED_POT_PATTERN`) | `DecoratedPotPattern` | data-pack | yes |
 | `dialog` (`Registries.DIALOG`) | `Dialog` | data-pack | yes |
 | `dialog_action_type` (`Registries.DIALOG_ACTION_TYPE`) | `MapCodec<…>` | built-in |  |
 | `dialog_body_type` (`Registries.DIALOG_BODY_TYPE`) | `MapCodec<…>` | built-in |  |
@@ -66,15 +71,14 @@ Every registry key in the game. **148 of them are declared in `Registries`**; fi
 | `instrument` (`Registries.INSTRUMENT`) | `Instrument` | data-pack | yes |
 | `int_provider_type` (`Registries.INT_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
 | `item` (`Registries.ITEM`) | `Item` | built-in |  |
-| `item_modifier` (`Registries.ITEM_MODIFIER`) | `LootItemFunction` | — |  |
+| `item_modifier` (`Registries.ITEM_MODIFIER`) | `LootItemFunction` | data-pack (reloadable) |  |
 | `jukebox_song` (`Registries.JUKEBOX_SONG`) | `JukeboxSong` | data-pack | yes |
 | `loot_condition_type` (`Registries.LOOT_CONDITION_TYPE`) | `MapCodec<…>` | built-in |  |
 | `loot_function_type` (`Registries.LOOT_FUNCTION_TYPE`) | `MapCodec<…>` | built-in |  |
 | `loot_nbt_provider_type` (`Registries.LOOT_NBT_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
-| `loot_number_provider_type` (`Registries.LOOT_NUMBER_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
 | `loot_pool_entry_type` (`Registries.LOOT_POOL_ENTRY_TYPE`) | `MapCodec<…>` | built-in |  |
 | `loot_score_provider_type` (`Registries.LOOT_SCORE_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
-| `loot_table` (`Registries.LOOT_TABLE`) | `LootTable` | — |  |
+| `loot_table` (`Registries.LOOT_TABLE`) | `LootTable` | data-pack (reloadable) |  |
 | `map_decoration_type` (`Registries.MAP_DECORATION_TYPE`) | `MapDecorationType` | built-in |  |
 | `memory_module_type` (`Registries.MEMORY_MODULE_TYPE`) | `MemoryModuleType<…>` | built-in |  |
 | `menu` (`Registries.MENU`) | `MenuType<…>` | built-in |  |
@@ -91,8 +95,8 @@ Every registry key in the game. **148 of them are declared in `Registries`**; fi
 | `pos_rule_test` (`Registries.POS_RULE_TEST`) | `PosRuleTestType<…>` | built-in |  |
 | `position_source_type` (`Registries.POSITION_SOURCE_TYPE`) | `PositionSourceType<…>` | built-in |  |
 | `potion` (`Registries.POTION`) | `Potion` | built-in |  |
-| `predicate` (`Registries.PREDICATE`) | `LootItemCondition` | — |  |
-| `recipe` (`Registries.RECIPE`) | `Recipe<…>` | — |  |
+| `predicate` (`Registries.PREDICATE`) | `LootItemCondition` | data-pack (reloadable) |  |
+| `recipe` (`Registries.RECIPE`) | `Recipe<…>` | data-pack (reloadable) |  |
 | `recipe_book_category` (`Registries.RECIPE_BOOK_CATEGORY`) | `RecipeBookCategory` | built-in |  |
 | `recipe_display` (`Registries.RECIPE_DISPLAY`) | `RecipeDisplay.Type<…>` | built-in |  |
 | `recipe_property_set` (`RecipePropertySet.TYPE_KEY`) | `RecipePropertySet` | — |  |
@@ -102,6 +106,7 @@ Every registry key in the game. **148 of them are declared in `Registries`**; fi
 | `rule_test` (`Registries.RULE_TEST`) | `RuleTestType<…>` | built-in |  |
 | `sensor_type` (`Registries.SENSOR_TYPE`) | `SensorType<…>` | built-in |  |
 | `slot_display` (`Registries.SLOT_DISPLAY`) | `SlotDisplay.Type<…>` | built-in |  |
+| `slot_source` (`Registries.SLOT_SOURCE`) | `SlotSource` | data-pack (reloadable) |  |
 | `slot_source_type` (`Registries.SLOT_SOURCE_TYPE`) | `MapCodec<…>` | built-in |  |
 | `sound_event` (`Registries.SOUND_EVENT`) | `SoundEvent` | built-in |  |
 | `spawn_condition_type` (`Registries.SPAWN_CONDITION_TYPE`) | `MapCodec<…>` | built-in |  |
@@ -128,30 +133,33 @@ Every registry key in the game. **148 of them are declared in `Registries`**; fi
 | `world_clock` (`Registries.WORLD_CLOCK`) | `WorldClock` | data-pack | yes |
 | `worldgen/biome` (`Registries.BIOME`) | `Biome` | data-pack | yes |
 | `worldgen/biome_source` (`Registries.BIOME_SOURCE`) | `MapCodec<…>` | built-in |  |
-| `worldgen/block_state_provider_type` (`Registries.BLOCK_STATE_PROVIDER_TYPE`) | `BlockStateProviderType<…>` | built-in |  |
-| `worldgen/carver` (`Registries.CARVER`) | `WorldCarver<…>` | built-in |  |
+| `worldgen/block_state_provider` (`Registries.BLOCK_STATE_PROVIDER`) | `BlockStateProvider` | data-pack | yes |
+| `worldgen/block_state_provider_type` (`Registries.BLOCK_STATE_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
+| `worldgen/carver` (`Registries.CARVER`) | `WorldCarver` | data-pack |  |
+| `worldgen/carver_type` (`Registries.CARVER_TYPE`) | `MapCodec<…>` | built-in |  |
 | `worldgen/chunk_generator` (`Registries.CHUNK_GENERATOR`) | `MapCodec<…>` | built-in |  |
-| `worldgen/configured_carver` (`Registries.CONFIGURED_CARVER`) | `ConfiguredWorldCarver<…>` | data-pack |  |
-| `worldgen/configured_feature` (`Registries.CONFIGURED_FEATURE`) | `ConfiguredFeature<…>` | data-pack |  |
 | `worldgen/density_function` (`Registries.DENSITY_FUNCTION`) | `DensityFunction` | data-pack |  |
 | `worldgen/density_function_type` (`Registries.DENSITY_FUNCTION_TYPE`) | `MapCodec<…>` | built-in |  |
-| `worldgen/feature` (`Registries.FEATURE`) | `Feature<…>` | built-in |  |
+| `worldgen/feature` (`Registries.FEATURE`) | `Feature` | data-pack |  |
 | `worldgen/feature_size_type` (`Registries.FEATURE_SIZE_TYPE`) | `FeatureSizeType<…>` | built-in |  |
+| `worldgen/feature_type` (`Registries.FEATURE_TYPE`) | `MapCodec<…>` | built-in |  |
 | `worldgen/flat_level_generator_preset` (`Registries.FLAT_LEVEL_GENERATOR_PRESET`) | `FlatLevelGeneratorPreset` | data-pack |  |
 | `worldgen/foliage_placer_type` (`Registries.FOLIAGE_PLACER_TYPE`) | `FoliagePlacerType<…>` | built-in |  |
-| `worldgen/material_condition` (`Registries.MATERIAL_CONDITION`) | `MapCodec<…>` | built-in |  |
-| `worldgen/material_rule` (`Registries.MATERIAL_RULE`) | `MapCodec<…>` | built-in |  |
+| `worldgen/material_condition` (`Registries.MATERIAL_CONDITION`) | `MaterialCondition` | data-pack |  |
+| `worldgen/material_condition_type` (`Registries.MATERIAL_CONDITION_TYPE`) | `MapCodec<…>` | built-in |  |
+| `worldgen/material_rule` (`Registries.MATERIAL_RULE`) | `MaterialRule` | data-pack |  |
+| `worldgen/material_rule_type` (`Registries.MATERIAL_RULE_TYPE`) | `MapCodec<…>` | built-in |  |
 | `worldgen/multi_noise_biome_source_parameter_list` (`Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST`) | `MultiNoiseBiomeSourceParameterList` | data-pack |  |
-| `worldgen/noise` (`Registries.NOISE`) | `NormalNoise.NoiseParameters` | data-pack |  |
+| `worldgen/noise` (`Registries.NOISE`) | `NormalNoise` | data-pack |  |
 | `worldgen/noise_settings` (`Registries.NOISE_SETTINGS`) | `NoiseGeneratorSettings` | data-pack |  |
 | `worldgen/placed_feature` (`Registries.PLACED_FEATURE`) | `PlacedFeature` | data-pack |  |
-| `worldgen/placement_modifier_type` (`Registries.PLACEMENT_MODIFIER_TYPE`) | `PlacementModifierType<…>` | built-in |  |
+| `worldgen/placement_modifier_type` (`Registries.PLACEMENT_MODIFIER_TYPE`) | `MapCodec<…>` | built-in |  |
 | `worldgen/pool_alias_binding` (`Registries.POOL_ALIAS_BINDING`) | `MapCodec<…>` | built-in |  |
 | `worldgen/processor_list` (`Registries.PROCESSOR_LIST`) | `StructureProcessorList` | data-pack |  |
 | `worldgen/root_placer_type` (`Registries.ROOT_PLACER_TYPE`) | `RootPlacerType<…>` | built-in |  |
 | `worldgen/structure` (`Registries.STRUCTURE`) | `Structure` | data-pack |  |
 | `worldgen/structure_piece` (`Registries.STRUCTURE_PIECE`) | `StructurePieceType` | built-in |  |
-| `worldgen/structure_placement` (`Registries.STRUCTURE_PLACEMENT`) | `StructurePlacementType<…>` | built-in |  |
+| `worldgen/structure_placement` (`Registries.STRUCTURE_PLACEMENT`) | `MapCodec<…>` | built-in |  |
 | `worldgen/structure_pool_element` (`Registries.STRUCTURE_POOL_ELEMENT`) | `StructurePoolElementType<…>` | built-in |  |
 | `worldgen/structure_processor` (`Registries.STRUCTURE_PROCESSOR`) | `MapCodec<…>` | built-in |  |
 | `worldgen/structure_set` (`Registries.STRUCTURE_SET`) | `StructureSet` | data-pack |  |

@@ -1,6 +1,6 @@
 # Sound: the engine
 
-> Verified against **Minecraft 26.2** · Part X · a block placed near you: from a packet on the client's Render thread to an OpenAL source, across four of the five threads that take part and one hop the sound cannot skip.
+> Verified against **Minecraft 26.3** · Part X · a block placed near you: from a packet on the client's Render thread to an OpenAL source, across four of the five threads that take part and one hop the sound cannot skip.
 
 `SoundEngine.play` never starts a sound. It resolves the name, picks a
 variant, tells the subtitle overlay, computes the volume and asks for a

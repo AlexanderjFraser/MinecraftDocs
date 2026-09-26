@@ -1,20 +1,20 @@
 # Packets
 
-> Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
+> Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
 Every packet the game defines, by the `PacketTypes` class that declares it. `common`, `cookie` and `ping` packets are shared by more than one protocol phase; the exact phase→packet bindings are in the `*Protocols` classes next to each `PacketTypes` class (`GameProtocols`, `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols`, `HandshakeProtocols`). See [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md).
 
 | group | clientbound | serverbound |
 |---|---:|---:|
-| `common` (`CommonPacketTypes`) | 13 | 6 |
+| `common` (`CommonPacketTypes`) | 14 | 6 |
 | `configuration` (`ConfigurationPacketTypes`) | 6 | 3 |
 | `cookie` (`CookiePacketTypes`) | 1 | 1 |
-| `game` (`GamePacketTypes`) | 127 | 61 |
+| `game` (`GamePacketTypes`) | 129 | 61 |
 | `handshake` (`HandshakePacketTypes`) | 0 | 1 |
 | `login` (`LoginPacketTypes`) | 5 | 4 |
 | `ping` (`PingPacketTypes`) | 1 | 1 |
 | `status` (`StatusPacketTypes`) | 1 | 1 |
-| **total** | **154** | **78** |
+| **total** | **157** | **78** |
 
 ## `common` — `CommonPacketTypes` — shared across phases
 
@@ -26,6 +26,7 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `disconnect` | clientbound | `ClientboundDisconnectPacket` |
 | `keep_alive` | clientbound | `ClientboundKeepAlivePacket` |
 | `ping` | clientbound | `ClientboundPingPacket` |
+| `post_effects` | clientbound | `ClientboundPostEffectsPacket` |
 | `resource_pack_pop` | clientbound | `ClientboundResourcePackPopPacket` |
 | `resource_pack_push` | clientbound | `ClientboundResourcePackPushPacket` |
 | `server_links` | clientbound | `ClientboundServerLinksPacket` |
@@ -66,6 +67,7 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | id | direction | class |
 |---|---|---|
 | `add_entity` | clientbound | `ClientboundAddEntityPacket` |
+| `add_transient_block` | clientbound | `ClientboundAddTransientBlockPacket` |
 | `animate` | clientbound | `ClientboundAnimatePacket` |
 | `award_stats` | clientbound | `ClientboundAwardStatsPacket` |
 | `block_changed_ack` | clientbound | `ClientboundBlockChangedAckPacket` |
@@ -179,6 +181,7 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `sound_entity` | clientbound | `ClientboundSoundEntityPacket` |
 | `start_configuration` | clientbound | `ClientboundStartConfigurationPacket` |
 | `stop_sound` | clientbound | `ClientboundStopSoundPacket` |
+| `swing_animation` | clientbound | `ClientboundSwingAnimationPacket` |
 | `system_chat` | clientbound | `ClientboundSystemChatPacket` |
 | `tab_list` | clientbound | `ClientboundTabListPacket` |
 | `tag_query` | clientbound | `ClientboundTagQueryPacket` |
@@ -232,6 +235,7 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `player_command` | serverbound | `ServerboundPlayerCommandPacket` |
 | `player_input` | serverbound | `ServerboundPlayerInputPacket` |
 | `player_loaded` | serverbound | `ServerboundPlayerLoadedPacket` |
+| `punch` | serverbound | `ServerboundPunchPacket` |
 | `recipe_book_change_settings` | serverbound | `ServerboundRecipeBookChangeSettingsPacket` |
 | `recipe_book_seen_recipe` | serverbound | `ServerboundRecipeBookSeenRecipePacket` |
 | `rename_item` | serverbound | `ServerboundRenameItemPacket` |
@@ -248,7 +252,6 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `set_test_block` | serverbound | `ServerboundSetTestBlockPacket` |
 | `sign_update` | serverbound | `ServerboundSignUpdatePacket` |
 | `spectator_action` | serverbound | `ServerboundSpectatorActionPacket` |
-| `swing` | serverbound | `ServerboundSwingPacket` |
 | `teleport_to_entity` | serverbound | `ServerboundTeleportToEntityPacket` |
 | `test_instance_block_action` | serverbound | `ServerboundTestInstanceBlockActionPacket` |
 | `use_item` | serverbound | `ServerboundUseItemPacket` |

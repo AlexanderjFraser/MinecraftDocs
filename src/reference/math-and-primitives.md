@@ -1,6 +1,6 @@
 # Math and primitives
 
-> Verified against **Minecraft 26.2** · Reference · The coordinate spaces, geometry and randomness every system page assumes — looked up, not watched.
+> Verified against **Minecraft 26.3** · Reference · The coordinate spaces, geometry and randomness every system page assumes — looked up, not watched.
 
 Every system in the game speaks in a handful of value types: an integer
 block position, a chunk column, a 16³ section, a double-precision world
@@ -96,7 +96,7 @@ Three long-packings appear everywhere as map keys.
 WEST, EAST` (`Direction.get3DDataValue`); its horizontal subset has its own
 order starting at south (`Direction.get2DDataValue`). `Direction.Axis` (X, Y, Z),
 `Direction.AxisDirection` and `Direction.Plane` (horizontal, vertical) are
-the nested helpers; `Direction8` the compass points; `FrontAndTop` the twelve
+the nested helpers; `CompositeDirection.Direction8` the compass points; `FrontAndTop` the twelve
 jigsaw and crafter orientations; `AxisCycle` the axis permutation
 `VoxelShape` lookups use.
 
@@ -163,7 +163,7 @@ process:
   `SingleThreadedRandomSource` (same, no atomics), `ThreadSafeLegacyRandomSource`.
   `RandomSource.create` returns a `LegacyRandomSource` with a uniquified
   seed; this is `Level.random` (inherited unchanged by `ServerLevel` and
-  `ClientLevel`), `Entity.random`, `GameRenderer.random`,
+  `ClientLevel`), `Entity.random`,
   `ParticleEngine.random`. `RandomSource.createThreadLocalInstance` returns a
   `SingleThreadedRandomSource` and is what `ClientLevel.animateTick` uses for
   block animation, and `LevelRenderer` for the block-destroy overlay.
@@ -247,7 +247,7 @@ normally visits.
 families, so the parity dumps cover whichever one a dimension is on.
 
 **`BlockBox` is declared and unused.** It is a tidy `BlockPos`-pair record
-in `net/minecraft/core`, and in 26.2 nothing calls it; structure bounds are
+in `net/minecraft/core`, and in 26.3 nothing calls it; structure bounds are
 still `BoundingBox` in `world/level/levelgen/structure`. Worth knowing
 before assuming a rename happened.
 

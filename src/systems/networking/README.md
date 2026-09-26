@@ -1,6 +1,6 @@
 # IX · Networking
 
-> Verified against **Minecraft 26.2** · Part IX · One socket, four languages, and everything the two halves of the game say to each other across it.
+> Verified against **Minecraft 26.3** · Part IX · One socket, four languages, and everything the two halves of the game say to each other across it.
 
 Almost every part before this one had a single machine to describe. This one
 has two. A player meets the seam as a set of symptoms — the *Connection lost*

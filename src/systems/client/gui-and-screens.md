@@ -1,6 +1,6 @@
 # GUI and screens
 
-> Verified against **Minecraft 26.2** · Part X · pressing E: a screen the server is not told about until you close it, opened onto a menu that was built when you spawned.
+> Verified against **Minecraft 26.3** · Part X · pressing E: a screen the server is not told about until you close it, opened onto a menu that was built when you spawned.
 
 Press E in survival and no packet is sent, no packet is received, and nothing
 on the server changes. `Player.inventoryMenu` has existed since the player

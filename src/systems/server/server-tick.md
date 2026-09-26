@@ -1,6 +1,6 @@
 # The server tick
 
-> Verified against **Minecraft 26.2** · Part III · One 50 ms tick on the Server thread, from the moment the clock says *now* to the moment the thread parks again.
+> Verified against **Minecraft 26.3** · Part III · One 50 ms tick on the Server thread, from the moment the clock says *now* to the moment the thread parks again.
 
 Twenty times a second the Server thread wakes, hands every packet that
 arrived since it last looked to the code that answers it, advances every

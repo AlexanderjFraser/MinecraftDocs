@@ -7,7 +7,11 @@ key"). This reads it and every `participant X as Y` / `actor X as Y` in
 
   key      every class in the key exists in the decompile (nested classes as
            `Outer.Inner`), every lane is unique and at least two letters, and
-           no lane is a bare initial  -> a failure exits 1
+           no lane is a bare initial  -> a failure exits 1. The decompile is the
+           book's release; a row that release lacks passes, with a note, only
+           while every page that declares the lane is verified against an
+           earlier staged release that has the class (pass 8, session V1: a
+           version pass moves the book a page at a time)
   pages    a lane the key knows must expand to the key's class on every page;
            a lane the key does not know must not mean two different classes
            on two pages  -> reported; exit 1 only with --strict
@@ -96,8 +100,56 @@ def read_key(template: str) -> tuple[dict[str, str], dict[str, str], list[str]]:
     return classes, words, problems
 
 
-def check_key_against_source(classes: dict[str, str], root: str, libs: str) -> list[str]:
-    index, _packages = load_index(root, libs)
+def lane_releases(src: str) -> dict[str, set[str]]:
+    """lane -> the releases named by the verified lines of the pages that declare it (a page with
+    no verified line counts as the book's version)."""
+    out: dict[str, set[str]] = {}
+    for path, _rel in walk_pages(src, None):
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        version = mc_version.page_version(text) or mc_version.VERSION
+        for line in text.splitlines():
+            m = PARTICIPANT.match(line)
+            if m:
+                out.setdefault(m.group(1), set()).add(version)
+    return out
+
+
+def check_key_by_release(classes: dict[str, str], src: str, libs: str | None = None) -> tuple[list[str], list[str]]:
+    """The key against the book's release; a row that release lacks is a note, not a problem, when
+    every page that declares its lane is verified against an earlier staged release in which the
+    class exists — the state a version pass leaves while it moves the book a page at a time (pass 8,
+    session V1). A row that fails in the current release and serves a current page, or no page at
+    all, is still a problem: the page moves to the new class, or the row goes."""
+    problems = check_key_against_source(classes, mc_version.tree(), libs or mc_version.lib_roots())
+    if not problems:
+        return [], []
+    users = lane_releases(src)
+    kept, notes = [], []
+    for p in problems:
+        lane = re.match(r"key: `([^`]+)`", p).group(1)
+        releases = users.get(lane, set())
+        older = sorted(releases - {mc_version.VERSION})
+        ok = bool(older) and mc_version.VERSION not in releases and all(
+            mc_version.present(mc_version.tree(v))
+            and not check_key_against_source({lane: classes[lane]}, mc_version.tree(v), libs or mc_version.lib_roots(v))
+            for v in older)
+        if ok:
+            notes.append(f"note: key row `{lane}` -> `{classes[lane]}` is not in {mc_version.VERSION}; only pages "
+                         f"verified against {', '.join(older)} declare the lane, and it resolves there")
+        else:
+            kept.append(p)
+    return kept, notes
+
+
+_INDEX_CACHE: dict[tuple, tuple] = {}
+
+
+def check_key_against_source(classes: dict[str, str], root: str, libs) -> list[str]:
+    cache_key = (os.path.abspath(root), tuple(libs) if isinstance(libs, list) else libs)
+    if cache_key not in _INDEX_CACHE:
+        _INDEX_CACHE[cache_key] = load_index(root, libs)
+    index, _packages = _INDEX_CACHE[cache_key]
     problems = []
     cache: dict[str, set[str]] = {}
     for lane, name in classes.items():
@@ -240,8 +292,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default=os.path.join(here, "..", "src"))
     ap.add_argument("--template", default=os.path.join(here, "..", "TEMPLATE.md"))
-    ap.add_argument("--mc-source", default=mc_version.source())
-    ap.add_argument("--libs", default=mc_version.libs())
+    ap.add_argument("--mc-source", default=None,
+                    help="check the key against this one tree (default: the book's release, and a row it lacks "
+                         "against the release of the pages that use it; MC_SOURCE does the same as this flag)")
+    ap.add_argument("--libs", default=None)
     ap.add_argument("--pages", nargs="*", help="restrict the page checks to these files or directories")
     ap.add_argument("--strict", action="store_true", help="page mismatches and collisions fail, not just report")
     ap.add_argument("--index", action="store_true", help="write src/reference/lanes.md")
@@ -249,7 +303,14 @@ def main() -> int:
     args = ap.parse_args()
 
     classes, words, problems = read_key(args.template)
-    problems += check_key_against_source(classes, args.mc_source, args.libs)
+    single = args.mc_source or os.environ.get("MC_SOURCE")
+    if single:
+        problems += check_key_against_source(classes, single, args.libs or mc_version.libs())
+    else:
+        key_problems, key_notes = check_key_by_release(classes, args.src, args.libs)
+        problems += key_problems
+        for n in key_notes:
+            print(n)
     if problems:
         print("\n".join(problems))
         print(f"\n{len(problems)} problems in the lane key")

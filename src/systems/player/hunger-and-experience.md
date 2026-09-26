@@ -1,6 +1,6 @@
 # Hunger and experience
 
-> Verified against **Minecraft 26.2** · Part VIII · Two bars above the hotbar that the server owns outright: one you empty by sprinting, one you fill by mining, and neither of them is quite the number the interface draws.
+> Verified against **Minecraft 26.3** · Part VIII · Two bars above the hotbar that the server owns outright: one you empty by sprinting, one you fill by mining, and neither of them is quite the number the interface draws.
 
 The food bar and the experience bar look like the same kind of thing: a
 number the server keeps and sends you. They are, and they are also the two

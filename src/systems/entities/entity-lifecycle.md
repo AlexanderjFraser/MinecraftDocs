@@ -1,6 +1,6 @@
 # Entity lifecycle
 
-> Verified against **Minecraft 26.2** · Part VI · A zombie spawns in a dark chunk at night, is ticked for a while, and then either despawns or is written to disk when the chunk unloads.
+> Verified against **Minecraft 26.3** · Part VI · A zombie spawns in a dark chunk at night, is ticked for a while, and then either despawns or is written to disk when the chunk unloads.
 
 Night falls, you are standing in a field, and somewhere behind you a zombie
 appears. What the server actually did is smaller and stranger than it looks.
@@ -163,7 +163,7 @@ for the first one declaring a `StructureSpawnOverride` for this category,
 or inside the whole start, depending on the override's
 `StructureSpawnOverride.BoundingBoxType`. That is how an ocean monument spawns
 guardians and empties itself of axolotls, and it is a data-pack field
-(*spawn_overrides*) on the structure. Thirty-four shipped structures carry the
+(*spawn_overrides*) on the structure. Fifty-two shipped structures carry the
 field and **six** fill it in — and of the twenty-three overrides those six
 declare, eighteen name nothing at all, which bans the category inside the box
 rather than replacing its list ([structure spawn
@@ -390,7 +390,7 @@ through `PersistentEntitySectionManager.Callback` instead, which does tracking
 first in *both* directions and then ticking, and fires
 `LevelCallback.onSectionChange` at the end. And the always-ticking exemption,
 `Entity.isAlwaysTicking`, which lifts an entity clear of every one of those
-filters, is claimed by exactly one class in 26.2: `Player`.
+filters, is claimed by exactly one class in 26.3: `Player`.
 
 ## The tick it gets, and the despawn check it gets anyway
 

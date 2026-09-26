@@ -1,6 +1,6 @@
 # Block entities
 
-> Verified against **Minecraft 26.2** · Part V · A furnace smelts raw iron while nobody is watching, and the player who opens it learns the fire from a block state and the arrow from a menu — never from the block entity itself.
+> Verified against **Minecraft 26.3** · Part V · A furnace smelts raw iron while nobody is watching, and the player who opens it learns the fire from a block state and the arrow from a menu — never from the block entity itself.
 
 You drop raw iron in the top slot of a furnace, coal in the bottom, and walk
 away. Two hundred ticks later there is an iron ingot in a box nobody is
@@ -115,7 +115,7 @@ mode constructs a missing one on a plain read — which is the mode every
 **Removal** happens only when the *block* changed, the old state had an
 entity, and the new state does not claim it through
 `BlockBehaviour.BlockStateBase.shouldChangedStateKeepBlockEntity` — which
-exactly two blocks in 26.2 override, `CopperChestBlock` and
+exactly two blocks in 26.3 override, `CopperChestBlock` and
 `CopperGolemStatueBlock`, both keeping the entity when the old state was
 another block of the same family, so oxidising or waxing a copper chest does
 not empty it. Removal is two halves with different gates. The side effects —
@@ -191,15 +191,17 @@ therefore the whole of smelting: burn down
 `AbstractFurnaceBlockEntity.quickCheck` (a `RecipeManager.CachedCheck`, which
 retries last tick's match before scanning the type) for a recipe on the input
 slot, check that the result slot can take the output, and, if the fire is out
-but fuel is present, light it: both lit fields take `FuelValues.burnDuration`
-for that item — 1600 for coal — and one fuel item is consumed. Then
+but fuel is present, light it: both lit fields take
+`AbstractFurnaceBlockEntity.getBurnDuration` for that item — what its
+`DataComponents.COOKING_FUEL` component resolves to in this furnace, 1600 for
+coal — and one fuel item is consumed. Then
 `AbstractFurnaceBlockEntity.cookingTimer` advances by one. Where the recipe
 comes from is [recipes](../items/recipes.md#loading-one-scan-one-swap-and-four-indexes-built-later).
 
 The two hundred is the recipe's number rather than the furnace's:
-`AbstractFurnaceBlockEntity.cookingTotalTime` holds the recipe's *cookingtime*,
-and `SmeltingRecipe`'s codec defaults that field to **200** for any recipe that
-does not name one — which raw iron's does not. Nor is the timer a stopwatch that
+`AbstractFurnaceBlockEntity.cookingTotalTime` holds the recipe's *cookingtime*
+— **200** in raw iron's recipe, a field every cooking recipe must name —
+divided by the speed multiplier the fuel sets, which is one in a furnace. Nor is the timer a stopwatch that
 merely stops. With the fire out and either slot empty it runs *backwards*, two a
 tick, clamped at zero, so an interrupted smelt loses its progress in half the
 time it took to earn it.

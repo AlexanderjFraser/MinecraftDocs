@@ -1,8 +1,8 @@
 # Where the code is
 
-> Verified against **Minecraft 26.2** · Maps · The jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching is what this book skips.
+> Verified against **Minecraft 26.3** · Maps · The jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching is what this book skips.
 
-Java Minecraft is 7,055 classes and 719,302 lines of decompiled Java 25,
+Java Minecraft is 7,301 classes and 741,069 lines of decompiled Java 25,
 and the first surprise in it is how little of that the client owns alone.
 Everything a player sees — every screen, the HUD, the whole renderer, the entity models, both
 GPU back-ends, the sound engine, Realms — is the orange near-third of this
@@ -13,18 +13,18 @@ dedicated server runs with no window attached.
 
 <figure class="map">
 {{#include ../generated/packages-treemap.svg}}
-<figcaption>The 26.2 decompile as a treemap. Each outer box is a package directly under <code>net/minecraft</code> or <code>com/mojang</code>, labelled with its share of the lines where the box has room for it; the boxes inside are its sub-packages. Hover a box for its counts; click the figure to enlarge it.</figcaption>
+<figcaption>The 26.3 decompile as a treemap. Each outer box is a package directly under <code>net/minecraft</code> or <code>com/mojang</code>, labelled with its share of the lines where the box has room for it; the boxes inside are its sub-packages. Hover a box for its counts; click the figure to enlarge it.</figcaption>
 </figure>
 
 ## Two jars, one tree
 
 The client jar is a strict superset of the server jar, and the split is
-clean: the 2,206 client-only classes live in exactly four packages —
-`net/minecraft/client` (1,864 classes), `com/mojang/blaze3d` (211),
-`com/mojang/realmsclient` (127) and `net/minecraft/realms` (4). Every other
+clean: the 2,264 client-only classes live in exactly five packages —
+`net/minecraft/client` (1,891 classes), `com/mojang/renderpearl` (146),
+`com/mojang/realmsclient` (137), `com/mojang/blaze3d` (86) and `net/minecraft/realms` (4). Every other
 package in the table below ships in both jars, class for class; no
-sub-package at this depth is mixed. The client-only side is 212,242
-lines, 29.5% of the total, which is the "just under a third" the
+sub-package at this depth is mixed. The client-only side is 220,818
+lines, 29.8% of the total, which is the "just under a third" the
 introduction quotes.
 
 The consequence for reading this book: when a page says a class is
@@ -35,53 +35,55 @@ behind it is `server-classes.txt`.
 
 ## What the big boxes are
 
-**world — 42%.** `world/level` (146,417 lines, 1,312 classes) is Parts
+**world — 42%.** `world/level` (151,146 lines, 1,418 classes) is Parts
 IV, V and XII: chunks, block states, lighting and, under
 `world/level/levelgen`, most of world generation — `world/level/biome` is
 its sibling rather than part of it. `world/entity`
-(109,061 lines, 716 classes) is Parts VI and VIII: the entity hierarchy,
-its AI and the player. `world/item` and `world/inventory` (36,363 lines
+(110,760 lines, 727 classes) is Parts VI and VIII: the entity hierarchy,
+its AI and the player. `world/item` and `world/inventory` (37,813 lines
 between them) are Part VII.
 
-**client — 24%.** `client/gui` (59,057 lines) is the screens and the HUD,
-Part X; `client/renderer` and `client/model` (61,108 lines together) are
+**client — 24%.** `client/gui` (59,594 lines) is the screens and the HUD,
+Part X; `client/renderer` and `client/model` (63,361 lines together) are
 the frame, section meshing and the entity models, Part XI;
-`client/multiplayer` (11,169) holds `ClientPacketListener` and
+`client/multiplayer` (11,303) holds `ClientPacketListener` and
 `ClientLevel`, the client's copy of the world. The 41 classes directly in
 `net/minecraft/client` — `Minecraft`, `Options`, `KeyMapping`,
-`MouseHandler` — are 10,709 lines on their own. (That 41 is the *itself only*
-count defined below; the 1,864 above is the package with every sub-package
+`MouseHandler` — are 10,821 lines on their own. (That 41 is the *itself only*
+count defined below; the 1,891 above is the package with every sub-package
 under it.)
 
 **util — 7%, two thirds of it skipped.** `util/datafix`, `util/filefix`
-and `util/profiling` are 34,176 of the package's 53,275 lines and are all
+and `util/profiling` are 34,866 of the package's 54,700 lines and are all
 outside this book; the hatched boxes are those three, and much the largest of
 them is the save-migration history. What is
 left is the toolbox every part uses — `Mth`, `RandomSource`, `Util` — and
 the parsing and debug packages.
 
-**server — 7%.** `server/commands` (12,781) is Part XIII's command
-implementations; `server/level` is 42 classes and 11,977 lines — 285 lines a class, nearly
+**server — 7%.** `server/commands` (13,357) is Part XIII's command
+implementations; `server/level` is 42 classes and 12,166 lines — 290 lines a class, nearly
 three times the map's average, in a package small enough to list
 (`ServerLevel`, `ChunkMap`, `ServerPlayer`), Parts III and IV; `server/network` is the serverbound
 packet handlers, Part IX; `server/packs` is the pack system, Part II;
 `server/jsonrpc`, the management server, is skipped.
 
-**blaze3d — 4%.** The GPU abstraction has two back-ends behind
-`GpuDevice`, and the Vulkan one (`blaze3d/vulkan`, 7,477 lines) is larger
-than the OpenGL one (`blaze3d/opengl`, 5,627).
+**renderpearl and blaze3d — 4%.** The GPU abstraction, `com/mojang/renderpearl`, has
+two back-ends behind `GpuDevice`, and the Vulkan one (`renderpearl/backend/vulkan`,
+7,387 lines) is larger than the OpenGL one (`renderpearl/backend/opengl`, 5,815);
+`com/mojang/blaze3d` keeps the window, the frame graph, the vertex formats and
+`RenderSystem`.
 
-**network — 3%, in 411 classes.** `network/protocol` is 293 classes in
-12,934 lines: the packet catalogue is many tiny classes, one per packet.
-`network/chat` (4,818) is `Component` and chat signing.
+**network — 3%, in 416 classes.** `network/protocol` is 298 classes in
+12,872 lines: the packet catalogue is many tiny classes, one per packet.
+`network/chat` (4,799) is `Component` and chat signing.
 
-Below 3% the boxes are Part II's foundations — `net/minecraft/core`,
+Below 3% the other boxes are Part II's foundations — `net/minecraft/core`,
 `net/minecraft/nbt`, `net/minecraft/tags`, `net/minecraft/resources`,
 `net/minecraft/commands` (the command source, the argument types and the
 execution engine, Part XIII) and `net/minecraft/advancements`, plus
 `com/mojang/realmsclient` and the skipped `net/minecraft/data`. That last one
 is the program that writes the vanilla data pack — and it is not build-time
-only: the dedicated server ships all 163 classes, and `Blocks` and
+only: the dedicated server ships all 174 classes, and `Blocks` and
 `MinecraftServer` both read `data/worldgen` constants at run time ([what this
 book skips](../systems/anatomy/what-this-book-skips.md) sorts every such
 reader into three kinds).

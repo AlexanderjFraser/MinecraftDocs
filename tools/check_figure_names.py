@@ -49,6 +49,11 @@ nor kin to it (`Gizmos.billboardTextOverMob` on a renderer's lane) — a static 
 with no lane, or the lane's own inner class, each ruled once in pass7-brief.md; or the
 caller's-method-at-the-callee fault in its qualified spelling, which is why it is listed.
 
+Each page is checked against the release its own verified line names (`reference/<version>`, with
+that release's pinned libraries — pass 8's session V1, the same rule as verify_names.py's), so a
+version pass can move the book a page at a time; `--mc-source` or MC_SOURCE checks every page
+against one tree, and `--current` fails a page with a figure that is behind the book's version.
+
 Report-only by default; `--strict` exits 1 on any failure, and `tools/deploy.sh` runs it that way
 from pass 7's close. `--mentions` prints
 class → pages as JSON, and `verify_names.py --index` calls `figure_mentions()` here so that a
@@ -58,6 +63,7 @@ index could not see).
 Usage:
     python tools/check_figure_names.py                    # report: failures, then notes, then a summary
     python tools/check_figure_names.py --strict           # exit 1 on any failure
+    python tools/check_figure_names.py --strict --current # and on any page with a figure verified against an earlier release
     python tools/check_figure_names.py --pages src/systems/world   # a part or a page
     python tools/check_figure_names.py --notes            # also print the notes (bare heads, unqualified members)
     python tools/check_figure_names.py --mentions         # class -> pages, as JSON
@@ -607,14 +613,53 @@ def walk(src: str, only: list[str] | None):
             yield path, rel
 
 
+class Checkers:
+    """One Checker per release, and the page routed to the release its verified line names (the
+    same rule as verify_names.py's: reference/<version> with that release's pinned libraries; a
+    page with no line gets the book's version). `single` — `--mc-source` or MC_SOURCE — sends
+    every page to that one tree, which is how version_pass.py --check measures a new release."""
+
+    def __init__(self, single: str | None = None, libs: str | None = None):
+        self.single, self.libs = single, libs
+        self.by_version: dict[str, Checker] = {}
+        self.behind: dict[str, list[str]] = {}
+
+    def root(self, version: str) -> str:
+        return self.single if version == "*" else mc_version.tree(version)
+
+    def for_page(self, path: str, rel: str):
+        """(checker, version), or (None, version) when the page's release is not staged."""
+        if self.single:
+            version = "*"
+        else:
+            with open(path, encoding="utf-8") as fh:
+                version = mc_version.page_version(fh.read(1500)) or mc_version.VERSION
+            if version != mc_version.VERSION:
+                self.behind.setdefault(version, []).append(rel)
+        if version not in self.by_version:
+            if not os.path.isdir(os.path.join(self.root(version), "net", "minecraft")):
+                return None, version
+            libs = self.libs or (mc_version.libs() if version == "*" else mc_version.lib_roots(version))
+            self.by_version[version] = Checker(self.root(version), libs)
+        return self.by_version[version], version
+
+    @property
+    def mentions(self) -> dict[str, set[str]]:
+        out: dict[str, set[str]] = {}
+        for c in self.by_version.values():
+            for cls, pages in c.mentions.items():
+                out.setdefault(cls, set()).update(pages)
+        return out
+
+
 def figure_mentions(src: str = SRC, mc_source: str | None = None, libs: str | None = None) -> dict[str, set[str]]:
     """class -> pages that name it inside a figure, for verify_names.py --index."""
-    mc_source = mc_source or mc_version.source()
-    libs = libs or mc_version.libs()
-    c = Checker(mc_source, libs)
+    cs = Checkers(mc_source, libs)
     for path, rel in walk(src, None):
-        c.check_page(path, rel)
-    return c.mentions
+        c, _v = cs.for_page(path, rel)
+        if c is not None:
+            c.check_page(path, rel)
+    return cs.mentions
 
 
 PROBE = """# Probe
@@ -816,31 +861,45 @@ def probe(mc_source: str, libs: str) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--src", default=SRC)
-    ap.add_argument("--mc-source", default=mc_version.source())
-    ap.add_argument("--libs", default=mc_version.libs())
+    ap.add_argument("--mc-source", default=None,
+                    help="check every page against this one tree (default: each page against the release its verified "
+                         "line names, reference/<version>; MC_SOURCE does the same as this flag)")
+    ap.add_argument("--libs", default=None)
     ap.add_argument("--pages", nargs="*", help="restrict to these files or directories")
     ap.add_argument("--strict", action="store_true", help="exit 1 on any failure")
+    ap.add_argument("--current", action="store_true",
+                    help=f"fail if any page with a figure is verified against an earlier release than {mc_version.VERSION}")
     ap.add_argument("--notes", action="store_true", help="print the notes too")
     ap.add_argument("--mentions", action="store_true", help="print class -> pages as JSON")
     ap.add_argument("--probe", action="store_true")
     args = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    if not os.path.isdir(os.path.join(args.mc_source, "net", "minecraft")):
-        print(f"no decompile at {args.mc_source} (set MC_SOURCE)", file=sys.stderr)
+    single = args.mc_source or os.environ.get("MC_SOURCE")
+    first = single or mc_version.tree()
+    if not os.path.isdir(os.path.join(first, "net", "minecraft")):
+        print(f"no decompile at {first} (set MC_SOURCE)", file=sys.stderr)
         return 2
     if args.probe:
-        return probe(args.mc_source, args.libs)
-    c = Checker(args.mc_source, args.libs)
+        return probe(first, args.libs or (mc_version.libs() if single else mc_version.lib_roots()))
+    cs = Checkers(single, args.libs)
     failures, notes = [], []
     blocks = 0
     for path, rel in walk(args.src, args.pages):
-        blocks += sum(1 for _ in fences_of(path))
+        n_blocks = sum(1 for _ in fences_of(path))
+        blocks += n_blocks
+        c, version = cs.for_page(path, rel)
+        if c is None:
+            if n_blocks:
+                failures.append((rel, 1, f"verified against {version}",
+                                 f"no decompile at {cs.root(version)}: stage it, or move the page to {mc_version.VERSION}"))
+            continue
         f, n = c.check_page(path, rel)
         failures += f
         notes += n
+    mentions = cs.mentions
     if args.mentions:
-        print(json.dumps({k: sorted(v) for k, v in sorted(c.mentions.items())}, indent=1))
+        print(json.dumps({k: sorted(v) for k, v in sorted(mentions.items())}, indent=1))
         return 0
     for rel, ln, tok, why in failures:
         print(f"src/{rel}:{ln}: `{tok}` ({why})")
@@ -848,8 +907,19 @@ def main() -> int:
         print()
         for rel, ln, tok, why in notes:
             print(f"note  src/{rel}:{ln}: `{tok}` ({why})")
-    print(f"\n{c.checked} names checked in {blocks} figures: {len(failures)} unresolved, {len(notes)} notes, "
-          f"{c.skipped} skipped; {len(c.mentions)} classes named in figures across {len({p for ps in c.mentions.values() for p in ps})} pages")
+    behind_figs = {v: [p for p in ps if any(True for _ in fences_of(os.path.join(args.src, p)))]
+                   for v, ps in cs.behind.items()}
+    behind_figs = {v: ps for v, ps in behind_figs.items() if ps}
+    for version, pages in sorted(behind_figs.items()):
+        print(f"note: {len(pages)} pages with figures say they are verified against {version}, not "
+              f"{mc_version.VERSION}, and were checked against reference/{version}: {', '.join(sorted(pages))}")
+    checked = sum(c.checked for c in cs.by_version.values())
+    skipped = sum(c.skipped for c in cs.by_version.values())
+    print(f"\n{checked} names checked in {blocks} figures: {len(failures)} unresolved, {len(notes)} notes, "
+          f"{skipped} skipped; {len(mentions)} classes named in figures across {len({p for ps in mentions.values() for p in ps})} pages")
+    if args.current and behind_figs:
+        print(f"--current: {sum(len(p) for p in behind_figs.values())} pages with figures are behind {mc_version.VERSION}")
+        return 1
     return 1 if (args.strict and failures) else 0
 
 

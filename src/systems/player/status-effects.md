@@ -1,6 +1,6 @@
 # Status effects
 
-> Verified against **Minecraft 26.2** · Part VIII · Poison II is already on you: the server hurts you on a rhythm, and your client never runs a single one of the effect's hooks — it only counts.
+> Verified against **Minecraft 26.3** · Part VIII · Poison II is already on you: the server hurts you on a rhythm, and your client never runs a single one of the effect's hooks — it only counts.
 
 Poison II lands. Your health starts dropping in steps, the swirls appear,
 the icon in the corner counts down, and if the connection stutters the

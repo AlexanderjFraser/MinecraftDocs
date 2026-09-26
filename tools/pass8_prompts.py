@@ -200,7 +200,7 @@ def probe() -> int:
         text = fh.read()
     _pp, _pt, _pw, _un, detail, notes, _fn = q8.route(text, q8.pages())
     import check_figure_names as cfn
-    checker = cfn.Checker(mc_version.source(), mc_version.libs())
+    checker = cfn.Checker(mc_version.source(), mc_version.lib_roots())
     tmp = tempfile.mkdtemp(prefix="p8prompts-")
     key = "entities/entity-lifecycle"
     build([key], tmp, pages5, units, standing, kinds, detail, notes, brief, checker)
@@ -243,7 +243,7 @@ def main() -> int:
         text = fh.read()
     _pp, _pt, _pw, _un, detail, notes, _fn = q8.route(text, q8.pages())
     import check_figure_names as cfn
-    checker = cfn.Checker(mc_version.source(), mc_version.libs())
+    checker = cfn.Checker(mc_version.source(), mc_version.lib_roots())
     build(keys, args.out, pages5, units, standing, kinds, detail, notes, brief_part2(), checker)
     print(f"\npart-wide notes → {os.path.join(args.out, '_part-notes.md')}; the voice table → {os.path.join(args.out, '_part-voice.md')}")
     return 0

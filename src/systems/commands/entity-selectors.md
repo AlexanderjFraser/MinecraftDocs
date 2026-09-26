@@ -1,6 +1,6 @@
 # Entity selectors
 
-> Verified against **Minecraft 26.2** · Part XIII · you type */kill @e[type=!player,distance=..8,sort=nearest,limit=1]*, and the characters inside the brackets decide, between them, which levels are searched and which of two entirely different data structures answers.
+> Verified against **Minecraft 26.3** · Part XIII · you type */kill @e[type=!player,distance=..8,sort=nearest,limit=1]*, and the characters inside the brackets decide, between them, which levels are searched and which of two entirely different data structures answers.
 
 Put a command block at the Overworld origin and give it */tp @p 0 100 0*.
 One player is two hundred blocks away across the Overworld; another is

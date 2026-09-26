@@ -1,6 +1,6 @@
 # AI: goals and brains
 
-> Verified against **Minecraft 26.2** · Part VI · A villager's day — wake, claim a job site, work until the schedule turns, walk home to bed — and the same tick under a zombie that has none of it.
+> Verified against **Minecraft 26.3** · Part VI · A villager's day — wake, claim a job site, work until the schedule turns, walk home to bed — and the same tick under a zombie that has none of it.
 
 It is dawn in a village. One villager climbs out of bed, walks to its
 composter and works there until the afternoon. Ten blocks away a zombie
@@ -202,7 +202,7 @@ The branch marked *never asked* is what this page turns on. **An activity
 is a filter, not a mode.** The brain's active set is always the core
 activities plus exactly one other, so `Activity.CORE` behaviours run at every
 hour of the day and switching activity only swaps the second half. (*Core
-activities* is plural in the API and singular in practice: nothing in 26.2
+activities* is plural in the API and singular in practice: nothing in 26.3
 calls `Brain.setCoreActivities` with anything but `Activity.CORE` alone.)
 
 The *canStillUse* branch is sharper than "a behaviour runs for one tick".
@@ -330,7 +330,7 @@ classes override `LivingEntity.makeBrain` — `Villager`, `Piglin`, `Warden`,
 its behaviour lists in a class named for the mob: `PiglinAi`, `WardenAi`,
 `FrogAi`. There are eighteen such classes for twenty mobs, and the two
 exceptions are worth naming. `Zoglin` keeps its lists inline, in the mob
-itself. And `Villager`'s live in `VillagerGoalPackages` — genuinely the 26.2
+itself. And `Villager`'s live in `VillagerGoalPackages` — genuinely the 26.3
 name, and not a typo: it is the last survivor of the old convention, on a
 mob that has no goals at all. Nor do most of the other nineteen: a brain mob
 typically registers none.
@@ -467,7 +467,7 @@ directly — `Mob.getTarget` filters through `Mob.asValidTarget` on every call,
 so a target that turned creative or spectator is gone the moment it is asked
 for, and brain mobs source theirs from `Mob.getTargetFromBrain` instead.
 
-> **For a 1.21-era reader.** There is no *Schedule* class in 26.2 and no
+> **For a 1.21-era reader.** There is no *Schedule* class in 26.3 and no
 > *schedule* registry, so the file a villager's timetable used to live in is
 > gone. What replaced it is a `Timeline` in `Registries.TIMELINE`, read through
 > an `EnvironmentAttribute` rather than off the mob:

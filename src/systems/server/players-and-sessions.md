@@ -1,6 +1,6 @@
 # Players and sessions
 
-> Verified against **Minecraft 26.2** · Part III · One connection, four events: a player joins, dies, walks into a Nether portal, and logs out.
+> Verified against **Minecraft 26.3** · Part III · One connection, four events: a player joins, dies, walks into a Nether portal, and logs out.
 
 A player clicks a server in the list, watches a progress bar, and is
 standing in a world. An hour later they fall in lava, press *Respawn*, walk

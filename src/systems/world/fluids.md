@@ -1,6 +1,6 @@
 # Fluids
 
-> Verified against **Minecraft 26.2** · Part IV · A bucket of water is emptied on flat stone and spreads one step.
+> Verified against **Minecraft 26.3** · Part IV · A bucket of water is emptied on flat stone and spreads one step.
 
 A player holding a water bucket clicks the top of a stone block. Their own
 client places the source at once, on a prediction, and will never spread it a

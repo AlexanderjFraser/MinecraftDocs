@@ -72,6 +72,477 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session V1 — the version, mechanical *(2026-09-26)*
+
+The tools read 26.3. **Ninety-one pages now say *Verified against 26.3*, and forty-two still say 26.2**
+and are checked against `reference/26.2` until session V2 moves them: a page is checked against the
+release its own verified line names (below), so every header on the site is true on the day V1 deployed.
+V1 made each 26.3 page true of 26.3 in the mechanical sense the introduction defines — every name resolves
+in 26.3, every "in 26.2" sentence re-derived, every population the regeneration moved re-counted — with the
+smallest edit, and moved to V2 every page where the smallest true edit is a paragraph, a section or a
+figure. The research behind it was five agents over the 26.3 tree (worldgen; rendering; items, loot and
+predicates; networking and the rest; the "in 26.2" sentences), every finding re-derived by the session
+before it was acted on; one agent finding was not borne out (a `DataComponentMap.composite` call it did not
+see was the declaration). The 26.3 decompile itself was re-staged: see the tools.
+
+### The tools, changed on purpose
+
+- **Each page is checked against the release its verified line names** — `verify_names.py`,
+  `check_figure_names.py` and `check_lanes.py`, through `mc_version.page_version` and `mc_version.tree`;
+  an explicit `MC_SOURCE` or `--mc-source` still sends every page to one tree (how `version_pass.py --check`
+  measures). A lane-key row the book's release lacks is a note, not a failure, only while every page that
+  declares the lane is verified against an earlier release that has the class (`RSWB`, `CF`, `IIHR` today).
+  `--current` fails any page behind the book's release: **the release's test** (session Q). `verify_names.py
+  --probe` proves the routing in both name gates on the staged trees.
+- **Library names are checked against the release's own pins** — `libraries.json` in each release's tree (written by
+  `version_pass.py` when it stages a tree; written by hand for 26.2 and 26.3 from Mojang's version JSON:
+  authlib 9.0.75 / 10.0.77, Brigadier 1.3.10 / 1.3.11, DataFixerUpper 10.0.21), read by
+  `mc_version.lib_roots`. Before, a library name was checked against every staged version at once. No page
+  changed result (the corpus run pinned and unpinned: identical).
+- **The 26.3 tree was re-decompiled with McDeob's own options.** The first staging (the planning
+  session's) ran Vineflower's defaults plus three flags, and dropped all 16,652 `@Override` lines, hid default
+  constructors and left non-ASCII unescaped, so every line count in the book shrank for a reason that was
+  not the game (`Avatar` 57 → 54, `PathfinderMob` 86 → 83). McDeob 3.4.1's `Util.getDecompilerParams`, read
+  from its bytecode, passes `dgs hdc=0 asc rsy aoa`; `version_pass.py` now does the same
+  (`DECOMPILER_FLAGS`). Re-staged: 7,301 files, 17,201 `@Override`s, and 71.5% of the files the two releases
+  share are byte-identical to 26.2 (32.9% before); the rest differ by the game's own changes. `--check` also
+  runs `check_lanes.py` now (26.3 broke three key rows no page-level check sees).
+- **Two generator bugs the 26.3 data exposed** (`gen_reference.py`): the spawn-override view crashed on
+  26.3's `count` (a constant or an int provider, where 26.2 wrote `minCount`/`maxCount`) and had left its page
+  empty, because the file was opened before the view was built (now built first); and the registries view
+  read `RegistryDataLoader.WORLDGEN_REGISTRIES` by name, so 26.3's renamed `WORLD_REGISTRIES` left it saying
+  **1 data-pack** registry — it now reads `WORLD_REGISTRIES`, `DIMENSION_REGISTRIES` and the new
+  `RELOADABLE_REGISTRIES`, and its header's counts are computed (156 declared in `Registries`, five
+  elsewhere) instead of typed.
+- **The atlas's part mapping**: `com/mojang/renderpearl` is Part XI's; `world/level/blockscan` (a
+  section-by-section block search on `LevelReader.findBlocksIn`) is Part IV's; `item/slot` and
+  `attribute/modifier` already fell under VII and IV by prefix.
+- `fetch_libs.sh`'s defaults and the correction template's placeholder are 26.3's; `pass8_prompts.py`'s
+  figure checker reads the pinned libraries.
+
+### What the version moved, measured
+
+7,301 classes (271 gone, 517 new; 134 of the gone are moves), **741,069 lines** on the faithful tree
+(719,302 in 26.2), 5,037 server classes. Populations the regenerated views show moving, and every sentence
+V1 found quoting them: components 111 → 122; entity-data serializers 43 → 44; loot parameter sets 26 → 31;
+packet types — game 127 → 129, common 13 → 14 (`punch`, `swing_animation`, `post_effects`,
+`add_transient_block` in; `swing` out); registry keys 153 → 161 (148 → 156 in `Registries`), data-pack 47 →
+52, synced 29 → 32, and 8 reloadable (new); structures carrying *spawn_overrides* 34 → 52; spawn-reason test
+sites 20 → 19; entity types 158 → 161. The hierarchy, fan-in and biggest-class tables moved as items 65–69
+below say.
+
+### Corrections
+
+Page lines are the edited pages'; evidence is the 26.3 tree (`reference/26.3/net/minecraft/…`, or
+`…/com/mojang/…` where the path starts `com/`), except where marked *(1.21.11)*, which is the sibling
+project's Mojang-named 1.21.11 decompile (`D:/pvpmod/reference/minecraft`) — the only tree that can settle
+"which release introduced X", and it settled four such claims false.
+
+1. `networking/the-connection`:5 — the swing sends `ServerboundSwingPacket` (the hand) to `ServerGamePacketListenerImpl.handleAnimate`, and `ClientboundAnimatePacket` comes back — the client sends `ServerboundPunchPacket`, a unit record with no fields; `ServerGamePacketListenerImpl.handlePunch` swings the main hand; `LivingEntity.swing` sends `ClientboundSwingAnimationPacket` to the trackers only — `network/protocol/game/ServerboundPunchPacket.java`:8; `server/network/ServerGamePacketListenerImpl.java`:1970; `world/entity/LivingEntity.java`:2168
+2. `blocks/block-interaction`:76 — figure 2's note: a `ServerboundSwingPacket` goes up beside the use packet — no swing packet goes up; SUCCESS is predicted, the client has already swung, and the server swings for the trackers itself (`ServerPlayer.swingAndResetAttackStrength` with self excluded) — `server/network/ServerGamePacketListenerImpl.java`:1602; `world/InteractionResult.java`:47
+3. `blocks/block-interaction`:178 — the three `SwingSource`s: the client animates and sends `ServerboundSwingPacket`, the server animates for the trackers, or nobody — `PREDICTED`, `SERVER_ONLY`, `NONE`: the client animates and the server animates for everyone else, the server animates for everyone, or nobody — `world/InteractionResult.java`:8
+4. `networking/protocol-phases`:253 — login also compares the profile against `Connection.getIntendedProfileId`, set only by `ServerConnectionListener.acceptChannel` — the field, both accessors and the login check are gone (sentence cut) — `server/network/ServerLoginPacketListenerImpl.java`:49
+5. `client/prediction-and-acks`:74 — three destroying actions ack; the packet carries eight actions — four ack (`CHANGE_DESTROY_DIRECTION` is new); nine actions — `network/protocol/game/ServerboundPlayerActionPacket.java`:70; `server/network/ServerGamePacketListenerImpl.java`:1510
+6. `client/prediction-and-acks`:222 — `LocalPlayer.drop` predicts the removal — `MultiPlayerGameMode.dropItem` does, still with sequence zero — `client/multiplayer/MultiPlayerGameMode.java`:622
+7. `client/what-makes-a-sound`:120 — `AbstractSoundInstance.resolve` — `AbstractSoundInstance.getOrResolve`, the same short-circuit — `client/resources/sounds/AbstractSoundInstance.java`:47
+8. `entities/authority`:139 — `LivingEntity.aiStep` opens by stepping the `InterpolationHandler`, else scaling the delta by 0.98 — `Entity.commonTick` steps the handler just before the entity's tick; `aiStep` only scales the delta when nothing interpolates and nothing simulates — `world/entity/Entity.java`:549; `world/entity/LivingEntity.java`:3218
+9. `entities/authority`:189 — moved only by `AbstractBoat.interpolation` — by its `LinearInterpolationHandler` (every `Entity` owns one now) — `world/entity/vehicle/boat/AbstractBoat.java`:206
+10. `client/the-client-level`:204 — the base `Entity.getInterpolation` returns null, so the default is to snap — the base `Entity.createInterpolationHandler` returns `InterpolationHandler.NO_OP`, which declines every target; still seven overrides — `world/entity/Entity.java`:2817; `world/entity/InterpolationHandler.java`:9
+11. `entities/movement-and-collision`:420 — the handler is the interpolate half of `LivingEntity.aiStep`'s opening fork — `Entity.commonTick` steps it; the coast branch runs when nothing is interpolating — `world/entity/Entity.java`:549
+12. `entities/pathfinding`:247 — `TryFindWaterGoal` — `TryFindLiquidGoal` (generalised to a fluid tag; twelve callers in eight classes unchanged) — `world/entity/ai/goal/TryFindLiquidGoal.java`:41
+13. `entities/synched-entity-data`:30 — 43 serializers — 44 (`EntityDataSerializers.DYE_COLOR` is new) — `network/syncher/EntityDataSerializers.java`:134
+14. `entities/synched-entity-data`:113 — `Avatar` — the class 26.2 inserts — false as history: `Player extends Avatar` already in 1.21.11 (the sibling project's tree); the version is dropped — `world/entity/player/Player.java`:128 *(1.21.11)*
+15. `entities/synched-entity-data`:297 — nothing in the 7,055 classes overrides the batch overload — 7,301; still only `Entity`'s empty body — `world/entity/Entity.java`:3723
+16. `entities/synched-entity-data`:364 — `Entity.hurtMarked` — `Entity.syncVelocity` — `world/entity/Entity.java`:276
+17. `entities/synched-entity-data`:354 — *Integer.MAX_VALUE* for seven types — eight (`EntityTypes.CUSHION`) — `world/entity/EntityTypes.java`:200
+18. `networking/what-the-client-is-told`:253 — `Entity.hurtMarked` — `Entity.syncVelocity`, set by `Entity.markHurt`, read by `ServerEntity` — `server/level/ServerEntity.java`:258
+19. `networking/what-the-client-is-told`:238 — `EntityType.trackDeltas` is a hardcoded exclusion list of ten — a builder parameter, `EntityType.Builder.dontTrackDeltas`, set on eleven types (the ten and `CUSHION`) — `world/entity/EntityType.java`:662
+20. `server/starting-a-server`:163 — `RegistryDataLoader.WORLDGEN_REGISTRIES` — `RegistryDataLoader.WORLD_REGISTRIES` — `resources/RegistryDataLoader.java`:98
+21. `items/enchantments`:342 — `RegistryDataLoader.WORLDGEN_REGISTRIES` — `RegistryDataLoader.WORLD_REGISTRIES` — `resources/RegistryDataLoader.java`:98
+22. `items/enchantments`:322 — `ItemInHandRenderer` reads the crossbow charge — `FirstPersonHandsAndItems.extractRenderState` does, for both hands every frame — `client/player/FirstPersonHandsAndItems.java`:105
+23. `blocks/diodes-and-observers`:44 — `RedStoneWireBlock.POWER` — `RedstoneWireBlock.POWER` (a case rename) — `world/level/block/DiodeBlock.java`:130
+24. `blocks/pistons-and-block-events`:218 — a named obsidian clause and `PushReaction.BLOCK`, `DESTROY`, `PUSH_ONLY` — no obsidian clause: obsidian, crying obsidian, respawn anchor and reinforced deepslate carry `PushReaction.IMMOVEABLE`; the others are `POPPED` and `PUSH` — `world/level/block/piston/PistonBaseBlock.java`:256; `world/level/block/Blocks.java`:396
+25. `world/points-of-interest`:11 — `BedBlock.OCCUPIED` / `BedBlock.PART` (eight sites, figure 2 included) — declared on `AbstractBedBlock` (straw beds share it) — `world/level/block/AbstractBedBlock.java`:47
+26. `world/points-of-interest`:228 — `validateBedPoi` tests `BlockTags.BEDS` — `BlockTags.VILLAGERS_CAN_SLEEP_ON_BED` (its one entry is `#minecraft:beds`) — `world/entity/ai/behavior/VillagerGoalPackages.java`:48
+27. `world/environment-attributes-and-timelines`:13 — 48 environment attributes — 51 (*gameplay/straw_bed_rule*, *natural_mob_spawns*, *creature_world_gen_spawn_probability*) — `world/attribute/EnvironmentAttributes.java`:67
+28. `world/environment-attributes-and-timelines`:37 — `ServerClockManager.ClockInstance` (three places) — `ServerClockManager.ServerClockInstance`, implementing the new `ClockInstance` — `world/clock/ServerClockManager.java`:168
+29. `world/environment-attributes-and-timelines`:194 — `ClockManager`'s single method answers *the total tick count of this clock*; figure 3 samples at `ServerClockManager.getTotalTicks` — its single method is `ClockManager.getInstance`, a `ClockInstance`; `AttributeTrackSampler` reads `totalTicks` from it — `world/clock/ClockManager.java`:7; `world/timeline/AttributeTrackSampler.java`:34
+30. `reference/math-and-primitives`:99 — `Direction8` — `CompositeDirection.Direction8` — `core/CompositeDirection.java`:97
+31. `reference/math-and-primitives`:166 — `GameRenderer.random` among the LCG sources — gone: `GameRenderer` holds no `RandomSource` (cut) — `client/renderer/GameRenderer.java`:104
+32. `blocks/blocks-and-states`:127 — `BlockBehaviour.Properties.CODEC` is a unit codec and `Block.CODEC` a constructor dispatch — a block has no codec at all (`Block.codec`, `BlockTypes` and the *block_type* registry are gone) — `world/level/block/Block.java`:81
+33. `blocks/blocks-and-states`:86 — `BlockState` is twenty lines with `BlockState.CODEC`; class box likewise — twenty-nine: `BlockState.FULL_CODEC`, and `BlockState.CODEC` writes a default state as the bare block id — `world/level/block/state/BlockState.java`:11
+34. `foundations/data-components`:101 — 111 component types, 29 slash-shaped ids — 122, 30 — `core/component/DataComponents.java`:480
+35. `foundations/data-components`:296 — `AxeItem`, `ShovelItem` and `HoeItem` still exist as classes for stripping, path-making and tilling — the classes are gone: `DataComponents.BLOCK_TRANSFORMER`, attached by `Item.Properties.axe`/`.shovel`/`.hoe`, run by `Item.useOn` — `world/item/Item.java`:218; `world/item/Item.java`:216
+36. `blocks/block-entities`:195 — both lit fields take `FuelValues.burnDuration` — `AbstractFurnaceBlockEntity.getBurnDuration`, the fuel's `DataComponents.COOKING_FUEL` in this furnace's loot context (coal 1600 ÷ 1) — `world/level/block/entity/AbstractFurnaceBlockEntity.java`:293
+37. `blocks/block-entities`:203 — `SmeltingRecipe`'s codec defaults *cookingtime* to 200, which raw iron's recipe omits — *cookingtime* is required (`fieldOf`), raw iron's recipe names 200, divided by the fuel's speed multiplier (1 in a furnace) — `world/item/crafting/AbstractCookingRecipe.java`:68; `world/level/block/entity/AbstractFurnaceBlockEntity.java`:301
+38. `player/the-spear`:49 — `DataComponents.SWING_ANIMATION` — `DataComponents.ATTACK_ANIMATION` (the component split in two) — `world/item/Item.java`:543
+39. `world/chunk-anatomy`:83 — `ChunkAccess.structuresRefences` (Mojang's spelling) — `ChunkAccess.structureReferences` — `world/level/chunk/ChunkAccess.java`:78
+40. `world/chunk-anatomy`:95 — `BiomeManager.NoiseBiomeSource` — merged into `BiomeResolver`, which `ChunkAccess` implements — `world/level/chunk/ChunkAccess.java`:60
+41. `world/chunk-anatomy`:105 — a `ProtoChunk.carvingMask` (and the cast row) — gone: the mask is local to one terrain run and never saved (cut) — `world/level/chunk/ProtoChunk.java`:44
+42. `world/chunk-anatomy`:359 — `ClientPacketListener.updateLevelChunk` — `ClientPacketListener.handleLevelChunkWithLight` (inlined) — `client/multiplayer/ClientPacketListener.java`:903
+43. `world/chunk-anatomy`:395 — the *_WG* maps through `SURFACE`, the final four from `CARVERS` on — through `BIOMES`; the final four from `TERRAIN` on — `world/level/chunk/status/ChunkStatus.java`:24
+44. `world/chunk-anatomy`:400 — the saver writes whatever the chunk's persisted status names — it writes every heightmap the chunk holds (a `LevelChunk` holds only `FULL`'s four) — `world/level/chunk/storage/SerializableChunkData.java`:357; `world/level/chunk/LevelChunk.java`:117
+45. `world/tickets-and-loading`:129 — `ChunkStatus.CARVERS` at 35; `ChunkStatus.NOISE` on the list nowhere — `ChunkStatus.TERRAIN` at 35 (replayed from the pyramid, the replay reproducing 26.2's mapping); `ChunkStatus.FEATURES` nowhere — `world/level/chunk/status/ChunkPyramid.java`:20
+46. `worldgen/hand-built-structures`:45 — `StructurePieceAccessor` (cast row and two sentences) — gone: `StructurePiece.addChildren` is handed a `StructurePiecesBuilder`, whose `findCollisionPiece` is the same linear scan (the two cast rows are one) — `world/level/levelgen/structure/pieces/StructurePiecesBuilder.java`:21
+47. `worldgen/creating-a-world`:167 — an inline `Feature.FILL_LAYER` placed feature — an inline `FillLayerFeature` — `world/level/levelgen/flat/FlatLevelGeneratorSettings.java`:173
+48. `reference/naming-drift`:323 — five Part XII rows named `DensityFunctions.IntervalSelect`, `Feature.SIMPLE_BLOCK`, `Feature.SPELEOTHEM`(`_CLUSTER`), `TreeConfiguration.belowTrunkProvider` — `IntervalSelectFunction`, `SimpleBlockFeature`, `SpeleothemFeature` / `SpeleothemClusterFeature`, `TreeFeature.belowTrunkProvider` — `world/level/levelgen/feature/TreeFeature.java`:42
+49. `reference/naming-drift`:473 — *Identifier*: Mojang renamed to match in 26.2 — false as history: `Identifier` is already in the 1.21.11 tree; the version is dropped — `resources/Identifier.java`:16 *(1.21.11)*
+50. `reference/naming-drift`:315 — `MonitorManager` … same GLFW monitor callback — fed by SDL's display events (the window layer is SDL3) — `com/mojang/blaze3d/platform/MonitorManager.java`:13
+51. `rendering/section-meshing`:272 — `SectionRenderDispatcher.RenderSection.setFadeDuration` is non-zero only for distant, not previously empty sections — every section fades over the one `Options.chunkSectionFadeInTime`; the clock still starts at the first upload — `client/renderer/chunk/SectionRenderDispatcher.java`:251
+52. `client/text-and-fonts`:177 — `submitNameTag` feeds `NameTagFeatureRenderer` — both feed `TextFeatureRenderer` — `client/renderer/SubmitNodeCollection.java`:137
+53. `rendering/entity-rendering`:28 — `EntityRenderDispatcher` owns the hand's lighting; its light method's one caller is the hand — the hand is lit from its render state; `EntityRenderDispatcher.getPackedLightCoords` has no caller — `client/renderer/entity/EntityRenderDispatcher.java`:62
+54. `rendering/entity-rendering`:342 — `ItemInHandRenderer` makes the hand a second pipeline entirely — its state is extracted with the player's (`FirstPersonHandsAndItems`); `FirstPersonHandsAndItemsRenderer` submits into its own storage — `client/renderer/GameRenderer.java`:399
+55. `client/README`:40 — figure: the loop reaches input per GLFW callback — per SDL event (`SDLEventHandler.pollEvents`) — `com/mojang/blaze3d/platform/SDLEventHandler.java`:36
+56. `client/README`:173 — "because the client is where 26.2 renamed the most" — not true as history (most client renames predate 26.2); the clause is cut — `client/input/KeyEvent.java`:9 *(1.21.11)*
+57. `reference/level-data-and-rules`:71 — `PrimaryLevelData` has eleven fields — twelve: `PrimaryLevelData.versionHistory`, the data versions that saved the world (*version_history*) — `world/level/storage/PrimaryLevelData.java`:52
+58. `entities/entity-anatomy`:95 — 158 entity types (six places, one a class box) — 161: `CUSHION`, `POPLAR_BOAT`, `POPLAR_CHEST_BOAT` — `world/entity/EntityTypeIds.java`:116
+59. `entities/entity-anatomy`:168 — 191 descendants; the non-living 66; `BlockAttachedEntity` 5 — 192, 67, 6 (`Cushion` extends `BlockAttachedEntity`) — `world/entity/decoration/Cushion.java`:43
+60. `entities/entity-anatomy`:423 — thirty-seven set an interval, seven never; `trackDeltas` false for ten — thirty-eight, eight never (most via `EntityType.Builder.noUpdateInterval`, `CUSHION` new); eleven (the builder's `dontTrackDeltas`) — `world/entity/EntityType.java`:643
+61. `entities/entity-lifecycle`:166 — thirty-four structures carry *spawn_overrides* — fifty-two (six fill it in, twenty-three overrides, eighteen empty, as before) — `src/reference/structure-spawn-overrides.md` (regenerated from 26.3's data)
+62. `foundations/tags`:42 — "the two 26.2 arrivals `FeatureTags` and `TimelineTags`" — false as history: `TimelineTags` is in 1.21.11; the phrase is cut — `tags/TimelineTags.java`:7 *(1.21.11)*
+63. `player/README`:104 — "the spear — the 26.2 combat change" — false as history: the spears are in 1.21.11; the phrase is cut — `world/item/Items.java`:1704 *(1.21.11)*
+64. `reference/README`:40 — all 43 serializers; all twenty-six parameter sets — 44; thirty-one — `src/reference/entity-data-serializers.md`, `src/reference/loot-context-params.md` (regenerated)
+
+65. `maps/packages` (fifteen numbers and one paragraph) — the 26.2 decompile's counts — 26.3's,
+    recomputed through `map_source.py`'s own loader on the faithful tree, the script first reproducing every
+    26.2 number on the page: 7,301 classes and 741,069 lines; 2,264 client-only classes in **five** packages
+    (`renderpearl` 146 joins; `blaze3d` 86), 220,818 lines, 29.8%; `world/level` 151,146 lines and 1,418
+    classes; `world/entity` 110,760 and 727; item and inventory 37,813; `client/gui` 59,594; renderer and
+    model 63,361; `client/multiplayer` 11,303; `client` itself 41 classes, 10,821 lines; skipped `util` 34,866
+    of 54,700; `server/commands` 13,357; `server/level` 42 classes, 12,166 lines, 290 a class; network 416
+    classes, `network/protocol` 298 in 12,872, `network/chat` 4,799; `data` 174; and the GPU run-in restated:
+    the backends are `renderpearl/backend/vulkan` (7,387) and `/opengl` (5,815) behind `GpuDevice`, and
+    `blaze3d` keeps the window, the frame graph, the vertex formats and `RenderSystem`; "Below 3% the other
+    boxes" — `src/generated/packages-depth3.md`, `packages-depth4.md` (regenerated).
+66. `maps/fanin` (the hook and six sentences) — `Codec` 987, `MapCodec` third, `RecordCodecBuilder` sixth,
+    "three of the six"; the table twenty-four of the thirty plus eight; `Minecraft` the only client-only
+    class in the thirty, twenty-ninth — `Codec` 943, `MapCodec` sixth, `RecordCodecBuilder` seventh (`Holder`
+    climbed to fifth), "three of the seven"; twenty-five plus seven; **no** client-only class in the thirty,
+    `Minecraft` thirty-first (284); `Schema` 404 (394 importers in `util/datafix`, 10 in `util/filefix`), `DSL`
+    289, `ServerLevel` 735, `Level` 761, `LogUtils` 488, `Util` 457, `BlockBehaviour` 313, `Block` 260 —
+    `src/generated/fanin.md`; the importers by grep of the import lines.
+67. `maps/hierarchy` (eleven numbers) — `Block` 293, `Entity` 191, `BlockBehaviour` 294, seventy-one `Item`
+    types, `Screen` 158 with 72 direct and 60 terminal, `RealmsScreen` 23, `AbstractContainerEventHandler`
+    159, `Goal` 200 with 130 nested, `Packet` 236 from 227 — 297, 192, 298, sixty-seven, 161 / 71 / 59, 27,
+    162, 202 / 132, 240 / 229; unchanged and re-derived: `FeatureElement` 386 (the same seven implementers),
+    `ItemLike` 366, `LivingEntity` 124, `Mob` 114, `PathfinderMob` 108, `Projectile` 26, `VehicleEntity` 15,
+    thirteen terminal `Entity` subclasses, `BaseEntityBlock` 64, `ComparatorBlock` and `JigsawBlock`, over a
+    thousand items (1,218) — `map_source.hierarchy`, the script reproducing every 26.2 number first.
+68. `maps/biggest` — 8,785 lines; 62,935 and 8.7%; `DensityFunctions` among the thirty; "`Avatar` — inserted
+    in 26.2 —" — 9,078; 64,082 and 8.6%; `DensityFunctions` left the thirty (its clause cut; its node types
+    moved to `levelgen/densityfunction`); the aside cut (an in-body version note, and false as history, item
+    14) — `src/generated/biggest.md`. The rest re-derived: `Fox` and `Bee` the only concrete mobs;
+    `BlockModelGenerators`' one caller `ModelProvider`; only `util/datafix` reads `BlockStateData`.
+69. `maps/README` and `introduction`:46 — 7,055 files; 7,055 classes and about 720,000 lines — 7,301; about
+    740,000 — the atlas tables.
+70. `introduction`:138 and :146–153 — "it is one version: 26.2"; the names are "real and current in 26.2" —
+    every page names the release it was verified against, the book's is 26.3, and until a page is re-read
+    its header names the release it was checked against; the gate checks each page against the decompile of
+    the release its header names (*page-internal*: the per-page gates, `tools/verify_names.py`).
+71. `player/player-anatomy`:30 — the heading "The ladder, and the class 26.2 put in the middle" — false as
+    history: `Player extends Avatar` in 1.21.11 (item 14's evidence); the heading is now "The ladder, and the
+    class in the middle", its two inbound links repointed in the same change (`entities/entity-anatomy`:209,
+    `reference/glossary`:57), `check_links.py` clean.
+
+**Re-derived in 26.3, the version changed and nothing else** (each claim confirmed by an agent and
+re-checked by the session): `reference/level-data-and-rules`:7 (the same seventeen `SavedDataType`s);
+`commands/functions-and-macros`:87 (the same four source-taking parses) and :149 (connections still tick
+after the levels); `entities/ai-goals-and-brains`:205, :333, :470; `entities/entity-lifecycle`:393;
+`networking/chat-and-signing`:340 (`MessageArgument` still the one `SignedArgument`);
+`server/server-level-tick`:196; `world/environment-attributes-and-timelines`:11;
+`blocks/block-entities`:118 (`CopperChestBlock`, `CopperGolemStatueBlock`); `foundations/data-components`:123;
+`reference/math-and-primitives`:250 (`BlockBox` still unused); `worldgen/hand-built-structures`:188;
+`reference/naming-drift`: nine prose sentences and the thirteen column headers; `reference/README`:54.
+Version dropped rather than changed, the claim being version-free: `worldgen/creating-a-world`:180,
+`world/chunk-anatomy`:134, `client/what-makes-a-sound`:193 ("the biggest change in the system", history no
+staged tree settles).
+
+### Figures changed (no arrow added, removed or reversed; no ordering changed)
+
+- `blocks/block-interaction` f2 — the note beside the use packet (item 2).
+- `world/environment-attributes-and-timelines` f2 — one message relabelled, `ATS->>KTS: sample at the
+  overworld clock's ClockInstance.totalTicks` (item 29).
+- `world/points-of-interest` f2 — one message relabelled, `AbstractBedBlock.OCCUPIED` (item 25).
+- `blocks/blocks-and-states` f1 (class diagram) — `BlockState`'s member line, "twenty-nine lines: a
+  constructor, asState, two codecs" (item 33).
+- `entities/entity-anatomy` f1 (class diagram) — `EntityType`'s count line, 161 (item 58).
+- `client/README` f1 — one edge label, "per SDL event" (item 55).
+- `maps/README` f1 — one node label, "the 26.3 decompile".
+Rendered (`render_figures.js`): no overlaps, clipping or type under 11px; the longest new label, figure 2 of
+`blocks/block-interaction`, wraps to two lines inside its note.
+
+### Captions changed
+
+- `maps/packages`: *The 26.3 decompile as a treemap. …* (the version only).
+- `maps/biggest`: *The thirty largest classes of 26.3. …* (the version only).
+- `maps/fanin`: *The thirty most-imported Mojang classes of 26.3; …* (the version only).
+
+### For the part sessions — checked first, not acted on
+
+- **Entity movement sync was reworked in 26.3**, and the name gate cannot see it, because the old names
+  survive: `UpdateInterval` is an interface (`EntityType.Builder.noUpdateInterval`, `.dontTrackDeltas`);
+  `InterpolationHandler` is an interface every `Entity` owns (`NO_OP` by default,
+  `SteppedInterpolationHandler`/`SteppedInterpolationTracker` for living entities, `LinearInterpolationHandler`
+  for boats, `PositionPath`/`PositionStep`), stepped by `Entity.commonTick`; `ServerEntity` sends through the
+  new `MovementPacket` with a `VecDeltaCodec`, arrows always send position and rotation, an `ItemEntity`
+  colliding with precision loss forces a full sync, and `Entity.syncPosition` advances the interval.
+  V1 fixed the sentences it found false (items 8–11, 16–19, 60) and read `networking/what-the-client-is-told`'s
+  §Gate 3 table against `ServerEntity.createMovePacket`: true in substance, the additions above missing.
+  Sessions F (VI), I (IX) and J (X): `entities/entity-anatomy` §The two numbers, `entities/authority`,
+  `entities/movement-and-collision`, `client/the-client-level`, `networking/what-the-client-is-told`.
+- `blocks/block-interaction`:180 — "`InteractionResult.consumesAction` is what the server's branches test":
+  the swing branch now tests `InteractionResult.Success.shouldSwing` (session E).
+- `entities/entity-anatomy`:201 — "`Avatar` is new" is true only against a pre-1.21.9 memory; the 1.21.11 tree
+  already has it (session F; the heading "The tree, and the class that was inserted into it" is relative and
+  stands).
+- The spawn-reason view moved (`EntitySpawnReason.STRUCTURE` lost `Villager.finalizeSpawn`; 19 test sites):
+  no page quotes it.
+
+### Polished
+
+Nothing. V1 changed wording only to make a sentence true.
+
+### For session V2 — the pages left verified against 26.2, and what 26.3 changed under each
+
+Every page below still says *Verified against 26.2* and is checked against `reference/26.2` by the
+gates (the per-page rule V1 built); each moves to 26.3 when V2 makes it true, and `python
+tools/verify_names.py --current` passes only when none is left. The first twelve are the brief's;
+the rest V1's research found (four agents over the 26.3 tree, each finding re-derived before it was
+acted on elsewhere; these are the findings V1 did **not** act on, because the smallest true edit is
+a paragraph, a section or a figure). Evidence names the 26.3 class and member; open them.
+
+**The brief's twelve** — `worldgen/terrain`, `worldgen/density-functions`,
+`world/chunk-generation-pipeline`, `rendering/blaze3d`, `rendering/README`,
+`foundations/codecs-nbt-json`, `foundations/data-driven-types`, `world/chunk-storage`,
+`blocks/signal-and-dust`, `player/the-sword-swing`, `items/using-an-item`,
+`reference/density-function-nodes`. Corrections to the brief's description of them:
+`reference/density-function-nodes` is **hand-kept, not generated** — its 61 unresolved names do not
+regenerate away; the introduction does **not** name `ServerboundSwingPacket` (the sentence the brief
+meant is `networking/the-connection`'s opening, which V1 fixed); `RedStoneWireBlock` is a case rename
+(`RedstoneWireBlock`), so `signal-and-dust`'s names are mechanical, though its lane `RSWB` needs a new
+key row (`RWB`?) and the old row retired once unused. The registry codecs (`RegistryFileCodec`, `RegistryFixedCodec`,
+`HolderSetCodec`) did **not** go: they moved to `core/registries/codec` under the same names (the
+planning session read the class diff's removed paths as removals); `codecs-nbt-json`'s one unresolved name
+is `SimpleJsonResourceReloadListener.scanDirectory`, and `chunk-storage`'s is `SerializableChunkData.carvingMask`
+(the carving mask is no longer saved).
+
+**The swing (for `the-sword-swing` and `using-an-item`).** `ServerboundSwingPacket` and
+`ServerGamePacketListenerImpl.handleAnimate` are gone. The client sends `ServerboundPunchPacket` — a
+unit record, no fields, not even the hand — from exactly two places, both in `Minecraft`:
+`Minecraft.continueAttack` on every tick `MultiPlayerGameMode.continueDestroyBlock` returns true, and
+`Minecraft.startAttack` after every branch of a non-spectator, non-piercing left click; a piercing
+weapon goes through `MultiPlayerGameMode.piercingAttack` instead. `ServerGamePacketListenerImpl.handlePunch`
+reads the main hand's `ItemStack.getAttackAnimation`, swings, and resets the attack ticker
+unconditionally. `LivingEntity.swing` is the only constructor of `ClientboundSwingAnimationPacket`
+(entity id, hand, `SwingAnimation`), sent to trackers only or to trackers and self, gated by
+`LivingEntity.SwingState.startIfAble`; `ClientPacketListener.handleSwingAnimation` replays it. A use or
+interaction swing sends nothing from the client: the server calls
+`ServerPlayer.swingAndResetAttackStrength` when `InteractionResult.Success.shouldSwing`.
+`InteractionResult.SwingSource` is `NONE`, `PREDICTED`, `SERVER_ONLY` (was `NONE`, `CLIENT`, `SERVER`).
+`ClientboundAnimatePacket` lost both swing actions (now WAKE_UP 0, CRITICAL_HIT 1, MAGIC_CRITICAL_HIT 2).
+`DataComponents.SWING_ANIMATION` split into `DataComponents.ATTACK_ANIMATION` and
+`DataComponents.INTERACT_ANIMATION`; `ItemStack.getSwingAnimation` into `getAttackAnimation` and
+`getInteractAnimation`. `LivingEntity.swinging`/`swingingArm`/`swingTime`/`attackAnim` became the private
+`LivingEntity.SwingState` (accessors `getCurrentSwing`, `getSwingAnimation(float)`, `isSwinging`);
+`LocalPlayer.swing` is gone. `ItemInHandRenderer` is gone (see Part XI below).
+
+**World generation (Part XII and its neighbours).** The ladder is ten statuses — `EMPTY`,
+`STRUCTURE_STARTS`, `STRUCTURE_REFERENCES`, `BIOMES`, `TERRAIN`, `FEATURES`, `INITIALIZE_LIGHT`,
+`LIGHT`, `SPAWN`, `FULL`; `TERRAIN` replaces `NOISE`, `SURFACE` and `CARVERS`, and only `TERRAIN` and
+`FEATURES` set a write radius. `ChunkStatusTasks.buildTerrain` is one task (union of the 3×3 biomes,
+one blender, `BelowZeroRetrogen`, the four final heightmaps primed at the end), running
+`NoiseBasedChunkGenerator.buildTerrain` as one executor job: `NoiseChunk` made per run and closed,
+`doFill`, `buildSurface` through `RandomState.surfaceSystem()` (a `MaterialSystem`: surface rules are
+`levelgen/material`, registries `worldgen/material_rule` and `worldgen/material_condition`), then
+`generateCarvers`. Level → status: 34 `INITIALIZE_LIGHT`, 35 `TERRAIN`, 36 `BIOMES`, 37–44
+`STRUCTURE_STARTS`. Configured features are gone: `Feature` is an interface of records carrying their
+parameters, 58 types in `BuiltInRegistries.FEATURE_TYPE`, instances in the data registry
+`Registries.FEATURE`; `PlacedFeature` is a holder of a `Feature` plus modifiers; the fold is the new
+`FeaturePlacer` (a depth-first stack); `PlacementModifier.modify` replaces `getPositions`; the origin
+test (`ensureCanWrite` at the origin) is gone. Carvers likewise: `WorldCarver` instances in
+`Registries.CARVER`, types in `CARVER_TYPE`, no `ConfiguredWorldCarver`, the carving mask local to one
+run and never saved.
+- `worldgen/features-and-placement` — five sections: the cast (three rows are one `Feature` row;
+  a `FeaturePlacer` row), the figure (lane `CF` names a class that is gone — a new `Feature`/`FeaturePlacer`
+  key row, never re-mean `CF`), the fold's counts (18 modifier types: six filters, three that fit no
+  shape — `CuboidPlacement`, `RandomlySelectedPlacement`, the deprecated `CountOnEveryLayerPlacement`),
+  "five of the sixty-three" selectors → six of fifty-eight (`OverlayFeature` new), no origin test
+  (decided once, per write), block predicates 16, state providers 10 (and a data registry now).
+- `worldgen/blending` — `Blender.of` has exactly two call sites (`generateBiomes`, `buildTerrain`);
+  `NoiseChunk.forChunk` and the cached noise chunk are gone, the TERRAIN run's blender is the one that
+  bends terrain, and `BlendDensityFunction`'s sampler makes the per-sample call (a new lane, not
+  `NC->>Blender`); `NoiseChunk.FlatCache`/`wrapNew` gone (the blender's samplers go into the sampling
+  context as `SimpleDensityFunction.BLEND_ALPHA`/`BLEND_OFFSET`); **the carving filter's polarity is
+  inverted**: `NoiseBasedChunkGenerator.applyCarvingMask` writes a carved position only if the
+  `CarvingMask.Filter` is null or `test` is true, and the test is 26.2's "near old ground" predicate —
+  so near old chunks 26.3 carves *only* near old ground (the agent confirmed the branch in the bytecode);
+  `DataVersion` threshold 4882 → 4997 (`IOWorker`); the flowchart's four consumers; `NoiseChunk` cast row.
+- `worldgen/biomes` — `Biome` holds **four** things, not five: the spawn lists are now the environment
+  attribute `EnvironmentAttributes.NATURAL_MOB_SPAWNS` (read by `NaturalSpawner`), set in every biome
+  file; the biome step builds no `NoiseChunk` (`ChunkGenerator.createBiomes`, a caching climate sampler,
+  `BiomeSource.createResolverForChunk`, `ChunkGenerator.decorateBiomeResolver`), and
+  `MultiNoiseBiomeSource.createResolverForChunk` samples the six functions once per chunk — the figure
+  and caption change; `BiomeSource` no longer implements `BiomeResolver` (`getNoiseBiome` passes the gate
+  but is false where the page uses it — use `createCachingResolver`/`createResolver`); the RTree fan-out
+  is nineteen, not six; the spawn finder is `NoiseSpawnFinder` with a `SpawnTargetPoint`.
+- `worldgen/structure-placement` — `StructurePlacement` is an interface dispatched through
+  `BuiltInRegistries.STRUCTURE_PLACEMENT`; three types (new *dimension_origin*, unused by shipped data);
+  `FrequencyReductionMethod`/`ExclusionZone`/`isStructureChunk` on `AbstractSpreadingStructurePlacement`;
+  the `Beardifier` is built in the TERRAIN step (a sampling-context value), not a status before;
+  flowchart node and caption; "six of the twelve" → four of the ten; 23 of **52** structure files;
+  `PieceGenerator`/`PieceGeneratorSupplier` gone.
+- `worldgen/trees` — `TreeConfiguration` merged into `TreeFeature` (a record, providers now holders);
+  45 tree features, 57 keys; trunk placers 10 and foliage placers 12 (the poplar placers need rows and a
+  reading), decorators 11 (`ShelfMushroomDecorator`).
+- `worldgen/README` — the figure node (`NOISE, SURFACE, CARVERS` → `TERRAIN`), "twelve chunk statuses"
+  → ten, the carving mask, seven → five cargo, fourteen → seventeen *worldgen/* registries in
+  `WORLD_REGISTRIES`, and the lecture lines that summarise the pages above.
+
+**The reloadable registries (Parts II, VII, XIII).** `RegistryDataLoader.WORLDGEN_REGISTRIES` is
+`WORLD_REGISTRIES` (51 entries), `DIMENSION_REGISTRIES` stays, and a new `RELOADABLE_REGISTRIES` —
+`LOOT_TABLE`, `PREDICATE`, `CONTEXT_FLOAT_PROVIDER`, `CONTEXT_INT_PROVIDER`, `ITEM_MODIFIER`,
+`SLOT_SOURCE`, `ADVANCEMENT`, `RECIPE` — is loaded by `ReloadableServerRegistries` through
+`RegistryDataLoader.load`; `ReloadableServerResources.listeners()` is the function library only, and an
+undecodable file now fails the whole reload. `RegistryLayer` is `STATIC`, `WORLD`, `DIMENSIONS`,
+`RELOADABLE`. `Registries` declares 156 keys (161 with the five declared elsewhere); synced 32.
+- `foundations/identifiers-and-registries` — the renames (`HolderOwner.canSerialize`,
+  `RegistryCodecs.holderSet`, `RegistryLayer.WORLD`, `WORLD_REGISTRIES`; `ComposterBlock.bootStrap` gone,
+  compostability is `DataComponents.COMPOSTABLE`), 148/147/153 → 156/155/161, the figure's "47 of them"
+  → 52 and *configured_carver* → *carver*, "worldgen and dimensions" → "world and dimensions", a fourth
+  list, and **"the whole `RegistryLayer.RELOADABLE` layer is constructed experimental" is false** (it is
+  loaded by `RegistryDataLoader` with the stable registration info).
+- `items/contexts-and-predicates` — `LootContext.getOptional` is the only reader (no throwing
+  accessor; `EnchantmentActiveCheck` answers false); references are holders resolved at decode, a cycle is
+  a fatal load error (`Validatable.validateHolder`); number providers split into `ContextFloatProvider`
+  (28 types) and `ContextIntProvider` (23); `LootItemConditions` → `LootItemConditionTypes` (20 types;
+  *match_block*, *int_value_check*, *float_value_check* in); `ALL_PARAMS` requires all sixteen keys,
+  enforced at bootstrap by `LootContextParamSets.validate`; 31 sets, seventeen of which never roll a
+  table; 21 context keys (four in world generation: `Blender.CONTEXT_KEY`/`ALPHA_KEY`/`OFFSET_KEY`,
+  `Beardifier.CONTEXT_KEY`); the sets are a built-in registry `CONTEXT_KEY_SET`; six `LootDataType`s;
+  `ContextAwarePredicate` gone (trigger fields are `Holder<LootItemCondition>`); `SlotSource` a command
+  argument and a registry; `ContextMap.Builder.create` → `buildAndValidate`. Two headings are now false
+  ("twelve never do", "Three registries") — correct with `check_links.py --inbound`.
+- `items/recipes` — §Loading's first half and its figure: `RecipeManager` is no reload listener; the
+  recipes are `Registries.RECIPE`, read by `RegistryDataLoader` (files registered sorted by
+  `Identifier`, so the order survives); the constructor builds the `RecipeMap`; `RecipeManager.apply`
+  passes the gate only through the nested `IngredientExtractor.apply`; nine `RecipePropertySet`s, 22
+  serializers (*brewing*: `BrewingRecipe`), four `RecipeInput`s (`BrewingInput`).
+- `items/loot-tables` — one optional condition and one optional modifier per level
+  (`LootItemFunction.decorate`; several functions are a `SequenceFunction`); all 42 functions are
+  conditional; **expanded `TagEntry` candidates now get the entry's modifier** (the page says the
+  opposite); `NestedLootTable` holds a set with an expand flag; `LootPoolSingletonContainer` →
+  `UniformContainerBase`; six loot registries; one load task per reloadable registry.
+- `items/README` — "Twelve of its twenty-six parameter sets" → seventeen of thirty-one, and the lecture
+  lines for the three pages above.
+- `commands/advancements` — read by `RegistryDataLoader`; `ServerAdvancementManager` is no listener, its
+  constructor runs `AdvancementTree.repositionNodes` off-thread; coordinates on `AdvancementNode`, sent in
+  `ClientboundUpdateAdvancementsPacket.PositionedAdvancement`; `DisplayInfo` is a record without them;
+  `ClientAdvancements.Listener` replaces `AdvancementTree.Listener`; `Advancement.read` →
+  `Advancement.STREAM_CODEC`; `EntityPredicate.ADVANCEMENT_CODEC` gone; 111 classes, not 112.
+
+**Networking and the client (Parts IX, X, V, XIII).**
+- `blocks/block-breaking` — the page's hook changed: `ServerPlayerGameMode.tick` now posts a
+  `ServerLevel.levelEvent` every server tick of a live dig (2019, or 2020 every fourth tick — new
+  `LevelEvent` constants), with a null source, so the breaker hears from the server every tick; the client
+  sends a punch every dig tick and `ServerboundPlayerActionPacket.Action.CHANGE_DESTROY_DIRECTION` (nine
+  actions; four break actions) when the face changes; the client's per-tick breaking effects are gone.
+  The opening, figure 1's loop and its caption ("nothing crosses but a swing packet") change.
+- `networking/packets-and-stream-codecs` — `FriendlyByteBuf` lost its collection readers and writers
+  (`readCollection`, `readList`, `readMap`, …), `readBlockHitResult` (now `BlockHitResult.STREAM_CODEC`),
+  `limitValue`, `readInstant`, `readPublicKey`; the "skippable packet" paragraph's last three sentences;
+  232 → 235 packet types; fourteen → fifteen unit codecs; twelve → fourteen `StreamCodec.composite`
+  arities; the 152/121 readers-and-writers count needs a recount by pass 4's stated rule; the protocol
+  context now asks two questions (`hasInfiniteMaterials`, `canUseCommandBlocks` — the command-suggestion
+  packet's two codecs).
+- `commands/permissions` — the singleplayer cascade: `IntegratedServer.getProfilePermissions` gives the
+  owner OWNER only as an op, a guest GAMEMASTER behind the new guest-command-access toggle, and no longer
+  consults *allow commands for other players*; `IntegratedServer.updatePermissionAndChatAbilities` is gone
+  (the host is told by the entity event like a guest).
+- `client/input-and-keybinds` — input arrives as SDL3 events (`SDLEventHandler.pollEvents` inside
+  `RenderSystem.pollEvents`), not GLFW callbacks; the page's GLFW framing and §A key press is not queued
+  change words (the not-queued argument survives: each event is posted through `Minecraft.execute`);
+  control-click is an SDL hint behind `Options.ctrlClickEmulatesRightClick`; five `InputQuirks`.
+
+**The window, the frame and the renderer (Parts XI and X, and Part I's overview).** The window and
+input layer is **SDL3, not GLFW** (25 files import `org.lwjgl.sdl`, none GLFW; the launcher JSON lists
+`lwjgl-sdl`). The GPU facades are interfaces in `renderpearl/api` (`GpuDevice`, `CommandEncoder`,
+`RenderPass`, `GpuSurface`), each implemented by a `Frontend*` class in `renderpearl/frontend`; the
+backends are `renderpearl/backend/opengl` and `/vulkan`. *Improved transparency* is order-independent
+transparency drawn inside the level's `main` pass (`LevelRenderer.executeOit`, three `OitStage`s,
+`RenderPipelines.OIT_COMPOSITE`), off by default; the `transparency` post chain is gone. The level frame
+graph declares only clear, sky, main and the entity-outline chain; clouds, weather, border, see-through and
+always-on-top draw inside `LevelRenderer.addMainPass`.
+- `rendering/the-window` — the page's trace is inverted: each candidate backend loads its library and makes
+  a **device** with no game window (`GpuBackend.loadLibrary`, `GpuBackend.createDevice`; the GL device keeps
+  its own hidden utility window), and only then is one `Window` made, once, by the surviving backend
+  (`GpuBackend.createWindow`). `GLX`, `GLFWErrorScope`, `GLFWErrorCapture`, the error-callback swaps, the six
+  GLFW callbacks and `Window.isMinimized` are gone: SDL events are drained by `SDLEventHandler.pollEvents`
+  (inside `RenderSystem.pollEvents`) to the input handlers and `Window.handleEvent` (19 event types),
+  minimised is `Window.isIconified`, fullscreen is `Window.setFullscreen` through the option,
+  `Monitor.getPreferredVideoMode`, and `MonitorManager` asks SDL for displays. Survives: the three sizes, the
+  GUI scale, `DisplayData`, `PreferredGraphicsApi`'s ordered pair, the close callback arming
+  `ClientShutdownWatchdog`, most of §`NativeImage` and §The corners. `Window.isFullscreen` and
+  `Window.getRefreshRate` pass the gate only by accident (call sites, not declarations).
+- `rendering/post-processing` — post effects are a per-frame stack (`GameRenderer.requestedPostEffects`:
+  `end_of_frame`, then `LocalPlayer.getActivePostEffects`, then the spectator chain) that a **server** sets
+  with `/posteffect` (`PostEffectCommand`, `ClientboundPostEffectsPacket`, saved with the player); five chains
+  ship, twenty-four passes; `LevelTargetBundle` answers to `MAIN_TARGETS` and `OUTLINE_TARGETS` only;
+  `ShaderManager` is a `PreparableReloadListener` whose `loadConfigs` runs on a worker and whose pipelines
+  compile before the barrier into a `PipelineCache`; *moj_import* is gone (shaders `#include`, resolved by
+  `GlslCompiler.compileToSpv`); renames `GameRenderer.spectatedEntityPostEffect`,
+  `GameRenderer.spectatedEntityEffectActive`, `DebugEntryPostEffects`, `LevelRenderer.blitEntityOutline`,
+  `Enderman`.
+- `reference/submit-phases` — the phase set depends on improved transparency; `SubmitNodeCollection.seeThrough`
+  is one phase owned by the storage and drained once by `LevelRenderer.executeSeeThrough`; opaque name-tag,
+  text, outline and gizmo parts go to *solid*; name tags are `TextFeatureRenderer` submits
+  (`NameTagFeatureRenderer` is gone: twelve renderers, not thirteen); renames `translucentGizmos`,
+  `alwaysOnTopGizmos`; `QuadParticleFeatureRenderer` draws into the pass it is handed.
+- `rendering/visibility-and-the-frame-graph` — the second figure (CLEAR, SKY, MAIN, OUT, with the six steps
+  inside main) and its three paragraphs; the OIT targets; the translucent grouping hash includes the vertex
+  buffer; `LevelRenderer.prepareChunkRendersIndirect`.
+- `rendering/the-frame` — §Present, swapBuffers: the zones are *swapchainBlit*, *tracyCapture*, *submit*,
+  *present*, *endFrame*, *frameLimiter*, *fpsUpdate*, and the GL present is SDL's *SDL_GL_SwapWindow* (no
+  zone name lies now); a minimised window makes one failed acquire, then none until restored; the hand is
+  `FirstPersonHandsAndItemsRenderer`.
+- `rendering/block-entity-rendering` — the held stack is resolved at extract by `FirstPersonHandsAndItems`
+  (a new lane row, e.g. `FPHAI`; the figure is at seven lanes, so the renderer folds into a label), and the
+  `IIHR` key row retires once unused; "no render state and no extract stage" and "resolve and submit, in one
+  call" are false.
+- `rendering/lightmap-fog-and-sky` — clouds and weather draw inside `addMainPass`; `WeatherEffectRenderer.prepare`
+  rebuilds the buffer; no weather target and no transparency chain; `RenderPipelines.WEATHER` (and
+  `OIT_WEATHER`); the border's far plane goes to `WorldBorderRenderer.prepare`.
+- `rendering/particles` — crack particles are server-driven level events (the same change as
+  `blocks/block-breaking`'s heartbeat): `ClientLevel.addBreakingBlockEffects`, one burst from
+  `MultiPlayerGameMode.startDestroyBlock`, then `LevelEvent.PARTICLES_DESTROY_PROGRESS` and
+  `PARTICLES_AND_SOUND_DESTROY_PROGRESS` to everyone within 64 blocks.
+- `client/the-client-loop` — GLFW callbacks become SDL events (figure and prose); "iconified, not unfocused"
+  is false for exclusive fullscreen (`FramerateLimitTracker`); shutdown is `Window.close`,
+  `RenderSystem.unloadTrackedBackendLibrary`, *SDL_Quit*.
+- `anatomy/anatomy` — the backend loop makes a device, then a window; `RenderSystem.initBackendSystem` returns
+  SDL's clock; the GPU abstraction is `com/mojang/renderpearl`; events are SDL's; and the singleplayer seam
+  changed: `IntegratedServer.updateCommandsAllowedForOtherPlayers` is gone, and `WorldOptionsScreen.applyChanges`
+  calls `IntegratedServer`'s setters from the Render thread, which re-derive every player's permissions and
+  game mode on the spot (`IntegratedServer.setPersonalGameType` writes `ServerPlayer.setGameMode` directly),
+  so "every one of them a setting rather than world state" needs restating.
+- `items/items-and-stacks` — `ItemInHandRenderer.shouldInstantlyReplaceVisibleItem` becomes
+  `FirstPersonHandsAndItems.shouldInstantlyReplaceVisibleItem` (run from `LocalPlayer.tick`); axes, shovels
+  and hoes have no class (`DataComponents.BLOCK_TRANSFORMER`); the heading's counts (98 files, 97 classes,
+  67 `Item` subclasses, 41 overriders) were already wrong in 26.2 — a heading correction, with
+  `check_links.py --inbound`.
+- `foundations/resource-system` — `CompositePackResources` is `OverlayedPackResources`;
+  `VanillaPackResources.asProvider` is `asResourceManager`, and `VanillaPackResources` is no longer a
+  `PackResources` (it wraps `FixedPathPackResources` layers; `AbstractPackResources` is gone); the server's
+  reload listeners are the function library alone (recipes and advancements are reloadable registries); pack
+  formats resource **97.1**, data **121.0**.
+- `anatomy/what-this-book-skips` — the sizes table and the Vulkan decline (the backends are
+  `renderpearl/backend/*`; the shader compiler and the SPIR-V pair moved to `renderpearl/frontend/shaders`,
+  and OpenGL cross-compiles SPIR-V too); 58 features, 57 tree kits; `SurfaceRuleData` becomes the material
+  rules in `data/worldgen/material`; `net/minecraft/data/worldgen` is 64 classes.
+- `reference/glossary` — the entries that summarise the pages above (NoiseRouter is eight functions,
+  NoiseChunk, PlacedFeature, Aquifer's carver sentence, Carver's nether exception, Biome's mob spawns, GLFW,
+  `ServerClockManager.ServerClockInstance`, 191 → 192, 153 → 161): updated after the rewrites, as a
+  summariser.
+
 ## Pass 7, session O — the close *(2026-09-16)*
 
 Run before session K (Part XI), which had not run. What the close changed on

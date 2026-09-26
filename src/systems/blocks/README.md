@@ -1,6 +1,6 @@
 # V · Blocks
 
-> Verified against **Minecraft 26.2** · Part V · Everything that happens at the moment one block state replaces another: the click that asks for it, the write that performs it, and the four kinds of answer a block can give back.
+> Verified against **Minecraft 26.3** · Part V · Everything that happens at the moment one block state replaces another: the click that asks for it, the write that performs it, and the four kinds of answer a block can give back.
 
 You open a door and both halves swing. You flip a lever and the lamp across
 the room stays dark for a moment longer than you expected. Both are the same

@@ -1,6 +1,6 @@
 # Section meshing
 
-> Verified against **Minecraft 26.2** · Part XI · a block is placed, and the section it lives in is re-meshed, uploaded and drawn.
+> Verified against **Minecraft 26.3** · Part XI · a block is placed, and the section it lives in is re-meshed, uploaded and drawn.
 
 You right-click a block into place and it is simply *there* — no shimmer, no
 gap, no frame in which the wall you just built has a hole in it. Behind that
@@ -267,11 +267,10 @@ frames, deliberately out of date. `SectionRenderDispatcher.RenderSection.reset`
 is the other end of that lifecycle, and
 `SectionRenderDispatcher.RenderSection.getVisibility` is not part of it at
 all despite the name — it is a fade, an alpha that climbs from nothing to one
-over the upload's fade duration. That fade is why distant terrain arrives
-softly and a block you place never does:
-`SectionRenderDispatcher.RenderSection.setFadeDuration` is non-zero only for
-distant sections that were not previously empty, and the clock starts at a
-section's *first* upload — so a recompile of terrain you have been staring at,
+over the fade duration. That fade is why arriving terrain appears softly
+and a block you place never does: every section fades in over the one
+`Options.chunkSectionFadeInTime` setting, near or far, and the clock starts
+at a section's *first* upload — so a recompile of terrain you have been staring at,
 which is what placing a block is, has no fade left to spend.
 `SectionRenderDispatcher.RenderSection.resortTransparency` is the cheap path
 that reorders an existing translucent mesh without recompiling anything;

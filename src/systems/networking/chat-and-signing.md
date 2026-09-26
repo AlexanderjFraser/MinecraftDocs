@@ -1,6 +1,6 @@
 # Chat and signing
 
-> Verified against **Minecraft 26.2** · Part IX · A player presses T, types a line and hits enter: the message is signed on the way out, taken apart on the way in, and verified again by every client that draws it.
+> Verified against **Minecraft 26.3** · Part IX · A player presses T, types a line and hits enter: the message is signed on the way out, taken apart on the way in, and verified again by every client that draws it.
 
 A player presses T, types *hey* and hits enter. Before the line leaves the
 machine, `ChatScreen.normalizeChatMessage` has squeezed the whitespace and cut
@@ -337,7 +337,7 @@ phases](protocol-phases.md#play-and-the-way-back)).
 something does, it sends `ServerboundChatCommandSignedPacket` with
 `ArgumentSignatures`: one signature per argument, each consuming its own chain
 index, all of them sharing one timestamp, salt and window. *Signable* means
-the argument type implements `SignedArgument`, and in 26.2 exactly one type
+the argument type implements `SignedArgument`, and in 26.3 exactly one type
 does — `MessageArgument`, behind the message-shaped commands, and the
 enumeration of which commands register it is [brigadier and
 commands](../commands/brigadier-and-commands.md#signed-arguments-in-one-paragraph)'s.

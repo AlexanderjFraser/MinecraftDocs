@@ -1,6 +1,6 @@
 # Tickets and loading
 
-> Verified against **Minecraft 26.2** · Part IV · A player walks one block east across a chunk boundary, and a column of chunks thirteen past the edge of view is asked for.
+> Verified against **Minecraft 26.3** · Part IV · A player walks one block east across a chunk boundary, and a column of chunks thirteen past the edge of view is asked for.
 
 A player standing at the eastern edge of a chunk takes one step. On the
 server, `ChunkMap.move` notices that the player's section changed, and
@@ -126,9 +126,9 @@ and 33 for `FullChunkStatus.FULL`. Above 33 a chunk is
 (`ChunkLevel.RADIUS_AROUND_FULL_CHUNK`, computed from the pyramid), so
 `ChunkLevel.MAX_LEVEL` is 44 and `ChunkLevel.generationStatus` maps
 34 … 44 onto ever-earlier `ChunkStatus`es — but not one per level:
-`ChunkStatus.INITIALIZE_LIGHT` at 34, `ChunkStatus.CARVERS` at 35,
+`ChunkStatus.INITIALIZE_LIGHT` at 34, `ChunkStatus.TERRAIN` at 35,
 `ChunkStatus.BIOMES` at 36, and `ChunkStatus.STRUCTURE_STARTS` for all eight
-of 37 … 44. `ChunkStatus.NOISE` is on that list nowhere. Level 45 means no
+of 37 … 44. `ChunkStatus.FEATURES` is on that list nowhere. Level 45 means no
 holder. Change the pyramid and the loading radius changes with it.
 
 **Thirteen** — chunks past a level-31 ticket that get a holder: two rings to

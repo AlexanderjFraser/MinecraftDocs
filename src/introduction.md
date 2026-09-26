@@ -1,6 +1,6 @@
 # Introduction
 
-> Verified against **Minecraft 26.2**
+> Verified against **Minecraft 26.3**
 
 Java Minecraft is one codebase that runs as two programs. The **server** is
 the world: a loop that ticks twenty times a second, owns every chunk, entity
@@ -43,7 +43,7 @@ flowchart TD
 
 *The two programs and the four threads they run on: the client and the server each own their copy of the world and talk only through the connection, and the worker pool hands its results back, dotted, to whichever of them asked.*
 
-The whole thing is 7,055 classes and about 720,000 lines of Java 25. Just
+The whole thing is 7,301 classes and about 740,000 lines of Java 25. Just
 under a third of those lines is client-only; the rest ships in both jars, and the
 picture below is the split — orange is the client's, blue is everything the
 dedicated server also runs, and the hatched boxes are the corners this book
@@ -135,13 +135,15 @@ Names have moved since 1.21 — `Identifier` was *ResourceLocation*,
 `Lightmap` was *LightTexture*, `DeltaTracker` was *Timer* — and the
 [naming drift](reference/naming-drift.md) table is the list.
 
-**Newest version only.** Every page says what it was verified against, and
-it is one version: 26.2. There are no version-difference sections and no
-"in 1.x this was". When a release lands, every page is re-read against it.
+**Newest version only.** Every page says in its header which release it was
+verified against, and the book's is 26.3. There are no version-difference
+sections and no "in 1.x this was". When a release lands, every page is re-read
+against it, and until a page has been, its header still names the release it
+was checked against.
 
 **Verified means tested.** Every backticked name on every page, and every
-class and method named inside a diagram, is checked against the decompile
-before the site publishes, every diagram is parsed
+class and method named inside a diagram, is checked against the decompile of
+the release the page's header names before the site publishes, every diagram is parsed
 by the same mermaid the site ships, every lane in every diagram is
 checked against the one [key](reference/lanes.md) the whole book uses, and
 every link and anchor between pages is checked to land. A
@@ -150,7 +152,7 @@ puts the landing pages, the sidebar, the lecture map, the dependency figure and
 the Reference shelf's own index of who uses it out of step with each other.
 That is a narrow
 guarantee, and it is worth stating narrowly: it proves the names are real
-and current in 26.2, not that the sentence around them is true. The
+in that release, not that the sentence around them is true. The
 sentences are what the passes are for.
 Every claim has been fact-checked against the decompile twice — once as
 drafted, and once again after the pages were restructured into the book you are

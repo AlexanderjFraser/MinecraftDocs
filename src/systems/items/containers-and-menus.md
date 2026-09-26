@@ -1,6 +1,6 @@
 # Containers and menus
 
-> Verified against **Minecraft 26.2** · Part VII · A player shift-clicks a stack out of a chest: one packet goes up, the server re-runs the same code against the real container, and nothing comes back down.
+> Verified against **Minecraft 26.3** · Part VII · A player shift-clicks a stack out of a chest: one packet goes up, the server re-runs the same code against the real container, and nothing comes back down.
 
 A stack of cobblestone sits in the top-left slot of a chest, and a
 shift-click lands it in the hotbar before anything has answered. One

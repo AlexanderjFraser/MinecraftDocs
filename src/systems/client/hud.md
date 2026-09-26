@@ -1,6 +1,6 @@
 # The HUD
 
-> Verified against **Minecraft 26.2** · Part X · press F1 and the interface goes away — except for the thing that can black out your whole screen.
+> Verified against **Minecraft 26.3** · Part X · press F1 and the interface goes away — except for the thing that can black out your whole screen.
 
 Press F1 and the hearts go, the hotbar goes, the crosshair, chat and the tab
 list go. Get into bed with the interface hidden and the screen still fades to

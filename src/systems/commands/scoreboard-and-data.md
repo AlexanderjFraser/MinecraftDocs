@@ -1,6 +1,6 @@
 # Scores, teams and stored data
 
-> Verified against **Minecraft 26.2** · Part XIII · `execute as @a store result score @s ticks_frozen run data get entity @s TicksFrozen`: one command writing a scoreboard through a callback the inner command has never heard of, and the two data models `execute store` exists to join.
+> Verified against **Minecraft 26.3** · Part XIII · `execute as @a store result score @s ticks_frozen run data get entity @s TicksFrozen`: one command writing a scoreboard through a callback the inner command has never heard of, and the two data models `execute store` exists to join.
 
 Look at the sidebar on a well-built server and some of the names in it are
 not players. *#total*, *constant*, *.timer* — rows belonging to nothing

@@ -1,6 +1,6 @@
 # What the HUD draws, and when
 
-> Verified against **Minecraft 26.2** · Reference · Hand-kept from
+> Verified against **Minecraft 26.3** · Reference · Hand-kept from
 > `Hud.extractRenderState` and `Gui.extractRenderState`.
 
 The HUD is one ordered sweep down two methods — twenty-seven slots in

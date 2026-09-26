@@ -1,6 +1,6 @@
 # Starting a server
 
-> Verified against **Minecraft 26.2** · Part III · Dropping the jar in an empty folder, typing *java -jar server.jar*, and waiting for the line that says *Done*.
+> Verified against **Minecraft 26.3** · Part III · Dropping the jar in an empty folder, typing *java -jar server.jar*, and waiting for the line that says *Done*.
 
 The first run writes two files and exits: you have not agreed to the EULA.
 The second gets as far as *Preparing level "world"* and, a second or two
@@ -160,7 +160,7 @@ load that [the resource system](../foundations/resource-system.md) describes,
 run here for server data. `WorldLoader.PackConfig.createResourceManager`
 selects and opens the packs, `TagLoader.loadTagsForExistingRegistries`
 collects tags for the static registries, `RegistryDataLoader` loads
-`RegistryDataLoader.WORLDGEN_REGISTRIES` and then
+`RegistryDataLoader.WORLD_REGISTRIES` and then
 `RegistryDataLoader.DIMENSION_REGISTRIES`, the `WorldLoader.WorldDataSupplier`
 turns the fixed `level.dat` into a `PrimaryLevelData` through
 `LevelStorageSource.getLevelDataAndDimensions` — or, with no world data at

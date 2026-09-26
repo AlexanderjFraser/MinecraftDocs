@@ -1,6 +1,6 @@
 # Synched entity data
 
-> Verified against **Minecraft 26.2** · Part VI · A player shears a sheep: one byte flips on the server, and the wool disappears on every screen in tracking range.
+> Verified against **Minecraft 26.3** · Part VI · A player shears a sheep: one byte flips on the server, and the wool disappears on every screen in tracking range.
 
 You right-click a sheep with shears. Somewhere on the server a single byte
 changes — bit four of one entry in a nineteen-slot array the sheep carries —
@@ -27,7 +27,7 @@ Nothing names these numbers, nothing writes them down, and they stop at 254
 | `SynchedEntityData.DataItem` | one slot: its value, the default it was built with, and its own dirty flag | with its container |
 | `EntityDataAccessor` | the key — an int id and a serializer, equal to another accessor **on the id alone** | immutable, shared by every instance of the class |
 | `ClassTreeIdRegistry` | which id a `SynchedEntityData.defineId` call gets, from the last id already taken by an ancestor class | whichever thread first loads the class |
-| `EntityDataSerializers` | the 43 registered serializers and the wire id of each, in registration order | a static block, once |
+| `EntityDataSerializers` | the 44 registered serializers and the wire id of each, in registration order | a static block, once |
 | `ServerEntity` | whether this entity sends anything this tick, and what | the server main thread |
 | `ClientboundSetEntityDataPacket` | the wire form: an entity id, then id/serializer/value triples, then 255 | encoded on the Netty pipeline, built on the server thread |
 | `ClientPacketListener` | applying an incoming batch to the client's own container | the client main thread |
@@ -110,7 +110,7 @@ and *sheared* into bit four — `Sheep.getColor`, `Sheep.setColor`,
 
 ### Nothing may be inserted above you
 
-The numbering belongs to the class, not to the concept. `Avatar` — the class 26.2 inserts between `LivingEntity` and `Player`
+The numbering belongs to the class, not to the concept. `Avatar` — the class between `LivingEntity` and `Player`
 ([entity anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)) — owns
 `Avatar.DATA_PLAYER_MAIN_HAND` and `Avatar.DATA_PLAYER_MODE_CUSTOMISATION`,
 so the skin-part toggles belong to every avatar, while
@@ -144,7 +144,7 @@ container against a caller mutating a value it already handed over.
 identity, and `EntityDataSerializer.forValueType` builds one from a codec
 alone.
 
-`EntityDataSerializers` registers 43 of them into a
+`EntityDataSerializers` registers 44 of them into a
 `CrudeIncrementalIntIdentityHashBiMap`, from a single static block, so
 **registration order is the wire id** — `EntityDataSerializers.BYTE` is 0,
 `EntityDataSerializers.POSE` is 20, `EntityDataSerializers.HUMANOID_ARM` is
@@ -294,7 +294,7 @@ that the incoming serializer is the one the accessor was defined with — a
 mismatch throws, loudly, on the client — stores each value, fires
 `Entity.onSyncedDataUpdated` per item and then the batch overload once. That
 batch overload, `SyncedDataHolder.onSyncedDataUpdated`, is the only place a
-client could see a whole update atomically, and nothing in the 7,055 classes
+client could see a whole update atomically, and nothing in the 7,301 classes
 overrides it: it is dead.
 Nothing tells the renderer. It finds out next frame, by [reading the sheep
 again from
@@ -351,7 +351,7 @@ a latency channel for movement.
 The interval comes from `EntityType.updateInterval`, fixed on the type at
 registration and copied when `ChunkMap.TrackedEntity` constructs the
 `ServerEntity` — 2 for a player, 3 by default, and *Integer.MAX_VALUE* for
-seven types including `EntityTypes.ITEM_FRAME`, whose interval branch
+eight types including `EntityTypes.ITEM_FRAME`, whose interval branch
 therefore never fires again after tick zero ([entity
 anatomy](entity-anatomy.md#the-two-numbers-frozen-onto-the-type) has the
 seven and the tracking range beside it).
@@ -361,7 +361,7 @@ case that calls `ServerEntity.sendDirtyEntityData` every tenth tick *before*
 the gate: it is the only path to the synched-data flush that skips the
 interval test, and without it a map in a frame would update only when
 something else set `Entity.needsSync`. (Two *sends* also sit outside the
-gate — the passengers packet and the `Entity.hurtMarked` motion packet — but
+gate — the passengers packet and the `Entity.syncVelocity` motion packet — but
 neither touches the data channel.)
 `ServerEntity.handleMinecartPosRot` calls it too, but from inside the gate,
 not around it. `Entity.syncPosition` is the other lever: it

@@ -1,6 +1,6 @@
 # Attributes
 
-> Verified against **Minecraft 26.2** · Part VI · Strength II is applied to a player: one modifier lands on one attribute, nothing goes on the wire, and the swing three seconds later reads the new number.
+> Verified against **Minecraft 26.3** · Part VI · Strength II is applied to a player: one modifier lands on one attribute, nothing goes on the wire, and the swing three seconds later reads the new number.
 
 Strength II lands on you and thirty seconds later it wears off. In between,
 one `AttributeModifier` — an amount of +6, an operation of

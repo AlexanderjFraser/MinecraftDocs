@@ -1,6 +1,6 @@
 # Block interaction
 
-> Verified against **Minecraft 26.2** · Part V · A player right-clicks the bottom half of an oak door, and the top half opens without a single neighbour update.
+> Verified against **Minecraft 26.3** · Part V · A player right-clicks the bottom half of an oak door, and the top half opens without a single neighbour update.
 
 You are standing in front of a closed oak door, crosshair on its bottom half,
 and you press the use key. Before the tick is over the door is open on your
@@ -73,7 +73,7 @@ sequenceDiagram
     end
 
     MPGM->>SGPL: ServerboundUseItemOnPacket, hand, hit and n
-    Note over MPGM,SGPL: a ServerboundSwingPacket goes up beside it, because SUCCESS swings on the client
+    Note over MPGM,SGPL: no swing packet goes up: SUCCESS is predicted, so the client has already swung, and the server swings for the trackers itself
     Note over MPGM,SL: server tick, packets drained before the levels tick
     SGPL->>SGPL: ackBlockChangesUpTo n, then reach, hit box, height, spawn protection
     SGPL->>SPGM: useItemOn, the same three-step order
@@ -175,9 +175,9 @@ The result is the vocabulary the whole pipeline turns on.
 and the swing is part of it, not a separate decision.
 `InteractionResult.SUCCESS`, `InteractionResult.SUCCESS_SERVER` and
 `InteractionResult.CONSUME` are all `InteractionResult.Success` values
-differing only in `InteractionResult.SwingSource`: the client animates and
-sends `ServerboundSwingPacket`, the server animates for the trackers, or
-nobody does. `InteractionResult.consumesAction` is what the server's branches test — the
+differing only in `InteractionResult.SwingSource`: the client animates at
+once and the server animates for everyone else, the server animates for
+everyone including the clicker, or nobody does. `InteractionResult.consumesAction` is what the server's branches test — the
 client's own loop matches on the record types instead —
 but the record carries two more answers besides —
 `InteractionResult.Success.wasItemInteraction`, which decides whether
