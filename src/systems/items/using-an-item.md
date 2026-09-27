@@ -104,7 +104,7 @@ else inside it: it builds the `ServerboundUseItemPacket` — hand, sequence
 number and both rotations — then consults the client's own `ItemCooldowns`,
 and runs `ItemStack.use` **locally first** only if the item is off cooldown.
 The packet goes up either way; the cooldown suppresses the prediction, not the
-report of it. The prediction is complete before a byte leaves the client, for
+report of it. The prediction is complete before the use packet leaves the client, for
 the meal and the bow alike. Both answer `InteractionResult.CONSUME`, whose
 `InteractionResult.SwingSource.NONE` is why neither swings the arm, although
 `FirstPersonHandsAndItems.itemUsed` still runs — the small dip the item makes as

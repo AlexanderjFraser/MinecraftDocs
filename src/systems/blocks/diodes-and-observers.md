@@ -3,14 +3,14 @@
 > Verified against **Minecraft 26.3** · Part V · A repeater, a comparator and an observer in one circuit — three blocks that learn about the world three different ways, and one of them is not listening to redstone at all.
 
 Put a repeater, a comparator and an observer side by side and they look like
-variations on one idea: flat-looking blocks that take a signal in one side and
+variations on one idea: blocks that take a signal in one side and
 push one out the other. Two of them genuinely are — `RepeaterBlock` and
-`ComparatorBlock` are both `DiodeBlock`s and share all of their output
-machinery but the number they emit. The observer is not a diode at all — it is
+`ComparatorBlock` are both `DiodeBlock`s and share their output machinery,
+differing in the number they emit and in what calls it. The observer is not a diode at all — it is
 a `DirectionalBlock`, a full cube, with a six-way facing — and the way it finds
 out that
 something changed is the page's hook: **`ObserverBlock` fires from
-`ObserverBlock.updateShape` — a *shape* update — so the one block whose entire
+`ObserverBlock.updateShape`, a *shape* update, so the one block whose entire
 job is noticing change is not on the channel that carries change
 notifications.** That is not a curiosity. It is why an observer sees a door
 opened by hand, an event that writes with `Block.UPDATE_NEIGHBORS` clear and
@@ -25,25 +25,24 @@ same trick for its lock.
 | `RepeaterBlock` | a delay in two-tick units, and whether it is locked | Server |
 | `ComparatorBlock` | two modes over one pair of inputs, and how far in front of itself it can see | Server |
 | `ComparatorBlockEntity` | one integer — the comparator's whole reason for having a [block entity](block-entities.md#create-keep-replace-remove) at all | Server |
-| `ObserverBlock` | that a neighbour's *state* changed, on a channel the other two do not use for input | Server |
-| `Level` | that any write of a state with an analog output pokes the comparators around it | Server |
+| `ObserverBlock` | that a neighbour's *state* changed, on the channel the repeater uses for its lock | Server |
+| `Level` | that a write carrying the neighbour bit, of a state with an analog output, pokes the comparators around it — and so does `BlockEntity.setChanged` | Server |
 
 ## The observer shares one row with the other two
 
 The table below is two comparisons wearing one grid, and it repays reading in
 that order. Read the first two columns against each other and you get the
-repeater against the comparator — four rows of difference, all of them about
-arithmetic and urgency, and all of them inside machinery the two share. Then
-read the third column against either of the others and there is only one row
-where the observer is in the same business at all: how it outputs. It reads no
-signal, offers no side input, and is told about the world on a different channel
-entirely, which is why *nothing* is the honest answer in two of its cells.
+repeater against the comparator — four rows of difference, about reach,
+arithmetic, urgency and storage, and all of them inside machinery the two share.
+Then read the third column against the other two and there is only one row
+where it does what both of them do by the same calls: how it outputs. It reads no
+signal, offers no side input, and is told about the world on a different channel from their input, which is why *nothing* is the honest answer in two of its cells.
 
 | | `RepeaterBlock` | `ComparatorBlock` | `ObserverBlock` |
 |---|---|---|---|
 | **what it reads from the front** | `DiodeBlock.getInputSignal` — the signal at the block it faces, and if that is under 15, the raw `RedstoneWireBlock.POWER` of a wire there | the same, then overridden: an analog output if the block in front has one, else one block further through a conductor | nothing. It reads no signal at all |
 | **what it reads from the sides** | `DiodeBlock.getAlternateSignal`, restricted to other diodes (`DiodeBlock.sideInputDiodesOnly` is true), and used only to lock | the same, unrestricted, and used as the second operand | nothing |
-| **how it books its turn** | `DiodeBlock.checkTickOnNeighbor` unchanged: `RepeaterBlock.DELAY` doubled, at one of the three priorities that method can choose | overrides it entirely: always a delay of 2, at `TickPriority.HIGH` or `TickPriority.NORMAL` | `ObserverBlock.startSignal` from a shape update: delay 2, no priority, and only if one is not already booked |
+| **how it books its turn** | `DiodeBlock.checkTickOnNeighbor` unchanged: `RepeaterBlock.DELAY` doubled, at one of the three priorities that method can choose | overrides it entirely: always a delay of 2, at `TickPriority.HIGH` or `TickPriority.NORMAL` | `ObserverBlock.startSignal` from a shape update: delay 2 at the default `TickPriority.NORMAL`, and only if one is not already booked |
 | **what it stores** | everything, in the block state | the same, plus one int in a `ComparatorBlockEntity` | everything, in the block state |
 | **how it outputs** | `DiodeBlock.updateNeighborsInFront` | the same | `ObserverBlock.updateNeighborsInFront`, an independent copy making the same two calls |
 
@@ -51,12 +50,12 @@ entirely, which is why *nothing* is the honest answer in two of its cells.
 
 The output half is the least-known part of all three blocks, and the two diodes
 genuinely share it: one method on `DiodeBlock`, inherited unchanged. The
-observer does the same two things by its own copy of the method, which is the
-one place its machinery converges with theirs.
+observer does the same two things by its own copy of the method and offers its
+signal the same way, which is where its machinery converges with theirs.
 A diode declares itself a source unconditionally
 (`DiodeBlock.isSignalSource`), answers `DiodeBlock.ownSignal` with
 `DiodeBlock.getOutputSignal` when `DiodeBlock.POWERED` and zero otherwise, and
-restricts `DiodeBlock.getSignal` to the one direction it faces — so a repeater
+restricts `DiodeBlock.getSignal` to the one neighbour at its output — so a repeater
 offers its 15 to precisely one neighbour, and `DiodeBlock.getDirectSignal`
 hands out the same value, which is what makes a diode able to strongly power
 the block in front of it.
@@ -70,10 +69,11 @@ direct `Level.neighborChanged` on the output block, and a
 `Level.updateNeighborsAtExceptFromFacing` around that same block, skipping the
 direction that points back at the diode. **It never writes a state into the
 target.** It notifies, and lets the target read back through
-`SignalGetter.getSignal` — which is why a repeater feeding a repeater works
-without either of them knowing what the other is.
+`SignalGetter.getSignal` — which is why the signal passes from a repeater to a
+repeater without either of them knowing what the other is; only how urgently
+the feeding one books its turn, below, depends on that.
 
-The signal leaves by an unexpected door. `DiodeBlock.tick` writes
+The repeater's signal leaves by an unexpected door. `DiodeBlock.tick` writes
 `DiodeBlock.POWERED` with `Block.UPDATE_CLIENTS` alone — flags 2, no
 neighbour bit ([block update
 flags](../../reference/block-update-flags.md)) — so `Level.setBlock`'s neighbour fan-out never runs, though its
@@ -82,7 +82,9 @@ propagates the change is `DiodeBlock.onPlace`, which
 `LevelChunk.setBlockState` runs on the server for any write without
 `Block.UPDATE_SKIP_ON_PLACE`, and which calls
 `DiodeBlock.updateNeighborsInFront`
-([blocks and states](blocks-and-states.md#the-two-update-channels)).
+([blocks and states](blocks-and-states.md#the-two-update-channels)). The
+comparator's tick is its own, `ComparatorBlock.refreshOutputState`, which calls
+`DiodeBlock.updateNeighborsInFront` directly as well (below).
 
 ## What each one can see
 
@@ -122,19 +124,21 @@ one of exactly two values: in `ComparatorMode.SUBTRACT` the output is front
 minus side, and in `ComparatorMode.COMPARE` — the default, and the mode a
 freshly placed comparator is in — it is the front value *unchanged*. So the
 comparing mode does no arithmetic at all; what it compares is only whether the
-side beats the front. The lit torch is a separate question again:
-`ComparatorBlock.shouldTurnOn` lights it when the front beats the side, and on a
-*tie* only in compare mode — which is why a subtract comparator with equal
-inputs outputs zero and goes dark, while a compare comparator with equal inputs
-outputs the full front value and stays lit.
+side beats the front. The lit pair of torches at its input end is a separate question
+again: `ComparatorBlock.shouldTurnOn` decides `DiodeBlock.POWERED`, which
+lights them, true when the front beats the side, and on a non-zero *tie* only
+in compare mode — which is why a subtract comparator with equal inputs outputs
+zero and its pair goes out, while a compare comparator with equal inputs
+outputs the full front value and stays lit. The lone torch at its output end is
+the mode's, lit in subtract.
 
 A container's analog output is
 `AbstractContainerMenu.getRedstoneSignalFromContainer`: every slot's count
-divided by the smaller of the container's own cap and *that stack's* maximum
-size, summed, divided by the number of slots, and mapped onto 0–15. For every
-container that reaches this formula the cap is 99 and the stack's own maximum
-wins, so a chest of shulker boxes and a chest of cobblestone at the same item
-count read very differently.
+divided by *that stack's* maximum size, summed, divided by the number of slots,
+and mapped onto 0–15. (The formula takes the smaller of that maximum and the
+container's own cap, but the cap is 99 for every container that reaches it.)
+So a chest of shulker boxes and a chest of cobblestone at the same item count
+read very differently.
 
 ## Booking a turn, and why a repeater turns off first
 
@@ -150,7 +154,7 @@ only when `LevelTickAccess.willTickThisTick` says nothing is already about to
 run there. It picks `TickPriority.EXTREMELY_HIGH` when
 `DiodeBlock.shouldPrioritize` holds — when the block it outputs into is itself
 a diode whose own input is not on the far side of it, so a diode reading this
-one or standing sideways to it, but not one aimed the same way —
+one or standing sideways to it, but not one aimed back at it —
 `TickPriority.VERY_HIGH` when the diode is currently on, and
 `TickPriority.HIGH` otherwise. So a diode's turn-off beats another's turn-on
 due on the same tick, and a diode feeding a diode beats both. The only
@@ -184,8 +188,8 @@ neighbour's `BlockBehaviour.updateShape` — runs on *every* write that does not
 say `Block.UPDATE_KNOWN_SHAPE`, and it runs on both sides. So the neighbour
 channel says *something near you changed and here is who says so*, and the
 shape channel says *your neighbour's state is now this; do you still fit?* —
-which is a stronger promise, because it arrives whether or not the neighbour
-meant to tell anybody ([blocks and
+which arrives unless the writer opts out with that bit, where the neighbour
+channel arrives only if the writer opts in ([blocks and
 states](blocks-and-states.md#the-two-update-channels) owns both).
 
 ```mermaid
@@ -198,9 +202,9 @@ flowchart TD
     OB["ObserverBlock.updateShape"]
     SS["ObserverBlock.startSignal"]
     BOOK["the appointment book"]
-    DT["DiodeBlock.tick writes POWERED under UPDATE_CLIENTS"]
+    DT["a diode's tick writes POWERED under UPDATE_CLIENTS"]
     OT["ObserverBlock.tick writes POWERED under UPDATE_CLIENTS"]
-    OUT["the one block in front, and only it"]
+    OUT["the block in front, then its five other neighbours"]
     NC -- "the write set UPDATE_NEIGHBORS" --> RB
     SC -- "the write omitted UPDATE_KNOWN_SHAPE" --> RL
     SC --> OB
@@ -210,15 +214,15 @@ flowchart TD
     SS -- "server only, none booked" --> BOOK
     BOOK --> DT
     BOOK --> OT
-    DT -- "DiodeBlock.onPlace, inside the write" --> OUT
+    DT -- "DiodeBlock.onPlace inside the write, and a comparator's direct call" --> OUT
     OT -- "ObserverBlock.updateNeighborsInFront, directly" --> OUT
 ```
 
 *Two channels, one queue, and one end that never reaches it: a diode hears
 about a change on the neighbour channel and the observer on the shape channel,
 both book a turn, and only the repeater's lock is written where it stands. The
-two paths out of the book differ too — the diode's pulse leaves through the
-side effect of its own write, the observer calls for it.*
+paths out of the book differ too — the repeater's pulse leaves through the side
+effect of its own write, while the observer calls for it and the comparator does both.*
 
 An observer watches for `ObserverBlock.updateShape` arriving from the one
 direction it faces, while `ObserverBlock.POWERED` is false, and books a
@@ -226,17 +230,18 @@ two-tick appointment. Two ticks later `ObserverBlock.tick` writes the powered
 state with flags 2, schedules its own turn-off two ticks after that, and
 pulses through `ObserverBlock.updateNeighborsInFront`. The shape channel is
 the right one for the job because it carries *your neighbour's state changed*
-regardless of whether the neighbour told anybody: a door opened by hand writes
+unless the writer opted out: a door opened by hand writes
 with flags 10 and issues no neighbour update at all, and the observer still
 sees it ([block interaction](block-interaction.md#the-shape-channel-which-both-sides-run)), and dust the observer is watching
-carries the same news through [signal and dust](signal-and-dust.md#what-one-neighbour-update-to-a-wire-costs)'s
-flag-2 writes.
+carries the same news through the flag-2 writes of [signal and
+dust](signal-and-dust.md#what-one-neighbour-update-to-a-wire-costs).
 
 `RepeaterBlock.LOCKED` works the same way, and it is one of exactly two diode
 properties computed from a redstone reading at all: `DiodeBlock.POWERED` is the
 other, and the difference between them is *when*. `DiodeBlock.POWERED` is
-written at tick time, from the appointment the block booked; `RepeaterBlock.LOCKED`
-is written inside a shape update, with no appointment anywhere.
+written at tick time, from the appointment the block booked, and a comparator's
+mode click refreshes it on the spot; `RepeaterBlock.LOCKED` is written inside a
+shape update or at placement, with no appointment anywhere.
 `RepeaterBlock.updateShape` recomputes it whenever a neighbour **off the
 facing axis** changes, which is the two sides and, harmlessly, up and down; the
 value itself comes from the two sides alone. So locking follows a neighbouring
@@ -244,21 +249,21 @@ repeater's state without either block scheduling anything.
 
 The tempting conclusion is that both blocks chose the shape channel because it
 is the half of the update machinery a client also runs. That is not what the
-code does: **both hooks refuse to act on the client.**
+code does: **both hooks refuse to do their redstone work on the client.**
 `RepeaterBlock.updateShape` recomputes the lock only when the level is not
 client-side, and `ObserverBlock.startSignal` returns immediately on a
-`ClientLevel`. Nor would it help if they did — a client keeps no appointment
-book at all, so a scheduled tick could never fire there. Everything a client
-knows about any of these three blocks arrives as a block update.
+`ClientLevel`. Nor would it help the observer if it did — a client keeps no
+appointment book at all, so a scheduled tick could never fire there. Beyond what
+the client predicts for its own clicks and placements, everything else it knows about these three blocks the server sends it.
 
 ## One int, and the fan-out that exists to deliver it
 
-A comparator has a block entity for one reason, and it is not a common one:
+A comparator has a block entity for one reason:
 `ComparatorBlock.calculateOutputSignal` can produce a number that the block
 state has nowhere to keep. `DiodeBlock.POWERED` is one bit, and a comparator's
 output is 0–15. Plenty of redstone blocks have block entities — the sculk
-sensor keeps its last vibration frequency in one and answers with it, and every
-container answers from its contents — but a `DaylightDetectorBlockEntity`
+sensor keeps its last vibration frequency in one and answers with it while it is
+active, and most containers answer from their contents — but a `DaylightDetectorBlockEntity`
 stores nothing at all, so having one is no evidence of state that a block state
 could not hold.
 `ComparatorBlockEntity.getOutputSignal` is that number, written by
@@ -286,7 +291,7 @@ two readings, `DiodeBlock.sideInputDiodesOnly` is the one boolean that turns a
 repeater's side input into a lock, `DiodeBlock.checkTickOnNeighbor` books the
 turn and `DiodeBlock.shouldPrioritize` decides how urgently, `DiodeBlock.tick`
 is where pulse extension lives, and `DiodeBlock.updateNeighborsInFront` with
-`DiodeBlock.onPlace` is the whole of how a signal leaves. Then the two
+`DiodeBlock.onPlace` is the whole of how a repeater's signal leaves. Then the two
 divergences: `ComparatorBlock.getInputSignal` with
 `ComparatorBlock.calculateOutputSignal` and `ComparatorBlock.refreshOutputState`
 for the arithmetic and the int in the block entity, and

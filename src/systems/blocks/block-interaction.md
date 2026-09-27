@@ -12,7 +12,7 @@ half follows anyway, down the *shape* channel, which is the half of the
 update machinery the client also runs. That is why a door feels instant on a
 laggy server and a redstone lamp does not.
 
-> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
+> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — once the client has finished loading in, it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
 
 ## The cast
 
@@ -20,7 +20,7 @@ laggy server and a redstone lamp does not.
 |---|---|---|
 | `Minecraft` | that a use-key press becomes one `Minecraft.startUseItem`, and that the main hand is tried before the off hand | Render |
 | `MultiPlayerGameMode` | the client's copy of the whole decision, wrapped in one prediction | Render |
-| `InteractionResult` | whether the caller stops here, who swings, and what the hand ends up holding | a record, no thread |
+| `InteractionResult` | whether the caller stops here, who swings, and what the hand ends up holding | a sealed interface of records, no thread |
 | `BlockBehaviour.BlockStateBase` | which of the two block hooks a state answers with, and when its six neighbours are asked to re-fit | either side |
 | `DoorBlock` | whether this door opens by hand, what it writes, and what the other half becomes | either side |
 | `CollectingNeighborUpdater` | the order queued updates run in, and where a runaway cascade is cut | whichever thread wrote the block |
@@ -50,12 +50,12 @@ sequenceDiagram
     DB->>CL: playSound, the clicker as except
 ```
 
-*The client's whole share of one click, finished before anything is sent. The
+*The client's share of one click up to the moment the use packet is sent. The
 two writes are the page's subject: the lower half is written by the door, the
 upper half by the shape pass that the first write set off, and no neighbour
 update happens at all.*
 
-Only now does anything leave the machine. The packet carries the hand, the hit
+Only now does the use packet leave the machine. It carries the hand, the hit
 and the sequence number, and the server runs the identical inner order against
 its own world.
 
@@ -101,8 +101,10 @@ held-down auto-repeat alone, and `Minecraft.startUseItem` is what sets it, to
 four ticks. The whole of that method sits behind one test —
 `MultiPlayerGameMode.isDestroying` — so a use press arriving mid-dig does not
 merely skip the delay, it is discarded entirely. A player already using an item
-(drawing a bow, eating) gets no further either: the queued presses are drained
-and thrown away one level in, at `LocalPlayer.isHandsBusy`.
+(drawing a bow, eating) gets no further either: `Minecraft.handleKeybinds`
+drains the queued presses and throws them away before `Minecraft.startUseItem`
+is reached. One level in, `LocalPlayer.isHandsBusy` stops a player who is
+paddling a boat.
 
 Inside, after `LocalPlayer.isHandsBusy`, the hands are tried in the order
 `InteractionHand.MAIN_HAND` then `InteractionHand.OFF_HAND`. Each hand's
@@ -158,13 +160,14 @@ container. And the advancement triggers exist only on the server:
 consumed.
 
 Those two hooks are how every right-clickable block in the game is written, and
-the split between them is lopsided: **25** blocks override
+the split between them is lopsided: **25** block classes override
 `BlockBehaviour.useItemOn`, the ones that care what you are holding —
-`ComposterBlock` taking bone meal, `LecternBlock` taking a book,
+`ComposterBlock` taking something compostable, `LecternBlock` taking a book,
 `ChiseledBookShelfBlock` reading the hit vector to pick a slot,
 `JukeboxBlock`, `CakeBlock`, `RespawnAnchorBlock` — while **52** override
-`BlockBehaviour.useWithoutItem`, the ones that only care that you clicked, of
-which the door is one. A block that does neither is not interactive at all.
+`BlockBehaviour.useWithoutItem`, the ones that answer an empty hand, of which
+the door is one. Twelve override both, all six just named among them. A block
+that does neither leaves the click to the item in the hand.
 That is the whole family, and this door is an instance of it rather than a
 special case.
 
@@ -177,9 +180,11 @@ and the swing is part of it, not a separate decision.
 `InteractionResult.CONSUME` are all `InteractionResult.Success` values
 differing only in `InteractionResult.SwingSource`: the client animates at
 once and the server animates for everyone else, the server animates for
-everyone including the clicker, or nobody does. `InteractionResult.consumesAction` is what the server's branches test — the
-client's own loop matches on the record types instead —
-but the record carries two more answers besides —
+everyone including the clicker, or nobody does. `InteractionResult.consumesAction`
+is what both copies of the inner order test, and the server asks
+`InteractionResult.Success.shouldSwing` before it swings; the client's hand loop in `Minecraft.startUseItem` never asks it, and matches on
+the record types instead. `InteractionResult.Success` carries two more answers
+besides —
 `InteractionResult.Success.wasItemInteraction`, which decides whether
 `Stats.ITEM_USED` is awarded, and
 `InteractionResult.Success.heldItemTransformedTo`, which both game modes use
@@ -203,14 +208,15 @@ Ten is the whole story of the page, so it is worth spelling out as bits: **2 +
 reads it not as *immediate* but as *a player did this*, which can buy the
 section a priority remesh — `LevelRenderer` acts on that mark only when the
 *Chunk Builder* option is set to prioritise nearby or player-affected
-sections, which the fancy graphics preset does and the default does not. Bit 1
+sections, which the fancy and fabulous graphics presets do, and fancy is the
+preset a new client starts on. Bit 1
 is `Block.UPDATE_NEIGHBORS`, and because it is absent `Level.setBlock` never
 reaches its neighbour fan-out — which on the client would be a no-op anyway.
 Nothing sets bit 16, `Block.UPDATE_KNOWN_SHAPE`, and that omission is what the
-next section is about. What the flags then feed, and the rest of what a write
-does, is the flowchart on [blocks and
+shape channel's section below is about. What the flags then feed, and the rest of what a write
+does, is the pair of flowcharts on [blocks and
 states](blocks-and-states.md#the-two-update-channels); everything below is
-the part of it the door actually walks.
+the part of it the door walks.
 
 ### The sound only you hear
 
@@ -246,8 +252,8 @@ and states](blocks-and-states.md#the-two-update-channels)).
 `DoorBlock.updateShape` answers four of its six callers with the state it was
 given: the whole method is behind a test for the vertical axis, so the four
 horizontals fall through to `BlockBehaviour.updateShape`, which returns the
-state unchanged. The other two directions are where the door lives, and there
-are three outcomes between them. Asked from the matching vertical direction — up
+state unchanged. The other two directions are where the door lives, and
+besides leaving the state as it is there are three outcomes between them. Asked from the matching vertical direction — up
 for a lower half, down for an upper — it returns **the neighbour's own state
 with `DoorBlock.HALF` swapped to its own**, so open, facing, hinge and
 powered are copied wholesale, which is why the top half is already open by
@@ -256,7 +262,7 @@ the time it is written. Asked from that same direction when the neighbour is
 `Direction.DOWN` returns air when `DoorBlock.canSurvive` fails — the block
 beneath must be face-sturdy upward. `Block.updateOrDestroy` then compares: a
 different non-air state becomes a `Level.setBlock` at the inherited limit, and
-air becomes a `Level.destroyBlock` — which the hub's flowchart shows is the one
+air becomes a `Level.destroyBlock` — which the hub shows is the one
 branch of a shape update the client does not run ([blocks and
 states](blocks-and-states.md#the-two-update-channels)). That is the whole of
 "break the bottom and the top pops".
@@ -330,19 +336,19 @@ everyone else's copy, through `ChunkHolder.broadcastChanges`, which turns two
 changed positions in one section into a single
 `ClientboundSectionBlocksUpdatePacket` (and into two
 `ClientboundBlockUpdatePacket`s when the halves straddle a section boundary).
-`ServerGamePacketListenerImpl.ackBlockChangesUpTo` was called before any of
-the gates, and `ServerGamePacketListenerImpl.tick` emits the receipt when
+`ServerGamePacketListenerImpl.ackBlockChangesUpTo` was called after the first
+gate and before the rest, and `ServerGamePacketListenerImpl.tick` emits the receipt when
 `MinecraftServer.tickChildren` reaches connections — after the levels have
 already broadcast ([the server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)).
 
 ## The other half of the same lecture
 
 Left-click is this contract with a different pipeline:
-`Minecraft.startAttack` opens its own prediction and sends a
-`ServerboundPlayerActionPacket` instead, and the block hook is
-`BlockBehaviour.BlockStateBase.attack`. Nothing about the ledger changes;
-everything about the *clock* does, because breaking takes eight ticks where
-opening takes none. [Block breaking](block-breaking.md#the-button-is-not-the-switch)
+`Minecraft.startAttack` reaches `MultiPlayerGameMode.startDestroyBlock`, which
+opens its own prediction and sends a `ServerboundPlayerActionPacket` instead,
+and the block hook is `BlockBehaviour.BlockStateBase.attack`. Nothing about the
+ledger changes; everything about the *clock* does, because breaking the next
+page's stone takes eight ticks where opening takes none. [Block breaking](block-breaking.md#the-button-is-not-the-switch)
 takes it from there, and the two pages are deliberately the same shape.
 
 ## Questions players ask
@@ -352,9 +358,10 @@ takes it from there, and the two pages are deliberately the same shape.
 false on `BlockSetType.IRON` and `BlockSetType.GOLD` and true on
 `BlockSetType.COPPER`. Nothing on this path reads
 `BlockTags.WOODEN_DOORS` — the copper door proves it, since it opens by hand
-and is not in that tag. The tag is for mining and fuel. Mobs that open doors ask
-somewhere else again: `InteractWithDoor` reads
-`BlockTags.MOB_INTERACTABLE_DOORS`, while the older goals read
+and is not in that tag. The tag only feeds other tags, the axe's and the
+doors mobs may open among them. Brain-driven mobs ask that one:
+`InteractWithDoor` reads `BlockTags.MOB_INTERACTABLE_DOORS`, the wooden doors
+and the copper ones, while the older goals read
 `DoorBlock.isWoodenDoor`, which is `BlockSetType.canOpenByHand` under
 another name.
 

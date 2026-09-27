@@ -6,13 +6,11 @@ You open a door and both halves swing. You flip a lever and the lamp across
 the room stays dark for a moment longer than you expected. Both are the same
 event underneath — a position in a chunk section stops holding one block state
 and starts holding another — and everything here is either choosing the state
-that goes in, performing the write, or being a block that answers one. A block
-has exactly four ways to answer, and this part is organised around them rather
-than around the three hundred blocks that use them: a **neighbour update**
+that goes in, performing the write, or being a block that answers one. A block has four ways to answer that this part teaches (a fifth, the game event, is Part IV's), and the part is organised around them rather
+than around the three hundred block classes that use them: a **neighbour update**
 (*something near you changed*), a **shape update** (*your neighbour's state is
 now this — do you still fit?*), a **block event** (*do this at a named moment
-later in the tick*) and a **scheduled tick** (*do this in n ticks*). A reader
-who has those four can read any block in the game.
+later in the tick*) and a **scheduled tick** (*do this in n ticks*). A reader who has those four, and Part IV's game events, can read any block in the game.
 
 Two of them are the two channels a write can leave by, and that is where the
 door and the lamp part company: **the neighbour channel exists only on the
@@ -25,13 +23,13 @@ the surprises in this part are that sentence in another costume.
 
 Counting the two packages [the atlas](../../maps/packages.md#where-each-part-lives)
 lists for this part, that is {{#include ../../generated/part-blocks.md}} — and
-seven lectures is the fewest of any part this size, on purpose. Most of those
-classes are one `Block` subclass each, filling in two or three of the hooks
-[blocks and states](blocks-and-states.md) enumerates.
+seven lectures is the fewest of any part with as many lines, on purpose. Most
+of those classes are one `Block` subclass each, filling in a few of the hooks
+`BlockBehaviour` and `Block` declare ([blocks and states](blocks-and-states.md)).
 
 Part V is a hub and six spokes. The hub is `blocks-and-states`, and what each
-spoke takes from it is not the state table — it is the tail of a write, drawn
-there as the part's largest flowchart and pointed at from every other page.
+spoke takes from it is not the state table — it is a piece of the write, drawn
+there in two flowcharts and pointed at from every other page.
 The six arrows out of the hub below are labelled with what it hands that
 spoke; the five between spokes are the places two lectures share a mechanism.
 
@@ -59,7 +57,7 @@ flowchart TD
 
 *The part as a hub and six spokes, numbered to the watch order. Six arrows
 leave `blocks-and-states` carrying the piece of a write that lecture is about;
-the five shorter arrows are the mechanisms two spokes share, and every one of
+the five arrows between spokes are the mechanisms two spokes share, and every one of
 them runs from an earlier lecture to a later one.*
 
 ## Before you start
@@ -74,7 +72,7 @@ tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what
 sits behind it for the two claims about what happens *outside* one: a packet
 handler runs before the levels do, a connection is flushed after. [Scheduled
 ticks](../world/scheduled-ticks.md#booking-a-type-a-position-a-time-and-a-tie-breaker)
-is how a block gets a turn later, which is the whole of the diode lecture. And
+is how a block gets a turn later, which each of the diode lecture's three blocks uses. And
 [fluids](../world/fluids.md#two-registry-objects-one-substance) owns the
 `FluidState` that shares a `StateHolder` with every block state. [Identifiers
 and
@@ -86,8 +84,8 @@ One dependency runs the other way. [Prediction and
 acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)
 is Part X, and the two click lectures use three of its six windows — but its own
 scenario is a block placed against a wall, which needs this part's vocabulary.
-So watch Part V first: both click pages open with the same four-sentence
-statement of the contract, which is all either lecture needs. Part X is also
+So watch Part V first: both click pages state the contract in the same four
+sentences near their top, which is all either lecture needs. Part X is also
 where the third thing a player notices about this part lives, after the door and
 the lamp above — the block that appears under the crosshair before the server
 has heard about it.
@@ -96,22 +94,22 @@ has heard about it.
 
 1. [Blocks and states](blocks-and-states.md) — a right-click on stone puts one
    of oak stairs' eighty states into the world. Every state the game will ever
-   have was built before the world was, and the world stores an index into
-   that table. The second half — what a write does after the section has been
-   written — is the figure the other six lectures point back at.
+   have was built before the world was, and the world only ever points into
+   that table. The second half — what the write does — is the pair of figures
+   the other six lectures point back at.
 2. [Block interaction](block-interaction.md) — the right click, in full: a
    door opened by hand. It fires no neighbour update at all, and the top half
    follows anyway.
 3. [Block breaking](block-breaking.md) — the same lecture's other half: two
-   clocks that agree without exchanging a packet, because the one comparison
-   that matters happens in the packet drain rather than in the tick. Let go too
-   early and the block comes back, then vanishes again, and nothing short of
-   the block itself going away stops it.
+   clocks that agree without either telling the other its count, because the
+   one comparison that matters happens in the packet drain rather than in the
+   tick. Finish too early and the block usually comes back, then vanishes again, and
+   nothing the player does with the button stops it.
 4. [Block entities](block-entities.md) — a furnace smelts while nobody is
    looking. It tells nobody anything: the fire is a block state, the arrow is
    four ints from a menu, and both are a tick late by construction.
 5. [Signal and dust](signal-and-dust.md) — a lever, two dust, and the
-   cascade. A line turning off is visited once for every intermediate value it
+   cascade. A line turning off is visited again at every intermediate value it
    passes through, none of which is ever sent to anybody, and the game ships a
    second implementation behind a flag that does not do it at all.
 6. [Pistons and block events](pistons-and-block-events.md) — the part's
@@ -126,29 +124,28 @@ has heard about it.
 
 ## Where the part stops
 
-Part V owns the write and the four answers; it does not own most of the
-*blocks*. {{#include ../../generated/coverage-blocks.md}}, and most of that is
-deliberate: a block is usually the place some other system surfaces, so it is
-taught where its scenario is — the sculk family with [game events and
+Part V owns the write's tail and three of the four answers; it does not own most of the
+*blocks*. {{#include ../../generated/coverage-blocks.md}}, and of the blocks
+that are taught, many are taught elsewhere: a block is usually the place some
+other system surfaces, so it is taught where its scenario is — the sculk family with [game events and
 vibrations](../world/game-events-and-vibrations.md), `LiquidBlock` with
 [fluids](../world/fluids.md), the containers with [Part
 VII](../items/README.md), signs and chests *as things drawn* with [Part
 XI](../rendering/README.md), the structure block with
 [jigsaw and templates](../worldgen/jigsaw-and-templates.md#where-a-template-comes-from),
 the command block with [Part
-XIII](../commands/brigadier-and-commands.md#three-parsers-see-one-string). What
+XIII](../commands/brigadier-and-commands.md#where-a-commands-output-goes). What
 comes back here is the moment any of them writes a state.
 
-Three mechanisms belong to nobody, and this is the sentence that says so rather
-than leaving the silence to be found. The **hopper** is the largest —
-`HopperBlockEntity` and `HopperBlock` are named on three pages and the transfer
-itself is explained on none. **Sculk spread** is the second: `SculkSpreader`'s
+Of what belongs to nobody, three lecture-sized mechanisms are declared here, and this is the sentence that says so rather than leaving the silence to be found. The
+**hopper** is the first — `HopperBlockEntity` is named on one
+other page, for its cooldown, and the transfer itself is explained on none.
+**Sculk spread** is the second: `SculkSpreader`'s
 charges walking through `SculkBehaviour`, `SculkBlock` and `SculkVeinBlock`,
 where the page
-that owns the catalyst owns it only as a *listener*. The third is a family —
-`BeaconBlockEntity`, `ConduitBlockEntity` and the trial-spawner and vault
-sub-packages, whose outer classes Parts VI and VII name while their state
-machines go unexplained. Each is lecture-sized and each waits for a second
+that owns the catalyst owns it only as a *listener*. The third, and the
+largest, is a family — `BeaconBlockEntity`, `ConduitBlockEntity` and the
+trial-spawner and vault sub-packages, the last two of which other pages name in passing while their state machines go unexplained. Each waits for a second
 edition.
 
 ## Reference this part uses
@@ -164,7 +161,7 @@ rules](../../reference/gamerules.md) for `GameRules.BLOCK_DROPS`, and [math and
 primitives](../../reference/math-and-primitives.md) for `BlockPos`,
 `Direction` and the packings every page here assumes. The
 [glossary](../../reference/glossary.md) defines the four answers and the two
-things they act on, all from pages in this part, and [diagram
+things they act on, all but the scheduled tick from pages in this part, and [diagram
 lanes](../../reference/lanes.md) explains the abbreviations these figures use.
 
 ---

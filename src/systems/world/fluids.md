@@ -37,8 +37,8 @@ which this page borrows whole and never explains.
 ## Two registry objects, one substance
 
 `Fluid` is to `FluidState` what `Block` is to `BlockState`, and it is literally
-the same machinery ([the state, a twenty-line
-leaf](../blocks/blocks-and-states.md#the-state-a-twenty-line-leaf)): `StateHolder`, a
+the same machinery ([the state, a
+leaf](../blocks/blocks-and-states.md#the-state-a-leaf)): `StateHolder`, a
 `StateDefinition` built in the constructor,
 and one interned instance per combination of properties, so two `FluidState`s
 can be compared by identity. `FlowingFluid` puts `FlowingFluid.FALLING` on every

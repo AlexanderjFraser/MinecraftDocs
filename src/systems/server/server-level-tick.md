@@ -329,7 +329,7 @@ it is dealt with at the end of this section.
 `ServerLevel.sendBlockUpdated` calls `ServerChunkCache.blockChanged`, which
 finds the `ChunkHolder`, records the position in that holder's per-section
 set, and — the first time a holder gains a changed section — adds it to
-`ServerChunkCache.chunkHoldersToBroadcast`. Then it returns. The packets are
+`ServerChunkCache.chunkHoldersToBroadcast`. Then `ServerChunkCache.blockChanged` returns. The packets are
 built once, later, in the chunk source's step.
 
 ```mermaid

@@ -50,13 +50,13 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, and D on 2026-09-27** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, and D and E on 2026-09-27** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
 and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III, and the audit of its own
-record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record — and E onward
-have not. After it, nothing more is done here except a
+record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
+audit — and F onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -495,3 +495,14 @@ understood; recording is after the release.
   (`server/starting-a-server`, `server/server-tick`, the glossary twice, `rendering/lightmap-fog-and-sky`);
   `world/level/blockscan` and the modifier classes into pass3.md §7; sentences on other parts' pages handed to E,
   F, I, J, L, M and O. Deployed.
+
+- **2026-09-27, pass 8, session E — Part V · Blocks (Opus).** Eight pages checked under Part 2, one agent per page,
+  and the part read whole: **237 corrections**, every one re-derived in the tree (29 inside a figure or a caption; four
+  26.3 changes V1 and V2 missed, three sentences the version pass left beside a fact it moved, D's handoff on the
+  write's guards, and one more javac-constant sentence session A's list missed). The 112 ledger entries struck; Part
+  V's queue closed (52 units struck, five shared units noted). The record audited by one agent per page, which found
+  **73 of the 237, 45 in sentences the session had just written** — D's rate again, and a strike script's regex that
+  had malformed ten paragraph strikes. `blocks-and-states`' write figure redrawn (the guard is on the block, the
+  block-entity step gated); `block-breaking`'s 1.064 is about 1.067 and its deferral paragraph scoped to V2's finding;
+  sculk spread and four more unowned mechanisms into pass3.md §7. Eight pages outside the part corrected where a
+  correction here made them disagree; `section-meshing`'s opening handed to L. Deployed.

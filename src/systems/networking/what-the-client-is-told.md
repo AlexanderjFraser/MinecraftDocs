@@ -382,9 +382,9 @@ dust](../blocks/signal-and-dust.md#what-one-neighbour-update-to-a-wire-costs)).
 inside the same per-section loop, immediately after that section's own update
 packet — interleaved, not a third pass.
 `ChunkHolder.broadcastBlockEntityIfNeeded` tests whether the state has a block
-entity at all and delegates to `ChunkHolder.broadcastBlockEntity`, the one
-place in the game that asks `BlockEntity.getUpdatePacket`. Only overriding
-types produce a `ClientboundBlockEntityDataPacket`, and the fallback is not "it
+entity at all and delegates to `ChunkHolder.broadcastBlockEntity`, one of the
+two places in the game that ask `BlockEntity.getUpdatePacket` (the other
+resends the blocks under a player the server thinks is standing on air). Only overriding types produce one here, and the fallback is not "it
 rides the chunk packet instead" — which is why chest contents are invisible
 until the chest is opened. What the two sync hooks default to, and which types
 override which, is [block
@@ -398,7 +398,7 @@ events](../blocks/pistons-and-block-events.md#the-queue-and-which-tick-it-drains
 `ClientboundBlockDestructionPacket` for other players' mining progress,
 `ClientboundChunksBiomesPacket` when biomes are re-sent, and
 `ClientboundBlockChangedAckPacket`, sent at most once per connection per tick
-and on any tick where the client sent a block action, a use-on or a use —
+and on any tick where a loaded client sent a block action, a use-on or a use —
 **including an unsequenced abort, which produces an ack of zero and settles
 nothing**. The rules that receipt obeys — and the ordering rule that makes a receipt
 without a verdict sufficient — belong to [prediction and
@@ -447,7 +447,7 @@ though time comes from `MinecraftServer` and the view distances from
 | points of interest, except through the debug channel | `ChunkMap.poiManager` | [points of interest](../world/points-of-interest.md#where-the-index-lives-and-how-it-repairs-itself) |
 | the ticket graph — the client gets a radius and a simulation distance, as two integers | `TicketStorage`, `DistanceManager`, `ChunkHolder.ticketLevel`, `FullChunkStatus` | [tickets and loading](../world/tickets-and-loading.md#two-graphs-one-store) |
 | worldgen, and **the world seed** — `ClientLevel` gets only a biome zoom seed | `ChunkGenerator`, `RandomState`, `ServerLevel.structureManager`, `StructureStart` | [the generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn) |
-| the worldgen heightmaps, and any block-entity field outside `BlockEntity.getUpdateTag` | `BlockEntity` | [block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything) |
+| the worldgen heightmaps, and any block-entity field outside `BlockEntity.getUpdateTag`, bar an operator's query and a command block's screen | `BlockEntity` | [block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything) |
 | non-syncable attributes, loot tables and loot seeds, the natural spawn state, raids and the dragon fight | `AttributeMap`, `LootTable`, `NaturalSpawner` | [attributes](../entities/attributes.md#four-objects-two-dirty-sets-and-one-list-that-is-neither) |
 | game rules — they reach the client only on request, and only for a player with the command permission | `GameRules` | [level data and rules](../../reference/level-data-and-rules.md#what-the-client-hears) |
 | the creeper's fuse length and its swell counter — of its three synched values, none is the counter | `Creeper` | [synched entity data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from) |

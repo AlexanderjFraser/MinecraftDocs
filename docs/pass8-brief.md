@@ -852,7 +852,7 @@ V2, or B into A, if either runs short.
 | **B** | I · Anatomy, II · Foundations and the Maps | 25+3 · 61 · 24 | 4·2·3·9 / 3·0·0·13 / maps in frame | 14·18·2·2 / 29·34·7·6 | 32.5k | done 2026-09-26 | **293 corrections on sixteen pages** two fact-checks had passed, every one re-derived in the tree (54 inside a figure or a caption, nine of them 26.3 changes V1 and V2 missed); the 115 ledger entries struck, 36 wrong in whole or in part; 44 queue units settled; the queue router's part numerals fixed; the record's own audit found eight more errors beside the session's corrections; items handed to G, L, O and P |
 | **C** | III · The server | 81+3 | 6·1·1·22 | 28·34·5·11 | 20.9k | done 2026-09-26 | **176 corrections on six pages** (22 inside a figure or a caption, nine of them 26.3 changes V1 missed), every one re-derived in the tree; the 84 ledger entries struck, 41 of 83 wrong in whole or in part; 31 queue units settled; the record drafted by one agent per page and audited, which found **38 more errors, 15 of them in sentences the session had just written**; three probable upstream bugs written as mechanism (a relayed crash that skips the flush save, a lapsed ban's first login, the spawn search's stride); items handed to D, F, I, M, N and O |
 | **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | done 2026-09-27 | **284 corrections on eleven pages** (43 inside a figure or a caption, seven of them 26.3 changes V1 and V2 missed), every one re-derived in the tree; the 114 ledger entries struck, 27 of 111 wrong in whole or in part; 47 queue units settled; the record audited by one agent per page, which found **76 of the errors, 55 of them in sentences the session had just written**; one probable upstream bug written as mechanism (lava's slower spread, booked and then dropped as a duplicate); four pages in other parts corrected with it; items handed to E, F, I, J, L, M and O |
-| **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | — | |
+| **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | done 2026-09-27 | **237 corrections on eight pages** (29 inside a figure or a caption; four 26.3 changes V1 and V2 missed, and three sentences the version pass left beside a fact it moved), every one re-derived in the tree; the 112 ledger entries struck; Part V's queue closed; the record audited by one agent per page, which found **73 of them, 45 in sentences the session had just written**; the write figure redrawn (D's handoff); sculk spread and four more unowned mechanisms into pass3.md §7; eight pages outside the part corrected with it; items handed to J, L, N, O and P |
 | **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | — | |
 | **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | — | |
 | **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | — | |
@@ -1189,4 +1189,39 @@ produce its symptom, and left to the second edition. Written on its page as mech
 bug: lava's ×4 spread delay is booked after the write and dropped as a duplicate of the plain delay
 `LiquidBlock.onPlace` already booked (`fluids`). Left for E, F, I, J, L, M and O: the sentences on their pages
 listed in the ledger's *For later sessions*. For P: the V1 and V2 entries on these pages, and this session's
+diff.
+
+**Session E — Part V · Blocks (2026-09-27).** Eight pages, each checked under Part 2 by its own agent while the session
+read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, the V1 and V2 entries on these
+pages (V2's per-page sections and its *For the part session (E)* lines included), D's handoff on the write's guards and
+session A's V6 constants. **237 corrections**, every one re-derived in `reference/26.3` before it was made; 29 are inside
+a figure or a caption. Four are 26.3 changes V1 and V2 did not see (`Block` lost two statics; fuel is no longer read from
+the door tag; a second caller of `BlockEntity.getUpdatePacket`; the chunk packet's empty tag), and three are sentences the
+version pass left beside a fact it moved (the landing page's summary of V2's dig, the paragraph after V2's rewritten
+arithmetic, *obsidian and its three relatives*). Ledger entries checked: the 112 on these pages (54 checked, 39 checked
+with a part or the sentence beside it wrong, 13 wrong in whole or in part, 4 overtaken, 2 no claim). The three worst corrections:
+`blocks-and-states`' write figure and the paragraph that reads it — the guard inside the chunk write tests the *block*
+and the re-read in `Level.setBlock` the *state*, so the two diamonds are different questions, and the block-entity step
+runs only if `onPlace` has not replaced the block (D's handoff; the figure is redrawn with two no-op tests, the guard on
+the block and a gated block-entity step); `block-breaking`'s hook, **releasing the button does not cancel a break** —
+releasing before finishing sends ABORT, which does, and what cannot be cancelled is the deferral after a STOP that came
+too early, which since V2's finding finishes in the same server tick for almost every dig; and `block-interaction`'s
+*which the fancy graphics preset does and the default does not* — fancy is the preset a new client starts on, so a door
+you open is remeshed inline by default (which makes `rendering/section-meshing`'s opening wrong for a new client, handed
+to L). What the whole-part read found that no report had: one — the piston closer asked *why does a piston push a block
+that is powering it?* over an answer saying the block in front never powers it. It also found, before the reports, a
+fifth javac-constant sentence session A's list had missed (`RedstoneTorchBlock`'s three) and the landing page's *fewest
+lectures of any part this size*, both of which the agents then found too. **The record's audit was again the session's
+finding**: eight agents re-derived every changed sentence and found **73 of the 237, 45 in sentences this session had just
+written** — about one in four, D's rate — among them the cast's *copies most of its values out* (a third), a stuck dig
+said to end only when the block turns to air (a faster tool breaks it too), *four flag words on this page* (six), and a
+strike script that had written ten paragraph strikes in the ledger as `*~~*` (its bullet regex read a bold's first `*`).
+The polish: the two bare number devices (V9), five em-dash chains, four possessives on a link, three *actually*, the key's
+thread names, every caption at most two sentences, and five queue units settled by a clause. Also: 52 queue units struck
+and five shared ones noted, so Part V has no open unit; sculk spread, declared on the landing page since pass 6 and never
+entered, and four more lecture-sized unowned mechanisms (rails, the shelf, the beehive, fire spread) into pass3.md §7.
+Corrected where a correction here made them disagree: `world/fluids`, `networking/what-the-client-is-told` (three),
+`client/prediction-and-acks` (two), `rendering/section-meshing`, `server/server-level-tick`, `items/using-an-item`,
+`lectures.md` and `reference/block-update-flags`. Left for J, L, N, O and P: the items in the ledger's *For later
+sessions*, `section-meshing`'s opening chief among them. For P: the V1 and V2 entries on these pages, and this session's
 diff.

@@ -162,7 +162,8 @@ them on the spot (`SectionRenderDispatcher.RenderSection.compileSync`). The
 dispatcher does not decide which: `LevelRenderer.compileSections` does, from
 the snapshotted *prioritise chunk updates* option, and this is where
 `SectionUpdateTracker.SectionDirtyState.isDirtyFromPlayer` is finally spent.
-`PrioritizeChunkUpdates.NONE` — the default — never compiles inline;
+`PrioritizeChunkUpdates.NONE` — the option's own default, which the fancy preset
+a new client starts on replaces — never compiles inline;
 `PrioritizeChunkUpdates.PLAYER_AFFECTED` does so for a section the player
 changed; `PrioritizeChunkUpdates.NEARBY` does so for those *and* for anything
 close to the camera. `SectionTaskDynamicQueue`

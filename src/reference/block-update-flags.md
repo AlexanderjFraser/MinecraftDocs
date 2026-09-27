@@ -9,8 +9,8 @@ three-argument overload, and followed by an *update limit* on the four-argument
 one. It is a bit set, tagged in signatures by `Block.UpdateFlags`, an
 annotation that carries no values of its own.
 [Blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
-draws the tail of `Level.setBlock` as a flowchart whose gates name these bits
-by number; this is the table behind the numbers, and every page of Parts IV
+draws `Level.setBlock` as two flowcharts and a table whose gates name these
+bits by number; this is the table behind the numbers, and every page of Parts IV
 and V that passes a flag word means the same bits by them. Two of the
 constants do not mean what they look like: **`Block.UPDATE_NONE` is not zero**
 — it is 260, two bits set — and **512 names two different things**, a bit and

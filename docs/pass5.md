@@ -123,7 +123,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   it had never named, and ends on the claim that every surprise in the part is
   one of five mechanisms answering a question the reader thought another had
   settled). The strongest four are III, IV, XI and XIII, and XI is the model: a
-  claim, three consequences, then the hook. [kind=lecture]
+  claim, three consequences, then the hook. [kind=lecture] **V's share confirmed, pass 8 session E.**
 - **A seventh, unlisted section exists on twelve of the thirteen**, in five
   positions and three forms: after Reference (I, VIII, IX, XII), before
   Reference (III, XIII), before the shape (V, VI, VII), inside the Reference
@@ -214,7 +214,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   names what it counts. [kind=voice]
 - **Three landing pages each claim the cleanest statement of the server/client
   split** (`player/README`:99, `entities/README`:9, `blocks/README`:8), and the
-  reader meets Part V's first. [kind=voice]
+  reader meets Part V's first. [kind=voice] **V's share ruled, pass 8 session E**: Part V's statement is the first a reader meets and stays; the other two are VI's and VIII's.
 - **The size is generated and the coverage fraction never is.** Six landing
   pages `{{#include}}` the size correctly and then hand-count a percentage in
   the next clause (VI, VII, VIII, IX, XI, XII, XIII). If the coverage answer is
@@ -1224,12 +1224,12 @@ drop the number.
 
 **A count of one thing described as a count of another.**
 
-- `blocks/blocks-and-states.md:25` — "through **fifty-eight** statics — the [kind=voice]
+- ~~`blocks/blocks-and-states.md:25` — "through **fifty-eight** statics — the [kind=voice]
   drops, the particles and the shape-update helpers". 58 is every `static`
   declaration in `Block.java` (23 fields, 34 methods, one nested record); the
   things listed are static *methods*, of which there are 34. And "the
   particles" is `Block.spawnDestroyParticles`, a `protected` **instance**
-  method.
+  method.~~ *Done: the cast and the class box now say *its static helpers*, with no count, and the particle methods, which are instance methods, are not among them — pass 8, session E.*
 - `client/hud.md` — the heading is now *Four states*, and three of the four [kind=voice]
   draw. If pass 5 wants "bars" back, the number is three.
 - ~~`world/scheduled-ticks.md:81` — "**Two** type parameters" is right for the
@@ -1292,10 +1292,10 @@ drop the number.
   **Done, session B** — re-derived (`IOWorker.java:105` two `FieldSelector`s,
   `StructureCheck.java:113` three) and rewritten to name the mechanism
   (`CollectFields` over the selectors the caller wants) rather than a number.
-- `blocks/signal-and-dust.md:27,126` — "the three answers a state gives" is [kind=voice]
+- ~~`blocks/signal-and-dust.md:27,126` — "the three answers a state gives" is [kind=voice]
   three of six signal delegators on `BlockBehaviour.BlockStateBase`; "All three
   stop early" is true of the reading methods and false of the direction arrays
-  the previous paragraph counts.
+  the previous paragraph counts.~~ *Overtaken: the cast now names the three power answers beside conduction and the connection hook, and *All three stop early* was re-scoped to the reading methods in pass 5 — pass 8, session E.*
 - ~~`reference/math-and-primitives.md:116` — "two things called `Axis`" is two
   in scope; there is a third in the datafix tree, which rule 3 excludes.~~
   **Done, session N**, and re-derived: `Direction.Axis`, `com/mojang/math/Axis`
@@ -1431,7 +1431,7 @@ which the same page states at :388;
 `blocks/block-interaction.md:182` "three outcomes" is three distinct returned
 states and four branches;
 `blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
-is four *named* steps over five statements. [kind=voice] **IV's share overtaken, pass 8 session D** — `chunk-generation-pipeline`'s *seven of the twelve* is V2's five of ten.
+is four *named* steps over five statements. [kind=voice] **IV's share overtaken, pass 8 session D** — `chunk-generation-pipeline`'s *seven of the twelve* is V2's five of ten. **V's share done, pass 8 session E**: `block-interaction`'s *three outcomes* now says *besides leaving the state as it is*, and `block-entities` now lists all five of `LevelChunk.removeBlockEntity`'s steps.
 
 **Two rules for the word *classes*, corpus-wide.** A package's class count is
 one number under two rules — `package-info.java` counted, or not — and the
@@ -1926,18 +1926,18 @@ mark while the body never delivered it.
 
 ## Session E — Part V Blocks (pass 4) *(2026-09-04)*
 
-Wording debt from sixty-one fact fixes across eight pages. Nothing here was
-acted on; pass 4 does not polish. [kind=record]
+~~Wording debt from sixty-one fact fixes across eight pages. Nothing here was
+acted on; pass 4 does not polish. [kind=record]~~ *Record: the heading of pass 5 session E's wording debt, its units settled on their own lines — pass 8, session E.*
 
-**Rewrites to re-read.** Five fixes grew a sentence into a passage:
+~~**Rewrites to re-read.** Five fixes grew a sentence into a passage:~~ *Record: a preface, its units settled on their own lines — pass 8, session E.*
 
-- `signal-and-dust`'s **hook**. The old one was a picture ("14, 13, 12, visibly")
+- ~~`signal-and-dust`'s **hook**. The old one was a picture ("14, 13, 12, visibly")
   and the true replacement is a picture plus a denial ("that staircase is the
   whole cost of redstone, and nobody has ever seen it"). It reads well but it is
   now the longest opening paragraph in the part, and the *why* — that the packet
   is built once per tick from the world rather than from the writes — is
   repeated three paragraphs later where the flowchart explains it. One of the two
-  should go.
+  should go.~~ *Ruled: the hook keeps its picture and its reason; the flowchart's gloss three paragraphs down belongs to the figure, and cutting it is the second edition's — pass 8, session E.*
 - ~~`blocks/README.md`'s **opening**.~~ **Done** — a third option, taken: the landing page now opens inside the two scenarios (a door, a lamp) rather than on book furniture, and the *first of those is a prediction and Part X owns it* clause moved down into the paragraph that is about the V-to-X cut, which is what motivates it. All three feelings survive and the part's first paragraph carries no forward reference.
   *(original entry follows)*  Splitting the three feelings into "the first
   is a prediction and Part X owns it" plus "the other two" costs a sentence and
@@ -1958,11 +1958,11 @@ acted on; pass 4 does not polish. [kind=record]
   above it now *names* `Item.mineBlock`'s four conditions rather than gesturing
   at "conditional four ways over", so the closer no longer holds an explanation
   the body needed.
-- `diodes-and-observers`' **comparator fan-out paragraph** now names two callers [kind=voice]
+- ~~`diodes-and-observers`' **comparator fan-out paragraph** now names two callers [kind=voice]
   and says which one the example uses, where it named one. The correction is
   right and the paragraph has lost its shape: the interesting fact
   (`BlockEntity.setChanged` is what makes a comparator notice a chest) is now
-  third in the sentence order rather than first.
+  third in the sentence order rather than first.~~ *Second edition: putting `BlockEntity.setChanged` first means reordering the paragraph, which the polish does not do — pass 8, session E.*
 
 ~~**The "three differences" tic, and the shape it hides.**~~ **Settled, pass 6
 session E**: one table, and the heading stopped counting its own rows. It is now
@@ -1979,21 +1979,21 @@ whether that is one table or two.
 
 **Ambiguities left standing.**
 
-- `diodes-and-observers` says `DiodeBlock.shouldPrioritize` holds for "a diode
+- ~~`diodes-and-observers` says `DiodeBlock.shouldPrioritize` holds for "a diode
   whose own input is not on the far side of it". That is exact and hard to read.
   The colloquial version — "a diode that is not pointing back at this one" — is
   also exactly right, but only under the reading of *pointing* the page spends a
   paragraph arguing against (FACING points at the **input**). Either the page
-  needs a word for the output direction or the sentence needs a diagram.
-- The same page says a diode "restricts `DiodeBlock.getSignal` to the one
+  needs a word for the output direction or the sentence needs a diagram.~~ *Done: the sentence now ends *but not one aimed back at it*, which was also a fact correction, since the excluded diode is the head-on one — pass 8, session E.*
+- ~~The same page says a diode "restricts `DiodeBlock.getSignal` to the one
   direction it faces" two paragraphs before establishing that FACING is the
   *input* side. Both sentences are true — the `direction` parameter of `getSignal`
   is the direction from the asker to the answerer, so it equals FACING when the
   output block asks — but a reader meets them in the order that makes them look
-  contradictory. [kind=voice]
-- `block-interaction`'s bit-8 clause now carries a condition ("when the Chunk
+  contradictory. [kind=voice]~~ *Done: *restricts `DiodeBlock.getSignal` to the one neighbour at its output* — pass 8, session E.*
+- ~~`block-interaction`'s bit-8 clause now carries a condition ("when the Chunk
   Builder option asks for it") inside the sentence that is supposed to be the
-  page's payoff. It may want to be a parenthetical or a footnote instead.
+  page's payoff. It may want to be a parenthetical or a footnote instead.~~ *Ruled: the clause stays, and is now a fact correction too: the fancy preset a new client starts on sets the option, so the remesh is bought by default — pass 8, session E.*
 
 **Structural findings, not acted on.**
 
@@ -2025,12 +2025,12 @@ whether that is one table or two.
   closers dissolved whole — `blocks-and-states`, `signal-and-dust` and
   `diodes-and-observers` — and the survivors went 4→2, 4→3, 4→2 and 5→2.
 
-**Corpus-wide, found here.** The corpus has no settled word for the two update
+~~**Corpus-wide, found here.** The corpus has no settled word for the two update
 channels' *directions*. `block-interaction` says "the direction pointing from
 that neighbour back at the door"; `signal-and-dust`'s table says "which neighbour
 is told first"; `diodes-and-observers` says "the one direction it faces". Three
 pages, three conventions, one `Direction` parameter. A terminology sweep should
-fix the vocabulary before the pages.
+fix the vocabulary before the pages.~~ *Ruled: each page says in place which direction it means; a corpus word for a channel's direction is the second edition's — pass 8, session E.*
 
 ## Session D — Part IV The world (pass 4) *(2026-09-04)*
 
@@ -2494,7 +2494,7 @@ correction):
   middle-dot list where every other page's is a sentence; it reads fine and it
   is the only one, so it is either a deliberate variation or a fix.
 
-- **2026-09-02, session F — Part V.** Seven pages at 243–388 lines, which is
+- ~~**2026-09-02, session F — Part V.** Seven pages at 243–388 lines, which is
   the first part to land inside the 260–340 brief rather than over it — the
   line budget was given to the drafters explicitly this time, mid-flight, and
   it worked. The exception is **`blocks-and-states` at 388**, and it is the
@@ -2506,9 +2506,9 @@ correction):
   *four decisions, four lookups* section is the most compressible, since
   `StairBlock.getStairsShape`'s corner rules are detail the hook does not
   need; and the `BlockBehaviour.BlockStateBase.initCache` thread-safety
-  paragraph is the page's most self-contained.
+  paragraph is the page's most self-contained.~~ *Overtaken: pass 7 split the write figure in two, and pass 8 cuts nothing (R10) — pass 8, session E.*
 
-  **Cuts made, and where they went.** All are names rather than claims. [kind=record]
+  ~~**Cuts made, and where they went.** All are names rather than claims. [kind=record]
   `block-interaction` dropped the `InteractionResult.ItemContext` record and
   `InteractionResult.Success.withoutItem`; the full `BlockSetType` component
   roster (fourteen components, seventeen instances, its register/values/codec
@@ -2528,7 +2528,7 @@ correction):
   split dropped the piston's long tail of special cases: slime reordering,
   the sticky-retract interrupt, `MovingPistonBlock` destruction, and the
   moving hitbox. None of the above is a factual cut; all of it is length, and
-  every item is recoverable from the pass-2 `redstone.md` in git.
+  every item is recoverable from the pass-2 `redstone.md` in git.~~ *Record: cuts pass 5 session F logged; the use-hook count it asked to restore is on the page, 25 and 52, re-counted in 26.3 this session — pass 8, session E.*
 
   **Wording debt.**
   - ~~Three pages used to say some version of "shape updates run on both sides,~~ **Checked, and one had.** `block-interaction`:174-180 was stating all three method bodies over again, verbatim in places. Cut to the door's consequence plus the anchor. The `signal-and-dust` figure node is a mention inside the page's own artefact and stays; the `diodes-and-observers` flowchart draws which channel each block listens on, which is that page's subject.
@@ -2538,20 +2538,20 @@ correction):
     the other six link to the anchor. **Check in pass 5 that none of them has
     started re-explaining it**; this is the duplication that produced three of
     the part's pass-2 errors.
-  - `block-interaction` and `block-breaking` carry an identical four-sentence [kind=book]
+  - ~~`block-interaction` and `block-breaking` carry an identical four-sentence [kind=book]
     preamble blockquote. That is deliberate (R6) and it should stay identical
-    — if either drifts, they stop reading as one lecture in two halves.
-  - The reflow around three link edits is untidy: `block-interaction` line
+    — if either drifts, they stop reading as one lecture in two halves.~~ *Done: the two blockquotes stay word for word the same; this session's one change to them was made to both — pass 8, session E.*
+  - ~~The reflow around three link edits is untidy: `block-interaction` line
     155, `block-breaking` line 242 and `block-entities` line 96 each have an
     awkward wrap where the `#the-two-update-channels` anchor was added.
-    Cosmetic only.
-  - `diodes-and-observers` line 52 runs long after
+    Cosmetic only.~~ *Overtaken: every one of those lines has been rewrapped since — pass 8, session E.*
+  - ~~`diodes-and-observers` line 52 runs long after
     `HorizontalDirectionalBlock.FACING` replaced the shorter name the
-    verifier rejected. [kind=voice]
-  - The three redstone pages were written by the session rather than by [kind=voice]
+    verifier rejected. [kind=voice]~~ *Ruled: `HorizontalDirectionalBlock.FACING` is the declaring class the name gate needs, and the sentence is one idea — pass 8, session E.*
+  - ~~The three redstone pages were written by the session rather than by [kind=voice]
     drafting agents, so they have had one fewer pair of eyes on their prose
     than the rest of the corpus. They are the pages most likely to be carrying
-    the session's own tics.
+    the session's own tics.~~ *Done: this pass checked all three redstone pages against the tree and polished them — pass 8, session E.*
 
 
 - ~~**2026-09-02, session E — Part IV.** *(Pass 6 session E: `pass5_queue.py`
@@ -3133,7 +3133,7 @@ it lost a fight for space against the page's own story.
   knows under another name, which `reference/naming-drift.md` owns anyway.
   The `CommandSource` row is the one worth restoring if the page ever has
   room — it is the whole answer to "why does a command block not spam chat".
-  **Session M (pass 5): the `CommandSource` row restored**, as the entry recommended, and widened — the four implementations are now the page's answer to why a command block does not spam chat, and they pay off `blocks/README`'s promise about the command block. The resource-argument family is restored as a paragraph too. `Commands.CommandSelection` and the fourteen-field inventory stay cut.
+  **Session M (pass 5): the `CommandSource` row restored**, as the entry recommended, and widened — the four implementations are now the page's answer to why a command block does not spam chat, and they pay off `blocks/README`'s promise about the command block. The resource-argument family is restored as a paragraph too. `Commands.CommandSelection` and the fourteen-field inventory stay cut. **V's share, pass 8 session E**: `blocks/README` now sends the command block to *Where a command's output goes*, where the page teaches it.
 - `advancements` lost: the two `Advancement.validate` methods (a private [kind=record]
   static one the codec runs, which cross-checks requirements against criteria
   and **fails the load**, and a public one that walks each trigger instance
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's.
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541).
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4149,12 +4149,12 @@ that takes it. Everything session E did act on is struck above or logged in
   to the base behind it and `PistonHeadBlock.affectNeighborsAfterRemoval`
   destroys that base, so the arm is the one piece of the assembly that talks
   backwards.
-- `blocks-and-states` carries two subjects — the state table and the write —
+- ~~`blocks-and-states` carries two subjects — the state table and the write —
   and its verified line and opening hook promise only the first, so the
   server-gated destroy at the end arrives unheralded. The page should not be
   split (all six sibling links land on its second half, which is the part's
   hub), but the header line and one clause in the opening would carry the
-  reader across the seam.
+  reader across the seam.~~ *Overtaken: pass 6 session E's verified line and opening announce the write as the page's second subject — pass 8, session E.*
 - ~~`block-interaction`'s Q&A entry on breaking a door's bottom half teaches the
   same thing as the body four sections earlier, with the same three method
   names. It is the page's only genuine internal duplicate.~~ **Cut, pass 6
@@ -4192,23 +4192,23 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **For pass 8, the voice.**
 
-- Part V says *flags 3* repeatedly and never names `Block.UPDATE_ALL`; the [kind=voice]
+- ~~Part V says *flags 3* repeatedly and never names `Block.UPDATE_ALL`; the [kind=voice]
   catalogue now decomposes all four combinations, so the pages could use either
-  form consistently.
-- `blocks-and-states`' *The two update channels* heading is cited by six sibling [kind=voice]
+  form consistently.~~ *Done: `signal-and-dust` names `Block.UPDATE_ALL` beside the lever's flags 3, and the landing figure's labels name it too — pass 8, session E.*
+- ~~`blocks-and-states`' *The two update channels* heading is cited by six sibling [kind=voice]
   pages and by three Part IV pages; if pass 8 rewords it, every one of those
-  anchors moves. Same for `block-entities#loaded-is-not-enough-to-tick`.
+  anchors moves. Same for `block-entities#loaded-is-not-enough-to-tick`.~~ *Ruled: no heading in the part was reworded for its wording; the one false heading, `blocks-and-states`' *twenty-line leaf*, was corrected with its one inbound link (V15) — pass 8, session E.*
 
 **Coverage, for [pass3.md](pass3.md) §7 and the second edition.**
 
-- **The hopper is the largest unowned mechanism in Part V.** [kind=book] *(pass-6 planning session: not carried to pass3.md §7 as session E's log says, and not declared on `blocks/README`, whose *where the part stops* says **one** thing in the part belongs to nobody (the sculk spread); the pass-6 planning session carried it to §7, and Part V's pass-6 session re-judges that sentence when it places the seventh section.)*
+- ~~**The hopper is the largest unowned mechanism in Part V.** [kind=book] *(pass-6 planning session: not carried to pass3.md §7 as session E's log says, and not declared on `blocks/README`, whose *where the part stops* says **one** thing in the part belongs to nobody (the sculk spread); the pass-6 planning session carried it to §7, and Part V's pass-6 session re-judges that sentence when it places the seventh section.)*
   `HopperBlockEntity` (547) with `HopperBlock` (182): the book gestures at it
   from three pages — `containers-and-menus` uses it as *the* example of the
   block-entity phase, `diodes-and-observers` as the thing a comparator notices,
   and `loot-tables` as a way into a chest — and nothing anywhere explains the
   transfer, the five slots, the push-versus-pull asymmetry or the ordering.
   Session E named its cadence on `block-entities` and declined the rest: it is a
-  lecture, not a sentence.
+  lecture, not a sentence.~~ *Second edition: in pass3.md §7, and declared on the landing page, whose page count for it is now right — pass 8, session E.*
 - ~~**The sculk spread machine has no home.** `SculkSpreader` (387),
   `SculkBlock` (109), `SculkVeinBlock` (211).
   `world/game-events-and-vibrations` owns the sensor, the shrieker and the
@@ -4226,19 +4226,19 @@ that takes it. Everything session E did act on is struck above or logged in
   from. `blocks/README`'s hand-forward is split to match. **The command block
   is still Part XIII's and still unwritten**; session M.~~
   **Session O's audit (pass 5's close): settled and never struck** — settled: `commands/brigadier-and-commands`:154 has `CommandBlockEntity` and `worldgen/jigsaw-and-templates`:244 has `StructureBlockEntity`.
-- **Four state machines are half-adopted by other parts.** [kind=book] *(pass-6 planning session: the same: not in §7 and not declared on the landing page; carried to §7 by the pass-6 planning session, the landing page's sentence for Part V's pass-6 session.)*
+- ~~**Four state machines are half-adopted by other parts.** [kind=book] *(pass-6 planning session: the same: not in §7 and not declared on the landing page; carried to §7 by the pass-6 planning session, the landing page's sentence for Part V's pass-6 session.)*
   `BeaconBlockEntity` (434), `ConduitBlockEntity` (300), and the *trialspawner*
   (642 unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
   named on Part VI and Part VII pages while their state machines are explained
-  nowhere.
-- Session E discharged what a sentence could reach: the *state/properties*,
+  nowhere.~~ *Done: the landing page declares the family, and pass3.md §7 carries it — pass 8, session E.*
+- ~~Session E discharged what a sentence could reach: the *state/properties*,
   *state/pattern* and *state/predicate* sub-packages and `InstantNeighborUpdater`
   on `blocks-and-states`; the redstone source blocks on `signal-and-dust`; the
   seven block-event raisers and `PistonMath` on `pistons-and-block-events`; the
   *block/entity* family and the hopper's cadence on `block-entities`; the
   use-hook family, with the count the queue asked for restored (25 override
   `BlockBehaviour.useItemOn`, 52 `BlockBehaviour.useWithoutItem`), on
-  `block-interaction`. The four items above are what a sentence cannot reach.
+  `block-interaction`. The four items above are what a sentence cannot reach.~~ *Record: what pass 5 session E discharged by a sentence — pass 8, session E.*
 
 ## Session G — Part VII · Items and inventories (pass 5) *(2026-09-05)*
 
@@ -5396,57 +5396,57 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [ki
 
 ## Pass 6, session E — Part V · Blocks (2026-09-13)
 
-**Logged cuts.** Each is a move or a deletion with the reason, per A9. [kind=record]
+~~**Logged cuts.** Each is a move or a deletion with the reason, per A9. [kind=record]~~ *Record: the heading of pass 5 session E's logged cuts, each settled on its own line — pass 8, session E.*
 
-- `block-interaction`'s Q&A on breaking a door's bottom half — **deleted**, not
+- ~~`block-interaction`'s Q&A on breaking a door's bottom half — **deleted**, not
   moved: the body says the same thing with the same three method names inside
-  the trace, four sections above, which is where a reader meets it. [kind=record]
-- `block-breaking`'s *Why did the block come back, and then break anyway?* —
+  the trace, four sections above, which is where a reader meets it. [kind=record]~~ *Record: a cut pass 5 session E made and logged — pass 8, session E.*
+- ~~`block-breaking`'s *Why did the block come back, and then break anyway?* —
   **deleted**: it was the third telling of the hook and it ended by pointing at
   the section that had already explained it. Its own answer said *See "The
-  button is not the switch"*. [kind=record]
-- `block-breaking`'s *Why do other players' cracks lag behind mine?* —
+  button is not the switch"*. [kind=record]~~ *Record: a cut pass 5 session E made and logged — pass 8, session E.*
+- ~~`block-breaking`'s *Why do other players' cracks lag behind mine?* —
   **deleted**: every clause of it is in *The cracks belong to everyone but
-  you*. [kind=record]
-- `block-entities`' *Why does my furnace stop smelting when I walk away?* —
+  you*. [kind=record]~~ *Record: a cut pass 5 session E made and logged — pass 8, session E.*
+- ~~`block-entities`' *Why does my furnace stop smelting when I walk away?* —
   **deleted**: a near-verbatim second telling of *Loaded is not enough to
-  tick*, whose own last sentence already draws the consequence. [kind=record]
-- `blocks-and-states`' three questions — **all three moved**, none deleted: the
+  tick*, whose own last sentence already draws the consequence. [kind=record]~~ *Record: a move pass 5 session E made and logged — pass 8, session E.*
+- ~~`blocks-and-states`' three questions — **all three moved**, none deleted: the
   `Level.setBlock`-returns-false answer into *Inside the chunk write* (as the
   page's only prose reading of the two diamonds in its figure), the
   property-identity throw into *The state, a twenty-line leaf* beside the
   reference comparison that causes it, and the unknown-state-becomes-air answer
   into a new H3, *The id that answers air*, because it was the payoff of the
-  page's own hook and lived only at the foot. [kind=record]
-- `signal-and-dust`'s four questions — three **deleted** as second tellings
+  page's own hook and lived only at the foot. [kind=record]~~ *Record: a move pass 5 session E made and logged — pass 8, session E.*
+- ~~`signal-and-dust`'s four questions — three **deleted** as second tellings
   (the staircase, the dust pointing into an unpowerable block, the up-and-down
   asymmetry — all three stated in the body within the previous eighty lines);
   the torch burnout **moved** up into the source census, where the torch is
   first named, since it arrived cold at the foot. Also deleted: the standalone
   **Forty-two** pull-out, which restated a number the opening had just given,
   and the number is now derived in the opening instead (seven calls, six
-  neighbours each). [kind=record]
-- `pistons-and-block-events` — three questions **deleted** (pushing the block
+  neighbours each). [kind=record]~~ *Record: a cut pass 5 session E made and logged — pass 8, session E.*
+- ~~`pistons-and-block-events` — three questions **deleted** (pushing the block
   that powers it; pushing a chest; the blocks staying put, which was the hook
   again), and the one load-bearing sentence in the first question **moved** into
   *Two ticks of motion*: the placeholders' tickers go into the level's flat
-  list, so the motion's first tick is the tick the piston was told about. [kind=record]
-- `diodes-and-observers`' four questions — **all four deleted** as second
+  list, so the motion's first tick is the tick the piston was told about. [kind=record]~~ *Record: a cut pass 5 session E made and logged — pass 8, session E.*
+- ~~`diodes-and-observers`' four questions — **all four deleted** as second
   tellings, and the one thing worth keeping was **wrong**: see the correction in
-  [pass9.md](pass9.md). [kind=record]
-- `blocks-and-states`' `state/properties` package tour — **trimmed, not cut**:
+  [pass9.md](pass9.md). [kind=record]~~ *Record: a cut pass 5 session E made and logged — pass 8, session E.*
+- ~~`blocks-and-states`' `state/properties` package tour — **trimmed, not cut**:
   the two dozen enums went to "two dozen more", and `BlockPattern`,
   `BlockPatternBuilder`, `BlockInWorld` and `BlockStatePredicate` kept their
   names with the reason they are there. The reader nominated the whole
-  paragraph; the names are doors and the paragraph is four lines shorter. [kind=record]
-- **Eight *Where to look* lists rewritten to A12**, from 15 to 24 bare names
+  paragraph; the names are doors and the paragraph is four lines shorter. [kind=record]~~ *Record: a trim pass 5 session E made and logged — pass 8, session E.*
+- ~~**Eight *Where to look* lists rewritten to A12**, from 15 to 24 bare names
   down to prose reading routes in each page's own trace order, with the names
   that are only doors marked as such. No name was lost from the book — checked by
   diffing every backticked token in the part against `HEAD` and then against the
   whole of `src/`, which found four (`ExperimentalRedstoneWireEvaluator.enqueueNeighborWire`,
   `ExperimentalRedstoneWireEvaluator.updatedWires`, `LevelChunk.getBlockEntityNbtForSaving`,
   `MovingPistonBlock.newMovingBlockEntity`) and put all four back into prose
-  where they do work. [kind=record]
+  where they do work. [kind=record]~~ *Record: a rewrite pass 5 session E made and logged — pass 8, session E.*
 
 **For pass 7, the figures.**
 
@@ -5489,7 +5489,7 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [ki
   wrapper's two gates are named for the wrapper
   (`LevelChunk.BoundTickingBlockEntity.tick`) rather than for `isTicking`,
   which the prose never says.
-- `signal-and-dust`'s sequence diagram traces the line coming **on** while the
+- ~~`signal-and-dust`'s sequence diagram traces the line coming **on** while the
   page's hook, its staircase paragraph and its closer were all about the line
   going **dark** — and two dust cannot show a descent at all. Session E fixed
   the *scenario* (the verified line now flips the lever both ways and the
@@ -5502,7 +5502,7 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [ki
   lever going off, and the viewer's own suggestion — the comparison the *second
   implementation* section is already written as, the same two dust under each
   evaluator — is a new figure with a dozen new claims in it, so it is left for
-  a session with the derivation budget rather than guessed at here. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  a session with the derivation budget rather than guessed at here. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: a figure tracing the lever going off would be new (R10); the descent's mechanism is drawn in the flowchart's loop — pass 8, session E.*
 - ~~`diodes-and-observers`' two-channel flowchart held the **only definition of
   either channel** on the page until this session put one in prose. Worth
   checking the rest of the corpus for figures that are load-bearing that way. [kind=figure]~~ **Overtaken, pass 7 session E**: the corpus-wide form of this is F6, and
@@ -5512,59 +5512,59 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [ki
 
 **For pass 8, the voice.**
 
-- **`blocks-and-states`' opening now has two hooks**, because the page has two
+- ~~**`blocks-and-states`' opening now has two hooks**, because the page has two
   subjects and session E made the second one explicit rather than splitting the
   page (the hub's second half is what six pages cite). It reads as *both
   surprises about choosing* and then a second bolded claim about writing. One
   voice pass should decide whether a two-movement page may have two hooks or
-  whether the second becomes a signpost. [kind=voice]
-- `block-breaking`'s contract blockquote is the page's densest paragraph and
+  whether the second becomes a signpost. [kind=voice]~~ *Ruled: a page with two announced subjects keeps two hooks — pass 8, session E.*
+- ~~`block-breaking`'s contract blockquote is the page's densest paragraph and
   arrives second, before any packet is named — the reader called it the hardest
   thing on the page. Both click pages carry it verbatim by design (pass 5's
-  ruling), so any rewrite is a rewrite of both. [kind=voice]
-- `block-breaking`'s nine-factor destroy-speed paragraph is the part's one
+  ruling), so any rewrite is a rewrite of both. [kind=voice]~~ *Ruled: the blockquote stays verbatim on both click pages (pass5.md:2541), so a rewrite is a rewrite of both, the second edition's — pass 8, session E.*
+- ~~`block-breaking`'s nine-factor destroy-speed paragraph is the part's one
   inventory written as prose, and mining fatigue's four literal factors are not
-  mapped to their amplifiers. A table, or four fewer words. [kind=voice]
-- `diodes-and-observers`, `DiodeBlock.shouldPrioritize` — "a diode whose
+  mapped to their amplifiers. A table, or four fewer words. [kind=voice]~~ *Done: V2 wrote mining fatigue as one power, 0.3 to the amplifier plus one, with its first three values — pass 8, session E.*
+- ~~`diodes-and-observers`, `DiodeBlock.shouldPrioritize` — "a diode whose
   own input is not on the far side of it, so a diode reading this one or
   standing sideways to it, but not one aimed the same way": three directions,
   two ambiguous *it*s and a negation in one sentence. The reader could not build
-  the geometry. [kind=voice]
-- `diodes-and-observers`, the container formula in prose, immediately
+  the geometry. [kind=voice]~~ *Done: see pass5.md:1982 — pass 8, session E.*
+- ~~`diodes-and-observers`, the container formula in prose, immediately
   followed by a sentence saying one side of its `min` always wins. Say the
-  second first. [kind=voice]
-- `pistons-and-block-events`' "passes a **null** *except* entity" carries the
+  second first. [kind=voice]~~ *Done: the formula now gives the stack's own maximum first and the cap in a parenthesis — pass 8, session E.*
+- ~~`pistons-and-block-events`' "passes a **null** *except* entity" carries the
   page's whole sound claim and is unreadable without the source. `block-interaction`
   now explains the *except* convention under a heading of its own
-  (`#the-sound-only-you-hear`); this could cite it. [kind=voice]
-- **"The two loops"** on `pistons-and-block-events` is labelled retroactively —
+  (`#the-sound-only-you-hear`); this could cite it. [kind=voice]~~ *Ruled: the sentence already cites the page that owns the *except* convention, `what-makes-a-sound` — pass 8, session E.*
+- ~~**"The two loops"** on `pistons-and-block-events` is labelled retroactively —
   the reader met *between those two loops* before anything had called them
-  loops. Session E's H3s make it findable but not fixed. [kind=voice]
-- `block-entities`' *At the end* jumps two hundred ticks back
-  onto the smelting timeline after two paragraphs of packets, with no marker. [kind=voice]
+  loops. Session E's H3s make it findable but not fixed. [kind=voice]~~ *Done: the paragraph now names the first loop and the second before the next heading calls them loops — pass 8, session E.*
+- ~~`block-entities`' *At the end* jumps two hundred ticks back
+  onto the smelting timeline after two paragraphs of packets, with no marker. [kind=voice]~~ *Done: *Two hundred ticks after the fire lit* — pass 8, session E.*
 
 **For pass 9 (the fact-check), beyond this session's own claims.**
 
-- **`block-breaking`, the contract blockquote's "entry"** — the blockquote says a
+- ~~**`block-breaking`, the contract blockquote's "entry"** — the blockquote says a
   correction *replaces* what the client remembered, and the figure calls the same
   thing "the ledger". Session E named the owner (`BlockStatePredictionHandler`,
   held by `ClientLevel`) on `block-interaction` only. Check that both pages'
-  accounts of what the receipt does are the same account. [kind=voice]
-- **`block-breaking`'s delayed destroy across a disconnect** — `ServerPlayerGameMode`
+  accounts of what the receipt does are the same account. [kind=voice]~~ *Overtaken: the figure no longer says *ledger*, both pages carry the same blockquote, and `block-interaction` names the owner — pass 8, session E.*
+- ~~**`block-breaking`'s delayed destroy across a disconnect** — `ServerPlayerGameMode`
   keeps `hasDelayedDestroy` and `delayedTickStart` and the delayed branch
   re-checks almost nothing. What happens if the player disconnects, dies, or
   switches to creative between the STOP and the server's clock crossing 1.0? The
-  page implies it must survive and never says. [kind=fact]
-- **`block-entities`' twenty synced types out of forty-nine** — the count maps
+  page implies it must survive and never says. [kind=fact]~~ *Answered: in 26.3 the delayed dig does not grow with time; if it cannot clear it lasts until the player leaves or respawns, which the page now says — pass 8, session E.*
+- ~~**`block-entities`' twenty synced types out of forty-nine** — the count maps
   nineteen declaring classes onto forty-nine registrations via
   `HangingSignBlockEntity`. Session E confirmed the nineteen (both lists, and
   that they differ by exactly `CopperGolemStatueBlockEntity` and
-  `PistonMovingBlockEntity`) but not the forty-nine or the twenty. [kind=voice]
-- **`block-interaction`'s upper half on a refused click** — the two corrective
+  `PistonMovingBlockEntity`) but not the forty-nine or the twenty. [kind=voice]~~ *Done: this session's agent re-counted 49 registrations and 20 synced types in 26.3 — pass 8, session E.*
+- ~~**`block-interaction`'s upper half on a refused click** — the two corrective
   block updates cover the clicked position and its face neighbour, and the door's
   upper half is in neither. Session E's answer is that the prediction ledger holds
   both halves and rolls both back. Confirm that is what happens on a
-  spawn-protection refusal specifically, where the server writes nothing at all. [kind=fact]
+  spawn-protection refusal specifically, where the server writes nothing at all. [kind=fact]~~ *Answered: yes; the lower half's entry takes the server's corrective state, the upper half's keeps the state recorded at prediction, and the receipt writes both back — pass 8, session E.*
 
 ## Pass 6, session F — Part VI · Entities (2026-09-13)
 
@@ -6799,18 +6799,18 @@ Part 3; these are the pieces of work that ruling created.
 
 **For pass 8, the voice.**
 
-- **Thirteen captions written in one part, and they fall into two registers** —
+- ~~**Thirteen captions written in one part, and they fall into two registers** —
   *what the picture shows* (“The two clocks, with the machines boxed…”) and
   *what to look for in it* (“the thing to watch is the order…”). Both are
   inside F5's rule and the mixture is probably right, but it is worth reading
-  the corpus's captions as one set once they all exist. [kind=voice]
-- **“the appointment book”** is `diodes-and-observers`' own metaphor and is now
+  the corpus's captions as one set once they all exist. [kind=voice]~~ *Ruled: V12, a caption is at most two sentences, what the picture shows and then what to look for — pass 8, session E.*
+- ~~**“the appointment book”** is `diodes-and-observers`' own metaphor and is now
   a node in its figure. It is good, and it is the only place in Part V where a
-  figure names something the game does not. [kind=voice]
+  figure names something the game does not. [kind=voice]~~ *Ruled: the appointment book stays a node; it is the name `scheduled-ticks` gives the same queue — pass 8, session E.*
 
 **For pass 10.**
 
-- **Part V's sections that wanted a figure and did not get one**, in the order
+- ~~**Part V's sections that wanted a figure and did not get one**, in the order
   the viewers asked for them: `blocks-and-states`' *Four decisions, four
   lookups* (`StairBlock.getStairsShape`'s three-level branch with a veto — the
   page's own scenario, why the stair you just placed is a corner);
@@ -6825,7 +6825,7 @@ Part 3; these are the pieces of work that ruling created.
   (`ComparatorBlock.getInputSignal`'s fallback, which returns not to zero but
   to the ordinary front reading). Five of the six are a page's hook carried
   entirely in prose, which is the same pattern session D found in Part IV.
-  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: a figure a pass did not draw is the rebuilt process's (R10) — pass 8, session E.*
 
 ## Pass 7, session G — Part VII · Items and inventories *(2026-09-15)*
 
@@ -7145,7 +7145,7 @@ Part 3; these are the pieces of work that ruling created.
 *Run before session K, which had not yet run: Part XI is the one part the close
 could not read, and every item below that names a rendering page is K's.*
 
-**The strike audit.** 122 pass-7 strikes read against the pages as they now
+~~**The strike audit.** 122 pass-7 strikes read against the pages as they now
 stand: 116 borne out, 4 not (amended in place above, each marked *Audited, pass
 7 session O*), 2 undecided and left (the `tags` notes count depends on what
 counts as a sentence; the glossary's *Section* entry still says what the
@@ -7154,7 +7154,7 @@ because its own text says half of it is open (`signal-and-dust`'s off case).
 Four settlements use a word outside *done · overtaken · ruled · ruled out*
 (*settled*, *answered*, *cut*) and are left, because each says plainly what
 happened. **A strike is a claim, and one in thirty was wrong** — the same rate
-pass 4's close found.
+pass 4's close found.~~ *Record: pass 7 session O's strike audit; the entry it left open, pass5.md:5492, is ruled second edition here — pass 8, session E.*
 
 **For session K — Part XI, which runs after the close.**
 
@@ -7186,10 +7186,10 @@ pass 4's close found.
   *the drain* and *the shape pass* before the prose defines them (:128–140;
   the flag's first sentence is :171). F6: a sentence above the figure, or the
   names out of it. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Done: the figure's early terms now say what they are (*which these flags do not skip*, *the fluid queue*), and the shape pass left the figure with the fluids correction — pass 8, session D.*
-- Three names are still figure-only in Part V:
+- ~~Three names are still figure-only in Part V:
   `DefaultRedstoneWireEvaluator.calculateTargetStrength`
   (`signal-and-dust`:47), `PistonBaseBlock` (a lane, `signal-and-dust`:227) and
-  `shapeUpdate` (`block-interaction`:47). F6 again. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  `shapeUpdate` (`block-interaction`:47). F6 again. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: the three names are the figures' own, and naming them in prose would add sentences (R10) — pass 8, session E.*
 
 **The landing pages read as one set** — pass 6's carried job, done here with
 the figures. Every number matches its watch order. The set's grammar is now
@@ -7209,9 +7209,9 @@ symptom list. Left, with the reason: [kind=record]
   they do, because reversing them under `TD` draws the parse floor on top of
   the stack the part is named for. Ruled an exception; its caption says so.
   [kind=record]
-- **`blocks/README` keeps three crossings.** Two spokes both feed two pages, so
+- ~~**`blocks/README` keeps three crossings.** Two spokes both feed two pages, so
   one crossing is unavoidable, and reordering the declarations moved nothing:
-  mermaid ranks this figure by its edges. It reads at 12px. [kind=record]
+  mermaid ranks this figure by its edges. It reads at 12px. [kind=record]~~ *Record: pass 7 session O's note on the landing figure's crossings — pass 8, session E.*
 - **Eleven of the thirteen are over the template's *about a hundred lines***,
   counted with the figure. `TEMPLATE.md` now counts prose only, which the
   budget always meant and which predates the figure's caption; measured that

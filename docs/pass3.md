@@ -1511,7 +1511,32 @@ writes one strikes it through; a session that rules one out says why, here.*
   not, and `blocks/README`'s *where the part stops* still says **one** thing in
   the part belongs to nobody, the sculk spread. Part V's pass-6 session re-judges
   that sentence when it places the landing page's seventh section. A second
-  edition should take it; nothing before pass 10 should.
+  edition should take it; nothing before pass 10 should. *(Pass 8, session E,
+  2026-09-27: in 26.3 `HopperBlockEntity` is 547 lines and `HopperBlock` 175;
+  among the system pages only `block-entities` names the entity, for its
+  cooldown, and the landing page now declares three lecture-sized mechanisms
+  with no owner — this one, sculk spread below, and the state-machine family.)*
+- **Sculk spread.** *(pass 8, session E, 2026-09-27; declared on
+  `blocks/README` since pass 6, never entered here.)* `SculkSpreader` (400
+  lines in 26.3) walking its charges through `SculkBehaviour` (54),
+  `SculkBlock` (85) and `SculkVeinBlock` (204), named on no page but the
+  landing page. `world/game-events-and-vibrations` owns the catalyst only as a
+  listener (`SculkCatalystBlockEntity.CatalystListener` turning
+  `GameEvent.ENTITY_DIE` into cursors); the spread itself — the charge, its
+  decay and where it may land — is explained nowhere. A lecture, not a
+  sentence, for the second edition.
+- **Four more lecture-sized Part V mechanisms with no owner.** *(pass 8,
+  session E's record audit, 2026-09-27; 26.3 line counts.)* Rails —
+  `RailState` 368, `BaseRailBlock` 351, `PoweredRailBlock` 150,
+  `DetectorRailBlock` 196, `RailBlock` 55 — where `RailState` and
+  `PoweredRailBlock` are named nowhere and `BaseRailBlock` only as a flag
+  condition; the shelf (`ShelfBlock` 320, `ShelfBlockEntity` 159,
+  `SideChainPartBlock` 232, `SideChainPart` 111), named nowhere; the beehive
+  (`BeehiveBlock` 366, `BeehiveBlockEntity` 436), named only as a point of
+  interest; and fire spread (`FireBlock` 517, `BaseFireBlock` 215), named only
+  for `FireBlock.bootStrap`. The landing page declares three unowned mechanisms
+  (the hopper, sculk spread, the state-machine family) and now says *three
+  … are declared here* rather than implying they are all.
 - **Four block-entity state machines half-adopted by other parts.** *(pass 5,
   session E; carried here by pass 6's planning session.)* `BeaconBlockEntity`
   (434 lines), `ConduitBlockEntity` (300), and the *trialspawner* (642

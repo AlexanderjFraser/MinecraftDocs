@@ -7,8 +7,9 @@ it places it locally and tells the server afterwards. Everybody who has
 described this system has described it as a rollback: the client guesses, the
 server judges, the ack says yes or no. That is not what happens.
 `ClientboundBlockChangedAckPacket` carries no verdict at all — it is a receipt
-for a number, sent for actions the server refused exactly as it is sent for
-actions it allowed, and sent carrying zero for an aborted dig. Nothing in the
+for a number, sent (once the client has finished loading in) for actions the
+server refused exactly as it is sent for actions it allowed, and sent carrying
+zero for an aborted dig. Nothing in the
 protocol ever says *no*. **What makes the system correct instead is an
 ordering rule: any correction the server intends travels earlier in the stream
 than the receipt for it, because the correction leaves from inside the handler
@@ -165,8 +166,8 @@ out to be inside the player.
 
 Because the ack is buffered rather than sent, *where* a handler records it
 does not affect stream order — `ServerGamePacketListenerImpl.handleUseItemOn`
-and `ServerGamePacketListenerImpl.handleUseItem` record it as their first
-statement, `ServerGamePacketListenerImpl.handlePlayerAction` after running the
+and `ServerGamePacketListenerImpl.handleUseItem` record it as the first statement inside the
+`ServerGamePacketListenerImpl.hasClientLoaded` test, `ServerGamePacketListenerImpl.handlePlayerAction` after running the
 break action, and in both cases the correction still reaches the client first.
 
 ## The six windows

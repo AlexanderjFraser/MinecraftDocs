@@ -103,9 +103,9 @@ other two need only the vocabulary page and can go anywhere after it.
 ## V · Blocks
 
 Part V is a hub and six spokes, and the hub is watched first because the
-other six all reach back into the same figure in it: what `Level.setBlock`
-and `LevelChunk.setBlockState` do once the section has been written. That
-figure is also where the two update channels are defined, which is the
+other six all reach back into the same pair of figures in it: what
+`Level.setBlock` and `LevelChunk.setBlockState` do with a write. Those
+figures are also where the two update channels are defined, which is the
 vocabulary every later lecture in the part uses. Two of the six are one
 lecture in two halves.
 
@@ -424,8 +424,8 @@ one lecture worth watching before its part.
 are the applications of [prediction and
 acknowledgement](systems/client/prediction-and-acks.md), and that page's own
 scenario is a block placed against a wall, which needs Part V's vocabulary.
-The cut is at Part V: both click pages open with the same four-sentence
-statement of the ledger's contract, which is all either needs, and the
+The cut is at Part V: both click pages state the ledger's contract in the same four sentences near
+their top, which is all either needs, and the
 machinery waits for Part X, so the whole of Parts V and VI is watched before
 that one Part X lecture. Part VI hands something forward to a *different*
 Part X page: [the client level](systems/client/the-client-level.md) opens by
