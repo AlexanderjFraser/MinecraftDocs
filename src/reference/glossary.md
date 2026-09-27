@@ -19,8 +19,8 @@ work.
 
 ## A
 
-**Activity** — the filter that decides which of a brain's behaviours are
-asked at all, rather than a mode it runs in: the active set is always the core
+**Activity** — the filter that decides which of a brain's behaviours may
+start at all, rather than a mode it runs in: the active set is always the core
 activities plus exactly one other, and an `ActivityData` declares each one's
 prioritised behaviour list. → [AI](../systems/entities/ai-goals-and-brains.md)
 
@@ -72,7 +72,7 @@ structure; terrain adaptation writes no blocks, it changes the noise. → [struc
 **Behaviour** — one unit of brain AI, gated on memories and asked once a
 tick; unless it overrides `Behavior.canStillUse` it stops inside the same
 `Brain.tick` that started it, so everything it does it does in
-`Behavior.start`. → [AI](../systems/entities/ai-goals-and-brains.md)
+`Behavior.start`, or, for a one-shot, in its trigger. → [AI](../systems/entities/ai-goals-and-brains.md)
 
 **Biome** — a named bundle of generation settings, block tints and
 environment attributes, attached to a 4×4×4 volume of the world; its mob

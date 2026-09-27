@@ -172,8 +172,9 @@ The pairing that makes this necessary is [Part VI's
 authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off):
 `Player.isClientAuthoritative` is an
 unconditional yes on **both** sides, which denies a `ServerPlayer`
-local-instance authority, while `Entity.canSimulateMovement` and
-`Entity.isEffectiveAi` are overridden true on the server anyway. So the
+local-instance authority, while `Player`'s move-simulation type and its
+`Entity.isEffectiveAi` override make `Entity.canSimulateMovement` and
+`Entity.isEffectiveAi` true on the server anyway. So the
 pipeline runs and its answer is not believed.
 
 ## The client ticks its player once

@@ -853,7 +853,7 @@ V2, or B into A, if either runs short.
 | **C** | III · The server | 81+3 | 6·1·1·22 | 28·34·5·11 | 20.9k | done 2026-09-26 | **176 corrections on six pages** (22 inside a figure or a caption, nine of them 26.3 changes V1 missed), every one re-derived in the tree; the 84 ledger entries struck, 41 of 83 wrong in whole or in part; 31 queue units settled; the record drafted by one agent per page and audited, which found **38 more errors, 15 of them in sentences the session had just written**; three probable upstream bugs written as mechanism (a relayed crash that skips the flush save, a lapsed ban's first login, the spawn search's stride); items handed to D, F, I, M, N and O |
 | **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | done 2026-09-27 | **284 corrections on eleven pages** (43 inside a figure or a caption, seven of them 26.3 changes V1 and V2 missed), every one re-derived in the tree; the 114 ledger entries struck, 27 of 111 wrong in whole or in part; 47 queue units settled; the record audited by one agent per page, which found **76 of the errors, 55 of them in sentences the session had just written**; one probable upstream bug written as mechanism (lava's slower spread, booked and then dropped as a duplicate); four pages in other parts corrected with it; items handed to E, F, I, J, L, M and O |
 | **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | done 2026-09-27 | **237 corrections on eight pages** (29 inside a figure or a caption; four 26.3 changes V1 and V2 missed, and three sentences the version pass left beside a fact it moved), every one re-derived in the tree; the 112 ledger entries struck; Part V's queue closed; the record audited by one agent per page, which found **73 of them, 45 in sentences the session had just written**; the write figure redrawn (D's handoff); sculk spread and four more unowned mechanisms into pass3.md §7; eight pages outside the part corrected with it; items handed to J, L, N, O and P |
-| **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | — | |
+| **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | done 2026-09-27 | **307 corrections on ten pages** (44 inside a figure or a caption, twenty-one of them 26.3 changes V1 and V2 did not carry into the sentence), every one re-derived in the tree; the 109 ledger entries struck, 19 of 83 claims wrong in whole or in part; 43 queue units struck and eleven shared ones noted; the record audited by one agent per page, which found **80 of them, 54 in sentences the session had just written**; `authority`'s predicate figure redrawn for 26.3's move-simulation type (V2's handoff); seven pages outside the part corrected with it; items handed to H, I, J, O and P |
 | **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | — | |
 | **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | — | |
 | **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | — | |
@@ -1225,3 +1225,37 @@ Corrected where a correction here made them disagree: `world/fluids`, `networkin
 `lectures.md` and `reference/block-update-flags`. Left for J, L, N, O and P: the items in the ledger's *For later
 sessions*, `section-meshing`'s opening chief among them. For P: the V1 and V2 entries on these pages, and this session's
 diff.
+
+**Session F — Part VI · Entities (2026-09-27).** Ten pages, each checked under Part 2 by its own agent while the session
+read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, the V1 and V2 entries on these
+pages (V2's handoff on `authority`'s first figure included), C's handoffs on the entity tick and the tick list's copy, D's
+on the villager schedule and `SleepInBed`, and session A's V6 constants. **307 corrections**, every one re-derived in
+`reference/26.3` before it was made; 44 are inside a figure or a caption. Twenty-one are 26.3 changes the version pass did
+not carry into the sentence: `Entity.commonTick` does the old per-tick bookkeeping and the client's interpolation, the
+`Integer.MAX_VALUE` types get `UpdateInterval.NEVER` and never send a periodic position, `Entity.canSimulateMovement` is
+final and reads the type, `CombatTracker.recheckStatus` moved to `LivingEntity.remove`, a fifth fall-reducing block
+property, 44 serializers, 64 entity events, 36 damage tags, 115 memory types, and `Cushion`, a twenty-second non-living
+damage class. Ledger entries checked: the 109 on these pages, 84 of them struck here (62 checked, 18 of those naming a
+neighbour this session corrected; 11 checked except a part; 8 wrong or wrong in part; 2 overtaken; one tool note). The
+three worst corrections: `authority`'s predicates and their figure were 26.2's — `Player` overrides three of the five, not
+four, and a dropped item, a projectile, lit TNT and a few more simulate on both sides by their type whatever the root
+answers (V2's handoff; the figure redrawn, 13.6px and no crossing); `synched-entity-data`'s and `entity-anatomy`'s
+*never fires again after tick zero* — under 26.3's `UpdateInterval.NEVER` the branch never fires at all, so
+`Entity.syncPosition` does nothing for those types, and for a living entity other than a shulker the stepped tracker takes
+that flag first; and `movement-and-collision`'s *at least 1,200 ticks* for the forced position refresh, which is at most
+that, and then only for an entity tracked every tick (overturning pass 5's listed claim). The whole-part read, written
+before any report was opened, listed 25 items: 23 became corrections and two polish, and one of them sat open until the
+record (`entity-anatomy`'s *on the base class exactly two things*, the second of which is `LivingEntity`'s). **The
+record's audit was again the session's finding**: ten agents re-derived every changed sentence and found **80 of the 307,
+54 in sentences this session had just written** — about one in four, D's and E's rate — among them
+*CHANGED_DIMENSION rebuilds anything but a player* (a player is rebuilt on its way out of the End), *like the sky's light
+level* (the one environment attribute that is not per-position; now the sky's colour), the group limit only a tropical fish
+reaches (only one that does not school), and a four-block fall after a skeleton's arrow as *hit the ground too hard* (it is
+*while trying to escape*). The polish: nine possessives on a link, eleven *actually*, five em-dash chains, one number device
+(V9), the thread names on eight pages (V7), every caption at most two sentences. Also: 43 queue units struck and eleven
+shared ones noted, so Part VI's row in `pass5_queue.py --summary` counts only shared units other parts hold open.
+Corrected where a correction here made them disagree: `player/status-effects`, `player/the-two-phase-tick`,
+`networking/what-the-client-is-told` (three), `lectures.md` (two), `reference/glossary` (two), `reference/non-living-damage`
+and `reference/README`. Left for H, I, J, O and P: the items in the ledger's *For later sessions* — the passenger diff's
+*filtered*, which 26.3 does not filter, and `chunk-storage`'s account of what the unload filter turns away among them.
+For P: the V1 and V2 entries on these pages, and this session's diff.

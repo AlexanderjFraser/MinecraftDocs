@@ -1,6 +1,6 @@
 # Attributes
 
-> Verified against **Minecraft 26.3** · Part VI · Strength II is applied to a player: one modifier lands on one attribute, nothing goes on the wire, and the swing three seconds later reads the new number.
+> Verified against **Minecraft 26.3** · Part VI · Strength II is applied to a player: one modifier lands on one attribute, no attribute packet goes on the wire, and the swing three seconds later reads the new number.
 
 Strength II lands on you and thirty seconds later it wears off. In between,
 one `AttributeModifier` — an amount of +6, an operation of
@@ -10,14 +10,15 @@ and gets a bigger number back. The same mechanism is behind armour points, a
 horse's jump strength, the extra reach of a creative-mode player and the
 distance at which a mob notices you: *ask a question, get a number*, cheaply,
 with a defined order of operations. What is surprising is what does not
-happen. **Strength II sends no packet at all.** Eight of the forty registered
-attributes are not client-syncable and `Attributes.ATTACK_DAMAGE` is one of
-them, so for the whole thirty seconds your own client's copy of your attack
+happen. **Strength II sends no attribute packet at all.** The effect itself
+goes out, but eight of the forty registered attributes are not client-syncable
+and `Attributes.ATTACK_DAMAGE` is one of them, so for the whole thirty seconds
+your own client's copy of your attack
 damage sits at the base value it was born with — 1.0 — and nothing ever tells
 it otherwise.
 
 > **A different system with the same words.** `world/attribute` is
-> *environment* attributes — per-position world properties like sky darkness
+> *environment* attributes — per-position world properties like the sky's colour
 > ([environment attributes and
 > timelines](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)) — with its own
 > registries and its own class also named `AttributeModifier`. Nothing on this
@@ -30,11 +31,11 @@ it otherwise.
 | `Attribute` | one named number's default, its description id, its `Attribute.Sentiment` (tooltip colour only) and the one boolean that decides whether the client is ever told | built in the `Attributes` class initialiser, read from every thread after |
 | `RangedAttribute` | the minimum and the maximum, and `RangedAttribute.sanitizeValue` — the clamp. The only subclass, and every registered attribute is one | as above |
 | `AttributeSupplier` | what attributes an `EntityType` has at all, and their base values. Frozen | built at class-init, inside `DefaultAttributes` |
-| `AttributeMap` | which of two dirty sets a change lands in, and therefore whether a packet is sent | server main thread for mutations, client main thread for the mirror |
+| `AttributeMap` | which of two dirty sets a change lands in, and therefore whether a packet is sent | the Server thread for mutations, the Render thread for the mirror |
 | `AttributeInstance` | the number: a base value, three modifier indices, a dirty flag and a cache | as above |
-| `AttributeModifier` | an `Identifier`, an amount and an operation. A record, and the identifier alone is its identity | immutable, shared |
+| `AttributeModifier` | an `Identifier`, an amount and an operation. A record, and inside an instance the identifier alone is its identity | immutable, shared |
 | `LivingEntity` | when the update set drains, and what reacts to a change | both sides, in `LivingEntity.tick` |
-| `ServerEntity` | when the sync set drains and what goes on the wire | server main thread, in the level tick's *chunkSource* phase |
+| `ServerEntity` | when the sync set drains and what goes on the wire | the Server thread, in the level tick's *chunkSource* phase |
 
 ## Four objects, two dirty sets, and one list that is neither
 
@@ -48,7 +49,7 @@ flowchart TD
     SYNC["AttributeMap.attributesToSync: only the syncable ones"]
     MOD["AttributeMap.onAttributeModified"]
     PAIR["AttributeMap.getSyncableAttributes: not a set, a filter"]
-    REACT["LivingEntity.refreshDirtyAttributes, entities phase"]
+    REACT["LivingEntity.refreshDirtyAttributes, in the entity's own tick"]
     SEND["ServerEntity.sendDirtyEntityData, the ServerLevel.chunkSource phase"]
     WIRE["ClientboundUpdateAttributesPacket"]
 
@@ -71,8 +72,8 @@ flowchart TD
 
 Four objects carry the whole system — the `Attribute`, the frozen
 `AttributeSupplier` per type, the `AttributeMap` per entity, and the
-`AttributeInstance` per number actually asked for. The instance keeps three
-lists of its own, and they are [the next section](#the-instance-three-indices-and-one-cached-number)'s;
+`AttributeInstance` per number asked for. The instance keeps three
+lists of its own, and they belong to [a later section](#the-instance-three-indices-and-one-cached-number);
 the three in the figure all belong to the map.
 
 Two of them are the dirty sets, and they are **not a partition**:
@@ -123,10 +124,9 @@ which is the part that makes the silence hard to notice: both sides run the
 same `Attributes` class initialiser and build the same `DefaultAttributes`
 prototypes, so your client's copy of your attack damage holds the prototype's
 1.0 from the moment the entity exists. It is not missing. It is a number that
-was right once and is never corrected — and the client reads it, for the
-field-of-view change in `AbstractClientPlayer.getFieldOfViewModifier` and for
-reach through `Player.blockInteractionRange`, from whatever the last packet
-left in the map ([authority](authority.md#three-cases-read-on-both-sides)).
+was right once and is never corrected — and the client reads it: your own
+client runs `Player.attack` for your swing, which asks for your attack damage
+([authority](authority.md#three-cases-read-on-both-sides)).
 
 ## The prototype, frozen at class-init
 
@@ -157,9 +157,9 @@ class ([entity anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-insert
 owns the player-shaped hitbox but not the attribute set, so `Mannequin` — the other `Avatar` —
 is registered with `LivingEntity.createLivingAttributes` and gets the plain
 living set, including the registry's default movement speed of 0.7 rather
-than a player's 0.1. The default is not a dead value: the wandering trader,
-the phantom and the slime are registered with the bare `Mob` and `Monster`
-builders, neither of which sets a speed either.
+than a player's 0.1. The default is not a dead value: the wandering trader
+is registered with the bare `Mob` builder, which sets no speed either, and
+walks on it.
 
 ## The map, and which set a change lands in
 
@@ -181,21 +181,23 @@ the visible lag comes from. `ServerEntity.sendDirtyEntityData` is reached
 from `ChunkMap.tick`, which runs inside `ServerLevel.tick`'s *chunkSource*
 phase — **before** the *entities* phase ([the level
 tick](../server/server-level-tick.md#the-broadcast-which-is-why-entities-are-a-tick-behind)). An attribute dirtied during an
-entity's own tick (equipment, an effect, sprinting, powder snow, anything in
+entity's own tick (equipment, an effect, powder snow, anything in
 `ServerPlayer.updatePlayerAttributes`) has therefore already missed this
-tick's send — and a dirty *attribute* set is not one of the three things that
+tick's send, and a dirty *attribute* set is not one of the three things that
 open `ServerEntity.sendChanges`'s gate ([synched entity
 data](synched-entity-data.md#the-gate-that-holds-a-packet-back) owns that
 gate), so it waits for the next tick whose
-count is a multiple of the entity's `EntityType.updateInterval`: the tick after
-next for a player, whose interval is 2, and the third for the default 3. Only a
-mutation made *before* the
-level tick — a command, an interaction handled out of the packet queue at the
-top of the server tick — reaches the wire in the tick that produced it. It is
+count is a multiple of the entity's `EntityType.updateInterval` (up to two
+ticks for a player, whose interval is 2, and up to three for the default 3),
+unless something else opens the gate first. Only a mutation made *before* the
+chunk-source phase — a player's command, an interaction handled out of the
+packet queue at the top of the server tick — can reach the wire in the tick that produced
+it, and then only if the gate opens. It is
 the same phase ordering that puts a block entity's writes a tick late
 ([block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything)).
 
-The update set drains in the entities phase, in
+The update set drains in the entity's own tick — the entities phase for a mob,
+the connection phase for a player — in
 `LivingEntity.refreshDirtyAttributes`, which calls
 `LivingEntity.onAttributeUpdated` once per dirtied attribute and then clears
 the set. That hook has exactly four branches: clamp health down to a reduced
@@ -220,7 +222,7 @@ Everything above has a cost attached, and the cheapest way to see it is a mob
 standing in powder snow. `LivingEntity.aiStep` calls
 `LivingEntity.removeFrost` and `LivingEntity.tryAddFrost` back to back,
 server-side, with no test for whether anything changed. Each has a gate — the
-remove only dirties when the modifier is actually there, the add needs a
+remove only dirties when the modifier is there, the add needs a
 non-air block underfoot *and* a non-zero frozen counter — but when both hold,
 the pair destroys and re-creates a modifier on `Attributes.MOVEMENT_SPEED`,
 dirtying a **syncable** attribute twenty times a second and re-sending that
@@ -228,7 +230,7 @@ entity's whole movement-speed modifier list for as long as it stays frozen.
 Compare `ServerPlayer.updatePlayerAttributes`, which runs just as often but
 uses `AttributeInstance.addOrUpdateTransientModifier` with a constant modifier
 object, and so dirties nothing after the first tick. The whole difference is
-which of the two sets each write lands in.
+whether each write dirties anything at all.
 
 ### What the map writes to disk
 
@@ -252,13 +254,13 @@ UUID and no name — so two systems that pick the same identifier for the same
 attribute collide, and `AttributeInstance.addTransientModifier` and
 `AttributeInstance.addPermanentModifier` **throw** rather than silently
 overwrite. `AttributeInstance.addOrUpdateTransientModifier` and
-`AttributeInstance.addOrReplacePermanentModifier` are the safe forms. Most of
-vanilla removes by id before it adds; three mobs and `AttributeCommand`
-instead guard with `AttributeInstance.hasModifier` before adding.
+`AttributeInstance.addOrReplacePermanentModifier` are the safe forms. Vanilla
+mostly removes by id before it adds, or uses the safe forms; three mob classes
+and `AttributeCommand` guard with `AttributeInstance.hasModifier` instead.
 
-Transient versus permanent is *purely* about saving: both kinds sit in the
+Transient versus permanent is about keeping: both kinds sit in the
 same indices, both affect the value identically, both go on the wire, and
-only the permanent ones are packed. Mob-effect modifiers are added
+only the permanent ones are packed, or carried across a return from the End. Mob-effect modifiers are added
 permanently, and that is the only reason an effect's modifier survives a
 reload ([status
 effects](../player/status-effects.md#what-survives-a-save-and-why-the-modifiers-do)). On
@@ -266,7 +268,7 @@ the client, meanwhile, *every* modifier is transient, because
 `ClientPacketListener.handleUpdateAttributes` sets the base value, wipes the
 whole modifier list and re-adds the incoming ones with
 `AttributeInstance.addTransientModifier`. A client attribute map is never
-packed and never persisted.
+persisted.
 
 `AttributeInstance.getValue` recomputes through
 `AttributeInstance.calculateValue` only when the dirty flag is set, and the
@@ -275,7 +277,7 @@ clamp:
 
 ```mermaid
 flowchart TD
-    B["the base value: the prototype's, or AttributeMap.assignBaseValues"]
+    B["the base value: the prototype's, or whatever has set it since"]
     P1["pass 1: every ADD_VALUE modifier, added"]
     P2["pass 2: every ADD_MULTIPLIED_BASE modifier, off the same base"]
     P3["pass 3: every ADD_MULTIPLIED_TOTAL modifier, off the running total"]
@@ -307,7 +309,7 @@ declaration order, applying each entry's operation to the running total as it
 goes, with no three-pass grouping at all. It is not a duplicate of
 `AttributeInstance.calculateValue` and it does not agree with it. Its one
 caller in the whole game is `Mob.getApproximateAttributeWith` — the "would
-this weapon be better than the one I am holding?" estimate a mob makes when
+this weapon or armour be better than what I have?" estimate a mob makes when
 deciding whether to pick an item up.
 
 ## Where the modifiers come from
@@ -336,13 +338,13 @@ own base value back in for `Item.BASE_ATTACK_DAMAGE_ID` and
 `AttributeCommand`, whose *modifier add* is **permanent**, and so saved.
 
 One packet, one direction: `ClientboundUpdateAttributesPacket`, server to
-every tracking player **and to the entity itself** — which is why your own
+every tracking player **and to the entity itself** when it is a player — which is why your own
 client has a live attribute map at all. At most 128 attributes fit in one
 (checked on encode as well as decode), each snapshot carrying the attribute
 holder, the base value and the complete, uncapped modifier list. There is no
 serverbound attribute packet.
 
-## Strength II lands, and nothing leaves the server
+## Strength II lands, and no attribute leaves the server
 
 Put the four objects, the two sets and the two phases together and the whole
 system runs once, end to end, for a number the wire never hears about:
@@ -360,14 +362,14 @@ sequenceDiagram
     LE->>LE: onEffectAdded, guarded server-side
     LE->>ME: addAttributeModifiers, the map and the amplifier
     ME->>AttrM: getInstance, Attributes.ATTACK_DAMAGE
-    AttrM->>AttrI: replaceFrom, inside AttributeSupplier.createInstance
-    AttrI->>AttrM: onAttributeModified, into the update set
+    AttrM->>AttrI: replaceFrom, inside AttributeSupplier.createInstance, if new
+    AttrI->>AttrM: onAttributeModified, into the update set, if new
     ME->>AttrI: removeModifier, then addPermanentModifier at plus 6
-    AttrI->>AttrM: onAttributeModified, into the update set again
+    AttrI->>AttrM: onAttributeModified, into the update set
     Note over LE,SE: not syncable, so the sync set stays empty
     rect rgba(0, 0, 0, 0.04)
-    Note over LE,SE: the next server tick: the ServerLevel.chunkSource phase, then entities
-    SE->>SE: sendDirtyEntityData finds an empty set
+    Note over LE,SE: the next server tick: the ServerLevel.chunkSource phase, then the player's own tick
+    SE->>SE: sendDirtyEntityData finds an empty attribute set
     LE->>LE: refreshDirtyAttributes drains the update set
     end
     Note over LE,AttrI: three seconds later, inside Player.attack
@@ -377,9 +379,10 @@ sequenceDiagram
     AttrM-->>LE: the same number
 ```
 
-*The lane to watch is `ServerEntity`, which does nothing: it is reached, finds
-the sync set empty, and sends no packet at all. The shaded band is the tick
-that follows, and the whole of what the wire hears about Strength II.*
+*The lane to watch is `ServerEntity`: it is reached, finds the attribute sync
+set empty, and sends no attribute packet. The effect itself does go out, as a
+mob-effect packet when it is added and as the swirl in the entity data, but
+the attack damage never does.*
 
 `MobEffects.STRENGTH` is declared with one attribute modifier: +3 on
 `Attributes.ATTACK_DAMAGE`, `AttributeModifier.Operation.ADD_VALUE`, under
@@ -393,16 +396,19 @@ path is `LivingEntity.onEffectUpdated` instead, which removes and re-adds and,
 unlike the add path, refreshes the dirty attributes on the spot.
 
 `MobEffect.addAttributeModifiers` calls `AttributeMap.getInstance`, and that
-is where the instance for `Attributes.ATTACK_DAMAGE` is born, copying the
-frozen prototype's base value: 1.0 for a player, 3.0 for a zombie. Creation
-dirties it, before any modifier exists. Then the effect removes its own id
-and adds the +6 with `AttributeInstance.addPermanentModifier` — the remove is
-not optional, since the plain add throws on a duplicate id — and dirties it
-again. Both times the callback adds to the update set and consults the
-syncable flag before touching the sync set, so the sync set stays empty and
-**no packet is sent at all**. Next tick, `ServerEntity.sendDirtyEntityData`
-finds nothing to send and `LivingEntity.onAttributeUpdated` matches none of
-its four branches.
+is where the instance for `Attributes.ATTACK_DAMAGE` is born if nothing has
+asked for it yet (a player holding a sword already has one, made when the
+sword was equipped), copying the frozen prototype's base value: 1.0 for a
+player, 3.0 for a zombie. Creating it dirties it, before any modifier exists.
+Then the effect removes its own id, which dirties nothing when the id is not
+there, and adds the +6 with `AttributeInstance.addPermanentModifier` — the
+remove is not optional, since the plain add throws on a duplicate id — which
+dirties it. Each time the
+callback adds to the update set and consults the syncable flag before touching
+the sync set, so the sync set stays empty and **no attribute packet is sent at
+all**. Next tick, `ServerEntity.sendDirtyEntityData` finds no attribute to send
+(it does send the swirl the effect put in the entity data), and
+`LivingEntity.onAttributeUpdated` matches none of its four branches.
 
 Three seconds later `Player.attack` asks `LivingEntity.getAttributeValue` for
 the attack damage. The instance is dirty, so `AttributeInstance.calculateValue`
@@ -434,12 +440,11 @@ each of them, so start there; `DefaultAttributes` and
 the three methods this page turns on, in this order:
 `AttributeMap.getInstance`, because asking is a mutation;
 `AttributeMap.onAttributeModified`, the four lines that decide which set a
-change lands in; and `AttributeInstance.calculateValue`, the three passes and
-the clamp. `LivingEntity.refreshDirtyAttributes` and
-`ServerEntity.sendDirtyEntityData` are where the two sets drain, one phase
-apart. Two doors: `ItemAttributeModifiers.compute`, the second and disagreeing
+change lands in; and `AttributeInstance.calculateValue`, the three passes and the clamp. `LivingEntity.refreshDirtyAttributes` and
+`ServerEntity.sendDirtyEntityData` are where the two sets drain, in different
+phases. Two doors: `ItemAttributeModifiers.compute`, the second and disagreeing
 implementation of the arithmetic, and `AttributeCommand`, whose *modifier add*
-is the one permanent modifier a player can create by hand.
+is the plainest way a player can make a permanent modifier by hand.
 
 ---
 

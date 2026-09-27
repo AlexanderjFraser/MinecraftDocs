@@ -156,7 +156,7 @@ something.
 
 Part VI must precede Part VIII, which is the player half of nearly every
 page here, and it should precede Parts IX and X, both of which lean on
-*authority*. It assumes Part III first — half this part's surprises are claims
+*authority*. It assumes Part III first — two of this part's surprises are claims
 about which phase of the tick something ran in — then Part IV for what makes an
 entity tick at all and Part V for what it collides with.
 
@@ -427,10 +427,11 @@ scenario is a block placed against a wall, which needs Part V's vocabulary.
 The cut is at Part V: both click pages state the ledger's contract in the same four sentences near
 their top, which is all either needs, and the
 machinery waits for Part X, so the whole of Parts V and VI is watched before
-that one Part X lecture. Part VI hands something forward to a *different*
-Part X page: [the client level](systems/client/the-client-level.md) opens by
-saying it is not an authority either, which needs
-[authority](systems/entities/authority.md) behind it.
+that one Part X lecture. Part VI hands something forward to two *other*
+Part X pages: [the client level](systems/client/the-client-level.md) opens by
+saying it is not an authority either, and prediction and acknowledgement
+answers the same question a second way, and both need
+[authority](systems/entities/authority.md) behind them.
 
 Ten pages carry most of the graph — nine rows below, because the two server
 ticks are one dependency in two lectures. The membership rule is

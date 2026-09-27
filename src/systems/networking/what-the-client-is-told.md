@@ -143,8 +143,9 @@ passengers and leash links go only if there are any.
 That bundle is where the page's claim first bites: what it carries is the
 tracker's baseline, not the creeper. It has three exceptions and two refusals. Paintings, item frames and leash knots build their own
 `ClientboundAddEntityPacket` from their real position, bypassing
-`ServerEntity` entirely — they are the three `BlockAttachedEntity` subclasses,
-and a block-attached entity has no dead reckoning to agree about.
+`ServerEntity` entirely — three of the four `BlockAttachedEntity` subclasses,
+the cushion taking the default, and a block-attached entity has no dead
+reckoning to agree about.
 `EnderDragonPart` refuses outright, and `ChunkMap` never asks it. `Marker` throws
 outright if anyone asks — which nobody does, because its tracking range is
 zero and `ChunkMap` never tracks it. Everything else reads its position from
@@ -161,7 +162,9 @@ velocity decision — three of the cascade's terms are the same flag — and is
 set by being pushed, by being loaded from disk, and by a couple of dozen
 classes for their own reasons. `Entity.syncPosition` is subtler: it re-phases the call
 counter to the next interval boundary, so a bounced entity syncs at once
-rather than up to an interval late.
+rather than up to an interval late, unless it is a living entity other than a
+shulker, whose `SteppedInterpolationTracker` takes the flag first and records
+the bounce as a step.
 
 The interval itself is per type and the page leans on it twice below, so it
 is worth a number: `EntityType.updateInterval` defaults to **three** ticks and
@@ -196,7 +199,7 @@ term, not its last.
 |---|---|
 | `Entity.getRequiresPrecisePosition` | absolute sync |
 | delta beyond what a short can hold — about eight blocks | absolute sync |
-| `ServerEntity.teleportDelay` past `ServerEntity.FORCED_TELEPORT_PERIOD` — four hundred *gated* calls, so at least 1,200 ticks on the three-tick default interval | absolute sync |
+| `ServerEntity.teleportDelay` past `ServerEntity.FORCED_TELEPORT_PERIOD` — four hundred *gated* calls, so about 1,200 ticks for an entity tracked every tick on the three-tick default interval, fewer when data or a push opens the gate | absolute sync |
 | the entity just dismounted, or its ground flag flipped — the common case, so every landing and every step off a ledge costs a full packet | absolute sync |
 | none of those, and the squared position delta is below `ServerEntity.TOLERANCE_LEVEL_POSITION` with rotation within `ServerEntity.TOLERANCE_LEVEL_ROTATION` | nothing sent |
 | none of those, and something moved | `ClientboundMoveEntityPacket.Pos`, `.Rot` or `.PosRot` |

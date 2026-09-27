@@ -4,15 +4,15 @@
 > `net/minecraft/world/entity/**`.
 
 `Entity.hurtServer` is **abstract**, so every branch has to answer for itself.
-The twenty-one classes are every non-`LivingEntity` class that declares it, and
-they answer with rules that share nothing with `LivingEntity`'s — no armour, no
-invulnerability window, no `CombatTracker`, no death sequence. The lecture that
+The twenty-two classes are every non-`LivingEntity` class that declares it, and
+none of them runs `LivingEntity`'s rules itself — no armour, no
+hurt cooldown, no `CombatTracker`, no death sequence. The lecture that
 frames them is [damage and
-death](../systems/entities/damage-and-death.md#twenty-one-classes-with-no-pipeline-at-all);
+death](../systems/entities/damage-and-death.md#twenty-two-classes-with-no-pipeline-at-all);
 this is the per-class table.
 
 The last column is the client half. `Entity.hurtClient` has a default — it
-returns false — and **thirteen** of the twenty-one inherit it unchanged; seven
+returns false — and **thirteen** of the twenty-two inherit it unchanged; eight
 declare their own and `MinecartTNT` inherits `VehicleEntity`'s. It never reads
 the damage amount, because there is none on that side: it answers only whether
 a client-side swing should play its own effects.
@@ -45,6 +45,7 @@ and it picks `Entity.hurtServer` or `Entity.hurtClient` off the level.
 | `ExperienceOrb` | `Entity.isInvulnerableToBase` | subtracts the damage from an int of health, `Entity.discard` at zero | true | not invulnerable |
 | `ItemEntity` | `Entity.isInvulnerableToBase`, then a `Mob` source under `GameRules.MOB_GRIEFING`, then `ItemStack.canBeHurtBy` | same int of health, plus `GameEvent.ENTITY_DAMAGE`, and `ItemStack.onDestroyed` before the discard | true | not invulnerable, and `ItemStack.canBeHurtBy` agrees |
 | `BlockAttachedEntity` | `Entity.isInvulnerableToBase`, then a `Mob` source under `GameRules.MOB_GRIEFING` | `Entity.kill`, `Entity.markHurt`, and drops its item — one hit, whatever the amount | true | not invulnerable |
+| `Cushion` | a `Player` source that may not build, or may not interact at the cushion's position, is refused | otherwise `BlockAttachedEntity`'s one hit | true, or false when refused or under `BlockAttachedEntity`'s own gates | false for a player who may not build, then `BlockAttachedEntity`'s |
 | `ItemFrame` | `ItemFrame.fixed` gates everything: a fixed frame is hurt only by `DamageTypeTags.BYPASSES_INVULNERABILITY` or a creative player | a non-explosion hit on a frame **holding** something pops the item and stops there; otherwise it falls through to `BlockAttachedEntity` and the frame breaks | true | the fixed gate first, then not invulnerable |
 | `EndCrystal` | `Entity.isInvulnerableToBase`, then **is the source an `EnderDragon`** | removes itself with `Entity.RemovalReason.KILLED` and explodes with power 6 — unless the source was already an explosion — then `EndCrystal.onDestroyedBy` | true | not invulnerable, and not the dragon |
 | `ShulkerBullet` | — | plays `SoundEvents.SHULKER_BULLET_HURT`, spawns fifteen `ParticleTypes.CRIT`, destroys itself | true | **true**, unconditionally |
@@ -54,7 +55,7 @@ and it picks `Entity.hurtServer` or `Entity.hurtClient` off the level.
 
 Six patterns account for all of it: *nothing happens* (ten classes), *a
 flinch and nothing else* (two), *an int of health with no armour and no
-window* (two), *one hit destroys* (four), *an accumulator* (two), and
+hurt cooldown* (two), *one hit destroys* (five), *an accumulator* (two), and
 *forward it to something else* (one, the dragon part). Only **four** classes
 read the damage **amount** at all: the pair with an int of health and the
 accumulator pair. `EnderDragonPart` passes the number on without looking at it,

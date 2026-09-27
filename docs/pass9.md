@@ -74,6 +74,463 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session F — Part VI · Entities *(2026-09-27)*
+
+Ten pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
+`entity-anatomy`, `authority`, `entity-lifecycle`, `synched-entity-data`, `attributes`, `movement-and-collision`,
+`ai-goals-and-brains`, `pathfinding` and `damage-and-death`. The prompts carried each page's pass 5–7 ledger entries
+and, by hand, the V1 and V2 entries on these pages (V2's handoff on `authority`'s first figure included), session C's
+handoffs on `entity-anatomy` and `entity-lifecycle`, session D's on `ai-goals-and-brains` and session A's V6
+constants. The whole-part read, written down before any report was opened, listed 25 items: 23 became corrections
+below and two were polish. One of them sat open until the record, `entity-anatomy`'s *on the base class exactly two
+things* (307). The session re-derived every finding in `reference/26.3` before making it. The record was then audited
+by ten agents, one per page, each told to re-derive every changed sentence against the tree, read its neighbours and
+grep the rest of the book: **the audit found 80 more errors, 54 of them in sentences this session had just written**
+(227–306). Page lines are the pages before this session's edits. Paths are under `reference/26.3/net/minecraft/`.
+
+**307 corrections**, 44 of them inside a figure or a caption. Twenty-one correct a 26.3 change the version pass did
+not carry into the sentence (18, 34, 36, 40, 45, 48, 53, 56, 108, 111, 113, 139, 141, 142, 147, 159, 179, 200, 210,
+214, 216): `Entity.commonTick` now does the old per-tick bookkeeping and the client's interpolation, the
+`Integer.MAX_VALUE` types get `UpdateInterval.NEVER` and never send a periodic position at all,
+`Entity.canSimulateMovement` is final and reads the type's `MoveSimulationType`, `CombatTracker.recheckStatus` moved
+from `LivingEntity.die` to `LivingEntity.remove`, and `Cushion` is a twenty-second non-living damage class. The
+handoffs are 36 and 81 (C's), 171 and 174 (D's) and 56 (V2's). Two are V6: session A's list (99) and a sentence its
+list missed (90). One overturns pass 5 session F's and session I's listed claim (154: the teleport refresh is *at
+most*, not *at least*, about 1,200 ticks, and then only for an entity tracked every tick, 280), and one a pass 7
+figure fix (104: a dirty container passes the second test, so the two diamonds do not fail into the same box).
+
+### Corrections
+
+**`entities/README`**
+
+1. `entities/README`:6 — "A mob you named never despawns" — on Peaceful it does; "by distance" (as entity-lifecycle:427-431) — Mob.java:755-756
+2. `entities/README`:7-8, :119-120 — "without a single packet leaving the server"; "no packet is sent at all" — the effect packet and the swirl go; no attribute packet does (as attributes) — ServerPlayer.java:1852
+3. `entities/README`:13-16 — Entity gives them four things "and almost nothing else" — and fire, fluids, portals; "not much else besides" — Entity.java:581-611, :1773-1793, :2863
+4. `entities/README` f1 (:41) — "one side of each pair does the arithmetic" — the player is simulated on both; "decides where it goes" (as authority's verified line) — Player.java:1256; ServerGamePacketListenerImpl.java:332-333
+5. `entities/README` f1 (:47-48) — "one abstract method ends all of it"; OUT labelled "and so does the rest of the book" — despawn and Entity.kill end entities without it; only Parts VIII, IX and X depend on authority — Entity.java:434-435; Mob.java:756 (grep of `authority.md` across src)
+6. `entities/README`:53-55 (caption) — authority "the only page in Part VI that three later parts depend on" — by links synched-entity-data has five later parts; true as a named prerequisite in *Before you start* — player/README:60; networking/README:82; client/README:75
+7. `entities/README`:64-65 — "a second half the figure does not draw" — the figure draws Part X's dependency since pass 7; now the arrow "lands on one page in particular" (page-internal against :48, :53)
+8. `entities/README`:75 — "half this part's surprises are claims about which phase" — two of the five; "several"
+9. `entities/README`:88-89 — goals and brains "draws PoiManager as a lane" — no such lane since pass 7; "leans on" — ai-goals-and-brains f2
+10. `entities/README`:91-93 — scheduled ticks "the one page of the world part you can skip" — lighting and fluids are linked from no Part VI page either; "a page"
+11. `entities/README`:113 — "one height per category per chunk per tick" — the creature categories try every 400 ticks; "each time it tries" — ServerChunkCache.java:388
+12. `entities/README`:122-125 — "by replaying the tick's movement, which is why fire and water … end in the extinguish" — the collector's fixed order is why (as movement-and-collision:17-21) — InsideBlockEffectApplier.java:32, :72-90
+13. `entities/README`:134 — "a dozen owners of one number" — the owner page's eight steps — damage-and-death:105-108
+14. `entities/README`:141 — "the largest part of the book" — by lines (by classes Part XI is larger) — src/generated/parts.md
+15. `entities/README`:152 — "the ender dragon's sixteen flight phases" — eleven phases (sixteen was the package's file count) — EnderDragonPhase.java:10-20
+16. `entities/README`:156-158 — `world/effect` "the one package above whose lecture is elsewhere" — `world/entity/ai/village/poi` is Part IV's points of interest — tools/map_source.py:106
+17. `entities/README`:166 — "all 43" serializers — 44 (session's read; V1's 44 never reached the landing page) — EntityDataSerializers.java:151-194
+18. `entities/README`:172 — "twenty-one non-living classes" — twenty-two (Cushion) — Cushion.java:43, :114
+19. `entities/README`:178 — game rules, "eleven of which this part's pages read" — ten are named — grep `GameRules.` over systems/entities
+
+*Held: :13 "deliberately thin on behaviour" (the part's argument); coverage and size includes (re-derived: 766 classes, 112,091 lines; 33.6% named nowhere).*
+
+**`entities/entity-anatomy`**
+
+20. `entities/entity-anatomy`:17-19 — DefaultedMappedRegistry "overrides nine of the plain registry's methods — six of which substitute that default for a miss" — getDefaultKey is DefaultedRegistry's own; of the six that hand the default back, getAny does so always — DefaultedMappedRegistry.java:21-79
+21. `entities/entity-anatomy`:35 (cast) — EntityType "read from both game threads after" — and the worldgen worker, which builds a chunk's first animals — NaturalSpawner.java:372 (page-internal against :376)
+22. `entities/entity-anatomy`:38 (cast) — EntityDimensions "shared by every entity of a type" — the type's record is; an entity's cache can hold a scaled or per-pose one — LivingEntity.java:4004; Avatar.java:23, :52-54
+23. `entities/entity-anatomy`:39 (cast) — "the owning side's writes are the ones that travel" — only the server's; there is no serverbound entity-data packet — ServerEntity.java:412 (page-internal against synched-entity-data)
+24. `entities/entity-anatomy`:41 (cast) — thread "server main thread" — the Server thread (V7)
+25. `entities/entity-anatomy` f1 (:61, :74) — the factory "the constructor reference"; levelCallback "null until a level takes it" — boats, rafts, the mannequin and the player use other factories; the field starts as the NULL sentinel — EntityTypes.java:263, :359-381; Entity.java:314 (page-internal against :344)
+26. `entities/entity-anatomy`:91-92 — "Health, AI, damage and inventory are all further down the tree" — Entity declares the abstract hurtServer; "the damage pipeline" — Entity.java:2093
+27. `entities/entity-anatomy`:127-129 — EntityAttachments answers "where the lead attaches" — the four are passenger, vehicle, name tag and warden chest; the lead offset is Leashable's — EntityAttachment.java:8; Leashable.java:309-313
+28. `entities/entity-anatomy`:136-138 — "the rest are single-mob animation states" — LONG_JUMPING is the frog's, the goat's and the breeze's; "of one mob or a few" — LongJump.java:137; Goat.java:269
+29. `entities/entity-anatomy`:141 — Pose "the synched value on the base class that changes physics" — DATA_NO_GRAVITY changes physics too; Pose is the one that changes the box — Entity.java:1626-1640, :3726-3729
+30. `entities/entity-anatomy`:174 (the map's figcaption) — "a grey line folds every child of that node that has no children" — only runs of two or more are folded (ArmorStand, Painting drawn by name) — src/generated/tree-Entity.svg
+31. `entities/entity-anatomy`:187 — PathfinderMob "86 lines that add walk-target valuation, not movement" — a line count cut; "adds no way of moving" (it drives the leash pull through Mob's navigation) — PathfinderMob.java:22-75
+32. `entities/entity-anatomy`:201-205 — "**`Avatar` is new and it is the biggest structural change in the tree** … 57 lines … is now wrong by one level" — Avatar is in 26.2 and 1.21.11 (V1's note); history and a line count cut; "sits between LivingEntity and Player … is wrong by one level" — Player.java:130; reference/26.2 Avatar.java
+33. `entities/entity-anatomy`:220-224 — EntityReference decays "the moment the target reports itself removed"; "who last hurt me" survives an unload — on the next resolve after removal; only the player who last hurt a mob is saved — EntityReference.java:60-67; LivingEntity.java:777-779
+34. `entities/entity-anatomy`:226 (heading) and the table — "Where the 716 files are", `world/entity` itself 75, decoration 12 — 727, 85, 13 in 26.3 (ten new movement-sync files; Cushion); no link lands on the anchor (session's read)
+35. `entities/entity-anatomy`:231-232, :240 (table) — monster "likewise"; variant "the data-driven mob variants" — twenty monsters sit at the top of the package; `entity/variant` holds the picking machinery, the variants live with their species — world/entity/monster/*.java; world/entity/variant/
+36. `entities/entity-anatomy`:267-271 (f2) and :367-372 — `ServerLevel.tickNonPassenger` calls setOldPosAndRot and bumps tickCount, then the profiler, then tick — it pushes the profiler, then calls Entity.commonTick (invulnerableTime down, setOldPosAndRot, client interpolation, tickCount), then tick (26.3; session C's handoff) — ServerLevel.java:859-867; Entity.java:542-553; ClientLevel.java:479-486
+37. `entities/entity-anatomy`:274 (f2 caption) and :279-281 — "Eleven steps"; "four steps instead of eleven" — the figures draw thirteen and five (page-internal)
+38. `entities/entity-anatomy` f3 (:291) — createEntityFromPacket "a second live object" — not live until ClientLevel.addEntity (page-internal against :269, :355)
+39. `entities/entity-anatomy`:310-314 — PLAYER's noSave and noSummon "which is why createEntityFromPacket special-cases it" — the null factory is why — ClientPacketListener.java:621-629
+40. `entities/entity-anatomy`:331-333 — "paintings, item frames and leash knots are precisely the entities that skip it" — cushions too (26.3) — Cushion.java:43; BlockAttachedEntity.java:164-167
+41. `entities/entity-anatomy`:382 — "Everything readers remember happening in tick is in Entity.baseTick" — "Everything else", now that commonTick is described above — Entity.java:542-553
+42. `entities/entity-anatomy`:386-389 — Mob.updateControlFlags "the one line of this section the client does not run" — the portal handling, the burning and the leash in baseTick are server-only too — Entity.java:581-595, :608-611, :2879-2882
+43. `entities/entity-anatomy`:397-402 — process-global ids, "Two entities in two different worlds can therefore compare equal" — the global counter keeps server levels apart; equal ids meet in singleplayer, where the client's copy and the integrated server's share one — ServerLevel.java:284-292
+44. `entities/entity-anatomy`:414-419 — the two numbers "are why one entity glides and another jumps"; "both decide how often a tracker is even asked" — gliding is the class's InterpolationHandler; the range decides who is told, the interval how often movement is sent — ChunkMap.java:1281, :1366-1367; ServerEntity.java:147; Entity.java:2816-2818
+45. `entities/entity-anatomy`:424-426 — MAX_VALUE types "never fires again after tick zero" — UpdateInterval.NEVER never fires (26.3) — ChunkMap.java:1287; UpdateInterval.java:5-15 (session's read)
+46. `entities/entity-anatomy`:433-434 — "The client holds a lever over the same distance" — viewScale scales how far an entity is drawn, not the tracking range — Entity.java:2209-2218; LevelExtractor.java:266
+
+*Held: :37 and :197 "thin on behaviour" (a judgement the part argues from); "a dozen" physics-changing subclass values (12, confirmed).*
+
+**`entities/authority`**
+
+47. `entities/authority`:3 (verified line) — "only one side of each pair does any arithmetic" — the player is simulated on both sides; now "decides where it ends up" — LivingEntity.java:3317; Player.java:1256, :1261; ServerGamePacketListenerImpl.java:332 (page-internal against :11-13, :160-164)
+48. `entities/authority`:10 — "one of them final" — two: isLocalInstanceAuthoritative and canSimulateMovement — Entity.java:3968, :3988 (session's read too)
+49. `entities/authority`:15 — "four later parts rest on it" — this part and three later ones — SUMMARY.md (page-internal; session's read too)
+50. `entities/authority`:24 — "Nineteen pages in this book link back" — 19 under src/systems; lectures.md and the glossary link too; now "in the book's thirteen parts" — check_links.py --inbound
+51. `entities/authority`:38 (table) — "true — the override" — its move-simulation type — Player.java:1256; Entity.java:3988-3999
+52. `entities/authority`:57-65 — "three different methods, not overrides of each other"; LivingEntity.checkFallDamage "needs a ServerLevel before it computes any damage, so your client only accumulates" — it overrides Entity.checkFallDamage and on a ServerLevel adds only the landing particles (and onChangedBlock); the damage runs Block.fallOn → causeFallDamage on both sides and lands through Entity.hurt only on a ServerLevel; doCheckFallDamage calls the same method — LivingEntity.java:339-376; Block.java:468-471; Entity.java:1663-1671, :2072-2077
+53. `entities/authority`:72 (cast) — Player "overrides four of the five" — three of the five, and answers getMoveSimulationType — Player.java:1241, :1247, :1256, :1261 (session's read too)
+54. `entities/authority`:73 (cast) — Mob "only the server's copy acts on the answer" — now "the AI that acts on it runs on the server" (AbstractHorse.standIfPossible acts on a client) — AbstractHorse.java:732; LivingEntity.java:3261
+55. `entities/authority`:83 — "Everything else hangs off those two" — bar the SERVER_AND_CLIENT types — Entity.java:3992-3993
+56. `entities/authority` f1 (:85-110) — SIM's "or" branch drawn as Player's override; SERVER_AND_CLIENT branch missing — SIM now "final, it reads the type", its "or" branch one node naming both types (a player's, and the both-sides items), AIP spelled out, and the root declared between the two predicates so neither edge crosses; rendered at 13.6px (the first redraw, with a sixth node in the rank, fell to 9.9px) — Entity.java:3984-4000 (V2's handoff)
+57. `entities/authority` f1 caption (:112-115) — "the root's own two edges are the only place a machine is named" (SIMP names one), "the two pointing down into the root are the hanging-off the heading names" — rewritten (page-internal)
+58. `entities/authority`:119-120 — "an entity with a rider inherits the rider's answer" — a controlling passenger's; a ridden minecart has none, a boat's second passenger does not control — Entity.java:3878-3879; AbstractBoat.java:836-846
+59. `entities/authority`:162-166 — "both true on the server by Player's override"; "none of the consequences that gate on it fire" — the type and the override; only the fall damage — Entity.java:832, :847, :858; LivingEntity.java:3322
+60. `entities/authority`:177-178 — two answers "for a player and one for everything else" — and anything a player steers — Entity.java:4438-4446; SweetBerryBushBlock.java:97
+61. `entities/authority`:187 — "Sit in a boat" — the first seat controls — AbstractBoat.java:836-846
+62. `entities/authority`:192-193 — "moved only by its LinearInterpolationHandler" — "only" cut (a sync past 64 blocks or to a non-ticking entity snaps) — ClientPacketListener.java:687-692
+63. `entities/authority` f2 (:195-223) — setOnGroundWithMovement and doCheckFallDamage drawn before the alt as if both branches ran them; they run on accept only; absSnapTo drawn in each branch; the two Note overs (neither a tick boundary nor a hop) folded away — ServerGamePacketListenerImpl.java:505, :524-536
+64. `entities/authority` f2 caption (:225-228) — "the server's is only told"; "the alt block is the figure's one mark outside the book's table" — the server moves its copy and keeps or snaps it; alt is in the marks table — ServerGamePacketListenerImpl.java:505, :524, :530; TEMPLATE.md marks table
+65. `entities/authority`:276-277 — "Neither one is being corrected" — "on an ordinary tick" (a rejected player move is teleported back) — ServerGamePacketListenerImpl.java:1298, :1340
+66. `entities/authority`:289-292 — NoAI: "nothing reaches Entity.move for that mob at all" — nothing in its own tick; a piston, a shulker, a shulker box or a player steering it still move it — PistonMovingBlockEntity.java:191; Shulker.java:271; ShulkerBoxBlockEntity.java:143; LivingEntity.java:2797 (page-internal against :151-154; session's read)
+67. `entities/authority`:296 — "in the order the figure draws them" — "from the root out" (page-internal)
+68. `entities/authority`:300-301 — `Mob.isNoAi` called one of "the two overrides" — the override is Mob.isEffectiveAi — Mob.java:1418, :1440
+69. `entities/authority`:304-305 — "the two branches the last section turns on" — the boat's section (page-internal)
+70. `entities/authority`:306-308 — "the only place in the game that reads a predicate to choose which number to believe" — ClientPacketListener reads the root to choose between positions; now "which measurement of a movement" — ClientPacketListener.java:684, :2280; SweetBerryBushBlock.java:97
+
+*Held: :248-250 "eight places" (the ninth read, Entity.java:772, is behind SharedConstants.IS_RUNNING_IN_IDE, which nothing assigns, so no shipped game runs it); the heading "Five predicates, and the final one the other four hang off" — it names the root, which is final and which the other four meet (V15; 16 inbound links).*
+
+**`entities/entity-lifecycle`**
+
+71. `entities/entity-lifecycle`:26-33 (cast) — NaturalSpawner "server main" (the worker runs generation's spawn step through it too), and the other rows' thread names — the Server thread, and a worker for generation's spawn step (V7) — NaturalSpawner.java:332-424; ChunkStatusTasks.java:139-141 (page-internal against :29)
+72. `entities/entity-lifecycle`:41-42 — the halves split "before a position is rolled" — figure 1 draws the roll and the rolled-position tests; "before the first try" (page-internal against f1 and its caption, pass 8 session A's correction 5)
+73. `entities/entity-lifecycle`:91-94 — "Three things … The two that end a group are the empty species list and the group filling up" — four points; three end a group, the tries running out too (page-internal against the f2 caption, pass 8 session A's correction 6) — NaturalSpawner.java:188, :244-245
+74. `entities/entity-lifecycle`:114, :116 (table) and :156-158 — `EntityType.create` fails on "Peaceful and not allowed there"; "On Peaceful the spawner does all the work up to construction" — SpawnPlacements.checkSpawnRules refuses a non-peaceful type first, at the type filter, one try at a time; create's null on this path is the feature flag's — SpawnPlacements.java:80-82; NaturalSpawner.java:271, :214 (the same in 26.2)
+75. `entities/entity-lifecycle`:203-207 — isPersistenceRequired "named"; the pair "keeps Mob.checkDespawn from discarding it" — a stored flag set by a name tag or picked-up loot; it blocks the distance discards, not Peaceful's — Mob.java:614, :747-780; NameTagItem.java:27
+76. `entities/entity-lifecycle`:229-230 — the jockey chicken "within five blocks across" — five out on each side (pass 8 session A's correction 17 had it; the polish drifted) — Zombie.java:436
+77. `entities/entity-lifecycle`:232-237 — isMaxGroupSizeReached as a limit that ends the zombie pack — only TropicalFish answers yes; a zombie's group ends when its tries run out — Mob.java:901-903; TropicalFish.java:103-105
+78. `entities/entity-lifecycle`:382-383 (f4 caption) — "an entity changes state because its section did" — also when it walks into another section (page-internal against :391-397) — PersistentEntitySectionManager.java:431-462
+79. `entities/entity-lifecycle`:401-402 — skipped "without an active ticket" — only tickets that keep a dimension active count — TicketStorage.java:139-156; TicketType.java:16-26
+80. `entities/entity-lifecycle`:412 — despawn checked "for every member of the tick list" — every live, unfrozen member — ServerLevel.java:414-415
+81. `entities/entity-lifecycle`:418-422 — "Adding or removing during a walk copies … and swaps" — only the first does; later ones write to the new map (C's handoff) — EntityTickList.java:20-35 (session's read)
+82. `entities/entity-lifecycle`:475-477 — the clauses "decide the whole contents of that file" — noSave types (leash knot, lightning bolt, fishing bobber) pass them and write nothing — Entity.java:2221-2228; EntityTypes.java:252, :253, :355
+83. `entities/entity-lifecycle`:478-479 — "a vehicle whose passengers are exactly one player" — carrying exactly one player among its passengers — Entity.java:3934-3942, :4389
+84. `entities/entity-lifecycle`:492 (table) — CHANGED_DIMENSION "a portal, where the entity is rebuilt" — any change of dimension; a player is moved, not rebuilt — ServerPlayer.java:1301; Entity.java:3521
+85. `entities/entity-lifecycle`:519-521 — EntityLookup "the flat index a command selector walks instead of the section grid" — only a selector with no area to search; one with an area walks the grid (page-internal against :356-358) — EntitySelector.java:182-188
+86. `entities/entity-lifecycle` f4 (:372) — `[*] --> H`, a section born hidden — a section is created at its chunk's current visibility, so a natural spawn's may start at TICKING; the start arrow cut — EntitySectionStorage.java:107-112
+
+*Checked and confirmed: all 29 of pass 8 session A's corrections, its figures, captions and polish (the agent's report walks each).*
+
+**`entities/synched-entity-data`**
+
+87. `entities/synched-entity-data`:29 (cast) — ClassTreeIdRegistry on "whichever thread first loads the class" — ids are assigned in static initialisers: "initialises" — SynchedEntityData.java:44
+88. `entities/synched-entity-data`:82-83 — defineSynchedData "that every subclass overrides" — every subclass with data of its own (PathfinderMob, Animal define nothing) — PathfinderMob.java; Animal.java (page-internal against :46-48)
+89. `entities/synched-entity-data`:88-89 — build's null check "is why get can index the array with no bounds check" — no null check; build guarantees no null slot, not range — SynchedEntityData.java:53-54, :251-256
+90. `entities/synched-entity-data`:98-100 — the Entity.Flags annotation "every call site inside Entity ignores in favour of a bare integer" — cut: the FLAG_ constants are compile-time constants javac inlines (V6, not on session A's list) — Entity.java:258-264
+91. `entities/synched-entity-data`:125-130 — mods: a wrong slot "throws the serializer check"; the parenthetical off-by-one in define's bounds test — the check throws only when the serializers differ; 26.3's test is `>=`, so the off-by-one is gone (parenthetical cut) — SynchedEntityData.java:138, :236
+92. `entities/synched-entity-data`:141-142 — `EntityDataSerializer.copy` "defends the container against a caller mutating a value it already handed over" — it copies a value as it is packed (DataValue.create), protecting packets and the tracker's snapshot — SynchedEntityData.java:192
+93. `entities/synched-entity-data`:150-151 — "`HUMANOID_ARM` is 42 and last" — DYE_COLOR is 43 and last — EntityDataSerializers.java:193-194 (session's read)
+94. `entities/synched-entity-data`:152 — "resolvable profiles" among the Holder-carrying serializers — ResolvableProfile's stream codec is a ByteBuf codec with no Holder; cut — ResolvableProfile.java:33
+95. `entities/synched-entity-data`:157 — "vanilla calls it 43 times" — 44 — EntityDataSerializers.java:151-194 (session's read)
+96. `entities/synched-entity-data` f1 (:170-173) — the prediction drawn before the packet; the tick note spanning the client lane — packet first, then the local prediction; note over SGPL,SED — MultiPlayerGameMode.java:499-500 (page-internal against :224)
+97. `entities/synched-entity-data`:256-263 — "Exactly one value does [touch client physics] … Everything else on the channel is cosmetic" — AgeableMob.DATA_BABY_ID resizes (a dozen subclasses resize on their own values), DATA_NO_GRAVITY switches gravity — AgeableMob.java:187-190; Entity.java:1626-1640
+98. `entities/synched-entity-data`:276-277 — the packet goes "to every tracking player and to the entity itself" — to the entity only when it is a player — ChunkMap.java:1560-1566
+99. `entities/synched-entity-data`:280-283 — EOF_MARKER and MAX_ID_VALUE "referenced by nothing", the literal written instead — compile-time constants (V6, session A's list); now the numbers they name — ClientboundSetEntityDataPacket.java:15; SynchedEntityData.java:20
+100. `entities/synched-entity-data`:296-298 — "nothing in the 7,301 classes overrides it: it is dead" — nothing in the game overrides Entity's empty body (a size cut, V10) — Entity.java:3723
+101. `entities/synched-entity-data` f2 (:204-210) and caption (:214-217) — the client's assignValues inside the server tick's band; "one per machine"; "everything to the left … happened in the band above"; the client's copy "has never seen a Sheep of its own" — the apply moved out of the band; "one per side"; the left half runs later in the same tick in the chunk-source phase; the client's container was built with its own Sheep — ServerLevel.java:386-387; ClientPacketListener.java:666-669; Entity.java:336-347
+102. `entities/synched-entity-data`:309-310 — "Two tests … only one of them is this page's" — "only the first can hold it back" — ServerEntity.java:147
+103. `entities/synched-entity-data` f3 GATE (:316) — "Entity.tickCount a multiple of EntityType.updateInterval" — the tracker's own counter and UpdateInterval — ServerEntity.java:77, :147; ChunkMap.java:1287
+104. `entities/synched-entity-data` f3 GATE→HOLD and caption (:327, :330-332) — "Both diamonds fail into the same box … nothing is lost" — a dirty container passes the second test; its "no" edge now reaches a new node, no position and no data waiting; caption rewritten — ServerEntity.java:147; SynchedEntityData.java:71-72, :85, :94
+105. `entities/synched-entity-data`:341-343 — needsSync "a flag `Entity.syncPosition` sets" — two separate fields; needsSync is set by a push, a load and twenty-one other classes — Entity.java:274-275, :2061, :2332 (grep `needsSync = true`: 22 files) (session's read)
+106. `entities/synched-entity-data`:344-348 — "What matters to a byte is the second test"; shearing "also sends that sheep's position delta this tick" — the second test lets a dirty byte through; the position goes only if it moved — ServerEntity.java:147, :189-190
+107. `entities/synched-entity-data`:351-352 — the interval "copied when ChunkMap.TrackedEntity constructs the ServerEntity" — turned into an UpdateInterval when ChunkMap starts tracking — ChunkMap.java:1287
+108. `entities/synched-entity-data`:354-355 — MAX_VALUE types' branch "never fires again after tick zero" — UpdateInterval.NEVER never fires at all (26.3) — UpdateInterval.java:5-15 (session's read)
+109. `entities/synched-entity-data`:357 — "has the seven" — eight (page-internal against :354) (session's read)
+110. `entities/synched-entity-data`:359-363 — "That is exactly why … ItemFrame special case … the only path … without it a map in a frame would update only when something else set needsSync" — a dirty frame passes the gate by isDirty; the branch exists for the map's own packets, then flushes the data — ServerEntity.java:111-136, :147
+111. `entities/synched-entity-data`:367-370 — syncPosition "works even when that interval is Integer.MAX_VALUE" — does nothing under NEVER; and a living entity's SteppedInterpolationTracker consumes the flag first and records a step — UpdateInterval.java:5-15; ServerEntity.java:141-145; SteppedInterpolationTracker.java:47-50 (26.3; found by movement-and-collision's agent)
+112. `entities/synched-entity-data`:405-407 — handleRespawn copies the old player's values — only when the respawn keeps entity data — ClientPacketListener.java:1375
+113. `entities/synched-entity-data`:416 — EntityEvent "declares 62" — 64 (BOAT_SINK, BOAT_LAUNCH; 26.3) — EntityEvent.java:10-73
+114. `entities/synched-entity-data`:428-429 — a change made behind a closed gate "is already folded into that cache" — it is not; a new viewer gets the older snapshot and the change on the next flush — ServerEntity.java:340-341, :412-415
+115. `entities/synched-entity-data`:431 — "Defaults never travel" — on pairing (a slot set back to its default is dirty and is packed) — SynchedEntityData.java:93-95
+116. `entities/synched-entity-data`:440 — "ClassTreeIdRegistry is forty lines" — a line count the decompiler sets (48); now "one short class"
+117. `entities/synched-entity-data`:444-446 — sendDirtyEntityData and sendPairingData "its two exits" — sendPairingData is reached from addPairing, not sendChanges — ServerEntity.java:326; ChunkMap.java:1616
+
+*Held: :30, :147 — 44 (V1's). :19-20, :93-109.*
+
+**`entities/attributes`**
+
+118. `entities/attributes`:3 (verified line), :13 (hook), :345 (heading), :381-382 (f3 caption), :403 — "nothing goes on the wire", "Strength II sends no packet at all", "nothing leaves the server", "the whole of what the wire hears" — ServerPlayer.onEffectAdded sends ClientboundUpdateMobEffectPacket, and the dirtied effects put the swirl into the entity data; what is true is that no attribute packet goes. Heading now "Strength II lands, and no attribute leaves the server", its one inbound link (player/status-effects:60) repointed — ServerPlayer.java:1849-1852; LivingEntity.java:1121-1122, :934-938
+119. `entities/attributes`:20 — environment attributes "like sky darkness" — none is a darkness attribute; "the sky's light level" — EnvironmentAttributes.java:39, :48
+120. `entities/attributes`:33, :37 (cast) — thread names — Server thread / Render thread (V7)
+121. `entities/attributes`:35 (cast) — "the identifier alone is its identity" — inside an instance; the record's equals compares all three — AttributeModifier.java:14; AttributeInstance.java:26
+122. `entities/attributes` f1 REACT (:51), f3 band note (:369), :198 — the update set drains "in the entities phase" — in the entity's own tick: the entities phase for a mob, the connection phase for a player (ServerPlayer.tick does not call super; LivingEntity.tick runs from ServerPlayer.doTick) — ServerPlayer.java:664-672, :744; ServerGamePacketListenerImpl.java:332; MinecraftServer.java:1221, :1234
+123. `entities/attributes`:125-129 — the client reads the stale value "for the field-of-view change … and for reach" — those read syncable attributes; the client reads attack damage in its own Player.attack for your swing — AbstractClientPlayer.java:106; Player.java:1972, :921; MultiPlayerGameMode.java:476-479
+124. `entities/attributes`:160-162 — "the wandering trader, the phantom and the slime" as users of the 0.7 default — the slime's speed is reset by setSize and the phantom flies on its own field; the trader stands — AbstractCubeMob.java:86; Phantom.java:216-262
+125. `entities/attributes`:189-194 — "the tick after next for a player … the third for the default 3"; "Only a mutation made before the level tick … reaches the wire in the tick that produced it" — up to two and up to three ticks, earlier if something else opens the gate; before the chunk-source phase (command blocks run in the level tick before it), and only if the gate opens — UpdateInterval.java:25; ServerEntity.java:147; ServerLevel.java:370-387 (session's read)
+126. `entities/attributes`:230-231 — "The whole difference is which of the two sets each write lands in" — both writes hit syncable attributes; the difference is whether a write dirties at all (page-internal against :219-230) — AttributeInstance.java:91, :132-143
+127. `entities/attributes`:255-257 — "Most of vanilla removes by id before it adds" — ten of twenty-five add sites do, ten use the safe forms, four guard, one is unguarded — grep of add sites outside the package
+128. `entities/attributes`:259 — "*purely* about saving" — also what an End-return restore carries (page-internal against :239-243) — ServerPlayer.java:1802-1803
+129. `entities/attributes`:268-269 — a client map "is never packed" — the F3+I copy packs it; "never persisted" stands — KeyboardHandler.java:417; LivingEntity.java:767
+130. `entities/attributes` f2 B (:278) — the base value is "the prototype's, or AttributeMap.assignBaseValues" — anything that has set it since (32 external setBaseValue sites) — AttributeCommand.java:150; ClientPacketListener.java:2528
+131. `entities/attributes`:309-311 — getApproximateAttributeWith as a weapon estimate — weapon or armour — Mob.java:684-687
+132. `entities/attributes` f3 message 5 (:363) and :395-402 — the instance "is born" here, "Both times" — only if nothing asked yet; a sword-holding player already has it — LivingEntity.java:3141-3145
+133. `entities/attributes`:403-405 — sendDirtyEntityData "finds nothing to send" — it sends the effect swirl — ServerEntity.java:411-416; LivingEntity.java:938
+134. `entities/attributes`:438-442 — the two sets drain "one phase apart"; AttributeCommand "the one permanent modifier a player can create by hand" — different phases (the connection phase for a player); /effect and /summon make permanent modifiers too — MobEffect.java:185; LivingEntity.java:822 (page-internal against :384-401)
+
+*Held: :5 "thirty seconds" (a scenario choice); :299-300 "safe only because each bucket's arithmetic is commutative" (floating point, minor).*
+
+**`entities/movement-and-collision`**
+
+135. `entities/movement-and-collision`:17-18 (hook) and :371 — "the effects that replay finds are not applied where they are found"; "Nothing found is applied inline" — only the fire, freezing and water effects are queued (6 of 27 entityInside overrides use the applier); a cobweb, a cactus, a pressure plate act inline — BaseFireBlock.java:128-130; WaterFluid.java:82; WebBlock.java:29; CactusBlock.java:128
+136. `entities/movement-and-collision`:27 (cast) — Entity's thread "server main, or client main for whoever is authoritative" — SERVER_AND_CLIENT types run Entity.move on both sides — ItemEntity.java:141-153, :472-473
+137. `entities/movement-and-collision`:33 (cast) — "the once-per-tick snapshot" — the snapshot the tick reads; it is retaken inside Entity.move — LivingEntity.java:341-343
+138. `entities/movement-and-collision`:39-40 — "nothing in a client-side mob's own tick reaches Entity.move" — a dying ender dragon (SERVER_AND_CLIENT) does — EnderDragon.java:585, :972-973
+139. `entities/movement-and-collision`:61 (f1) and :97 — "coast or interpolate" / "interpolate-or-coast" at aiStep's opening — Entity.commonTick interpolates; aiStep only coasts, when nothing interpolates or simulates — LivingEntity.java:3218-3220; Entity.java:548-550 (V1's item 11 not carried to these two; session's read)
+140. `entities/movement-and-collision` f1 (:68) — `Entity.restitution` in a message — no such member (restituteMovementAfterCollisions); now "the bounce, the step sound, the block speed factor" — Entity.java:880
+141. `entities/movement-and-collision`:143 and the table — "four block properties" — five in 26.3 (Block.getFallDistanceReduction, 0.5 on beds and the shelf mushroom), and the shelf mushroom's 0.75 bounce — Block.java:476-494; Blocks.java:289, :823
+142. `entities/movement-and-collision`:155-156 — PISTON "the one with real machinery" — 26.3's MoverType.isServerAndClientSimulated is machinery for every non-SELF mover; now "collision rules of its own" — MoverType.java:9-11; Entity.java:793
+143. `entities/movement-and-collision` f2 WIN (:186) and :231-233 — "dropped back to the old floor" / "less the drop back to the old floor" — the stepped result is re-expressed from the tick's starting box, with the fall added back — Entity.java:1230, :1248-1250
+144. `entities/movement-and-collision` f2 caption (:197-200) — "Two diamonds"; the list-ending exit "is not an answer to the question in it" — three diamonds since pass 7 added NEXT, whose "no" is exactly that answer — (page-internal against the figure)
+145. `entities/movement-and-collision`:242-245 — the clip for FALL_DAMAGE_RESETTING — water too — Entity.java:809
+146. `entities/movement-and-collision`:262 and :431-432 — "The only geometric probe" / "the page's only real probe" — the fall clip and the block-below probe are probes too; now "the probe for what holds you up" — Entity.java:809, :1129-1131 (page-internal)
+147. `entities/movement-and-collision`:274-275 — Block.fallOn calls causeFallDamage — after scaling the distance by 1 − getFallDistanceReduction (26.3) — Block.java:468-471
+148. `entities/movement-and-collision`:283-287 — the resets listed as seven under a heading of eight — the eighth is a bubble column — Entity.java:3176
+149. `entities/movement-and-collision`:316-318 — "Climbing lives inside this same step" — handleOnClimbable runs before the move, the 0.2 clamp after — LivingEntity.java:2835-2840
+150. `entities/movement-and-collision`:324-326 — applyGravity "runs before the move" — most callers; AbstractArrow applies it after its step — AbstractArrow.java:259, :268
+151. `entities/movement-and-collision`:338 — "The fluid snapshot has one exception" — the re-run fires on every authoritative move of a living entity not in water, and in ItemEntity.tick — LivingEntity.java:341-343; ItemEntity.java:183
+152. `entities/movement-and-collision`:354-356 — "Each segment is replayed in the same axis order" — only recorded segments; substituted, appended and merged ones are swept straight — Entity.java:989, :991, :1005, :1383-1399
+153. `entities/movement-and-collision`:390 — cramming "checked one tick in four" — a one-in-four roll each tick — LivingEntity.java:3438
+154. `entities/movement-and-collision`:402-404 — "at least 1,200 ticks" — at most about 1,200, fewer when data or a push opens the gate — ServerEntity.java:147, :180, :266 (overturns pass 5 session F's and I's listed claim)
+155. `entities/movement-and-collision`:408-411 — syncPosition "re-phases the tracker's own counter … so the send happens at the next evaluation" — for a living entity the SteppedInterpolationTracker consumes the flag first and records a step (26.3) — ServerEntity.java:141-145; SteppedInterpolationTracker.java:47-50; SteppedInterpolationHandler.java:20
+156. `entities/movement-and-collision`:419 — "InterpolationHandler, three steps by default" — the default is NO_OP; a living entity's stepped handler takes its update interval, three by default — Entity.java:2816-2818; SteppedInterpolationHandler.java:15-16
+157. `entities/movement-and-collision`:430-431 — "`Entity.collectCandidateStepUpHeights` the step-up loop" — the loop is in Entity.collide; the helper harvests the heights — Entity.java:1243-1252, :1258-1285 (page-internal)
+158. `entities/movement-and-collision`:436-437 — ItemEntity.tick "in thirty lines" — a line count (79 decompiled); now "in one method"
+
+*Held: :400-401 the Pos packet (for a living entity it carries a PositionPath) and :401-406 the missing ItemEntity precision condition — neither bears on the zombie's argument; f1's third-from-last setPos label (the fourth boolean is set after setOnGroundWithMovement) — a nit.*
+
+**`entities/ai-goals-and-brains`**
+
+159. `entities/ai-goals-and-brains`:34 (cast), :47 (table), :249-250 — "116 constants … 53 with a codec" — 115 and 52 in 26.3 (IS_TEMPTED removed); 63 transient stands — MemoryModuleType.java:34-148
+160. `entities/ai-goals-and-brains`:44 (table) — the brain "built again whenever the body changes" — only a villager rebuilds mid-life (and every brain mob on load) — Villager.java:183-208; LivingEntity.java:849-850
+161. `entities/ai-goals-and-brains`:46 (table), f1 F (:177), :201-202 — an inactive activity's behaviour "is not asked at all" / "never asked" — it is not *started*; a running one is still ticked in phase four, which is why SleepInBed checks REST itself — Brain.java:302-325, :501, :518-527; SleepInBed.java:66
+162. `entities/ai-goals-and-brains`:49 (table) — the goal selector used by "every Mob" — every mob ticks one; seventeen of the twenty brain mobs fill it with nothing (page-internal against :327, :335-336) — HappyGhast.java:108-114; AbstractFish.java:93-98
+163. `entities/ai-goals-and-brains`:112-114 — "a client-side mob's selectors are empty for its whole life" — a cat and an ocelot add an avoid goal from the constructor — Cat.java:102-105, :487-495; Ocelot.java:71-74
+164. `entities/ai-goals-and-brains`:146 — "a mob's first two ticks" — one: commonTick raises tickCount before the first AI step — Mob.java:793; ServerLevel.java:866-867
+165. `entities/ai-goals-and-brains`:196-199 (f1 caption) — "between them a behaviour that started has already reached the end of its life" — only one that keeps the default canStillUse (49 overrides tree-wide; the figure's own "no" branch) — Behavior.java:82-84; OneShot.java:31-33
+166. `entities/ai-goals-and-brains`:272-280 — the leash lever fires "when the mob is too far" and "at the end of its rope"; MOVE comes back through closeRangeLeashBehaviour — it fires past the snap distance, breaks the lead, and MOVE returns through updateControlFlags — Leashable.java:172-199; Mob.java:1396-1399, :389-404
+167. `entities/ai-goals-and-brains`:305-313 — "every one is an instance of the two shapes"; sensors "26 classes, each a Sensor"; the *Ai classes "nothing but the lists" — a behaviour is a Behavior subclass or a BehaviorBuilder one-shot, beside a handful of machinery; 23 of the 26 are Sensors; PiglinAi and others carry the helpers too — world/entity/ai/behavior; world/entity/ai/sensing; PiglinAi.java:256, :305, :475
+168. `entities/ai-goals-and-brains` f2 (:365-371) — AcquirePoi writing POTENTIAL_JOB_SITE drawn in the same tick as a successful WORK switch — they exclude each other (AcquirePoi runs only with no JOB_SITE; WORK needs one); the write cut and the band's note scoped to a villager holding a job site (page-internal against :235-237) — AcquirePoi.java:119-121; Villager.java:139
+169. `entities/ai-goals-and-brains` f2 (:374-375) — "tick 12000, REST"; the rest package drawn starting at once — REST is active from the tick after UAFS sees 12000 (throttled), and SleepInBed starts only at the bed — Brain.java:389; SleepInBed.java:52
+170. `entities/ai-goals-and-brains`:380-381 (f2 caption) — "two ticks twelve thousand apart" — the bands' labels are 2000 and 12000: about ten thousand (session's read)
+171. `entities/ai-goals-and-brains`:391-393 — "fewer than 21 ticks" — "more than twenty", Part IV's wording (pass5.md:4034; D's handoff) — Brain.java:389
+172. `entities/ai-goals-and-brains`:402-403 — "the escape hatch asks once" — VillagerCalmDown asks every tick while calm, ResetRaidStatus on a 1-in-20 roll; the throttle meters them — VillagerCalmDown.java:9-19; ResetRaidStatus.java:8-16
+173. `entities/ai-goals-and-brains`:413-422 — AssignProfessionFromJobSite "sets the profession"; "one of two states"; "Two more behaviours can take a claim away" — only if it has none; a third state (GoToPotentialJobSite's 1,200-tick timeout); YieldJobSite a third taker — AssignProfessionFromJobSite.java:17-30; GoToPotentialJobSite.java:16-57; YieldJobSite.java:23-48
+174. `entities/ai-goals-and-brains`:437-440 — SleepInBed "never times out, because it overrides Behavior.canStillUse … unlike almost every behaviour" — the timedOut override is why it never times out; canStillUse is why it keeps running, as MoveToTargetSink does (D's handoff) — SleepInBed.java:57-68, :98-101; Behavior.java:64, :86-88; MoveToTargetSink.java:58-68
+175. `entities/ai-goals-and-brains`:460-461 — SpearUseGoal "is usually the one holding them" — it needs a spear in the main hand; for most zombies the attack goal holds them — SpearUseGoal.java:40-46; Zombie.java:353-365
+176. `entities/ai-goals-and-brains`:464 — "nothing persisted, nothing the world can push in" — the door-breaking flag is saved and the control flags apply — Zombie.java:373, :381; Mob.java:389-404 (page-internal against :264-270)
+177. `entities/ai-goals-and-brains`:466-468 — "brain mobs source theirs from Mob.getTargetFromBrain" — nine of the twenty — grep `return this.getTargetFromBrain()`
+178. `entities/ai-goals-and-brains`:476-477 (blockquote) — MemoryModuleType "unchanged" — it lost IS_TEMPTED within 26.x; "keep their shapes"
+179. `entities/ai-goals-and-brains`:486-487, :490-492 — tryStart and canStillUse "explain why most behaviours never see a second tick"; "the six lines"; BehaviorBuilder "the DSL nearly every behaviour is declared with" — the one-shots (OneShot.tickOrStop) are the majority; a line count cut; the DSL of the one-shots, over half — OneShot.java:31-33; 68 BehaviorBuilder.create sites against about 56 Behavior subclasses
+
+*Held: :49 "58 goal classes and 10 targeting ones" and :306 "61" (top-level files; the 61 are the 58 plus Goal, GoalSelector, WrappedGoal).*
+
+**`entities/pathfinding`**
+
+180. `entities/pathfinding`:41 and f1 GIVEUP (:51) — "two ways it ends"; the loop's only exit is giving up — arrival ends it too (Path.isDone makes PathNavigation.isDone true); "three ways", "arrived, stuck … or timed out?" — Path.java:60-62; PathNavigation.java:363-365
+181. `entities/pathfinding` f1 GATE (:48), :195-197, f2 (:215), :319 — "the four early exits" — the default GroundPathNavigation returns null first for a target in an unloaded chunk; now "the early exits" — GroundPathNavigation.java:44-49
+182. `entities/pathfinding`:67 (heading) — "Asking: the four ways a search does not happen" — false for the default navigation; now "Asking: the ways a search does not happen" (check_links --inbound: no link lands on it)
+183. `entities/pathfinding`:73-76 — "the requested target is among its targets"; re-asking "costs nothing and changes nothing" — the requested set contains the current target; true of createPath, and moveTo(Path) restarts the stuck check (trimPath, speed, baseline) — PathNavigation.java:161, :206-221
+184. `entities/pathfinding`:96-98 — "raised in seven classes' constructors … 48 for … HappyGhast" — four in constructors, two in createNavigation, one in the baby happy ghast's nested navigation; the adult keeps 16 — Villager.java:166; Allay.java:128-133; Bee.java:550-575; HappyGhast.java:103-105, :119, :634-638
+185. `entities/pathfinding`:105-109 — "The recompute has exactly one trigger … so a mob that is tempted or angered searches a different amount of world" — two callers (setRequiredPathLength too); only FOLLOW_RANGE feeds the number; nothing in the game changes it after spawn — PathNavigation.java:79-92; Mob.java:1571-1575
+186. `entities/pathfinding`:131 — "it is why AI cannot stall a tick" — the search cannot wait on a chunk; the follow reads the live level — PathNavigationRegion.java:53-57; PathNavigation.java:262, :384
+187. `entities/pathfinding`:249-252 — "one of its goals simply does not use it" (happy ghast) — none of the adult's goals paths through the navigation — HappyGhast.java:108-114; TemptGoal.java:149-153; Ghast.java:339
+188. `entities/pathfinding`:258-260 — the four controls "all four re-specialised by movement mode" — only the move and look controls; JumpControl's and BodyRotationControl's subclasses are per mob — FlyingMoveControl, SmoothSwimmingMoveControl, SmoothSwimmingLookControl; Rabbit.java:518; Camel.java:703
+189. `entities/pathfinding`:262-265 — BodyRotationControl "swings the body to follow the head the moment the head is more than fifteen degrees off … the reverse move, easing the head back … waits for ten stable ticks" — while moving the body takes the mob's yaw; standing, a 15° head swing drags the body only to within getMaxHeadYRot, and after ten still ticks the body turns to the head over ten more — BodyRotationControl.java:19-56
+190. `entities/pathfinding`:272-273 — xxa "written only by the strafe branch" — written non-zero only there — MoveControl.java:89; SmoothSwimmingMoveControl.java:74
+191. `entities/pathfinding`:288-293 — the node timeout "accumulates real ticks against it"; "This is the one that catches" a blocked route — the counter is not cleared when the node changes; either timer can catch it — PathNavigation.java:329-347
+192. `entities/pathfinding`:305 — "every navigating mob in the level" — every tracked mob, path or not — ServerLevel.java:2076-2085
+193. `entities/pathfinding`:309-310 — the flag exists "because a recompute can itself change blocks" — nothing on the recompute path writes a block; the flag is checked by a nested sendBlockUpdated and by mobs joining or leaving the set — ServerLevel.java:1197-1201, :2079-2083, :2111-2115
+194. `entities/pathfinding`:324 — WalkNodeEvaluator "since the other three specialise it" — two do; SwimNodeEvaluator extends NodeEvaluator (page-internal against :153) — SwimNodeEvaluator.java:18
+
+*Polish with it: the cast's thread column, *Server thread* (V7).*
+
+*Held: :3 (verified line) "a hundred ticks after" — the stuck window counts from the last moveTo; :117-118 the offset of 8 or 16 (ground and flying navigations take 8 for an entity too — minor); :35-36 "every entry point takes a ServerLevel or a Mob on one".*
+
+**`entities/damage-and-death`**
+
+195. `entities/damage-and-death`:5-6 (opening) — "a notification sound plays somewhere behind you" — the hit ding (PLAY_ARROW_HIT_SOUND) goes to the shooter; now the archer's client plays it — AbstractArrow.java:514-518
+196. `entities/damage-and-death`:10-11 — a weaker hit "returns immediately, having done nothing at all" — blocking and the helmet run before the i-frame return (a shield can wear or be disabled); now "without dealing any damage" — LivingEntity.java:1273, :1283, :1295
+197. `entities/damage-and-death`:14 — "Health goes down and nothing else happens" — the combat entry and the attribution are filed; now "nothing anyone watching can see" — LivingEntity.java:1309-1310, :2104
+198. `entities/damage-and-death`:22-28 (cast) — thread column "server main" — *Server thread* (V7; pass5.md:5684)
+199. `entities/damage-and-death`:49-50 — "Six is a fresh arrow at full draw" — a full draw always crits, adding 0 to 4, so six is the draw in five that adds nothing — BowItem.java:46; ProjectileWeaponItem.java:89; AbstractArrow.java:478-481
+200. `entities/damage-and-death`:68 — "35 tags in DamageTypeTags" — 36 (NO_WOLF_RETALIATION, 26.3) — tags/DamageTypeTags.java
+201. `entities/damage-and-death`:162-163 — resolveBlockedDamage "pick[s] a reduction" — sums the applicable reductions, clamped — BlocksAttacks.java:86-95
+202. `entities/damage-and-death`:166-167 — a Ravager "stuns itself while shoving them" — on a coin flip, else a stronger knockback — Ravager.java:224-232
+203. `entities/damage-and-death`:200 — "returns before any sound, packet" — "any hurt sound, damage packet" (the shield's own sounds can come first) — LivingEntity.java:1273-1295
+204. `entities/damage-and-death`:205-206 — "the strongest hit in each window is the only one anyone can see, and the rest … leave no trace on the wire" — the first hit is the visible one; a stronger later one is silent to watchers, but its health goes out and LocalPlayer.hurtTo flashes the victim's own screen — LivingEntity.java:1297-1306; ServerPlayer.java:775; LocalPlayer.java:375-393
+205. `entities/damage-and-death`:257-258 — damage "comes off absorption first and health second, at which point recordDamage files" — recordDamage runs before setHealth — LivingEntity.java:2104-2105
+206. `entities/damage-and-death` f2 (:280-281) — "actuallyHurt, then setHealth" drawn before recordDamage — recordDamage, then setHealth — LivingEntity.java:2104-2105; Player.java:757-758
+207. `entities/damage-and-death`:303-304 — "a blocked hit puts no flash on anyone's screen" — anyone else's (a partial block on a player still drops health, and hurtTo flashes) — LocalPlayer.java:384-389
+208. `entities/damage-and-death`:312 — "Six packets carry the hit itself" — beside the sound packets (the hurt sound to nearby players, the hit ding to the shooter) — Player.java:401-402; AbstractArrow.java:514-518
+209. `entities/damage-and-death`:321-322 — "The client picks a sound and a flash from the type" — a sound only for a player; a mob plays its own — LivingEntity.java:2184; Player.java:581 (page-internal against :64-66)
+210. `entities/damage-and-death` f3 D (:342), :363-364, :407-409 — CombatTracker.recheckStatus in LivingEntity.die — 26.3 moved it to LivingEntity.remove — LivingEntity.java:733, :1581-1616
+211. `entities/damage-and-death`:401 — "Two things then happen without a packet" — the first is driven by byte 3; "without a packet of their own" (page-internal against :317-318)
+212. `entities/damage-and-death`:417 — the credited entry is "whatever hit you just before you left the ground" — the entry logged before the fall's, which can be a mid-air hit — CombatTracker.java:128-132
+213. `entities/damage-and-death`:423-426 — "a two-block drop after a skeleton shot you is a death by arrow"; "fell out of the world" as a FallLocation wording — a two-block drop files no fall entry; a short fatal fall is "hit the ground too hard"; fell out of the world is the out_of_world type's own message; now the four-block/ten-block pair and "fell off some vines" — CombatTracker.java:98-149; LivingEntity.java:1916-1921; en_us.json:3442, :3521; FallLocation.java:13-20
+214. `entities/damage-and-death`:435 — hurtClient "nine declarations counting the base" — ten (Cushion, 26.3) — grep `boolean hurtClient(`
+215. `entities/damage-and-death`:444 — cramming "called at the end of the same method" — near the end (water-sensitivity damage follows) — LivingEntity.java:3354-3360
+216. `entities/damage-and-death`:447 (heading) "Twenty-one classes with no pipeline at all" and :451-469, :493 — Cushion (26.3) makes 55 overriders plus Entity, 22 non-living, 18 others, five one-hit — heading now "Twenty-two classes …", its two links repointed (entities/entity-anatomy:199, reference/non-living-damage:11) — Cushion.java:43, :114, :119; grep `boolean hurtServer(` 56 files
+217. `entities/damage-and-death`:456-457 — the non-living classes "never touch armour … the death sequence" — EnderDragonPart forwards into the dragon's LivingEntity pipeline; now "none of them runs … itself" — EnderDragonPart.java:52; EnderDragon.java:484-520
+218. `entities/damage-and-death`:462-463 — "a minecart takes a fixed number of hits rather than a fixed amount of damage" — an accumulator of damage × 10 that decays one a tick, broken past 40: any hit over four breaks it — VehicleEntity.java:48, :66; AbstractMinecart.java:264-265
+219. `entities/damage-and-death`:475-476 (blockquote) — "a skeleton trap gives its horse and riders sixty ticks" — the horses it adds and every skeleton rider; the trap horse itself gets none — SkeletonTrapGoal.java:78, :93
+220. `entities/damage-and-death`:482-487 — "the three overrides that reach it first … the abstract Entity.hurtServer … are the gates"; the CombatRules statics "ten lines each" — two overrides over the abstract declaration; "short" (the line counts are the decompiler's) — Entity.java:2093; ServerPlayer.java:1101; Player.java:678
+
+*Also: `reference/non-living-damage` brought to 26.3 with it (twenty-two; thirteen inherit hurtClient and eight declare it; a Cushion row; one hit destroys five; "none of them runs LivingEntity's rules itself").*
+
+*Held: :322-323 "the one place a hit is deduced from a health drop" (Hud's heart blink reads the same drop, gated on the cooldown hurtTo sets).*
+
+**Elsewhere** (pages outside Part VI that a correction here made disagree; *(audit)* where the record's audit found it)
+
+221. `player/status-effects`:60 — the link to the corrected Strength II heading repointed (118) — *(page-internal)*
+222. `reference/non-living-damage`:7–16, :48, :55–58 — *twenty-one*, *thirteen … seven*, *one hit destroys (four)*, and the lecture link — twenty-two with `Cushion`, thirteen inherit `Entity.hurtClient` and eight declare it, five one-hit classes, a `Cushion` row, the link repointed (216) — `world/entity/decoration/Cushion.java`:43, :83–121
+223. `reference/README`:47 — *twenty-one non-living classes* — twenty-two — as 222
+224. `player/the-two-phase-tick`:174–176 — `Entity.canSimulateMovement` and `Entity.isEffectiveAi` *overridden true on the server* — the first is final; `Player`'s move-simulation type and its `Entity.isEffectiveAi` override make both true — `world/entity/player/Player.java`:1256, :1261; `world/entity/Entity.java`:3988
+225. `networking/what-the-client-is-told`:162–164 — `Entity.syncPosition` re-phases the counter for any bounced entity — not for a living entity other than a shulker, whose stepped tracker takes the flag first (the shulker exception *(audit)*) — `server/level/ServerEntity.java`:141–145; `world/entity/SteppedInterpolationTracker.java`:47–50; `world/entity/monster/Shulker.java`:444–445
+226. `networking/what-the-client-is-told`:199 — *at least 1,200 ticks* — about 1,200 for an entity tracked every tick, fewer when data or a push opens the gate (*at most* first, then scoped *(audit)*: the 400 counts tracker calls) — `server/level/ServerEntity.java`:147, :180, :266; `server/level/ChunkMap.java`:1366
+227. `networking/what-the-client-is-told`:146 — *the three `BlockAttachedEntity` subclasses* — three of four; the cushion takes the default *(audit)* — `world/entity/decoration/Cushion.java`:43
+228. `lectures.md`:159 — *half this part's surprises* — two *(audit)*
+229. `lectures.md`:430–433 — Part VI hands *a different Part X page* forward — two pages, the client level and prediction and acknowledgement *(audit)* — `client/README`:75–80
+230. `reference/glossary`:22–23 (*Activity*) — the filter on which behaviours *are asked at all* — which may *start* *(audit)* — `world/entity/ai/Brain.java`:501, :518–527
+231. `reference/glossary`:72–75 (*Behaviour*) — everything it does in `Behavior.start` — or, for a one-shot, in its trigger *(audit)* — `world/entity/ai/behavior/OneShot.java`:31–33
+
+**From the record's audit** — one agent per page re-derived every sentence above against the tree, read its neighbours and grepped the book. *(own N)* is an error in the sentence correction N wrote; *(beside N)* a neighbour correction N left disagreeing.
+
+232. `entities/README`:6 — *A mob you named never despawns by distance* — a mob named some other way (a renamed spawn egg) gets no persistence; *name-tagged* *(own 1)* — `world/item/NameTagItem.java`:23–27; `world/item/SpawnEggItem.java`:106
+233. `entities/README`:15–16 — *besides the fire, fluids and portals* — riding too *(own 3)* — `world/entity/Entity.java`:2612, :2661
+234. `entities/README`:64 — the arrow for Part X *lands on one page in particular* — two, the client level and prediction and acknowledgement *(own 7)* — `client/README`:75–80; `client/prediction-and-acks`:20–23
+235. `entities/README`:75 — *several of this part's surprises* — two *(own 8)*
+236. `entities/README`:146–148 — the behaviour and goal classes *one shape each* — nearly all one of three shapes (13 of the 103 and 3 of the 61 are machinery or value types) *(beside 167)*
+237. `entities/entity-anatomy`:17–20 — *nine methods, six of which hand that default back* — seven: `DefaultedMappedRegistry.getDefaultKey` too, now that the nine include it *(own 20)* — `core/DefaultedMappedRegistry.java`:38–43, :57–60, :76–79
+238. `entities/entity-anatomy`:38 (cast) — `Entity`'s thread *the tick thread of whichever level owns it* — or the worldgen worker before its chunk is live *(beside 21)* — `world/level/NaturalSpawner.java`:373, :388
+239. `entities/entity-anatomy`:160–161 — *a physics-changing value* — box-changing (an arrow's no-physics flag resizes nothing) *(beside 29)* — `world/entity/projectile/arrow/AbstractArrow.java`:67, :844–849
+240. `entities/entity-anatomy`:210 — *the tree gained a level* — history; *has that level* *(beside 32)*
+241. `entities/entity-anatomy`:222–224 — *the player who last hurt a mob* — `LivingEntity.lastHurtByMob` is saved too; the old *who last hurt me* was right and is restored *(own 33)* — `world/entity/LivingEntity.java`:782–785, :854–855
+242. `entities/entity-anatomy`:296–298 (f3 caption) — *a separate object of the same class* — of the same class bar a player (`RemotePlayer`) and a mannequin (`ClientMannequin`) *(beside 39)* — `client/multiplayer/ClientPacketListener.java`:621–628; `client/entity/ClientMannequin.java`:27–30
+243. `entities/entity-anatomy`:437–438 — `Entity.viewScale` *a distance of its own* — in singleplayer the same option also scales the integrated server's tracking *(own 46)* — `client/server/IntegratedServer.java`:489–490
+244. `entities/authority`:8–9, :33, :282, :288 — the boat you are *sitting in* / *riding*; *Both are ridden* — only the first-seat player steers *(beside 61)* — `world/entity/vehicle/boat/AbstractBoat.java`:835–846
+245. `entities/authority`:49–52 — the both-sides list *an arrow in flight* — every projectile, and a dying ender dragon *(beside 55)* — `world/entity/projectile/Projectile.java`:459; `world/entity/boss/enderdragon/EnderDragon.java`:972–973
+246. `entities/authority`:82–83 — the carve-out named only the both-sides types — on the server a player's type and override ask neither question *(own 55)* — `world/entity/Entity.java`:3997; `world/entity/player/Player.java`:1261–1262
+247. `entities/authority` f1 SIMT — *an item's, an arrow's or TNT's* — a projectile's and a few more *(own 56)*
+248. `entities/authority` f1 caption — *unless a type or an override answers first* — `Mob.isEffectiveAi` asks the root and adds its test; only `Player`'s override answers instead *(own 57)* — `world/entity/Mob.java`:1419
+249. `entities/authority`:167–169 — *the one consequence gated on that alone* — scoped to `Entity.move` (`AbstractBoat.positionRider` also reads the root alone) *(own 59)* — `world/entity/vehicle/boat/AbstractBoat.java`:691
+250. `entities/authority`:185–187 — `Entity.getKnownMovement` *for a player* — and anything a player steers *(beside 60)* — `world/entity/Entity.java`:4438–4446
+251. `entities/authority` f2 caption — two outcomes, and the ground flag landed on accept — a report too far off is refused before the move; `Entity.move` already sets the ground flag *(own 64)* — `server/network/ServerGamePacketListenerImpl.java`:484–487; `world/entity/Entity.java`:830–835
+252. `entities/authority`:297–298 — what still moves a *NoAI* mob — a vehicle carrying it too *(own 66)* — `world/entity/Entity.java`:2612–2630
+253. `entities/entity-lifecycle`:93–94, :120, f2 edge, :233–236 — *the group filling up*, *group full*, *the group has all the siblings*, *Two different limits end it* — only a tropical fish that does not school answers yes, on `!isSchool` *(own 73, 77)* — `world/entity/animal/fish/TropicalFish.java`:103–105, :217–221
+254. `entities/entity-lifecycle`:117 — `EntityType.create`'s null — or what it built is not a `Mob` *(own 74)* — `world/level/NaturalSpawner.java`:274–288
+255. `entities/entity-lifecycle`:204–205 — the persistence gloss read as the whole population — *among them* (about 35 setters; six `Mob.requiresCustomPersistence` overrides) *(own 75)* — `world/level/block/entity/trialspawner/TrialSpawner.java`:252; `world/entity/raid/Raider.java`:272–274
+256. `entities/entity-lifecycle`:383–384 (f4 caption) — *an entity takes its section's* — a player is always ticking *(own 78)* — `world/entity/player/Player.java`:1915–1917; `world/level/entity/PersistentEntitySectionManager.java`:105–107
+257. `entities/entity-lifecycle`:403–404 — the 300 ticks reset only by tickets — an entity arriving from another dimension resets them too *(own 79)* — `world/entity/Entity.java`:3425
+258. `entities/entity-lifecycle`:498 — CHANGED_DIMENSION *anything but a player is rebuilt* — a player is rebuilt on its way out of the End *(own 84)* — `server/level/ServerPlayer.java`:1261; `server/network/ServerGamePacketListenerImpl.java`:2194; `server/players/PlayerList.java`:408–414
+259. `entities/synched-entity-data`:26 (cast) — *confined to the Server thread or the Render thread* — a live container; a chunk's first mobs are built on the worldgen worker *(own 87)* — `world/level/levelgen/structure/structures/SwampHutPiece.java`:97–103
+260. `entities/synched-entity-data`:150–153 — Holders *which is why* the buffer is registry-friendly — and item stacks, components and particles *(own 94)* — `world/item/ItemStack.java`:117; `network/chat/ComponentSerialization.java`:42–43
+261. `entities/synched-entity-data`:189–190 — *what the client builds from it* — what it writes it into *(beside 101)*
+262. `entities/synched-entity-data`:258–264 — *The rest of the channel is cosmetic* — a pig's boost, a sleeper's bed and an item in use also steer the client *(own 97)* — `world/entity/animal/pig/Pig.java`:119–121; `world/entity/LivingEntity.java`:3763–3765; `client/player/LocalPlayer.java`:632–643
+263. `entities/synched-entity-data`:342 — *a load from disk* — any load (`/data`, a spawn with entity data) *(own 105)* — `world/entity/Entity.java`:2332
+264. `entities/synched-entity-data`:347–348 — the position goes *if it has moved* — position and rotation can go without movement (the 60-count refresh, the ground flag) *(own 106)* — `server/level/ServerEntity.java`:189–192, :266–277
+265. `entities/synched-entity-data`:359–362 — map packets *which nothing else sends* — a player carrying that map gets them from its own inventory sweep *(own 110)* — `server/level/ServerPlayer.java`:766–770, :829–838
+266. `entities/synched-entity-data`:366–370 — *For most entities* the counter is realigned — the minority: 93 of 161 types are living and all but the shulker take the stepped path *(own 111)* — `world/entity/LivingEntity.java`:3526–3527; `world/entity/monster/Shulker.java`:444–445
+267. `entities/synched-entity-data`:412 (table) — *to trackers and self* — self only for a player *(beside 98)* — `server/level/ChunkMap.java`:1560–1566
+268. `entities/attributes`:21 — *like the sky's light level* — the one non-positional attribute; *the sky's colour* *(own 119)* — `world/attribute/EnvironmentAttributes.java`:28, :48
+269. `entities/attributes`:76 — *the next section* — a later one *(page-internal)*
+270. `entities/attributes`:184–186 — *sprinting* among the in-tick dirtiers — a player's sprint is set in the packet handler, before the tick *(beside 125)* — `server/network/ServerGamePacketListenerImpl.java`:1989, :1992
+271. `entities/attributes`:192–195 — *a command* before the chunk-source phase — a player's; the console drains in the connection phase *(own 125)* — `server/dedicated/DedicatedServer.java`:469–471
+272. `entities/attributes` f3 and :399–406 — creation's dirty and *dirties it again* — for the page's own sword-holder the instance exists; the remove dirties nothing and the add once *(beside 132)* — `world/entity/LivingEntity.java`:3140–3144; `world/entity/ai/attributes/AttributeInstance.java`:84, :132–137
+273. `entities/attributes`:341 — the packet *to the entity itself* — when it is a player *(beside 98)* — `server/level/ChunkMap.java`:1560–1566
+274. `entities/movement-and-collision`:17–18, :374–376, :33 (cast) — *the fire, freezing and water effects* — a campfire's burn and a magma floor are inline; *ignition, freezing and extinguishing* *(own 135)* — `world/level/block/CampfireBlock.java`:113–114; `world/level/block/MagmaBlock.java`:17–19
+275. `entities/movement-and-collision`:28 (cast) — *both for an item, an arrow or lit TNT* — an arrow never calls `Entity.move`; the orb and the falling block do, and a piston or a shulker pushes anything through it *(own 136)* — `world/entity/projectile/arrow/AbstractArrow.java`:255–293; `world/level/block/piston/PistonMovingBlockEntity.java`:191
+276. `entities/movement-and-collision`:32, :34 (cast) — every segment has a pre-collision vector; the snapshot's *eye depth* — only moves record one; the eyes are a flag *(beside 152, own 137)* — `world/entity/Entity.java`:4563–4571; `world/entity/EntityFluidInteraction.java`:92–96
+277. `entities/movement-and-collision`:41 — *nothing in a client-side mob's own tick reaches `Entity.move`* — a shulker's tick moves others; *moves it* *(own 138)* — `world/entity/monster/Shulker.java`:186–187, :271
+278. `entities/movement-and-collision`:270 (heading) and :283–291 — *the fall distance that resets from eight places* — also a honey slide and a mace smash; heading now *from many places* (no link lands on it) *(own 148)* — `world/level/block/HoneyBlock.java`:113; `world/item/MaceItem.java`:85–87
+279. `entities/movement-and-collision`:342–344 — *`ItemEntity.tick` re-runs it too* — `PrimedTnt.tick` and `AbstractMinecart.tick` as well *(own 151)* — `world/entity/item/PrimedTnt.java`:121; `world/entity/vehicle/minecart/AbstractMinecart.java`:272
+280. `entities/movement-and-collision`:408–410 — *at most about 1,200 ticks* — the 400 counts tracker calls; about 1,200 when tracked every tick *(own 154)* — `server/level/ChunkMap.java`:1366
+281. `entities/movement-and-collision`:418, :428–429 — *a living entity* takes the stepped path — every one but a shulker *(own 155, 156)* — `world/entity/monster/Shulker.java`:444–445
+282. `entities/ai-goals-and-brains`:33 (cast) — `Brain` decides *which behaviours are asked at all* — which may start *(beside 161)*
+283. `entities/ai-goals-and-brains`:49 (table) — *the mobs without a brain fill it* — almost every: a bat, the ender dragon and a giant register none *(own 162)* — `world/entity/Mob.java`:172
+284. `entities/ai-goals-and-brains`:112, :114–116 — *Goals go in exactly once*; the parenthetical as the whole list — a few mobs add goals later, from the constructor or from loaded data *(own 163, and beside it)* — `world/entity/monster/zombie/Zombie.java`:381; `world/entity/animal/equine/SkeletonHorse.java`:145
+285. `entities/ai-goals-and-brains` f1 caption and f1 — one-shots left out; no path for a behaviour already running — one-shots end at the second diamond too; an edge from the start to phase four for a RUNNING behaviour *(own 165, beside 161)* — `world/entity/ai/behavior/OneShot.java`:31–33; `world/entity/ai/Brain.java`:518–527
+286. `entities/ai-goals-and-brains`:212–216 — everything done in `Behavior.start` — for a `Behavior` subclass; a one-shot works in its trigger *(beside 165)*
+287. `entities/ai-goals-and-brains`:311–316 — *a handful of the machinery that runs them* — and the value types they use (the trackers, `ShufflingList`) *(own 167)*
+288. `entities/ai-goals-and-brains`:427–430 — `YieldJobSite` *passes an unused one to a jobless neighbour* — the jobless villager hands its claim to a neighbour whose profession works there *(own 173)* — `world/entity/ai/behavior/YieldJobSite.java`:23, :27, :61–71
+289. `entities/ai-goals-and-brains`:473–476 — *nothing the world can push in but the control flags* — a neighbour's alert writes the target too *(own 176)* — `world/entity/ai/goal/target/HurtByTargetGoal.java`:127–128
+290. `entities/pathfinding`:41 and f1 caption — *three ways it ends*; *The page's two ends* — the navigation's own three; a caller can stop it too *(own 180)* — `world/entity/ai/behavior/MoveToTargetSink.java`:75
+291. `entities/pathfinding`:73–78 — *its target is among the requested targets*; the fifth exit for every request — the last search's target; the fifth only for one position or one entity *(own 181, 183)* — `world/entity/ai/navigation/PathNavigation.java`:130–144, :161, :173–175
+292. `entities/pathfinding`:99–102 — *most of them in the mob's constructor or its navigation* — all *(own 184)*
+293. `entities/pathfinding`:254–256 — *none of its goals uses it* — an adult's; a baby paths through its brain *(own 187)* — `world/entity/animal/happyghast/HappyGhast.java`:133–140; `world/entity/animal/happyghast/HappyGhastAi.java`:38–45
+294. `entities/pathfinding`:277–278 — `LivingEntity.xxa` non-zero *only by the strafe branch* — for a mob; a player's input writes it *(own 190)* — `client/player/LocalPlayer.java`:759
+295. `entities/pathfinding`:285–288 — the stuck window from *the last check* — or the last `PathNavigation.moveTo` *(beside 191)* — `world/entity/ai/navigation/PathNavigation.java`:220–221, :314
+296. `entities/pathfinding`:295–300 — ticks counted *since the path began* — since the last search that found a path, and so a clear path walked long enough times out too *(own 191)* — `world/entity/ai/navigation/PathNavigation.java`:173–177, :333–343
+297. `entities/pathfinding`:326 — `PathNavigation.createPath` *for the early exits* — the fifth is `GroundPathNavigation.createPath`'s *(beside 181)*
+298. `entities/damage-and-death`:14 — *nothing anyone watching can see happens* — the stuck arrow and the arrow's own sound go out; *none of those happens* *(own 197)* — `world/entity/projectile/arrow/AbstractArrow.java`:499, :535
+299. `entities/damage-and-death`:168–169 — the ravager's coin flip — unless it is roaring *(own 202)* — `world/entity/monster/Ravager.java`:224
+300. `entities/damage-and-death`:202–203 — returns before any *knockback* — before the victim's; a shield's knockback on the blocker can come first *(own 203)* — `world/entity/LivingEntity.java`:1448, :1499–1506
+301. `entities/damage-and-death`:214–215 — the weaker hit *leaves no trace* — no damage and no attribution *(beside 196)* — `world/entity/LivingEntity.java`:1262–1295
+302. `entities/damage-and-death`:261–262 — `CombatTracker.recordDamage` after absorption — unless absorption took it all *(own 205)* — `world/entity/LivingEntity.java`:2103–2105
+303. `entities/damage-and-death`:325–329 — the client's sound *for a player*; `LivingEntity.handleDamageEvent` *plays the sound* — only your own player's is heard from it *(own 209)* — `client/multiplayer/ClientLevel.java`:713–716; `client/player/LocalPlayer.java`:592–594
+304. `entities/damage-and-death`:426–429 — a four-block fatal fall is *hit the ground too hard* — *while trying to escape* the skeleton, the source crediting the last mob that hurt you *(own 213)* — `world/damagesource/DamageSource.java`:72–76; `world/entity/LivingEntity.java`:2116–2117
+305. `entities/damage-and-death`:445–449 — drowning only in `LivingEntity.baseTick` — a water-sensitive mob's drowning is ticked in `LivingEntity.aiStep` *(beside 215)* — `world/entity/LivingEntity.java`:3356–3360
+306. `reference/non-living-damage`:8–9, :57–58, :48 — *no invulnerability window*; the cushion's *false when refused* — no *hurt cooldown* (ten of them honour `Entity.invulnerableTime`); false under `BlockAttachedEntity`'s own gates too *(own 222)* — `world/entity/Entity.java`:3291–3304; `world/entity/decoration/BlockAttachedEntity.java`:98–101
+
+Held from the audit: `authority`:3 (verified line) — a rejected move is decided by the server (the body says *on an ordinary tick*); `entity-anatomy`:167 heading *the class that was inserted into it* (relative; eight links); `entity-lifecycle` f4's exit arrow (the unload path the page's *Ending two* traces; a section also drops when it empties); `entity-anatomy`:36 Netty threads resolving a type (a registry lookup).
+
+**Found at the record** — the whole-part read's item 22, left open when the reports came in:
+
+307. `entities/entity-anatomy`:160–161 — *on the base class exactly two things refresh them unasked* — the second is `LivingEntity`'s; now *two things in the base classes* — `world/entity/Entity.java`:3728; `world/entity/LivingEntity.java`:1210
+
+### Figures changed
+
+- `entities/README` f1 — labels only (4, 5): B → C *one side of each pair decides where it goes*; H → I *and one abstract method answers every hit*; B → OUT *and so do three later parts*. No arrow added or reversed.
+- `entities/entity-anatomy` f1 (class diagram) — box texts (25): `EntityType.EntityFactory` *usually the constructor*; `Entity.levelCallback` *a NULL sentinel until a level takes it*. f2 — `SL→Entity` *commonTick, then tick* (36). f3 — *createEntityFromPacket, a second object* (38).
+- `entities/authority` f1 — redrawn for 26.3 (56, 247): `SIM` *final, it reads the type*; the `SIMP` node replaced by one `SIMT` node for the type (*a player's is not a client or the local player, and an item's, a projectile's, TNT's and a few more are both sides*); `AIP` spelled out; `Q` declared between the predicates so no edge crosses. The first redraw rendered at 9.9px with two crossings; this one at 13.6px with none.
+- `entities/authority` f2 — the accepted branch reordered (63): the move over the reported distance, then the alt, and `absSnapTo` the reported position or the old one inside it, with `setOnGroundWithMovement` and `doCheckFallDamage` only on accept; the client's note and the server's *never simulated here* note cut.
+- `entities/entity-lifecycle` f2 — the group edge *a lone tropical fish* (253). f4 — the `[*] --> H` start cut: a section is not born hidden (86).
+- `entities/synched-entity-data` f1 — the packet now leaves before the local interaction, as `MultiPlayerGameMode.interact` sends it (96); the tick note spans the server's lanes only. f2 — the chunk-source band ends before the client's lane (101). f3 — the gate is *the tracker's UpdateInterval*, and its *no* reaches a new node, *no position this tick, and no data was waiting* (103, 104).
+- `entities/attributes` f1 — REACT *in the entity's own tick* (122). f2 — B *the prototype's, or whatever has set it since* (130). f3 — creation's dirty marked *if new*, the second dirty no longer *again*, the band note *then the player's own tick* and the send *finds an empty attribute set* (132, 272).
+- `entities/movement-and-collision` f1 — *coast if nothing simulates* (139); `Entity.restitution`, no such member, now *the bounce* (140). f2 — WIN *with the tick's fall added back* (143).
+- `entities/ai-goals-and-brains` f1 — F *never started* (161); the first diamond's edges labelled, and a new edge for a behaviour *already RUNNING* to phase four (165, 285). f2 — `AcquirePoi` *runs only while JOB_SITE is empty* and its write cut (168); the work note *with a job site held*; REST *after tick 12000* and the rest package *once the walk home reaches the bed* (169).
+- `entities/pathfinding` f1 — GATE *any of the early exits*; GIVEUP *arrived, stuck for 100 ticks, or the node timed out* (180, 181). f2 — *the early exits* (181).
+- `entities/damage-and-death` f2 — *actuallyHurt, absorption first*, then *setHealth* as its own message (206). f3 — node D without `CombatTracker.recheckStatus` (210).
+- Rendered (`render_figures.js --pages systems/entities`): 25 figures, smallest type 12px, none below the bar; `entity-lifecycle` f2's five crossings and f4's one are the layouts pass 7 left.
+
+### Captions changed
+
+- `entities/README` f1: *The ladder, numbered to the watch order, where every arrow means what the next page needs from this one, so the labels are why the order is the order. The rung with two arrows out is the one to notice: authority is the only page in Part VI that three later parts name as a prerequisite.*
+- `entities/entity-anatomy` f2: *Thirteen steps between a registry entry and a live object, and the one that matters is the second from last: everything above `Entity.setLevelCallback` happens to an object no level knows about.*
+- `entities/entity-anatomy` f3: *The client's `Entity` is not the server's: it is a separate object, of the same class for all but a player or a mannequin, built from a packet rather than from a tag, and the two are only ever as alike as the channels in the rest of this part keep them.*
+- `entities/authority` f1: *Every arrow means one thing, `is answered by`: two of the predicates are answered by the root unless a type or `Player`'s override answers instead, and the root is answered by the other two, one on each machine. `Entity.canSimulateMovement` is final like the root, so what a player or an item changes there is its move-simulation type, not the method.*
+- `entities/authority` f2: *Two copies of one boat, one lane each: yours is simulated, and the server's is moved over the distance yours reports and then kept or snapped back (a report too far off is refused before it is moved at all). The alt is one moment with two outcomes, and only the accepted one lands the fall damage on the server's copy.*
+- `entities/entity-lifecycle` f4: *These are a section's states, not an entity's: an entity other than a player takes its section's, and changes when that section does or when it walks into another. A jump either way crosses the middle state inside one call, and the exit comes after the client was told, not with it.*
+- `entities/synched-entity-data` f2: *Two containers, one per side, and the packet is the only thing that ever reconciles them. The server's half runs later in the same tick as the shear, in the chunk-source phase; the client's container was built with the client's own `Sheep` long before, and changes only when the packet lands.*
+- `entities/synched-entity-data` f3: *Two tests, and the one thing that gets past the second without answering it. A dirty container is one of the second test's own terms, so only the first can hold a byte back, and what it holds is kept for a later tick, not lost.*
+- `entities/attributes` f3: *The lane to watch is `ServerEntity`: it is reached, finds the attribute sync set empty, and sends no attribute packet. The effect itself does go out, as a mob-effect packet when it is added and as the swirl in the entity data, but the attack damage never does.*
+- `entities/movement-and-collision` f2: *Three diamonds: the first decides whether a step-up is attempted at all, the second walks the candidate heights in ascending order, and the third is asked once per height. The loop leaves with the flat result when the heights run out, and with the stepped one at the first height that gains ground.*
+- `entities/ai-goals-and-brains` f1: *One behaviour through one `Brain.tick`. The two diamonds are the whole of this page: the first is asked in phase three and the second in phase four, and a one-shot, or a behaviour that keeps the default `Behavior.canStillUse`, ends at the second in the very tick it started.*
+- `entities/ai-goals-and-brains` f2: *A villager's day as four behaviours in priority order; the two shaded bands are two ticks about ten thousand apart. The one to watch is the schedule behaviour at 99: it runs last, so the activity it asks for is the next tick's — and `Brain.setActiveActivityIfPossible` takes it only if that activity's requirements are met, and falls back to the default without saying so.*
+- `entities/pathfinding` f1: *The page's ways in and the navigation's own ways out. The second entrance is the one to notice: the world pushes a recompute in after a block changes, and it is the only arrow on this page that does not start with a mob wanting something.*
+- `entities/damage-and-death` f1: *The number rides the arrows: four steps in a row take nothing at all, and the whole reduction on a fully armoured victim happens in two.*
+- `entities/damage-and-death` f2: *One lane for the victim, because `ServerPlayer` and `LivingEntity` are one object: the three hurtServer messages at the top are one virtual call going down the override chain. `ServerLevel.broadcastDamageEvent` comes before the knockback, not after — and the last message is where [the next section](#death-or-not) takes over.*
+- Every other caption in the part unchanged; all 25 are at most two sentences.
+
+### Polished
+
+Sentences whose meaning could have moved, each re-read against the tree:
+
+- `entities/ai-goals-and-brains`:346 — **One brain mob** has a schedule (was *One* — *brain mobs with a schedule*; V9; `world/entity/npc/villager/Villager.java`:193, :195)
+- `entities/authority`:146–153 — the coast sentence split at its dashes into three, the mechanism unchanged (`world/entity/LivingEntity.java`:3218)
+- `entities/attributes`:189–192 — the tracker's wait in a parenthesis rather than between dashes (`server/level/ServerEntity.java`:147)
+- `entities/damage-and-death`:67–68 — `DamageEffects` *only for a `Player`: `Player.getHurtSound` is its one caller* (was a dash inside a parenthesis; `world/entity/player/Player.java`:580)
+- Thread names (V7): the casts and tables of `entity-anatomy`, `authority`, `entity-lifecycle`, `synched-entity-data`, `attributes`, `movement-and-collision` and `damage-and-death`, and one sentence each in `ai-goals-and-brains` and `entity-anatomy`, now say *Server thread* and *Render thread* (24, 71, 120, 136, 198 among the corrections); no *server main*, *client main* or *main thread* is left in the part
+
+By kind: possessive on a link 9 (`ai-goals-and-brains` 3, `damage-and-death` 2, `entity-anatomy` 2, `attributes`, `authority`), *actually* cut 11, em-dash chain 5, number device 1, thread names 8 pages.
+
+### The queue
+
+The 109 pass 5–7 ledger entries on these pages are all struck, 84 of them by this session: 62 checked (18 of them naming a neighbour this session corrected), 11 checked except a part, 8 wrong or wrong in part, 2 overtaken and one tool note with no claim; `pass8_queue.py --part VI` lists none open. Part VI's units in [pass5.md](pass5.md) settled: 43 struck — done 12, record 15, ruled 7, overtaken 5, second edition 4 — and a note appended to the eleven units other parts share (115, 215, 892, 1391, 1412, 3301, 3689, 4042, 4389, 5096, 5859). `pass5_queue.py --summary`'s Part VI row now counts only six of those shared units, each carrying VI's share and left open for the later parts it names. Two notes this session first wrote were corrected by its own audit (1412 and the unit at 5712: *seven* handing the default back, 237), and three of this session's ledger verdicts were re-scoped after it (the teleport bound, 280; `Entity.syncPosition` and the shulker, 266).
+
+### For later sessions
+
+- **H** — `player/the-two-phase-tick`:201–203 — fall damage as *one of the three things gated on local-instance authority*: `authority` now calls it the one gate inside `Entity.move` that reads the root alone (59, 249); the count wants re-deriving against that page. `player/status-effects`:15–16 — *the one case in the book where the client simulates in earnest*: `authority` has a steered vehicle as a third case and the both-sides types simulating on the client too (55, 244, 245). `player/the-sword-swing`:319–321 — *the victim's … hurt sound … reconstructed from that*: the damage event plays a sound only for a player, a mob's hurt sound arriving as its own packet (209, 303).
+- **I** — `networking/what-the-client-is-told`:171 — *thirty types override it* counts the finite overrides, 30 of the 38 types that set an interval (the cushion's is an explicit `Integer.MAX_VALUE`). :255–257 — the motion packet goes to the entity itself only when it is a player (`server/level/ChunkMap.java`:1560–1566; 267 and 273 made the same fix in this part). :258–262 — the passenger diff goes through `ChunkMap.TrackedEntity.sendToTrackingPlayers`, unfiltered, in 26.3 (`server/level/ServerEntity.java`:104–106). :263–264 — an item frame walks the level's players only when it holds a map with saved data, and flushes its data once, not per player (`server/level/ServerEntity.java`:111–135).
+- **J** — `client/the-client-level`:219 — *its three-tick window*: a living entity's step count is its update interval, three by default (4042's note; 156, 281). `client/hud`:180–183 — `Hud.healthBlinkTime` is set when the health rises as well as when it falls, and only while `LivingEntity.damageCooldownTime` runs (`client/gui/Hud.java`:865–870).
+- **O** — `world/chunk-storage`:233–240 — a no-save type passes `Entity.shouldBeSaved` and is removed with `UNLOADED_TO_CHUNK` beside the rest (`world/entity/Entity.java`:4389; `world/level/entity/PersistentEntitySectionManager.java`:208–223, :243–257); the page's list of what the filter turns away wants that population (82). `server/server-level-tick`:98 (EMPTY) — `ServerLevel.emptyTime` is reset by an entity arriving from another dimension too (257; `world/entity/Entity.java`:3425). `reference/non-living-damage`:20–27 — *exactly three of the rows* are the marked ones; `Entity.isAttackable` also turns a swing away from `ItemEntity`, `ExperienceOrb`, `FallingBlockEntity`, `FireworkRocketEntity` and most arrows, whose rows are not marked. `reference/threads`:79 — the Server thread row owns *every … entity*, and a chunk's first mobs are built on the worldgen worker (21, 238, 259). `entities/movement-and-collision`:145 — the five block properties cite *four decisions, four lookups*, which names four; `Block.getFallDistanceReduction` is on no Part V page (141).
+- **P** — the V1 and V2 entries on these pages (checked as claims in the prompts, not struck here), and this session's diff.
+
 ## Pass 8, session E — Part V · Blocks *(2026-09-27)*
 
 Eight pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
@@ -3651,8 +4108,8 @@ The gaps pass 9 has to work around:
   owns), `world/chunk-storage` f2, `world/points-of-interest` f2,
   `world/scheduled-ticks` f3, `world/tickets-and-loading` f3,
   `rendering/blaze3d` f2, `rendering/the-frame` f1.~~ *(no claim beyond the figures named, which are on their parts' pages, whose agents check every arrow — pass 8, session A)*
-- `flowchart TB` written `TD` (identical layout) on `entities/ai-goals-and-brains`,
-  `entities/attributes` (two) and `rendering/blaze3d`.
+- ~~`flowchart TB` written `TD` (identical layout) on `entities/ai-goals-and-brains`,
+  `entities/attributes` (two) and `rendering/blaze3d`.~~ *(checked (the page's figure is `flowchart TD`) — pass 8, session F)*
 
 ### Landing figures and their captions — the set read as one
 
@@ -3679,9 +4136,9 @@ The gaps pass 9 has to work around:
 - ~~`server/README`: the seven later parts assume *the loop pair*, 1 and 2, not
   the beginning and the end — page-internal, and `lectures.md`'s table says the
   same. *One lecture in two halves* is gone; the watch list gives them two.~~ *(checked: seven landing pages, IV to IX and XIII, link the loop pair under *Before you start*; I, II, X, XI and XII do not — pass 8, session C)*
-- `entities/README`: the closer's watch line no longer says it assumes nothing
+- ~~`entities/README`: the closer's watch line no longer says it assumes nothing
   above it — `entities/damage-and-death` links `entity-anatomy`, `authority`
-  and `attributes`. Caption now names the ladder and the watch order.
+  and `attributes`. Caption now names the ladder and the watch order.~~ *(checked (`damage-and-death` links `entity-anatomy`, `authority` and `attributes`); the blurb beside it said *a dozen owners*, which was wrong — see *Pass 8, session F*, correction 13 — pass 8, session F)*
 - `client/README`: *two exceptions*, not one (the page names both); caption
   explains the ranges and the sideways hub.
 - ~~`blocks/README`: `UPDATE_ALL` and `UPDATE_CLIENTS` for the two bare flag
@@ -5112,14 +5569,14 @@ nothing below 0.79.
 
 ### The figures redrawn, and what each asserts
 
-- `entities/README` — the part figure is `TD` rather than `BT`, its nine nodes
+- ~~`entities/README` — the part figure is `TD` rather than `BT`, its nine nodes
   numbered to the watch order, and it gains one edge: `2 · Authority → Parts
   VIII, IX and X`, labelled *and so does the rest of the book*. **The claim is
   the landing page's own** (“the second rung — *authority* — is the one
   everything else leans on, including Parts VIII, IX and X”), drawn rather than
   only said. No other arrow changed direction or meaning; the eight edge
-  sentences are the same claims, shortened.
-- `entities/ai-goals-and-brains` figure 1 — redrawn from *the four phases of
+  sentences are the same claims, shortened.~~ *(checked (the figure's nine nodes and its `OUT` edge); the paragraph after it said the figure did not draw Part X's arrow, and two labels were wrong — see *Pass 8, session F*, corrections 5, 7 — pass 8, session F)*
+- ~~`entities/ai-goals-and-brains` figure 1 — redrawn from *the four phases of
   `Brain.tick`* to *one behaviour through one `Brain.tick`*. **Arrows removed**:
   `A→B→C→D` (the phase chain, now a sentence above the figure), `F→I` and
   `H→I`. **Arrows added**: `G -- either test fails --> X` (a behaviour whose
@@ -5129,8 +5586,8 @@ nothing below 0.79.
   behaviour** — `Brain.tick` calls `Brain.startEachNonRunningBehavior` and then
   `Brain.tickEachRunningBehavior`, each with its own loop
   (`Brain.java:456-459`, `489-527`). The old `F→I`/`H→I` arrows asserted the
-  opposite by implication.
-- `entities/ai-goals-and-brains` figure 2 — the `PoiManager` lane and its three
+  opposite by implication.~~ *(checked (`world/entity/ai/Brain.java`:455–460); the caption's *between them … the end of its life* was wrong — see *Pass 8, session F*, correction 165 — pass 8, session F)*
+- ~~`entities/ai-goals-and-brains` figure 2 — the `PoiManager` lane and its three
   messages **cut** (the scan is [points of
   interest](../src/systems/world/points-of-interest.md)'s, as the prose beside
   the figure already says). `AP→PM: take(pos), then set POTENTIAL_JOB_SITE`
@@ -5142,8 +5599,8 @@ nothing below 0.79.
   `SleepInBed`'s (`SleepInBed.java:88`), and the new message asserts what the
   prose calls the page's counter-example — `SleepInBed` overrides
   `Behavior.canStillUse`, so it is still running the tick after the one that
-  started it. Two `rect` bands added for the two ticks.
-- `entities/attributes` figure 1 — the three modifier indices **cut** to the
+  started it. Two `rect` bands added for the two ticks.~~ *(checked (`world/entity/ai/behavior/AcquirePoi.java`:93; `SleepInBed.java`:57–68); the first band drew the job-site write beside a work switch it excludes — see *Pass 8, session F*, correction 168 — pass 8, session F)*
+- ~~`entities/attributes` figure 1 — the three modifier indices **cut** to the
   section that owns them; the two dirty sets **re-parented** from
   `AttributeInstance` to `AttributeMap`, through a new
   `AttributeMap.onAttributeModified` node. The assertion: `attributesToSync`
@@ -5153,8 +5610,8 @@ nothing below 0.79.
   `MAP -- AttributeMap.getInstance --> INST`, because the call runs
   map→supplier and the product is the instance (`AttributeMap.java:50-52`).
   The dotted `getSyncableAttributes` edge is now solid and labelled *when
-  tracking starts*.
-- `entities/attributes` figure 3 — `AttrM→AttrI: createInstance` **relabelled**
+  tracking starts*.~~ *(checked (`world/entity/ai/attributes/AttributeMap.java`:20–34, :50–54); the REACT node's *entities phase* was wrong for a player — see *Pass 8, session F*, correction 122 — pass 8, session F)*
+- ~~`entities/attributes` figure 3 — `AttrM→AttrI: createInstance` **relabelled**
   `replaceFrom, inside AttributeSupplier.createInstance`
   (`AttributeSupplier.java:48-58`); `LE→AttrM: getAttributeValue`
   **relabelled** `getValue`, since `LivingEntity.getAttributeValue` delegates
@@ -5163,28 +5620,28 @@ nothing below 0.79.
   `AttributeInstance.setDirty` calling the map's consumer is a call, not a
   return; `removeModifier` restored to the modifier message
   (`MobEffect.java:184-185`); a return leg `AttrM-->>LE` added so the value
-  comes back the way it went. A `rect` band marks the following tick.
-- `entities/authority` figure 1 — **`Q→SIM` and `Q→AI` reversed** to
+  comes back the way it went. A `rect` band marks the following tick.~~ *(checked (`AttributeSupplier.java`:56; `AttributeInstance.java`:123–126); the band note and the caption were wrong — see *Pass 8, session F*, corrections 118, 122 — pass 8, session F)*
+- ~~`entities/authority` figure 1 — **`Q→SIM` and `Q→AI` reversed** to
   `SIM→Q` and `AI→Q`, labelled *by default*, so every arrow in the figure
   means one thing: *is answered by*. This is the queue's :5528 and the
   assertion is the heading's own — the other four hang off the final one.
   `CAP` **relabelled** from *Player: always true* to *Player: true, so the root
   is false*, because the parent node is the negation and a reader following
-  *not X* to *always true* got the opposite of the page's table.
-- `entities/authority` figure 2 — **split by machine, with a lane each for the
+  *not X* to *always true* got the opposite of the page's table.~~ *(checked (`world/entity/Entity.java`:3968–4009); redrawn for 26.3's move-simulation type — see *Pass 8, session F*, correction 56 — pass 8, session F)*
+- ~~`entities/authority` figure 2 — **split by machine, with a lane each for the
   two copies of the boat** (`SAB`, a new key row). `CL→AB: tickNonPassenger`
   **removed** and made a note: `tickNonPassenger` is `ClientLevel`'s, and what
   arrives at the boat is `Entity.tick` (`ClientLevel.java:477-487`). The two
   `SGPL→AB` messages **retargeted** to the server's copy. The accept and the
   reject are now an `alt` — the figure's one mark outside `TEMPLATE.md`'s
   table, said so in the caption — and the echo is its own `CPL→Wire` arrow
-  rather than a clause on an arrow pointing the other way.
-- `entities/damage-and-death` figure 1 — the eight-step chain keeps only the
+  rather than a clause on an arrow pointing the other way.~~ *(checked (`client/multiplayer/ClientLevel.java`:479–486); the caption and the accepted branch's order were wrong — see *Pass 8, session F*, corrections 63, 64 — pass 8, session F)*
+- ~~`entities/damage-and-death` figure 1 — the eight-step chain keeps only the
   step names, with the running number on the arrows, and the owners and the
   arithmetic move to a nine-row table beside it. **Freezing and the helmet are
   now two steps, not one**, which is the correction below. A terminal *2.12*
-  is asserted as what reaches health in this scenario.
-- `entities/damage-and-death` figure 2 — **`ServerPlayer` and `LivingEntity`
+  is asserted as what reaches health in this scenario.~~ *(checked (`world/entity/LivingEntity.java`:1273–1304, :2025–2106) — pass 8, session F)*
+- ~~`entities/damage-and-death` figure 2 — **`ServerPlayer` and `LivingEntity`
   merged into one lane**, because they are one object (F7); the three
   `hurtServer` messages are now self-messages naming the class whose override
   runs. `LE→CT: actuallyHurt` **split** into a self-message and
@@ -5192,26 +5649,26 @@ nothing below 0.79.
   and only `CombatTracker.recordDamage` reaches the tracker. The death tail
   **cut** to figure 3 and the prose; `resolveMobResponsibleForDamage` and
   `resolvePlayerResponsibleForDamage` are now one message each so the name
-  fits without a hyphen.
-- `entities/damage-and-death` figure 3 — **new**, under *Death, or not*.
+  fits without a hyphen.~~ *(checked except the order of `CombatTracker.recordDamage` and `LivingEntity.setHealth` — see *Pass 8, session F*, correction 206 — pass 8, session F)*
+- ~~`entities/damage-and-death` figure 3 — **new**, under *Death, or not*.
   Every arrow re-derived from `LivingEntity.die` (`LivingEntity.java:1565-1601`):
   the totem test guards the whole of it; kill credit,
   `LivingEntity.handleKillingBlow` and `CombatTracker.recheckStatus` run
   unconditionally; the veto is `sourceEntity == null ||
   sourceEntity.killedEntity(...)` and it guards the game event,
   `LivingEntity.dropAllDeathLoot` and the wither rose only; the entity-event
-  byte is **outside** the veto; `Pose.DYING` is set **after** the byte.
-- `entities/entity-anatomy` figure 1 — the eleven-box flowchart is now the
+  byte is **outside** the veto; `Pose.DYING` is set **after** the byte.~~ *(checked except node D's `CombatTracker.recheckStatus`, which 26.3 moved out of `LivingEntity.die` — see *Pass 8, session F*, correction 210 — pass 8, session F)*
+- ~~`entities/entity-anatomy` figure 1 — the eleven-box flowchart is now the
   book's **fifth `classDiagram`**, three classes. `EntityType --> EntityDimensions`
   (*holds one, built once*), `EntityType ..> Entity` (*`EntityType.create`
   calls the factory*), `EntityDimensions ..> Entity` (*copied into the two
   caches, and recopied on a pose change*). The nine former boxes are field
-  rows; no relation is asserted that the old figure did not draw.
-- `entities/entity-anatomy` figure 3 — **split at the tick note**: the server
+  rows; no relation is asserted that the old figure did not draw.~~ *(checked (`world/entity/EntityType.java`:56; `Entity.java`:336–350) — pass 8, session F)*
+- ~~`entities/entity-anatomy` figure 3 — **split at the tick note**: the server
   half keeps five lanes, and a second figure of three lanes draws the client
   building **a second live object** from the packet. The claim the split
-  asserts is the page's title happening twice.
-- `entities/movement-and-collision` figure 1 — **seven lanes to three**. The
+  asserts is the page's title happening twice.~~ *(checked except the step counts beside it and the client's *live* object — see *Pass 8, session F*, corrections 37, 38 — pass 8, session F)*
+- ~~`entities/movement-and-collision` figure 1 — **seven lanes to three**. The
   `CollisionGetter`, `Shapes` and `Block` lanes **cut**: every message sent to
   them was headed with `Entity`'s own method (`Entity.collide`,
   `Entity.collideWithShapes`, `Entity.setOnGroundWithMovement`,
@@ -5219,26 +5676,26 @@ nothing below 0.79.
   section's figure. `LivingEntity` and `Entity` **merged into one lane**, each
   message naming the class whose half runs. `SL→Entity: tickNonPassenger`
   **relabelled** `tick` for the same reason as `authority`'s. A `rect` band
-  marks the next tick.
-- `entities/movement-and-collision` figure 2 — **a new diamond**,
+  marks the next tick.~~ *(checked (`server/level/ServerLevel.java`:866–867, :386–387); arrow 3's label was 26.2's — see *Pass 8, session F*, correction 139 — pass 8, session F)*
+- ~~`entities/movement-and-collision` figure 2 — **a new diamond**,
   `NEXT{"a candidate height left?"}`, so the loop's exhaustion is not drawn as
   an answer to *more horizontal distance than the flat attempt?*. Re-derived
   from `Entity.java:1198-1225`: the exits are the `for` ending (→ the flat
   result) and the `return` inside it (→ the stepped one). `HEIGHTS`
-  **relabelled** *less the one already tried*, which is the correction below.
-- `entities/pathfinding` figure 1 — redrawn from the pipeline (which figure 2
+  **relabelled** *less the one already tried*, which is the correction below.~~ *(checked (`world/entity/Entity.java`:1243–1255); the caption still counted two diamonds — see *Pass 8, session F*, correction 144 — pass 8, session F)*
+- ~~`entities/pathfinding` figure 1 — redrawn from the pipeline (which figure 2
   draws, with the callers) to **the two entrances and the two endings**.
   `WORLD→GATE` **added**: `PathNavigation.recomputePath` is the other
   entrance, which the prose names and the figure never drew.
-  `GIVEUP -- no --> RUN` **added** so the follow is a loop.
-- `entities/pathfinding` figure 2 — `NE→PNR: getPathTypeFromState`
+  `GIVEUP -- no --> RUN` **added** so the follow is a loop.~~ *(checked except the follow's missing arrival exit — see *Pass 8, session F*, correction 180 — pass 8, session F)*
+- ~~`entities/pathfinding` figure 2 — `NE→PNR: getPathTypeFromState`
   **relabelled and split**: `getPathTypeFromState` is
   `PathfindingContext`'s, not the region's
   (`PathfindingContext.java:31-35`), and what the evaluator gets from the
   region is a block state (`:37-39`). Now `NE→PNR: getBlockState, through
   PathfindingContext` with a note that `PathTypeCache` memoises the
-  `PathType` per position, server-side only.
-- `entities/synched-entity-data` figure 1 — **split at the tick the prose
+  `PathType` per position, server-side only.~~ *(checked (`world/level/pathfinder/PathfindingContext.java`:31–39) — pass 8, session F)*
+- ~~`entities/synched-entity-data` figure 1 — **split at the tick the prose
   names**, so **each half has one `SynchedEntityData` lane meaning one
   container**; the second half boxes them by machine and adds `CSED`, a second
   key row. `SGPL→Sheep: Player.interactOn` **relabelled** `Mob.interact`;
@@ -5247,10 +5704,10 @@ nothing below 0.79.
   `SynchedEntityData.assignValues` and retargeted to the client's container.
   `SED→SED: SynchedEntityData.DataItem.setDirty` **added after** the callback
   to `Sheep`, which is the ordering the prose italicises and the figure had
-  been flattening onto one arrow.
-- `entities/synched-entity-data` figure 3 — `IN` **turned from a box into a
+  been flattening onto one arrow.~~ *(checked (`world/entity/Mob.java`:1224; `network/syncher/SynchedEntityData.java`:70–71) — pass 8, session F)*
+- ~~`entities/synched-entity-data` figure 3 — `IN` **turned from a box into a
   diamond** and given its false exit to `HOLD`, so both tests fail into the
-  same place, which is the section's claim.
+  same place, which is the section's claim.~~ *(wrong in part: a dirty container passes the second test, so only the first can hold a byte — see *Pass 8, session F*, correction 104 — pass 8, session F)*
 
 ### Captions
 
@@ -5264,74 +5721,74 @@ top are one virtual call going down the override chain”).
 
 ### Corrections
 
-- `src/systems/entities/ai-goals-and-brains.md`:353 — the figure said
+- ~~`src/systems/entities/ai-goals-and-brains.md`:353 — the figure said
   `updateActivityFromSchedule` is “refused unless **20** ticks have passed
   since the last one”; the prose two paragraphs below says 21, “the test is a
   strict *greater than* 20”. `Brain.java:389` is
   `gameTime - this.lastScheduleUpdate > 20L`, so the prose is right and the
-  figure was wrong. The clause is out of the figure and the prose keeps it.
-- `src/systems/entities/ai-goals-and-brains.md`:351 — the figure drew
+  figure was wrong. The clause is out of the figure and the prose keeps it.~~ *(checked (`world/entity/ai/Brain.java`:389) — pass 8, session F)*
+- ~~`src/systems/entities/ai-goals-and-brains.md`:351 — the figure drew
   `POTENTIAL_JOB_SITE` being written to `PoiManager`. `AcquirePoi.java:89-92`
-  writes it through the memory accessor, which is the brain's.
-- `src/systems/entities/ai-goals-and-brains.md`:360 — `startSleeping` drawn
+  writes it through the memory accessor, which is the brain's.~~ *(checked (`world/entity/ai/behavior/AcquirePoi.java`:93) — pass 8, session F)*
+- ~~`src/systems/entities/ai-goals-and-brains.md`:360 — `startSleeping` drawn
   as `SleepInBed`'s own; `SleepInBed.java:88` calls `body.startSleeping(...)`,
-  so it is the villager's.
-- `src/systems/entities/attributes.md`:49 — the figure said
+  so it is the villager's.~~ *(checked (`world/entity/ai/behavior/SleepInBed.java`:88) — pass 8, session F)*
+- ~~`src/systems/entities/attributes.md`:49 — the figure said
   `permanentModifiers` is “the subset **`AttributeMap.pack`** writes to
   disk”. `AttributeMap.java:156-167` packs **every** instantiated instance and
   filters nothing; it is `AttributeInstance.pack`
   (`AttributeInstance.java:207-209`) that writes the base value and the
   permanent modifiers only. The node is cut with the two others that belong to
-  the next section, and the prose there already had it right.
-- `src/systems/entities/attributes.md`:50-51 — `attributesToUpdate` and
+  the next section, and the prose there already had it right.~~ *(checked (`world/entity/ai/attributes/AttributeMap.java`:156–167; `AttributeInstance.java`:207–209) — pass 8, session F)*
+- ~~`src/systems/entities/attributes.md`:50-51 — `attributesToUpdate` and
   `attributesToSync` were drawn hanging off `AttributeInstance`;
-  `AttributeMap.java:20-21` makes them the map's.
-- `src/systems/entities/attributes.md`:58 — the arrow
+  `AttributeMap.java:20-21` makes them the map's.~~ *(checked (`world/entity/ai/attributes/AttributeMap.java`:20–21) — pass 8, session F)*
+- ~~`src/systems/entities/attributes.md`:58 — the arrow
   `AttributeSupplier → AttributeMap` was labelled “`createInstance` copies a
   prototype into a fresh instance”, which reverses the call and misplaces the
   product: `AttributeMap.getInstance` calls `supplier.createInstance` and the
-  product is an `AttributeInstance` (`AttributeMap.java:50-52`).
-- `src/systems/entities/authority.md`:86-89 — the node *not
+  product is an `AttributeInstance` (`AttributeMap.java:50-52`).~~ *(checked (`world/entity/ai/attributes/AttributeMap.java`:50–54) — pass 8, session F)*
+- ~~`src/systems/entities/authority.md`:86-89 — the node *not
   `Entity.isClientAuthoritative`* had a child reading *Player: always true*,
   so the figure resolved to *true on the server for a player* while the page's
   own table (“server, player, false”) says the opposite. The leaf now states
-  what it resolves to.
-- `src/systems/entities/damage-and-death.md`:106 against :114 — the prose says
+  what it resolves to.~~ *(checked (`world/entity/player/Player.java`:1241–1242; `Entity.java`:3969) — pass 8, session F)*
+- ~~`src/systems/entities/damage-and-death.md`:106 against :114 — the prose says
   “**eight** arithmetic steps — five multiplications and three subtractions”
   and the figure drew **seven** boxes after the source, freezing and the helmet
   sharing one. They are two steps (×5 and ×0.75) and are now drawn and tabled
-  as two; the count in the sentence is the one that was right.
-- `src/systems/entities/damage-and-death.md`:273 — the message read
+  as two; the count in the sentence is the one that was right.~~ *(checked (`world/entity/LivingEntity.java`:1276, :1279, :1284, :1298, :2097) — pass 8, session F)*
+- ~~`src/systems/entities/damage-and-death.md`:273 — the message read
   “`hurtServer` — PvP and teams”, where *PvP* is neither a class nor a method;
   the prose names `ServerPlayer.canHarmPlayer` as the gate, and the figure
-  now does too.
-- `src/systems/entities/entity-anatomy.md`:63 — the figure carried
+  now does too.~~ *(checked (`server/level/ServerPlayer.java`:1110, :1122) — pass 8, session F)*
+- ~~`src/systems/entities/entity-anatomy.md`:63 — the figure carried
   “`clientTrackingRange` in chunks (default 5), `updateInterval` in ticks
   (default 3)” and the two defaults appeared nowhere in the page's prose.
   They are right (`EntityType.java:504-505`, the `Builder` constructor) and
-  the sentence that owns the two fields now says them.
-- `src/systems/entities/entity-anatomy.md`:193 — the prose said the 66 outside
+  the sentence that owns the two fields now says them.~~ *(checked (`world/entity/EntityType.java`:516–517) — pass 8, session F)*
+- ~~`src/systems/entities/entity-anatomy.md`:193 — the prose said the 66 outside
   `LivingEntity`'s branch are “**two families** and a scattering” and named
   `Projectile` and `VehicleEntity`; the generated tree beside it draws **four**
   — `BlockAttachedEntity` (5) and `Display` (3) as well — and 27 + 16 + 6 + 4
-  + 13 is the 66. `Display` was named nowhere on the page.
-- `src/systems/entities/movement-and-collision.md`:177 — `HEIGHTS` said
+  + 13 is the 66. `Display` was named nowhere on the page.~~ *(checked (the atlas's tree: 27, 16, 7, 4 and thirteen childless, 67 in all) — pass 8, session F)*
+- ~~`src/systems/entities/movement-and-collision.md`:177 — `HEIGHTS` said
   “**every** Y face of every candidate shape inside `maxUpStep`”;
   `Entity.java:1240` is `relativeCoord >= 0.0F && relativeCoord !=
   stepHeightToSkip`, so the height the flat attempt already tried is skipped,
-  which is what the prose says.
-- `src/systems/entities/movement-and-collision.md`:186 — the `MORE` diamond
+  which is what the prose says.~~ *(checked (`world/entity/Entity.java`:1271) — pass 8, session F)*
+- ~~`src/systems/entities/movement-and-collision.md`:186 — the `MORE` diamond
   had two outgoing edges labelled *no*, one of them the `for` loop ending
-  rather than an answer to the question in it (`Entity.java:1212-1224`).
-- `src/systems/entities/pathfinding.md`:217 — `getPathTypeFromState` drawn
+  rather than an answer to the question in it (`Entity.java:1212-1224`).~~ *(checked (`world/entity/Entity.java`:1247) — pass 8, session F)*
+- ~~`src/systems/entities/pathfinding.md`:217 — `getPathTypeFromState` drawn
   arriving at `PathNavigationRegion`; it is `PathfindingContext`'s, and the
   context holds both the region and the cache
-  (`PathfindingContext.java:13-14`, `31-35`).
-- `src/systems/entities/synched-entity-data.md`:181 — the figure put
+  (`PathfindingContext.java:13-14`, `31-35`).~~ *(checked (`world/level/pathfinder/PathfindingContext.java`:31–35) — pass 8, session F)*
+- ~~`src/systems/entities/synched-entity-data.md`:181 — the figure put
   `Entity.onSyncedDataUpdated` and `DataItem.setDirty` on one arrow, in that
   order, arriving at `Sheep`. The prose italicises the ordering — *and then*
   marks the item dirty — and the two are now two messages, the second a
-  self-message on the container.
+  self-message on the container.~~ *(checked (`network/syncher/SynchedEntityData.java`:70–72) — pass 8, session F)*
 - ~~`src/systems/entities/entity-lifecycle.md`:85 — the caption said “only
   three of **the eight** leave the loop at all”, a count nothing in the figure
   lets a reader check: three arrows reach the terminal box, but *the eight* is
@@ -5354,12 +5811,12 @@ top are one virtual call going down the override chain”).
 
 ### Tools
 
-- `tools/check_mermaid.js` gained `erasedLabels` and a nine-case probe.
-- `tools/map_source.py`'s `svg_tree` gained a width retry and a probe case;
+- ~~`tools/check_mermaid.js` gained `erasedLabels` and a nine-case probe.~~ *(no claim: a tool note — pass 8, session F)*
+- ~~`tools/map_source.py`'s `svg_tree` gained a width retry and a probe case;
   the five generated trees are regenerated and **the fold labels of the
   deepest branches now show a count instead of example names**, which is a
   change to what five pages' figures say. `entity-anatomy`'s figcaption
-  states the key.
+  states the key.~~ *(checked (`src/generated/tree-Entity.svg`); the figcaption's *every child* was wrong, only runs of two or more fold — see *Pass 8, session F*, correction 30 — pass 8, session F)*
 
 ## Pass 7, session E — Part V · Blocks: the figures *(2026-09-15)*
 
@@ -8052,19 +8509,19 @@ the session against `reference/26.2` before it landed.
 
 ### Corrections — what the page said, what the decompile says
 
-1. **`entity-anatomy`** said `DefaultedMappedRegistry` "overrides **nine**
+1. ~~**`entity-anatomy`** said `DefaultedMappedRegistry` "overrides **nine**
    lookups to hand [the default] back", and then named a tenth that does not
    (`getOptional`). `DefaultedMappedRegistry.java:20–80` has **nine overrides
    in total**, of which **six** substitute the default on a miss — `getId`,
    `getKey`, `getValue`, `getAny`, `byId`, `getRandom` — while `register` sets
    the default, `getDefaultKey` returns its key, and `getOptional` deliberately
-   answers empty. The page now says nine overrides, six of which substitute.
-2. **`entity-anatomy`** read as 190 against its own 191: it said "`LivingEntity`
+   answers empty. The page now says nine overrides, six of which substitute.~~ *(checked on the nine; *six* is seven counting `getDefaultKey`, which hands back the default's key, and *for a miss* was not true of `getAny` — see *Pass 8, session F*, corrections 20 and 237 — pass 8, session F)*
+2. ~~**`entity-anatomy`** read as 190 against its own 191: it said "`LivingEntity`
    and its 124 descendants are two thirds of that; the non-living branches are
    the other 66", then "`LivingEntity` holds 124 of the 191", then "the other
    66". `src/generated/hierarchy-classes.md` gives `Entity` 191 descendants and
    `LivingEntity` 124, so the sum closes only if `LivingEntity` itself is the
-   125th. Rewritten to say so, and the second telling of the count removed.
+   125th. Rewritten to say so, and the second telling of the count removed.~~ *(checked (192 descendants, 124 below `LivingEntity`, 67 outside it) — pass 8, session F)*
 3. ~~**`entity-lifecycle`** said "**seven species change** [the cluster size] —
    horses to 6, fish and wolves to 8, and ghasts, happy ghasts and pillagers
    down to 1", naming six. Seven **classes** override
@@ -8081,55 +8538,55 @@ the session against `reference/26.2` before it landed.
    contradiction. `Entity.java:4219–4231`: the dismount branch tests
    `this.removalReason` (the **stored** one) and `onRemove`/`onRemoval` are
    passed the **argument**. Both are true and the page now says which is which.~~ *(checked: `Entity.java`:4364–4376 — pass 8, session A)*
-6. **`damage-and-death`** said "only **four** classes" read the damage number
+6. ~~**`damage-and-death`** said "only **four** classes" read the damage number
    and named three, while
    [`reference/non-living-damage.md`](../src/reference/non-living-damage.md)
    said five by counting `EnderDragonPart`. `EnderDragonPart.java:51` forwards
    `damage` to `EnderDragon.hurt` without using it; `MinecartTNT.java:72` reads
    the arrow's speed and then calls `VehicleEntity.hurtServer`, which is where
-   the number is spent. Four, and the fourth named, on both pages.
-7. **`damage-and-death`**'s cast gave `DamageType` "the hurt sound".
+   the number is spent. Four, and the fourth named, on both pages.~~ *(checked (`world/entity/ExperienceOrb.java`:274; `item/ItemEntity.java`:312; `vehicle/VehicleEntity.java`:48; `vehicle/minecart/MinecartTNT.java`:73–84) — pass 8, session F)*
+7. ~~**`damage-and-death`**'s cast gave `DamageType` "the hurt sound".
    `Player.java:571` — `source.type().effects().sound()` — is the **only**
    reader of it in the tree, which the body says 40 lines later. The cast row
-   now says *a player's* hurt sound.
-8. **`damage-and-death`**'s armour formula had two legal parses ("the armour
+   now says *a player's* hurt sound.~~ *(checked (`world/entity/player/Player.java`:581) — pass 8, session F)*
+8. ~~**`damage-and-death`**'s armour formula had two legal parses ("the armour
    points *minus the incoming damage divided by two plus a quarter of
    toughness*") and `CombatRules.ARMOR_PROTECTION_DIVIDER` was never valued, so
    the worked example's "48 per cent off" could not be derived where it was
    claimed. `CombatRules.java:20–45`: `toughness = 2 + armorToughness/4`,
    `realArmor = clamp(totalArmor − damage/toughness, totalArmor*0.2, 20)`,
-   fraction `= realArmor/25`. Re-parenthesised, and 0.2, 20 and 25 given.
-9. **`authority`** said "**Sixteen** pages link back to this one". Nineteen
+   fraction `= realArmor/25`. Re-parenthesised, and 0.2, 20 and 25 given.~~ *(checked (`world/damagesource/CombatRules.java`:12–15, :24–26) — pass 8, session F)*
+9. ~~**`authority`** said "**Sixteen** pages link back to this one". Nineteen
    pages under `src/systems` contain a link to `authority.md` (three of them
    landing pages); `lectures.md`, the glossary, `SUMMARY.md` and the class index
-   are excluded. Now nineteen, with the population implied by *in this book*.
-10. **`authority`** said `Player.isClientAuthoritative` is "the member **three
+   are excluded. Now nineteen, with the population implied by *in this book*.~~ *(checked (19 pages under `src/systems`); the sentence now names that population — see *Pass 8, session F*, correction 50 — pass 8, session F)*
+10. ~~**`authority`** said `Player.isClientAuthoritative` is "the member **three
     later pages** quote". One other page in the corpus names it,
-    `player/the-two-phase-tick`. The count is gone; the member stays.
-11. **`authority`** said `LivingEntity.travelRidden` "carries a **ninth
+    `player/the-two-phase-tick`. The count is gone; the member stays.~~ *(checked (`Player.isClientAuthoritative` is named on `authority` and `player/the-two-phase-tick` only) — pass 8, session F)*
+11. ~~**`authority`** said `LivingEntity.travelRidden` "carries a **ninth
     reading** of its own", two paragraphs after an inventory whose own
     arithmetic (four + three + two, one site reading a pair) already accounts
     for nine readings at eight sites. `LivingEntity.java:2793` is a ninth
-    **site** and a tenth reading. Now *a ninth site*.
-12. **`ai-goals-and-brains`**'s figure said `updateActivityFromSchedule` is
+    **site** and a tenth reading. Now *a ninth site*.~~ *(checked (`world/entity/LivingEntity.java`:2797–2802) — pass 8, session F)*
+12. ~~**`ai-goals-and-brains`**'s figure said `updateActivityFromSchedule` is
     "refused if under 21 ticks old", which reads as the mob's age.
     `Brain.java:389` is `gameTime - this.lastScheduleUpdate > 20L` — ticks since
-    the last **update**. Label rewritten; the prose was already right.
-13. **`entities/README`** said "**Three** were written for this part" over a
+    the last **update**. Label rewritten; the prose was already right.~~ *(checked (`world/entity/ai/Brain.java`:389) — pass 8, session F)*
+13. ~~**`entities/README`** said "**Three** were written for this part" over a
     list of five. All five (`attributes`, `entity-data-serializers`,
     `spawn-reasons`, `structure-spawn-overrides`, `non-living-damage`) are cited
-    from an entities page and from nowhere else first. Now five.
-14. **`entities/README`** carried a hand-counted "about **40%** of those lines
+    from an entities page and from nowhere else first. Now five.~~ *(checked (five references, each cited from a Part VI page); its list's *43* and *twenty-one* were wrong — see *Pass 8, session F*, corrections 17, 18 — pass 8, session F)*
+14. ~~**`entities/README`** carried a hand-counted "about **40%** of those lines
     are named on no page". `pass5_coverage.py` says **34%**. Replaced with
     `{{#include ../../generated/coverage-entities.md}}`, so it cannot drift
-    again.
-15. **`entities/README`** said "Two of the **nine rungs** are pairs rather than
+    again.~~ *(checked (`tools/pass5_coverage.py --part entities`: 33.6%) — pass 8, session F)*
+15. ~~**`entities/README`** said "Two of the **nine rungs** are pairs rather than
     sequels" and then described two pairs, i.e. four rungs. There are eight
-    steps between nine rungs and two of the steps are pairings. Rewritten.
+    steps between nine rungs and two of the steps are pairings. Rewritten.~~ *(checked (the figure's eight edges; the pairs D→E and G→H) — pass 8, session F)*
 
 ### Claims introduced
 
-**`entity-anatomy`.** New: the two doors framed as *number* versus *string*
+~~**`entity-anatomy`.** New: the two doors framed as *number* versus *string*
 (the packet carries a registry index, the region file an id string) — a
 reframing of facts the page already had, not a new fact. New sections ***The
 id, and what compares equal*** and ***The two numbers frozen onto the type***,
@@ -8138,9 +8595,9 @@ both built from dissolved closer answers; the second is what the cast row
 New claim: `SummonCommand` tests the peaceful rule itself *and* does not set
 `EntitySpawnRequest.ignoreChecks`, so `EntityType.canSpawn` tests it again
 (`SummonCommand.java:55`, `:62`; `EntityType.java:283–292`) — both gates fire,
-the command's only for the message.
+the command's only for the message.~~ *(checked (`server/commands/SummonCommand.java`:55, :62; `world/entity/EntityType.java`:286–296) — pass 8, session F)*
 
-**`authority`.** Restructured: the three-case table moved above the cast, the
+~~**`authority`.** Restructured: the three-case table moved above the cast, the
 three case sections promoted from H3 to H2 (anchors unchanged), and *Where the
 gates actually sit* rewritten from seven bullets to an eight-row table whose
 *which member* column is new. New claims: that the eight sites carry nine
@@ -8149,7 +8606,7 @@ rides and nothing steers (a dropped item, an arrow) reaches the base
 implementations and is a fourth shape; that *a tracked mob* means one the
 server has told your client about. The `SweetBerryBushBlock` paragraph became
 its own section, ***Authority is also about which of two numbers is real***.
-The unused `ServerLevel` lane was dropped from the boat sequence.
+The unused `ServerLevel` lane was dropped from the boat sequence.~~ *(checked (`world/entity/LivingEntity.java`:3317; `vehicle/boat/AbstractBoat.java`:836–846) — pass 8, session F)*
 
 ~~**`entity-lifecycle`.** New material: the biome crowding budget explained —
 `MobSpawnSettings.MobSpawnCost` is a *charge* and an *energy budget*,
@@ -8162,24 +8619,24 @@ reachable because *near* means the chunk-centre 128 blocks in
 `LocalMobCapCalculator` — two different populations. Two figure labels
 rewritten to stop *persistent* meaning two things three lines apart.~~ *(wrong in two of three: two biomes checked, but the species were misassigned (soul sand valley has the strider, warped forest the enderman alone — see *Pass 8, session A*, correction 12), and the local cap's no-player branch is not reachable, the two *near*s being one test — see *Pass 8, session A*, correction 9 — pass 8, session A)*
 
-**`synched-entity-data`.** Trace heading renamed to its scenario. Three H3s
+~~**`synched-entity-data`.** Trace heading renamed to its scenario. Three H3s
 inside the existing `#nineteen-slots-and-where-the-numbers-come-from` anchor.
 New claim, stated in prose for the first time: there is one container **per
 side**, built independently from the same class chain. The mods-and-ordinals
 answer and the `Display.RENDER_STATE_IDS` paragraph moved up together as the
 hook's payoff. New claim: `Entity.needsSync` is the flag `Entity.syncPosition`
-sets, read by both gate tests.
+sets, read by both gate tests.~~ *(checked except *a flag `Entity.syncPosition` sets* — see *Pass 8, session F*, correction 105 — pass 8, session F)*
 
-**`attributes`.** Trace heading renamed (one inbound link repointed). Heading
+~~**`attributes`.** Trace heading renamed (one inbound link repointed). Heading
 *Five objects* → *Four objects, two dirty sets, and one list that is neither*,
 with new prose naming the four and explaining
 `AttributeMap.getSyncableAttributes`, which the figure drew and the prose never
 mentioned (one inbound link repointed). New claim: both sides run the same
 `Attributes` initialiser and build the same `DefaultAttributes` prototypes, so
 the client's unsyncable value is the prototype's rather than absent. The
-frozen-mob example moved out of the closer into the dirty-sets section.
+frozen-mob example moved out of the closer into the dirty-sets section.~~ *(checked except the client's read, which is attack damage in `Player.attack`, not field of view and reach — see *Pass 8, session F*, correction 123 — pass 8, session F)*
 
-**`movement-and-collision`.** New claim: the four booleans are
+~~**`movement-and-collision`.** New claim: the four booleans are
 `Entity.horizontalCollision`, `Entity.verticalCollision`,
 `Entity.verticalCollisionBelow` and `Entity.minorHorizontalCollision`, the
 header having promised four and the page having named none; and
@@ -8189,9 +8646,9 @@ header having promised four and the page having named none; and
 not one of the four. New claim: `Entity.collideBoundingBox` is the flat attempt
 itself, called once before the step-up test (`Entity.java:1192`, `:1256`).
 *Off it goes* split into two sections (one inbound link repointed). The scenario
-is now stated as the landing tick.
+is now stated as the landing tick.~~ *(checked (`world/entity/Entity.java`:826–842, :1094; `client/player/LocalPlayer.java`:996, :1218) — pass 8, session F)*
 
-**`ai-goals-and-brains`.** Verified line no longer promises *meet at the bell*.
+~~**`ai-goals-and-brains`.** Verified line no longer promises *meet at the bell*.
 New claim: the schedule's numbers are the ticks each activity **starts**, not
 durations. A **1.21-era blockquote created** at the foot out of the opening's
 *Schedule does not exist* clause, and it asserts: no *Schedule* class and no
@@ -8200,9 +8657,9 @@ durations. A **1.21-era blockquote created** at the foot out of the opening's
 (`Registries.java:280`); `world/entity/schedule` holds one class, `Activity`.
 The unreachable-workstation answer moved into the villager's-day section with
 `PoiCompetitorScan` and `ValidateNearbyPoi`. New claim: `Brain.Provider` builds
-the brain and asks its `Brain.ActivitySupplier` per body.
+the brain and asks its `Brain.ActivitySupplier` per body.~~ *(checked except *two more behaviours* can take a claim — see *Pass 8, session F*, correction 173 — pass 8, session F)*
 
-**`pathfinding`.** Verified line's halves swapped. New claim: the *maximum path
+~~**`pathfinding`.** Verified line's halves swapped. New claim: the *maximum path
 length* is named before use — the larger of the follow range and the required
 path length, in blocks — and the node budget is that times sixteen, which the
 page previously called "the same" number at two different scales. New claim:
@@ -8210,15 +8667,15 @@ page previously called "the same" number at two different scales. New claim:
 `PathNavigation.createPath` themselves (`PathNavigation.java:183–195`). The
 happy-ghast sentence rescoped: it has a navigation and one goal does not use it.
 *Two independent timers* re-attributed to the two halves of
-`PathNavigation.doStuckDetection`.
+`PathNavigation.doStuckDetection`.~~ *(checked except the happy ghast's goals and the node timer *per node* — see *Pass 8, session F*, corrections 187, 191 — pass 8, session F)*
 
-**`damage-and-death`.** Heading *One number, a dozen owners* → *One number,
+~~**`damage-and-death`.** Heading *One number, a dozen owners* → *One number,
 eight steps, and no step that knows another*, which is what the figure draws
 (one inbound link repointed). New claim: the three entity ids in
 `ClientboundDamageEventPacket` are the victim, the causing entity and the direct
-one. The four `CombatTracker` reset call sites listed as four.
+one. The four `CombatTracker` reset call sites listed as four.~~ *(checked except one of the four callers: 26.3 moved `CombatTracker.recheckStatus` from `LivingEntity.die` to `LivingEntity.remove` — see *Pass 8, session F*, correction 210 — pass 8, session F)*
 
-**`entities/README`.** Re-argued to A6. New claim: the part's argument now names
+~~**`entities/README`.** Re-argued to A6. New claim: the part's argument now names
 `Entity` — the base class it had never named — and ends on the claim that every
 surprise on its list is one of five mechanisms answering a question another was
 thought to have settled. *Where the part stops* moved from first to its template
@@ -8226,7 +8683,7 @@ place and cut to 21 lines. New claim in the shape section: Parts VIII, IX and X
 are the three later parts that link back to *authority* (the count was there,
 the parts were not). Two figure edge labels rewritten (`xxa`/`zza` was
 unglossable on a landing page). *Watch in this order* blurbs re-synced for
-`ai-goals-and-brains` and `pathfinding`.
+`ai-goals-and-brains` and `pathfinding`.~~ *(checked except *almost nothing else* — see *Pass 8, session F*, correction 3 — pass 8, session F)*
 
 ### Reference
 
@@ -9307,7 +9764,7 @@ come first.*
 
 ### Corrections — what the page said, what the decompile says
 
-1. **`entities/entity-anatomy`:393 — what `EntityType.trackDeltas` is.** The
+1. ~~**`entities/entity-anatomy`:393 — what `EntityType.trackDeltas` is.** The
    page called it "a hard-coded list of types whose velocity is never sent at
    all". `EntityType.trackDeltas` (`EntityType.java`:447-449) is a method
    returning `true` for every type *except* ten named ones, so the page had the
@@ -9318,7 +9775,7 @@ come first.*
    outside the branch entirely (:267-269). Page against page:
    `networking/what-the-client-is-told`:222 had it right as "a hardcoded
    exclusion list". Now "a third parameter, `EntityType.trackDeltas`, which is
-   true of every type but ten", with the roster left to its owner.
+   true of every type but ten", with the roster left to its owner.~~ *(checked (`world/entity/EntityTypes.java`: eleven `dontTrackDeltas`); the tick-zero clause beside it was wrong in 26.3 — see *Pass 8, session F*, correction 45 — pass 8, session F)*
 
 2. **`introduction`:148 — three things called skipped that the skips page says
    are taught.** The introduction listed "the data generators, statistics and
@@ -11067,10 +11524,10 @@ name it the same way.
   the *only* path to that flush which skips the interval test; and
   `ServerEntity.handleMinecartPosRot` reaches it from inside the gate. All
   three moved from `synched-entity-data` (session F's routed list, discharged).
-- Two table rows gain the numbers `movement-and-collision` had and this page
+- ~~Two table rows gain the numbers `movement-and-collision` had and this page
   did not: `FORCED_TELEPORT_PERIOD` as four hundred *gated* calls, "at least
   1,200 ticks on the default interval", and that the ground-flag row is the
-  common case.
+  common case.~~ *(wrong in part: 400 gated calls is about 1,200 ticks for an entity tracked every tick, and fewer when data or a push opens the gate, not at least — see *Pass 8, session F*, corrections 154 and 280, and `networking/what-the-client-is-told` under *Elsewhere* — pass 8, session F)*
 - `VecDeltaCodec` named in the prose as the object holding the dead-reckoning
   base, where it had appeared only in *Where to look*;
   `ClientboundSetPassengersPacket` and `ClientboundSetEntityLinkPacket` named
@@ -11133,8 +11590,8 @@ material.**
   before the parse.
 - `commands/dialogs`:8-9 repointed: `ClientboundShowDialogPacket`'s two
   protocols are `packets-and-stream-codecs`', not `protocol-phases`'.
-- `entities/entity-anatomy`:38's `ServerEntity` row repointed from gate 1 to
-  gate 3, which is the section that answers it.
+- ~~`entities/entity-anatomy`:38's `ServerEntity` row repointed from gate 1 to
+  gate 3, which is the section that answers it.~~ *(checked (`networking/what-the-client-is-told`'s gate 3 heading) — pass 8, session F)*
 - ~~`anatomy/anatomy`:128 now sends the memory channel to `the-connection` as
   well as the phase walk; `reference/threads` gains a link to
   `protocol-phases#login` for the state machine it was explaining.~~ *(checked: the link lands on `networking/the-connection`:217, the local channel's pipeline; `reference/threads`:80 links `protocol-phases#login`, the heading at `networking/protocol-phases`:145 — pass 8, session B)*
@@ -11368,8 +11825,8 @@ named section is the answer. The cuts, each *from* → *to*:
   (`KineticWeapon.java`:74-76) walks `ProjectileUtil.getHitEntitiesAlong`
   with `PiercingWeapon.canHitEntity` and the block-collider clip, exactly as
   the stab does; only the figure had said so. (`pass5.md`:2543.)
-- `entities/README`: one clause declaring that `world/effect` is in Part VI's
-  packages and its lecture is Part VIII's — the ruling is below.
+- ~~`entities/README`: one clause declaring that `world/effect` is in Part VI's
+  packages and its lecture is Part VIII's — the ruling is below.~~ *(checked (`tools/map_source.py`:106–107); the sentence's *the one package* was wrong — see *Pass 8, session F*, correction 16 — pass 8, session F)*
 - `player/README`: a *where the part stops* section, which the part had none
   of, with the size include, the upward border at `Avatar`, five outward
   borders, and two declared declines (`Hotbar`/`HotbarManager` as the
@@ -11669,7 +12126,7 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
 
 ### Corrections — every one re-derived against the decompile
 
-- **`authority`:113-122 put a player's own physics in the wrong phase.** The
+- ~~**`authority`:113-122 put a player's own physics in the wrong phase.** The
   page had the server's copy running `LivingEntity.travel` "during the entity
   phase of its tick". `ServerPlayer.tick` — the half the level's entity loop
   calls — does **not** call the superclass tick (`ServerPlayer.java`:653); the
@@ -11678,14 +12135,14 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   (`ServerGamePacketListenerImpl.java`:323), which runs in the *connection*
   phase — `MinecraftServer.tickChildren` ticks every level and only then calls
   `tickConnection` (`MinecraftServer.java`:1228-1254). `the-two-phase-tick`
-  had it right all along, which makes this a page contradicting its own owner.
-- **`authority`:121-122 misattributed the discard.** It had the next
+  had it right all along, which makes this a page contradicting its own owner.~~ *(checked (`server/level/ServerPlayer.java`:665, :744; `server/network/ServerGamePacketListenerImpl.java`:332) — pass 8, session F)*
+- ~~**`authority`:121-122 misattributed the discard.** It had the next
   `ServerboundMovePlayerPacket` overwriting the server's simulated position.
   The discard is inside the bracket: `tickPlayer` records the position, calls
   `doTick`, then snaps straight back to the recorded one with `Entity.absSnapTo`
   (`ServerGamePacketListenerImpl.java`:319-325). Both are cut to a citation of
-  `the-two-phase-tick#the-bracket-and-what-survives-it`.
-- **`authority`:181-183, "three of those eight read the same member".** True
+  `the-two-phase-tick#the-bracket-and-what-survives-it`.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:328–333) — pass 8, session F)*
+- ~~**`authority`:181-183, "three of those eight read the same member".** True
   but the weaker of two readings, and the page's own bullet list shows the
   stronger. Counted in the source: `Entity.move` reads
   `Entity.isLocalInstanceAuthoritative` three times and
@@ -11693,14 +12150,14 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   `canSimulateMovement` twice, `Entity.isEffectiveAi` twice and
   `isLocalInstanceAuthoritative` once — eight call sites, one of which reads a
   pair, so **four** read the root predicate, three `canSimulateMovement`, two
-  `isEffectiveAi`. (This is [pass5.md](pass5.md):706, struck.)
-- **`authority`:104-106 was too strong about `Entity.move`.** "the only thing
+  `isEffectiveAi`. (This is [pass5.md](pass5.md):706, struck.)~~ *(checked, except that 26.3 adds a ninth read behind `SharedConstants.IS_RUNNING_IN_IDE` (`world/entity/Entity.java`:772), which no shipped game runs; the page's eight stands — pass 8, session F)*
+- ~~**`authority`:104-106 was too strong about `Entity.move`.** "the only thing
   that would is `Entity.move`, which on this side only `LivingEntity.travel`
   reaches" — `PistonMovingBlockEntity.java`:191 and
   `ShulkerBoxBlockEntity.java`:143 both call the mover directly, and block
   entities tick on the client. Scoped to *nothing in the mob's own tick*, which
-  is what `movement-and-collision`:36-37 already said; the two pages disagreed.
-- **`attributes`:116-119 said the same clause twice and got the third wrong.**
+  is what `movement-and-collision`:36-37 already said; the two pages disagreed.~~ *(checked (`world/level/block/piston/PistonMovingBlockEntity.java`:191); the *NoAI* answer contradicted it — see *Pass 8, session F*, correction 66 — pass 8, session F)*
+- ~~**`attributes`:116-119 said the same clause twice and got the third wrong.**
   "overrides the attack damage the monster builder added, the follow range the
   mob builder added and the follow range the mob builder added — the movement
   speed it also declares has no earlier entry to beat".
@@ -11709,19 +12166,19 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   contains **both** `Attributes.MOVEMENT_SPEED` and `Attributes.ARMOR`, so four
   of the five are overrides and only `Attributes.SPAWN_REINFORCEMENTS_CHANCE`
   is new. The page contradicted itself fifteen lines later, where `Mannequin`
-  gets "the plain living set, including the registry's default movement speed".
-- **`damage-and-death`:158-161 had the invulnerability window backwards.** It
+  gets "the plain living set, including the registry's default movement speed".~~ *(checked (`world/entity/monster/zombie/Zombie.java`:136; `LivingEntity.java`:336) — pass 8, session F)*
+- ~~**`damage-and-death`:158-161 had the invulnerability window backwards.** It
   said the red flash is "only half the window" and "the other half is the
   silent one". `LivingEntity.hurtServer` takes the partial branch on
   `invulnerableTime` still being above ten (`LivingEntity.java`:1281), and a
   full hit sets that counter to 20 and the flash to 10 together — so the excess
   rule applies in exactly the ten ticks the flash is *showing*, and the second
   ten protect nothing at all. The page's own hook, its figure node N3 and the
-  landing page all had it right; this paragraph alone had it inverted.
-- **`entity-anatomy`:212 glossed `entity/schedule` as "villager day plans".**
+  landing page all had it right; this paragraph alone had it inverted.~~ *(checked (`world/entity/LivingEntity.java`:1293, :1303–1306) — pass 8, session F)*
+- ~~**`entity-anatomy`:212 glossed `entity/schedule` as "villager day plans".**
   The package holds `Activity.java` and `package-info.java` and nothing else;
   the day plan is a `Timeline`. The gloss read as the opposite of
-  `ai-goals-and-brains`' hook, which is that *Schedule* does not exist in 26.2.
+  `ai-goals-and-brains`' hook, which is that *Schedule* does not exist in 26.2.~~ *(checked (`world/entity/schedule/` holds `Activity` alone) — pass 8, session F)*
 - **`reference/non-living-damage`:8, "twelve of the rows below inherit it
   unchanged".** Thirteen. There are nine declarations of `Entity.hurtClient`,
   one of them the base default; seven of the eight overriders are rows in this
@@ -11735,65 +12192,65 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   the creative test, which only redirects the destruction.
   `damage-and-death`:384-386 had it right; the catalogue contradicted its own
   lecture.
-- **`ai-goals-and-brains`:383 said "everything it will ever do".** A zombie
+- ~~**`ai-goals-and-brains`:383 said "everything it will ever do".** A zombie
   gains a thirteenth goal outside `Mob.registerGoals`:
   `Zombie.setCanBreakDoors` inserts a `BreakDoorGoal` at priority 1
   (`Zombie.java`:152-166), rolled at spawn against local difficulty (`:493`).
   The page's own general section eleven lines earlier already allowed for
   "the few mobs that add or remove a goal on a state change".
-  ([pass5.md](pass5.md):703, struck.)
-- **`ai-goals-and-brains`:341-348 had a dangling *the three*.** Five of the ten
+  ([pass5.md](pass5.md):703, struck.)~~ *(checked (`world/entity/monster/zombie/Zombie.java`:155–170, :458) — pass 8, session F)*
+- ~~**`ai-goals-and-brains`:341-348 had a dangling *the three*.** Five of the ten
   villager packages carry no `UpdateActivityFromSchedule`: core, panic and hide
   have nothing at priority 99, pre-raid and raid have `ResetRaidStatus` there
   (`VillagerGoalPackages.java`:35-101). The page then gave three escape hatches
   for what read as those five. Core needs none — it is always active alongside
-  one other activity — so the pinning applies to the other four.
-- **`movement-and-collision`:369 counted ticks where the code counts gated
+  one other activity — so the pinning applies to the other four.~~ *(checked (`world/entity/ai/behavior/VillagerGoalPackages.java`:36–100); the next sentence's *asks once* was wrong — see *Pass 8, session F*, correction 172 — pass 8, session F)*
+- ~~**`movement-and-collision`:369 counted ticks where the code counts gated
   calls.** `ServerEntity.teleportDelay` is incremented at
   `ServerEntity.java`:170, inside the interval gate that opens at `:137`, and
   tested against 400 at `:182`. `what-the-client-is-told`:161-164 already said
   so; for an entity on the default interval the real bound is at least 1,200
-  ticks.
-- **`movement-and-collision`:379-380 named the wrong branch.**
+  ticks.~~ *(wrong in part: the bound is about 1,200 ticks for an entity tracked every tick, and fewer when data or a push opens the gate — see *Pass 8, session F*, corrections 154 and 280 — pass 8, session F)*
+- ~~**`movement-and-collision`:379-380 named the wrong branch.**
   `LivingEntity.aiStep` opens with an interpolate branch and an *else if* that
   scales the stored delta by 0.98 — the handler is the interpolate branch and
-  the 0.98 decay is the coast branch, which `authority`:102-106 had right.
-- **`damage-and-death`:322 handed the respawned object to the wrong page.**
+  the 0.98 decay is the coast branch, which `authority`:102-106 had right.~~ *(overtaken by 26.3: `Entity.commonTick` interpolates and `LivingEntity.aiStep` only coasts — see *Pass 8, session F*, correction 139 — pass 8, session F)*
+- ~~**`damage-and-death`:322 handed the respawned object to the wrong page.**
   `player-anatomy`:213-216 itself says `players-and-sessions` owns it; the
   section is
   `players-and-sessions#the-object-and-the-reference-that-outlives-it`.
-  ([pass5.md](pass5.md):220, struck.)
+  ([pass5.md](pass5.md):220, struck.)~~ *(checked (`src/systems/server/players-and-sessions.md`, the anchor; `server/players/PlayerList.java`:414–418) — pass 8, session F)*
 
 ### Suspicions re-derived and found sound — a strike is a claim
 
-- `synched-entity-data`:284-287 on `Entity.syncPosition` ("realigns the
+- ~~`synched-entity-data`:284-287 on `Entity.syncPosition` ("realigns the
   tracker's own counter") against `movement-and-collision`:373 ("forces the
   next send outright"). Both describe `ServerEntity.java`:133-135, which
   re-phases the tracker's tick count to the next multiple of the interval
   immediately before the gate — so the send does happen at that evaluation.
-  Not a contradiction; `movement-and-collision` now uses the owner's wording.
-- `synched-entity-data`:270-271's "seven of those… set *Integer.MAX_VALUE*"
+  Not a contradiction; `movement-and-collision` now uses the owner's wording.~~ *(wrong in part in 26.3: it does nothing under `UpdateInterval.NEVER`, and for a living entity other than a shulker the stepped tracker takes the flag first — see *Pass 8, session F*, corrections 111 and 266 — pass 8, session F)*
+- ~~`synched-entity-data`:270-271's "seven of those… set *Integer.MAX_VALUE*"
   against `entity-anatomy`:383's `EntityTypes.AREA_EFFECT_CLOUD`. Both true:
   the seven are the area-effect cloud, the end crystal, both item frames, the
   leash knot, the lightning bolt and the painting, and 37 types set an interval
   at all. The gloss "item frames, paintings, leash knots and their kin" was
-  loose, not wrong; the list now lives once, on `entity-anatomy`.
+  loose, not wrong; the list now lives once, on `entity-anatomy`.~~ *(overtaken by V1 (eight types); the *seven* beside it was left — see *Pass 8, session F*, correction 109 — pass 8, session F)*
 - ~~`entity-lifecycle` "spends the chunk model throughout and links it nowhere"
   ([pass5-brief.md](pass5-brief.md) Part 4, session F's row): **overtaken**.
   The page links `chunk-anatomy` at :83 for the heightmap, and now with the
   anchor.~~ *(overtaken: the page links `chunk-anatomy` twice — pass 8, session A)*
-- `pathfinding`:99-102's villager follow range against `entity-lifecycle`:148's
+- ~~`pathfinding`:99-102's villager follow range against `entity-lifecycle`:148's
   `Mob.finalizeSpawn` bonus: the sentence was about which of two numbers
   `PathNavigation.updatePathfinderMaxVisitedNodes` takes the larger of, and 48
   wins either way. Reworded to say the constructor sets it rather than that the
-  attribute is untouched.
-- `SleepInBed` "never times out": `SleepInBed.timedOut` returns false and the
+  attribute is untouched.~~ *(checked (`world/entity/npc/villager/Villager.java`:166; `world/entity/ai/navigation/PathNavigation.java`:90–92) — pass 8, session F)*
+- ~~`SleepInBed` "never times out": `SleepInBed.timedOut` returns false and the
   class overrides `Behavior.canStillUse` (`SleepInBed.java`:58, :95-98). Sound,
-  and it is the page's own counter-example to the default.
+  and it is the page's own counter-example to the default.~~ *(checked: `SleepInBed.timedOut` answers no, and that override, not `SleepInBed.canStillUse`, is why it never times out (`SleepInBed.java`:98–101) — see *Pass 8, session F*, correction 174 — pass 8, session F)*
 
 ### Claims introduced
 
-- **`entity-anatomy`.** The non-living half of the tree, which the page had
+- ~~**`entity-anatomy`.** The non-living half of the tree, which the page had
   left to the atlas: `Projectile` with 26 descendants, `VehicleEntity` with 15,
   thirteen childless direct subclasses (the numbers are `maps/hierarchy`'s).
   `TamableAnimal` named as a rung, with an owner reference and a tame bit. The
@@ -11804,11 +12261,11 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   *Integer.MAX_VALUE* intervals named in its place. The section heading *Three
   things about the id* renamed *The id, the box, and the numbers on the type*:
   it carried seven questions and only two were about the id (no page linked the
-  old anchor).
-- **`authority`.** "four other pages depend on it" replaced by four *parts* and
+  old anchor).~~ *(checked (the atlas's tree; the thirteen childless direct subclasses) — pass 8, session F)*
+- ~~**`authority`.** "four other pages depend on it" replaced by four *parts* and
   the measured sixteen. `Player.isClientAuthoritative` named for the first time
   on the page three others cite for it. The `travelRidden` fork cut to the
-  ninth predicate reading, the fork itself cited.
+  ninth predicate reading, the fork itself cited.~~ *(checked except *four later parts*, one of which is this part — see *Pass 8, session F*, correction 49 — pass 8, session F)*
 - ~~**`entity-lifecycle`.** Two new passages. The species list has a data-driven
   override and a hard-coded one in front of it: `ChunkGenerator.getMobsAt`
   (`ChunkGenerator.java`:481-511) replaces the biome's list with a structure's
@@ -11823,7 +12280,7 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   `Visibility` and a `ClassInstanceMultiMap`. Also: a raid named as a spawn
   source in *the other ways in*, and the overworld-only fact moved in from
   `server-level-tick`.~~ *(checked: `ChunkGenerator.java`:508–537, `NaturalSpawner.java`:305–316; fifty-two, six, twenty-three and eighteen re-counted in 26.3's data — pass 8, session A)*
-- **`ai-goals-and-brains`.** The leash given its own paragraph (it is a lever
+- ~~**`ai-goals-and-brains`.** The leash given its own paragraph (it is a lever
   that takes `Goal.Flag.MOVE` away, not a control flag), with
   `Leashable.tickLeash` cited to `entity-anatomy`. A family paragraph for the
   two big libraries: 103 behaviour classes, 61 goal classes, 26 sensors,
@@ -11831,13 +12288,13 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   described. `AcquirePoi`'s mechanics and `SleepInBed`'s entry conditions cut
   to citations of `points-of-interest`; the job-site half kept, because it is
   the villager's day, and `SleepInBed`'s never-times-out kept, because it is
-  this page's counter-example.
-- **`pathfinding`.** The budget's trigger, which the owner could not state:
+  this page's counter-example.~~ *(wrong: the lever fires past the lead's snap distance and `Mob.updateControlFlags` gives the flag back; the family paragraph's *every one* and SleepInBed's reason were wrong too — see *Pass 8, session F*, corrections 166, 167, 174 — pass 8, session F)*
+- ~~**`pathfinding`.** The budget's trigger, which the owner could not state:
   `Mob.onAttributeUpdated` on `Attributes.FOLLOW_RANGE` **or**
   `Attributes.TEMPT_RANGE`. `PathComputationType`'s three values, and that the
   four controls implement `Control` and re-specialise by movement mode the way
-  the evaluators do. "unbounded by distance" moved in from `block-interaction`.
-- **`damage-and-death`.** The non-living roster cut from five families naming
+  the evaluators do. "unbounded by distance" moved in from `block-interaction`.~~ *(wrong in part: the recompute has two triggers, and only two of the four controls re-specialise by movement mode — see *Pass 8, session F*, corrections 185, 188 — pass 8, session F)*
+- ~~**`damage-and-death`.** The non-living roster cut from five families naming
   all twenty-one classes to the argument plus four classes, and the heading
   renamed *Twenty-one classes with no pipeline at all* — the lecture and the
   catalogue had been partitioning the same twenty-one two ways (five families
@@ -11848,13 +12305,13 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   unless the fall is first, keeps a `FallLocation`-carrying alternative, and
   returns nothing unless the fall exceeded five blocks or the alternative's
   damage did. The `Entity.hurtServer` side-enforcement stated in place instead
-  of handed forward to `authority`, which never explained it.
+  of handed forward to `authority`, which never explained it.~~ *(wrong in part: 26.3's `Cushion` makes twenty-two, and the two-block example and *fell out of the world* were wrong — see *Pass 8, session F*, corrections 213, 216 — pass 8, session F)*
 - **`reference/non-living-damage`.** An `Entity.hurtClient` column, twenty-one
   rows, from the seven declarations plus the inherited default.
 - ~~**`server-level-tick`.** The census kept as the tick's own cost ("walking
   every entity in the dimension is what this step costs, once a tick") with the
   cap arithmetic cut to a citation.~~ *(checked (`server/level/ServerChunkCache.java`:379–381) except, beside it, *the whole spawning half is behind `SPAWN_MOBS`*: the census and the thunder run with it off (:379–409) — see *Pass 8, session C* — pass 8, session C)*
-- **`entities/README`, rewritten to the role.** New argument: five surprises,
+- ~~**`entities/README`, rewritten to the role.** New argument: five surprises,
   one question, asked about everything not in the grid. A *where the part
   stops* section with the size through the include — the largest part of the
   book — and the coverage answer: about 40% of its lines are named nowhere and
@@ -11865,7 +12322,7 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   `attributes` actually says, and the ids-stop-at-254 blurb from "the packet
   stops at 254". The pair claim for *synched entity data* ↔ *attributes* moved
   in from `lectures.md`, whose "first of the two channels" contradicted both
-  the page and the landing figure's *one of six*.
+  the page and the landing figure's *one of six*.~~ *(wrong in part: *no packet* is no attribute packet, and the dragon has eleven phases — see *Pass 8, session F*, corrections 2, 15 — pass 8, session F)*
 
 ### Anchors and citations
 

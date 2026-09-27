@@ -23,14 +23,14 @@ rejections later where the mob is finally allowed to exist.
 
 | class | what it decides | thread |
 |---|---|---|
-| `NaturalSpawner` | the cascade of tests between a chunk and a mob, run from one file of static methods | server main |
-| `NaturalSpawner.SpawnState` | the per-tick census, the global cap per `MobCategory`, and the biome crowding budget through `PotentialCalculator` | server main, rebuilt each tick |
-| `LocalMobCapCalculator` | whether any player near *this* chunk is still under the per-player limit | server main, rebuilt each tick |
-| `SpawnPlacements` | the placement type, heightmap and predicate for each `EntityType` — code, not data | a static table, read on the server main thread, and on a worker by generation's spawn step |
-| `PersistentEntitySectionManager` | which entities exist, which are findable, which tick, which chunks are queued to unload | server main, with one concurrent load inbox |
+| `NaturalSpawner` | the cascade of tests between a chunk and a mob, run from one file of static methods | the Server thread, and a worker for generation's spawn step |
+| `NaturalSpawner.SpawnState` | the per-tick census, the global cap per `MobCategory`, and the biome crowding budget through `PotentialCalculator` | the Server thread, rebuilt each tick |
+| `LocalMobCapCalculator` | whether any player near *this* chunk is still under the per-player limit | the Server thread, rebuilt each tick |
+| `SpawnPlacements` | the placement type, heightmap and predicate for each `EntityType` — code, not data | a static table, read on the Server thread, and on a worker by generation's spawn step |
+| `PersistentEntitySectionManager` | which entities exist, which are findable, which tick, which chunks are queued to unload | the Server thread, with one concurrent load inbox |
 | `Visibility` | the three-state projection of `FullChunkStatus` that everything above reads | an enum, read on both sides |
-| `EntityTickList` | the set the tick walks, and the double buffer that makes mutating it mid-walk safe | server main, and the Render thread for `ClientLevel` |
-| `EntityStorage` | the *entities/* region files, separate from the block ones | reads and writes the file on the IO pool, turns tags into entities and back on the server main thread |
+| `EntityTickList` | the set the tick walks, and the double buffer that makes mutating it mid-walk safe | the Server thread, and the Render thread for `ClientLevel` |
+| `EntityStorage` | the *entities/* region files, separate from the block ones | reads and writes the file on the IO pool, turns tags into entities and back on the Server thread |
 
 ## A spawn attempt is a filter, not a conversation
 
@@ -38,8 +38,8 @@ Almost every step of the spawner is a **rejection**, and the rejections are not
 all the same size: one drops a category for the whole tick, one skips a chunk
 for every category, one ends this category on this chunk, one ends a group
 attempt, and most of them cost nothing but a single jittered try. Drawing it as a conversation hides all of
-that. Here it is as the filter it is, in two halves — what has to pass before a
-position is rolled, and what happens once one has been — with the tests
+that. Here it is as the filter it is, in two halves — what has to pass before
+the first try, and what happens at each try after it — with the tests
 themselves in the table under them.
 
 ```mermaid
@@ -75,7 +75,7 @@ flowchart TD
     OBJ -->|"fails"| MORE
     OBJ -->|"passes"| FIN["Mob.finalizeSpawn, then ServerLevelAccessor.addFreshEntityWithPassengers"]
     FIN -->|"cluster full"| OVER
-    FIN -->|"group full"| GRP
+    FIN -->|"a lone tropical fish"| GRP
     FIN -->|"room for a sibling"| MORE
     MORE -->|"yes"| JIT
     MORE -->|"no"| GRP{"all three attempts spent?"}
@@ -88,9 +88,11 @@ and tries again, three arrows end only the group attempt (a new one puts x and
 z back at the roll), and three reach the box at the foot. The thick edge is the
 boundary the rest of this section is about.*
 
-Three things in that loop are worth reading twice. Almost every rejection
-merely jitters again — it costs one try, not one of the three attempts. The two that end
-a *group* are the empty species list and the group filling up. And the two that
+Four things in that loop are worth reading twice. Almost every rejection
+merely jitters again — it costs one try, not one of the three attempts. The
+three that end a *group* are the empty species list,
+`Mob.isMaxGroupSizeReached` (which only a tropical fish that does not school
+ever answers yes to) and the tries running out. And the two that
 end the whole category on this chunk are a null from `EntityType.create` and a
 full cluster, which is why *one bad construction* and *one crowded spawn* both
 look, from outside, like the chunk going quiet. Only the last box is a spawn:
@@ -111,12 +113,12 @@ spawners use too, or `LevelWriter.addFreshEntity` behind it for a single body.
 | `EntityGetter.getNearestPlayer` | there is no non-spectator player anywhere in the level | this try |
 | `NaturalSpawner.isRightDistanceToPlayerAndSpawnPoint` | within 24 blocks of the nearest player; within 24 of the respawn point and that point is in this dimension; or the jitter left this chunk for one that cannot spawn | this try |
 | `NaturalSpawner.getRandomSpawnMobAt` | the list is empty — or the category is `MobCategory.WATER_AMBIENT` in a reduced-water-ambient biome, 98 times in 100 | this group attempt |
-| `NaturalSpawner.isValidSpawnPostitionForType` | the category is `MobCategory.MISC`; it is too far out for a type that cannot spawn far from a player; the type is unsummonable or no longer in the list at this exact block; `SpawnPlacements.isSpawnPositionOk` fails on the placement type; `SpawnPlacements.checkSpawnRules` fails, which is where the light test lives; or the type's spawn box collides with the world | this try |
+| `NaturalSpawner.isValidSpawnPostitionForType` | the category is `MobCategory.MISC`; it is too far out for a type that cannot spawn far from a player; the type is unsummonable or no longer in the list at this exact block; `SpawnPlacements.isSpawnPositionOk` fails on the placement type; `SpawnPlacements.checkSpawnRules` fails, which is where Peaceful and the light test live; or the type's spawn box collides with the world | this try |
 | `NaturalSpawner.SpawnState.canSpawn` | the biome's crowding budget for this exact type is spent | this try |
-| `EntityType.create` | feature-flagged off, or Peaceful and not allowed there | this category on this chunk |
+| `EntityType.create` | feature-flagged off (Peaceful was caught two rows up), or what it built is not a `Mob` | this category on this chunk |
 | `NaturalSpawner.isValidPositionForMob` | `Mob.checkSpawnRules` or `Mob.checkSpawnObstruction` fails on the real object, or `Mob.removeWhenFarAway` says it would despawn instantly anyway | this try |
 | `Mob.getMaxSpawnClusterSize` | the cluster is full | this category on this chunk |
-| `Mob.isMaxGroupSizeReached` | the group has all the siblings it is allowed | this group attempt |
+| `Mob.isMaxGroupSizeReached` | the mob is a tropical fish that does not school, the one type that ever answers yes | this group attempt |
 
 The boundary that matters is the thick edge. Everything above it is decided
 against the `EntityType` — the placement type, the light rule, the collision
@@ -153,9 +155,9 @@ Construction is itself a filter, and the harshest-tempered one:
 anatomy](entity-anatomy.md#from-a-registry-entry-to-a-live-object) has the two
 gates it checks and the one request flag that skips them). What the spawner
 does with a null is its own: `NaturalSpawner.spawnCategoryForPosition` returns
-outright, not trying the next position. On Peaceful the spawner does all the
-work up to construction and then abandons this category's attempt on this
-chunk.
+outright, not trying the next position. On Peaceful a type not allowed there
+never gets this far: `SpawnPlacements.checkSpawnRules` refuses it first, one
+try at a time.
 
 The species it was about to build came from a list, and that list has a
 hard-coded exception in front of it. `NaturalSpawner.mobsAt` asks
@@ -200,11 +202,12 @@ chunk centre two gates above, run over the same players in the same tick, so a
 chunk that reached this gate always has someone near it.
 (`SharedConstants.DEBUG_IGNORE_LOCAL_MOB_CAP` is the development switch that
 turns that half off.) The census both caps count from skips any mob that is
-`Mob.isPersistenceRequired` or `Mob.requiresCustomPersistence` — named,
-leashed or riding something — so a named zombie costs nothing against either
-cap. That is the same predicate pair that keeps `Mob.checkDespawn` from
-discarding it, which is why *name it and it stays* and *name it and it stops
-counting* are one fact and not two.
+`Mob.isPersistenceRequired` or `Mob.requiresCustomPersistence` — among them a
+mob name-tagged, holding loot it picked up, leashed or riding something — so a
+named zombie
+costs nothing against either cap. That is the same predicate pair that keeps
+`Mob.checkDespawn` from discarding it by distance, which is why *name it and it
+stays* and *name it and it stops counting* are one fact and not two.
 
 ### The spawn distances, and one that is not the number it looks like
 
@@ -227,11 +230,13 @@ returns a `Zombie.ZombieGroupData` that the loop feeds back into the *next*
 mob of the same group. Baby-or-adult is decided once, by the first zombie, and
 inherited by the rest: a spawn group is all-baby or all-adult, never mixed. A
 baby gets a 5 % roll at an existing unridden `Chicken` within five blocks
-across and three up or down, and *only if that roll fails* a second 5 % roll
+out on each side and three up or down, and *only if that roll fails* a second 5 % roll
 to create one.
-Two different limits end it. `Mob.isMaxGroupSizeReached` breaks the current
-group and lets the next of the three attempts start; `Mob.getMaxSpawnClusterSize`
-returns outright and kills all three. `Mob`'s base value is four, and seven
+Two different limits can end a pack. `Mob.isMaxGroupSizeReached` breaks the
+current group and lets the next of the three attempts start, though only a
+tropical fish that does not school ever answers yes, so a zombie's group ends
+when its tries run out; `Mob.getMaxSpawnClusterSize` returns outright and
+kills all three. `Mob`'s base value is four, and seven
 classes override it: `AbstractHorse` to 6, `Wolf` and `AbstractFish` to 8 —
 with `AbstractSchoolingFish` overriding again to return its own school size —
 and `Ghast`, `HappyGhast` and `Pillager` **down** to 1.
@@ -369,7 +374,6 @@ stateDiagram-v2
     state "Visibility.HIDDEN" as H
     state "Visibility.TRACKED" as T
     state "Visibility.TICKING" as K
-    [*] --> H
     H --> T : reaches FULL, tracking starts
     T --> K : reaches ENTITY_TICKING, ticking starts
     H --> K : straight up, tracking starts then ticking
@@ -379,9 +383,11 @@ stateDiagram-v2
     H --> [*] : the manager's unload pass, EntityStorage.storeEntities
 ```
 
-*These are a section's states, not an entity's: an entity changes state because
-its section did. A jump either way crosses the middle state inside one call,
-and the exit comes after the client was told, not with it.*
+*These are a section's states, not an entity's: an entity other than a player
+takes its section's,
+and changes when that section does or when it walks into another. A jump either
+way crosses the middle state inside one call, and the exit comes after the
+client was told, not with it.*
 
 What the jumps hide is an order.
 `PersistentEntitySectionManager.updateChunkStatus` runs its four tests in a
@@ -399,7 +405,8 @@ filters, is claimed by exactly one class in 26.3: `Player`.
 ## The tick it gets, and the despawn check it gets anyway
 
 The entity block of `ServerLevel.tick` is skipped in its entirety once the
-level has gone 300 ticks without an active ticket. Otherwise the tick walks
+level has gone 300 ticks without a ticket that keeps a dimension awake or an
+entity arriving from another dimension. Otherwise the tick walks
 `EntityTickList` and, for each entry that is neither removed nor frozen by
 `TickRateManager.isEntityFrozen`, calls `Entity.checkDespawn` — whose
 base implementation is *empty*, overridden only by `Mob`, `EnderDragon`,
@@ -409,17 +416,19 @@ outright, everything else needs `DistanceManager.inEntityTickingRange` for its
 own chunk, and an entity already riding a live vehicle returns here to be
 ticked by `ServerLevel.tickPassenger` instead.
 
-So despawn is checked for every member of the tick list while ticking is not.
+So despawn is checked for every live, unfrozen member of the tick list while
+ticking is not.
 The two sets should agree, and mostly do — the tick list *is* the ticking set
 — but they read different sources: membership follows the chunk holder's
 promoted `FullChunkStatus`, while the per-tick gate reads the simulation
 tracker directly, and the two need not have converged in the same tick.
 
 `EntityTickList` is what makes that walk safe. It holds two id-keyed maps and
-a nullable reference to whichever one is being iterated. Adding or removing
-during a walk copies the live map into the spare and **swaps** them, so the
-in-flight iterator finishes over the original, untouched map and the mutation
-lands in the new one. A second concurrent walk is refused outright, by
+a nullable reference to whichever one is being iterated. The first add or
+remove during a walk copies the live map into the spare and **swaps** them, so
+the in-flight iterator finishes over the original, untouched map and the
+mutation lands in the new one; every later one in the same walk writes to the
+new map directly. A second concurrent walk is refused outright, by
 checking that reference rather than a boolean.
 
 ## Ending one: Mob.checkDespawn
@@ -474,9 +483,11 @@ their level callback.
 
 `Entity.shouldBeSaved` has three clauses, and past two overrides that refuse
 outright — `Player`, which is saved in its own file, and `EnderDragonPart` —
-they decide the whole contents of that file. Passengers are written **inside** their vehicle, never beside it, so
-anything currently riding is refused; a vehicle whose passengers are exactly one
-player is refused too, because it travels in that player's own data instead; and
+they decide the whole contents of that file, bar the types built
+`EntityType.Builder.noSave`, which pass them and write nothing. Passengers are
+written **inside** their vehicle, never beside it, so anything currently riding
+is refused; a vehicle carrying exactly one player among its passengers is
+refused too, because it travels in that player's own data instead; and
 — the clause that is easy to miss, because it is the first one in the method —
 an entity already carrying a non-saving removal reason is skipped, which is what
 keeps a discarded mob still sitting in a section out of the file.
@@ -489,7 +500,7 @@ keeps a discarded mob still sitting in a section out of the file.
 | `Entity.RemovalReason.DISCARDED` | yes | no | `Entity.discard`, every despawn, a `ConversionType.SINGLE` conversion (`Mob.convertTo` adds the new mob, then discards the old — `ConversionType.SPLIT_ON_DEATH` keeps it), the client replacing a network id |
 | `Entity.RemovalReason.UNLOADED_TO_CHUNK` | no | **yes** | the unload above — the only reason that saves |
 | `Entity.RemovalReason.UNLOADED_WITH_PLAYER` | no | no | a player leaving, and the vehicle and ender pearls that travel in its own save data |
-| `Entity.RemovalReason.CHANGED_DIMENSION` | no | no | a portal, where the entity is rebuilt on the far side |
+| `Entity.RemovalReason.CHANGED_DIMENSION` | no | no | a change of dimension, where the entity is rebuilt on the far side — a player only on its way out of the End |
 
 *Destroys* means `LevelCallback.onDestroyed` fires — the scoreboard entry and
 the waypoint go. An unloading zombie keeps all of it, because
@@ -517,8 +528,8 @@ table of contents; read `NaturalSpawner.spawnCategoryForPosition` first, then
 `PersistentEntitySectionManager.updateChunkStatus` — the four tests in their
 fixed order — with `Visibility` and `EntityTickList` beside it, and finish on
 `Entity.setRemoved` and `Entity.RemovalReason`. Two doors the page leaves
-closed: `EntityLookup`, the flat index a command selector walks instead of the
-section grid, and `TransientEntitySectionManager`, the client's much simpler
+closed: `EntityLookup`, the flat index a command selector walks when it has no
+area to search, and `TransientEntitySectionManager`, the client's much simpler
 counterpart to everything above.
 
 Before this page: [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off),

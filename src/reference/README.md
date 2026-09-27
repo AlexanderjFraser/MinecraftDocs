@@ -44,7 +44,7 @@ I to XIII, as the [lecture map](../lectures.md) lists them.
 | [Structure spawn overrides](structure-spawn-overrides.md) | the six structures that replace a biome's spawn list, and with what | generated · decompile | VI, XII |
 | [The weapon helpers](weapon-helpers.md) | the seven `Item.Properties` helpers and every item built by one | generated · decompile | VII |
 | [Block update flags](block-update-flags.md) | the ten bits of `Level.setBlock`'s flag word | hand-kept | IV, V |
-| [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-one non-living classes does when hit | hand-kept | VI, VIII |
+| [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-two non-living classes does when hit | hand-kept | VI, VIII |
 | [What the HUD draws, and when](hud-elements.md) | every HUD element and the condition it is behind | hand-kept | X |
 | [Submit phases and feature renderers](submit-phases.md) | the fifteen phases and the twelve renderers, in declaration order | hand-kept | XI |
 | [Density-function nodes](density-function-nodes.md) | the forty-four node types, what the compiler turns each into, what range each reports, and which ids the shipped data writes | hand-kept | XII |

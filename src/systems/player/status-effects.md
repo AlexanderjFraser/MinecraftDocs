@@ -57,7 +57,7 @@ of this page's scenario every 12; regeneration's is 50, wither's 40, and
 hunger's override skips the arithmetic and pulses every tick.
 Attribute modifiers go on as `AttributeInstance.addPermanentModifier` with
 an amount linear in amplifier + 1, computed by
-`MobEffect.AttributeTemplate.create` ([attributes](../entities/attributes.md#strength-ii-lands-and-nothing-leaves-the-server)).
+`MobEffect.AttributeTemplate.create` ([attributes](../entities/attributes.md#strength-ii-lands-and-no-attribute-leaves-the-server)).
 
 **`MobEffectInstance`** is the per-entity half: duration, amplifier, the
 ambient, visible and show-icon flags, a private blend state, and

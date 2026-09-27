@@ -14,8 +14,9 @@ movement was recorded into a deque, `Entity.movementThisTick`, and
 `Entity.applyEffectsFromBlocks` replays those segments afterwards — in the
 same axis order the collision used, visiting every block the swept box
 actually crossed, `AABB.collidedAlongVector` rather than a static overlap.
-And the effects that replay finds are not applied where they are found: they
-are queued into an `InsideBlockEffectApplier.StepBasedCollector` and flushed
+And the ignition, freezing and extinguishing that replay finds are not applied
+where they are found: they are queued into an
+`InsideBlockEffectApplier.StepBasedCollector` and flushed
 in `InsideBlockEffectType` declaration order, so fire and water touched in
 the *same* step of the replay always end in the extinguish, whatever order
 the blocks came in.
@@ -24,21 +25,21 @@ the blocks came in.
 
 | class | what it decides | thread |
 |---|---|---|
-| `Entity` | the geometry: clipping, stepping up, bouncing, whether you are on the ground and what you are standing on | server main, or client main for whoever is authoritative |
+| `Entity` | the geometry: clipping, stepping up, bouncing, whether you are on the ground and what you are standing on | the Server thread, the Render thread for whatever is authoritative there, and both for an item, an orb, a falling block or lit TNT, or anything a piston or a shulker pushes |
 | `LivingEntity` | the physics above it: gravity, drag, friction, swimming, gliding, climbing | same |
 | `CollisionGetter` | which blocks are candidates, through `BlockCollisions`, and which one is holding you up | same |
 | `Shapes` / `VoxelShape` | the clipping arithmetic, one axis at a time | same |
-| `Entity.Movement` | one recorded segment — from, to, and the pre-collision vector that fixes the replay's axis order | same |
-| `InsideBlockEffectApplier.StepBasedCollector` | when a block effect actually happens, and in what order | same |
-| `EntityFluidInteraction` | the once-per-tick snapshot of water and lava height, eye depth and current | same |
-| `ServerEntity` | whether this tick's new position costs a short delta or an absolute sync | server main, in the broadcast phase |
+| `Entity.Movement` | one recorded segment — from, to, and, for a segment a move recorded, the pre-collision vector that fixes the replay's axis order | same |
+| `InsideBlockEffectApplier.StepBasedCollector` | when an ignition, a freeze or an extinguish happens, and in what order | same |
+| `EntityFluidInteraction` | the snapshot of water and lava height, whether the eyes are in and the current, that the tick reads | same |
+| `ServerEntity` | whether this tick's new position costs a short delta or an absolute sync | the Server thread, in the broadcast phase |
 
 ## Who is allowed to run this at all
 
 The trace below is the *authoritative* copy's tick, and which copy that is
 inverts between a mob and a player: nothing in a client-side mob's own tick
-reaches `Entity.move`, while your own player is simulated on your machine for
-real. The predicate that decides is `Entity.isLocalInstanceAuthoritative`
+moves it through `Entity.move` (a dying ender dragon aside), while your own player is
+simulated on your machine for real. The predicate that decides is `Entity.isLocalInstanceAuthoritative`
 rather than a bare "am I the client", and it is stated in full once, at
 [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off);
 this page notes each gate where the trace hits it.
@@ -58,14 +59,14 @@ sequenceDiagram
 
     SL->>LE: tick, from ServerLevel's entity loop
     LE->>LE: Entity.baseTick, and the fluid snapshot
-    LE->>LE: LivingEntity.aiStep: coast or interpolate, then serverAiStep
+    LE->>LE: LivingEntity.aiStep: coast if nothing simulates, then serverAiStep
     LE->>LE: LivingEntity.travel, which picks travelInAir
     LE->>LE: Entity.moveRelative, then Entity.move
     Note over LE: the resolve, and the step-up loop, are the next section
     LE->>LE: Entity.setPos, then the four collision booleans
     LE->>LE: Entity.setOnGround<br/>WithMovement
     LE->>LE: Entity.checkFallDamage
-    LE->>LE: Entity.restitution, step sound, block speed factor
+    LE->>LE: the bounce, the step sound, the block speed factor
     LE->>LE: back in travelInAir: 0.08 of gravity, then the drags
     LE->>LE: Entity.applyEffects<br/>FromBlocks
     LE->>LE: LivingEntity.push<br/>Entities, then doPush
@@ -94,8 +95,8 @@ overrides the hook and takes four points of *fell out of the world* damage a
 tick instead.
 
 `LivingEntity.aiStep` is the order of every mob's tick and worth memorising:
-interpolate-or-coast, head turn, equipment, a deadzone that zeroes any delta
-component under 0.003 (a squared-horizontal test instead, for players),
+the coast when nothing interpolates or simulates, head turn, equipment, a
+deadzone that zeroes any delta component under 0.003 (a squared-horizontal test instead, for players),
 `LivingEntity.applyInput`, `Mob.serverAiStep` — the goal selector and the
 movement control, which set `LivingEntity.xxa` and `LivingEntity.zza`
 ([AI](ai-goals-and-brains.md#what-decides), [pathfinding](pathfinding.md#following-it-one-tick-at-a-time)) — the jump
@@ -141,19 +142,20 @@ Every knob on the entity's side is a syncable attribute
 `Attributes.FALL_DAMAGE_MULTIPLIER`, `Attributes.MOVEMENT_EFFICIENCY`,
 `Attributes.WATER_MOVEMENT_EFFICIENCY`, `Attributes.AIR_DRAG_MODIFIER`,
 `Attributes.FRICTION_MODIFIER`, `Attributes.BOUNCINESS`. The world's half is
-four block properties ([blocks and states](../blocks/blocks-and-states.md#four-decisions-four-lookups)):
+five block properties ([blocks and states](../blocks/blocks-and-states.md#four-decisions-four-lookups)):
 
 | property | default | who changes it |
 |---|---|---|
 | `Block.getFriction` | 0.6 | 0.98 on ice, packed ice and `Blocks.FROSTED_ICE`, 0.989 on blue ice, 0.8 on `Blocks.SLIME_BLOCK` |
 | `Block.getSpeedFactor` | 1.0 | 0.4 on soul sand and honey |
 | `Block.getJumpFactor` | 1.0 | 0.5 on honey |
-| `Block.getBounceRestitution` | 0.0 | 1.0 on `Blocks.SLIME_BLOCK`, 0.75 on beds |
+| `Block.getBounceRestitution` | 0.0 | 1.0 on `Blocks.SLIME_BLOCK`, 0.75 on beds and `Blocks.SHELF_MUSHROOM` |
+| `Block.getFallDistanceReduction` | 0.0 | 0.5 on beds and `Blocks.SHELF_MUSHROOM` |
 
 ### Who else can move you
 
 `MoverType` names who is moving you, in five constants. `MoverType.PISTON` is
-the one with real machinery — `Entity.limitPistonMovement` collapses the
+the one with collision rules of its own — `Entity.limitPistonMovement` collapses the
 vector to a single axis, `Entity.applyPistonMovementRestriction` clamps it to
 ±0.51 per game tick, and that path alone is exempt from the *multiply* by
 `Entity.stuckSpeedMultiplier` — it still clears the field
@@ -183,7 +185,7 @@ flowchart TD
     NEXT{"a candidate height left?"}
     RETRY["retry the whole resolve at that height"]
     MORE{"more horizontal distance than the flat attempt?"}
-    WIN["return that one, dropped back to the old floor"]
+    WIN["return that one, with the tick's fall added back"]
 
     COLLIDE --> GATHER --> RESOLVE --> AXIS --> TEST
     TEST -- "no" --> FLAT
@@ -194,10 +196,10 @@ flowchart TD
     MORE -- "yes" --> WIN
 ```
 
-*Two diamonds, two questions: the upper one decides whether a step-up is
-attempted at all, and the lower one is asked once per candidate height. The
-loop leaves by the left when it runs out of candidates, which is not an answer
-to the question in it — it is the list ending.*
+*Three diamonds: the first decides whether a step-up is attempted at all, the
+second walks the candidate heights in ascending order, and the third is asked
+once per height. The loop leaves with the flat result when the heights run
+out, and with the stepped one at the first height that gains ground.*
 
 Two things in the gathering stage surprise people. The first is that
 **collision is against shapes, not blocks**: a candidate contributes
@@ -228,8 +230,8 @@ coordinates of the candidate shapes that lie above the entity's feet and
 within `Entity.maxUpStep`, skipping the height the flat attempt already
 tried, sorts them
 ascending, and retries the *whole* resolve at each until one yields any more
-horizontal distance than the flat attempt — and returns that one, less the
-drop back to the old floor, because the box it stepped from was the one
+horizontal distance than the flat attempt — and returns that one with this
+tick's fall added back in, because the box it stepped from was the one
 already lowered by this tick's vertical movement. It is the
 lowest step that helps, which is also why an entity can step onto a shape's
 internal ledge and not only its top face. `Entity.maxUpStep` is zero on the
@@ -241,8 +243,8 @@ horse climbs a full block.
 
 Before committing, one clip: if `Entity.fallDistance` is non-zero and the
 allowed movement is at least a block long, `Entity.move` casts a ray up to
-eight blocks along it for `BlockTags.FALL_DAMAGE_RESETTING` and resets the
-fall distance on any hit. Then an `Entity.Movement` record — from, to, and
+eight blocks along it for `BlockTags.FALL_DAMAGE_RESETTING` or water and resets
+the fall distance on any hit. Then an `Entity.Movement` record — from, to, and
 the pre-collision delta — goes onto `Entity.movementThisTick`, and
 `Entity.setPos` moves the point and the bounding box together.
 
@@ -259,7 +261,7 @@ but **exact** inequality on Y, and the whole vertical block only runs if the
 entity moved vertically at all or is authoritative.
 `Entity.onGround` is not a fifth boolean of the same kind: it is set from
 `Entity.verticalCollisionBelow`, so it too is a comparison and not
-a raycast. The only geometric probe
+a raycast. The probe for what holds you up
 is `CollisionGetter.findSupportingBlock`, reached through
 `Entity.setOnGroundWithMovement` and `Entity.checkSupportingBlock`, and it
 answers *which* block is holding you (for sounds and the speed factor), not
@@ -267,12 +269,13 @@ answers *which* block is holding you (for sounds and the speed factor), not
 shifted back along the movement if that finds nothing, and setting
 `Entity.onGroundNoBlocks` when it still does.
 
-### Landing, and the fall distance that resets from eight places
+### Landing, and the fall distance that resets from many places
 
 `Entity.checkFallDamage` runs next, only when this instance is authoritative.
 It adds the downward movement to `Entity.fallDistance` and, on landing, calls
 `Block.fallOn`, posts `GameEvent.HIT_GROUND` and resets the distance.
-`Block.fallOn` is what calls `LivingEntity.causeFallDamage`,
+`Block.fallOn` is what calls `LivingEntity.causeFallDamage`, with the distance
+scaled down by the block's `Block.getFallDistanceReduction`;
 `LivingEntity.calculateFallPower` subtracts
 `Attributes.SAFE_FALL_DISTANCE` and `LivingEntity.calculateFallDamage`
 multiplies by `Attributes.FALL_DAMAGE_MULTIPLIER` and checks
@@ -284,8 +287,8 @@ reset is reached from more places than you would guess — landing, entering
 water in `Entity.updateFluidInteraction`, climbing in
 `LivingEntity.handleOnClimbable`, every `LivingEntity.rideTick`, under
 `MobEffects.SLOW_FALLING` or `MobEffects.LEVITATION` at the top of the
-travel branch, `Entity.makeStuckInBlock`, and the tag clip above. Lava
-halves it instead.
+travel branch, `Entity.makeStuckInBlock`, a bubble column, a honey block's
+slide, a mace's smash, and the tag-or-water clip above. Lava halves it instead.
 
 Then `Entity.restituteMovementAfterCollisions`, gated on
 `Entity.canSimulateMovement`: a real restitution model, not slime-block
@@ -313,17 +316,17 @@ horizontals are then multiplied by block friction times a 0.91 scaled by
 `Attributes.AIR_DRAG_MODIFIER`, the vertical by a 0.98 scaled by the same —
 `Attributes.FRICTION_MODIFIER` touches only the block-friction term, and
 block friction is 1.0 unless `Entity.onGround`. The whole drag step is
-skipped when `LivingEntity.shouldDiscardFriction` is set. Climbing lives
-inside this same step: `LivingEntity.handleOnClimbable` clamps the fall
-speed on a `BlockTags.CLIMBABLE` block, and a separate clamp in
-`LivingEntity.handleRelativeFrictionAndCalculateMovement` sets the vertical
+skipped when `LivingEntity.shouldDiscardFriction` is set. Climbing straddles
+the move: `LivingEntity.handleOnClimbable` clamps the fall speed on a
+climbable block before it, and a separate clamp in
+`LivingEntity.handleRelativeFrictionAndCalculateMovement` after it sets the vertical
 component to 0.2 when a climbing or powder-snow entity is either colliding
 horizontally or jumping — which is the whole of "you go up a ladder by
 pressing into it".
 
 So the delta `Entity.move` consumes carries the *previous* tick's gravity.
 That is one of two conventions in the codebase, and the other is
-`Entity.applyGravity`, which runs *before* the move. **An `ItemEntity` does
+`Entity.applyGravity`, which most of its callers run *before* the move. **An `ItemEntity` does
 it the other way, and the contrast is the clearest way to see both.**
 `ItemEntity.tick` applies gravity (a default of 0.04) before `Entity.move`
 and drag after it, **reverses** any downward velocity on landing at half
@@ -335,10 +338,10 @@ segments instead. Its `Entity.getMovementEmission` is
 `Entity.MovementEmission.NONE`, so it makes no step sounds. Neither
 convention is wrong.
 
-The fluid snapshot has one exception, and it is a useful one:
+The fluid snapshot is not taken only once a tick, and usefully so:
 `LivingEntity.checkFallDamage` re-runs `Entity.updateFluidInteraction` from
 *inside* `Entity.move` whenever the entity is not already in water (and
-`ItemEntity.tick` re-runs it too), which is exactly why falling into water
+`ItemEntity.tick`, `PrimedTnt.tick` and `AbstractMinecart.tick` re-run it too), which is exactly why falling into water
 cancels the fall damage in the same tick that entered it.
 
 ## What did I pass through
@@ -351,9 +354,9 @@ the entity ended somewhere the last recorded one did not — and only then runs
 the replay, which opens by calling `Block.stepOn` for the block underfoot,
 gated on `Entity.onGround`.
 
-Each segment is replayed in the *same axis order the collision used* —
+Each recorded segment is replayed in the *same axis order the collision used* —
 `Direction.axisStepOrder` again, over the segment's stored pre-collision
-vector — and `Entity.checkInsideBlocks` walks each leg with
+vector, while a substituted, appended or merged one is swept straight — and `Entity.checkInsideBlocks` walks each leg with
 `BlockGetter.forEachBlockIntersectedBetween`, testing each block with
 `AABB.collidedAlongVector` (through `Entity.collidedWithShapeMovingFrom`)
 rather than a static overlap at the destination, and calling
@@ -368,7 +371,9 @@ hundred, buying bounded memory with a little precision. A segment that
 exhausts its steps gets one last zero-length visit at the destination, which
 covers every block the box ends up inside.
 
-Nothing found is applied inline. Each effect is queued into the
+Ignition, freezing and extinguishing are not applied inline, though most of
+what a block does is (a cobweb's slowdown, a cactus's or a campfire's damage).
+Each of those is queued into the
 `InsideBlockEffectApplier.StepBasedCollector`, which flushes a step's worth
 at a time in `InsideBlockEffectType` declaration order —
 `InsideBlockEffectType.FREEZE`, `InsideBlockEffectType.CLEAR_FREEZE`,
@@ -387,8 +392,8 @@ and fire in a *later* step than water still burns you.
 neighbours through `Level.getPushableEntities` — a different predicate from
 the collision one, and on the client `ClientLevel.getPushableEntities`
 returns at most the local player, never the crowd. On a server it applies
-`GameRules.MAX_ENTITY_CRAMMING` (default 24, checked one tick in four, the
-damage 6) and then calls `LivingEntity.doPush` → `Entity.push`, a
+`GameRules.MAX_ENTITY_CRAMMING` (default 24, checked on a one-in-four roll each
+tick, the damage 6) and then calls `LivingEntity.doPush` → `Entity.push`, a
 horizontal-only impulse scaled by 0.05 and ignored below a hundredth of a
 block.
 
@@ -401,14 +406,19 @@ movement is broadcast at the start of the next one. It becomes a short delta,
 `ClientboundMoveEntityPacket.Pos`, only when it can: not too big for a
 short, no more than 400 **gated evaluations** since the last absolute sync —
 `ServerEntity.teleportDelay` is incremented inside the gate, so for an entity
-on the default interval that is at least 1,200 ticks — not riding, the
+tracked every tick on the default interval that is about 1,200 ticks, fewer
+when its data or a push opens the gate, and more when the tracker is not
+called at all — not riding, the
 entity does not demand precision, **and `Entity.onGround` still matches what
 the last absolute sync recorded**. The last condition is the one that fails
 most often, and it is a real cost: every landing and every step off a ledge
-forces a full `ClientboundEntityPositionSyncPacket`. Setting the entity's
+forces a full `ClientboundEntityPositionSyncPacket`. The bounce's
 `Entity.syncPosition` flag re-phases the tracker's own counter to the next
-interval boundary, so the send happens at the next evaluation rather than up
-to an interval late, and `ClientboundSetEntityMotionPacket` carries the delta
+interval boundary for an entity with no stepped interpolation, so its send
+happens at the next evaluation rather than up to an interval late; for a
+living entity like this zombie (every one but a shulker), its `SteppedInterpolationTracker` takes the
+flag first and records the bounce as a step instead.
+`ClientboundSetEntityMotionPacket` carries the delta
 separately ([what the client is
 told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
 owns the choice between the two shapes). On the receiving side,
@@ -416,8 +426,9 @@ owns the choice between the two shapes). On the receiving side,
 *not* locally authoritative
 ([authority](authority.md#the-boat-authoritative-on-exactly-one-machine)), and
 snaps rather than interpolates past 64
-blocks of correction — otherwise it feeds `InterpolationHandler`, three
-steps by default, which `Entity.commonTick` steps just before the entity's
+blocks of correction — otherwise it feeds the entity's `InterpolationHandler`,
+for a living entity other than a shulker a stepped one whose step count is its update interval,
+three by default, which `Entity.commonTick` steps just before the entity's
 tick; the coast branch `LivingEntity.aiStep` opens with is what runs when
 nothing is interpolating.
 
@@ -426,15 +437,15 @@ nothing is interpolating.
 Two methods hold almost all of this and are worth reading end to end in this
 order: `LivingEntity.aiStep`, which is every mob's tick in one list, and
 `Entity.move`, which is the geometry. Under the second, `Entity.collide` and
-`Entity.collideWithShapes` are the axis-at-a-time resolve and
-`Entity.collectCandidateStepUpHeights` the step-up loop; `BlockCollisions` is
-what supplies them with candidates, and `CollisionGetter.findSupportingBlock`
-is the page's only real probe. For the replay, read
+`Entity.collideWithShapes` are the axis-at-a-time resolve, with the step-up
+loop in `Entity.collide` and `Entity.collectCandidateStepUpHeights` harvesting
+its heights; `BlockCollisions` is what supplies them with candidates, and
+`CollisionGetter.findSupportingBlock` is the probe for what holds you up. For the replay, read
 `Entity.applyEffectsFromBlocks` and then `Entity.checkInsideBlocks`, with
 `InsideBlockEffectType` open beside them for the order the collector flushes in.
-`LivingEntity.travelInAir` is where gravity and drag are actually spent, after
+`LivingEntity.travelInAir` is where gravity and drag are spent, after
 the move rather than before it. Two doors: `ItemEntity.tick`, the other
-convention run end to end in thirty lines, and `InterpolationHandler`, which is
+convention run end to end in one method, and `InterpolationHandler`, which is
 what moves an entity when nothing on that side simulates it.
 
 ---

@@ -3,7 +3,7 @@
 > Verified against **Minecraft 26.3** · Part VI · A mob walks into a fence, stands there, and then wanders off — a hundred ticks after a behaviour told it where to go.
 
 A behaviour has produced a position and stopped caring. Everything between
-that position and a mob actually leaning into a direction is this page: one
+that position and a mob leaning into a direction is this page: one
 A\* search over a snapshot of already-loaded chunks, a `Path` of nodes, and a
 control that has to be told again every single tick. The part of it people
 recognise is the failure. **Giving up is machinery, not an absence of it** —
@@ -23,13 +23,13 @@ decision system asked.
 
 | class | what it decides | thread |
 |---|---|---|
-| `PathNavigation` | when to search, what budget to search with, when to give up | server main |
-| `PathNavigationRegion` | which blocks the search is allowed to see — a snapshot, never a load | server main |
-| `NodeEvaluator` | what a block *is* to this mob, as a `PathType` | server main |
-| `PathTypeCache` | the 4,096-entry memo that makes that affordable | server main, owned by `ServerLevel` |
-| `PathFinder` | the A\* itself, bounded by a node budget | server main |
-| `Path` | the node list, and whether it actually reaches the target | server main, with a stream codec for the debug channel only |
-| `MoveControl` | where a wanted position becomes a yaw and a speed, and forgets it again the same tick | server main |
+| `PathNavigation` | when to search, what budget to search with, when to give up | the Server thread |
+| `PathNavigationRegion` | which blocks the search is allowed to see — a snapshot, never a load | the Server thread |
+| `NodeEvaluator` | what a block *is* to this mob, as a `PathType` | the Server thread |
+| `PathTypeCache` | the 4,096-entry memo that makes that affordable | the Server thread, owned by `ServerLevel` |
+| `PathFinder` | the A\* itself, bounded by a node budget | the Server thread |
+| `Path` | the node list, and whether it reaches the target | the Server thread, with a stream codec for the debug channel only |
+| `MoveControl` | where a wanted position becomes a yaw and a speed, and forgets it again the same tick | the Server thread |
 
 Nothing here is asynchronous. There is not a future, an executor or a thread
 anywhere in the pathfinder, and every entry point takes a `ServerLevel` or a
@@ -38,17 +38,18 @@ has subscribed.
 
 ## The pipeline
 
-Two ways in, one gate, and two ways it ends. What happens between the gate
+Two ways in, one gate, and three ways the navigation ends it by itself (a
+caller can stop it too). What happens between the gate
 and the ending is [the search](#the-search), which has a figure of its own:
 
 ```mermaid
 flowchart TD
     WANT["a goal or a behaviour: PathNavigation.moveTo, or PathNavigation.createPath"]
     WORLD["the world: PathNavigation.recomputePath, after a block update"]
-    GATE{"any of the four early exits?"}
+    GATE{"any of the early exits?"}
     NULL["null, or the existing path unchanged"]
     RUN["the search, then the follow, one node at a time"]
-    GIVEUP{"stuck for 100 ticks, or the node timed out?"}
+    GIVEUP{"arrived, stuck for 100 ticks, or the node timed out?"}
     DONE["PathNavigation.isDone, and the caller finds out next evaluation"]
 
     WANT --> GATE
@@ -60,26 +61,31 @@ flowchart TD
     GIVEUP -- "no" --> RUN
 ```
 
-*The page's two ends. The second entrance is the one to notice: the world
+*The page's ways in and the navigation's own ways out. The second entrance is the one to notice: the world
 pushes a recompute in after a block changes, and it is the only arrow on this
 page that does not start with a mob wanting something.*
 
-## Asking: the four ways a search does not happen
+## Asking: the ways a search does not happen
 
 `PathNavigation.createPath` refuses before it does anything expensive. It
 returns null on an empty target set, on a mob below `Level.getMinY`, and on
 `PathNavigation.canUpdatePath` — which for `GroundPathNavigation` means *on
 the ground, in liquid, or riding something*, so an airborne mob simply cannot
 ask. The fourth exit is the interesting one: if there is already a path that
-is not done and the requested target is among its targets, **the existing
-path is returned unchanged**. Re-asking for a destination you are already
-walking to costs nothing and changes nothing.
+is not done and the target of the navigation's last search is among the
+requested targets, **the existing
+path is returned unchanged**. Re-asking `PathNavigation.createPath` for a
+destination you are already walking to costs nothing and changes nothing. And
+`GroundPathNavigation`, the navigation most mobs have, puts a fifth in front of
+the four for a request of one position or one entity: a target whose chunk is
+not loaded returns null at once.
 
 Most callers never name it: `PathNavigation.moveTo` is what a goal or a
 behaviour reaches for, and its position and entity overloads call
 `PathNavigation.createPath` themselves and hand the result to the overload that
 takes a `Path`. *Find a route* and *start walking it* are one call from
-outside, with all four early exits still in front of them.
+outside, with the early exits still in front of them, and that last overload
+restarts the stuck check even when the path is the one already being walked.
 
 `PathNavigation.recomputePath` is the other entrance, and it is rate-limited
 rather than refused. More often than every twenty game ticks, or with
@@ -94,19 +100,20 @@ may look at, and it is worth naming before anything is built out of it. Call it
 the **maximum path length**: the larger of the mob's follow range and its
 *required* path length, in blocks. `PathNavigation.setRequiredPathLength` sets
 the second half — 16 by default, raised in seven
-classes' constructors: 48 for `Villager`, `Allay`, `Bee`, `CopperGolem` and
-`HappyGhast`, 40 for `Llama`, 32 for `Fox`.
+classes, all of them in the mob's constructor or its navigation: 48 for
+`Villager`, `Allay`, `Bee`, `CopperGolem` and a baby `HappyGhast`'s
+navigation, 40 for `Llama`, 32 for `Fox`.
 
 The node budget is that length times sixteen. `PathNavigation` builds its
 `PathFinder` with `Attributes.FOLLOW_RANGE`'s **base** value times sixteen, and
 `PathNavigation.updatePathfinderMaxVisitedNodes` later recomputes it against
 the *modified* follow range
 ([attributes](attributes.md#the-instance-three-indices-and-one-cached-number)
-owns the difference between the two). The recompute has exactly one
-trigger, and it is not the pathfinder's: `Mob.onAttributeUpdated` calls it
-when either `Attributes.FOLLOW_RANGE` or `Attributes.TEMPT_RANGE` changes, so
-a mob that is tempted or angered searches a different amount of world from
-the one it woke up with. `PathNavigation.setMaxVisitedNodesMultiplier`
+owns the difference between the two). The recompute has two triggers:
+`PathNavigation.setRequiredPathLength` itself, and `Mob.onAttributeUpdated`,
+which calls it when either `Attributes.FOLLOW_RANGE` or `Attributes.TEMPT_RANGE`
+changes — though only the follow range goes into the number, and nothing the
+game itself does changes it after the spawn-time bonus. `PathNavigation.setMaxVisitedNodesMultiplier`
 scales the result, and keeps scaling it until
 `PathNavigation.resetMaxVisitedNodesMultiplier` puts it back: `Bee` is the
 only class that touches either.
@@ -128,7 +135,8 @@ scan radius is the same 48 for exactly this reason.
 That region is built by asking `ChunkSource.getChunkNow` for every chunk in
 the cube. **A path search never loads a chunk and never blocks** — an absent
 chunk is a null entry that reads as air. This is the same discipline
-`Entity.move` uses for collisions, and it is why AI cannot stall a tick.
+`Entity.move` uses for collisions, and it is why a search cannot stall a tick
+waiting for a chunk.
 
 ## What a block is
 
@@ -193,7 +201,7 @@ it *not reached*. That is what `Path.canReach` reports, and it is the number
 that matters rather than "was a path found": `AcquirePoi` tests it before
 claiming a point of interest, and `MoveToTargetSink` turns a false into a
 *cannot reach* memory. A null from `PathNavigation.createPath` means one of
-the four early exits rather than a search that came back empty-handed — the
+the early exits rather than a search that came back empty-handed — the
 finder always has a best node to reconstruct towards.
 
 One more thing the search does not do unless asked: it accumulates its closed
@@ -212,7 +220,7 @@ sequenceDiagram
     participant MoveC as MoveControl
 
     MTS->>PN: createPath to the walk target, then moveTo with a speed modifier
-    PN->>PN: four early exits, then push the pathfind profiler section
+    PN->>PN: the early exits, then push the pathfind profiler section
     PN->>PNR: build a cube of maxPathLength plus the offset, with getChunkNow
     PN->>PF: findPath — region, mob, targets, maxPathLength, reachRange, multiplier
     PF->>NE: getStart, then getNeighbors per popped node
@@ -248,29 +256,29 @@ eight classes: the shared goals `TemptGoal.ForNonPathfinders` and
 `Rabbit` from the mob itself rather than from a goal, and `Fox` to pin a
 sleeping fox where it lies. The first of those is why a happy ghast follows a
 held item in a straight line through terrain a path search would have routed
-around: it has a navigation like any mob, and one of its goals simply does not
-use it. An ordinary tempted cow runs the base `TemptGoal`, which calls the
+around: an adult has a navigation like any mob, and none of its goals uses it. An ordinary tempted cow runs the base `TemptGoal`, which calls the
 navigation like anything else.
 
 ### The three controls beside it
 
 Three more controls sit beside it and are the rest of what turns a decision
-into a pose — all four implementing `Control`, and all four re-specialised by
-movement mode the way the evaluators are, so a `SmoothSwimmingMoveControl` or
-a `FlyingMoveControl` is the same object with different arithmetic.
-`LookControl` aims the head, `JumpControl` fires a jump the mover
-then executes, and `BodyRotationControl` swings the body to follow the head
-the moment the head is more than fifteen degrees off — it is the *reverse*
-move, easing the head back towards the front, that waits for ten stable
-ticks. `BodyRotationControl.clientTick` is a leftover
+into a pose — all four implementing `Control`, and the move and look controls
+re-specialised by movement mode the way the evaluators are, so a
+`SmoothSwimmingMoveControl` or a `FlyingMoveControl` is the same object with
+different arithmetic. `LookControl` aims the head, `JumpControl` fires a jump
+the mover then executes, and `BodyRotationControl` keeps the body under the
+head: while the mob moves it sets the body to the mob's own yaw, and while it
+stands still a head that swings more than fifteen degrees drags the body only
+far enough to stay within `Mob.getMaxHeadYRot` of it, and a head held still for
+ten ticks has the body turn to face it over the next ten. `BodyRotationControl.clientTick` is a leftover
 name: `LivingEntity.tick` calls `Mob.tickHeadTurn` with no side check at all,
 so it runs on both sides every tick.
 
 The mover itself is Part VI's [movement and
 collision](movement-and-collision.md#building-the-delta) — the control sets the yaw and calls
 `Mob.setSpeed`, which writes `LivingEntity.zza` with it, and
-`LivingEntity.travel` does the rest. `LivingEntity.xxa` is written only by
-the strafe branch, which pathfinding never takes.
+`LivingEntity.travel` does the rest. For a mob, `LivingEntity.xxa` is written
+with anything but zero only by the strafe branch, which pathfinding never takes.
 
 ## Giving up
 
@@ -278,7 +286,8 @@ the strafe branch, which pathfinding never takes.
 different questions.
 
 The first half runs **every hundred ticks**:
-it compares where the mob is with where it was at the last check, against a
+it compares where the mob is with where it was at the last check or the last
+`PathNavigation.moveTo`, against a
 threshold of the mob's effective speed times 100 times 0.25 — a quarter of
 the ground the speed claims. Below that, `PathNavigation.isStuck` is set and
 the path is stopped. The effective speed is the speed itself at 1.0 or above
@@ -287,10 +296,13 @@ forgiving for slow mobs.
 
 The second half is per node. When the next node changes, the navigation
 computes a time budget for it — the distance to that node divided by the
-mob's speed, times twenty — and accumulates real ticks against it. Past
-**three times** that budget, `PathNavigation.timeoutPath` resets the counters
-and stops. This is the one that catches a mob whose path is fine and whose
-route is blocked by something the search could not see.
+mob's speed, times twenty — and holds it against the real ticks counted since
+the last search that found a path, or the last time out, a count the change of
+node does not clear, so a clear path walked long enough times out too.
+Past **three times** that budget, `PathNavigation.timeoutPath` resets the
+counters and stops. This one catches a mob whose path is fine and whose route
+is blocked by something the search could not see, where the stuck check has
+not caught it first.
 
 Both endings are the same ending from outside: `PathNavigation.isDone`
 becomes true, and whichever behaviour or goal was waiting on the path finds
@@ -302,13 +314,13 @@ Everything above is AI asking the world questions. `ServerLevel.sendBlockUpdated
 is the single call in the other direction. It invalidates the changed
 position in the path-type cache **unconditionally**, and then — only if
 `Shapes.joinIsNotEmpty` says the collision shape actually changed — walks
-`ServerLevel.navigatingMobs` — every navigating mob in the level, **unbounded
-by distance** — asks each navigation
+`ServerLevel.navigatingMobs`, every mob in the level whether it has a path or
+not and **unbounded by distance**, asks each navigation
 `PathNavigation.shouldRecomputePath` about the position, and calls
 `PathNavigation.recomputePath` on the ones that say yes. That last loop —
-and only that loop — is wrapped in a re-entrancy flag, because a recompute
-can itself change blocks; a call that arrives while the flag is set logs and,
-in a development environment, pauses.
+and only that loop — is wrapped in a re-entrancy flag, which a nested block
+update or a mob joining or leaving the set checks; either, arriving while the
+flag is set, logs and, in a development environment, pauses.
 
 That is why closing a door in front of a mob re-routes it and repainting a
 block does not.
@@ -316,12 +328,13 @@ block does not.
 ## Where to look
 
 `PathNavigation` is the spine and almost every question on this page is one of
-its methods: `PathNavigation.createPath` for the four early exits,
+its methods: `PathNavigation.createPath` for the four early exits (and
+`GroundPathNavigation.createPath` for the fifth),
 `PathNavigation.updatePathfinderMaxVisitedNodes` for the budget,
 `PathNavigation.tick` for the following and
 `PathNavigation.doStuckDetection` for both timers. Then `PathFinder.findPath`,
 which is the A\* itself and shorter than you expect, and `NodeEvaluator` —
-start with `WalkNodeEvaluator`, since the other three specialise it — for what
+start with `WalkNodeEvaluator`, since two of the other three specialise it — for what
 a block *is* to a mob. `PathType` is the 27 constants and their costs, and
 `Mob.getPathfindingMalus` is how one mob disagrees with them.
 `MoveControl.setWantedPosition` is the seam where a path becomes a direction.

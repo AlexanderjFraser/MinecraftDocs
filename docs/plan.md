@@ -50,13 +50,13 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, and D and E on 2026-09-27** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, and D, E and F on 2026-09-27** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
 and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III, and the audit of its own
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
-audit — and F onward have not. After it, nothing more is done here except a
+audit; F found 307 on Part VI, 80 of them by that audit — and G onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -506,3 +506,14 @@ understood; recording is after the release.
   block-entity step gated); `block-breaking`'s 1.064 is about 1.067 and its deferral paragraph scoped to V2's finding;
   sculk spread and four more unowned mechanisms into pass3.md §7. Eight pages outside the part corrected where a
   correction here made them disagree; `section-meshing`'s opening handed to L. Deployed.
+
+- **2026-09-27, pass 8, session F — Part VI · Entities (Opus).** Ten pages checked under Part 2, one agent per page,
+  and the part read whole: **307 corrections**, every one re-derived in the tree (44 inside a figure or a caption;
+  twenty-one 26.3 changes the version pass did not carry into the sentence — `Entity.commonTick`, `UpdateInterval.NEVER`,
+  a final `Entity.canSimulateMovement` that reads the type, `CombatTracker.recheckStatus` moved to
+  `LivingEntity.remove`, `Cushion` — and C's, D's and V2's handoffs). The 109 ledger entries struck, 19 of 83 claims
+  wrong in whole or in part; 43 queue units struck and eleven shared ones noted. The record audited by one agent per
+  page, which found **80 of the 307, 54 in sentences the session had just written** — D's and E's rate. `authority`'s
+  predicate figure redrawn for the move-simulation type; *at least 1,200 ticks* is at most that, overturning pass 5's
+  listed claim. Seven pages outside the part corrected where a correction here made them disagree; the passenger
+  diff's *filtered* and `chunk-storage`'s unload filter among the items handed to H, I, J, O and P. Deployed.

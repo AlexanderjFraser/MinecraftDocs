@@ -5,7 +5,7 @@
 It is dawn in a village. One villager climbs out of bed, walks to its
 composter and works there until the afternoon. Ten blocks away a zombie
 catches fire, sees the villager, and comes for it. Both are `Mob`s, both are
-driven by the same `Mob.serverAiStep` on the server thread, and neither is
+driven by the same `Mob.serverAiStep` on the Server thread, and neither is
 running a script: each is being *re-asked*, every tick or every other tick,
 what it would like to be doing now. They are asked in two completely
 different ways, and the villager's is the surprising one. Its day looks like a
@@ -30,8 +30,8 @@ this page only asks it a question.
 | `GoalSelector` | which goals run, by holding a four-entry table of `Goal.Flag` to the goal that owns it | server, from `Mob.serverAiStep` |
 | `Goal` | whether it wants to run, whether it may be interrupted, and which flags it needs | as above |
 | `WrappedGoal` | the arbitration — `WrappedGoal.canBeReplacedBy` — plus the priority and the running bit | as above |
-| `Brain` | which activity is active, what the memories hold, and which behaviours are asked at all | server, from `Mob.customServerAiStep` |
-| `MemoryModuleType` | the vocabulary a brain thinks in: 116 constants, of which the 53 with a codec are the mob's entire saved mind | declared, never ticked |
+| `Brain` | which activity is active, what the memories hold, and which behaviours may start at all | server, from `Mob.customServerAiStep` |
+| `MemoryModuleType` | the vocabulary a brain thinks in: 115 constants, of which the 52 with a codec are the mob's entire saved mind | declared, never ticked |
 | `Sensor` | when to look at the world, on its own scan rate, and which memories to write | server, from `Brain.tick` |
 | `ActivityData` | one activity's prioritised behaviour list, its memory requirements, and the memories erased when it stops | built per body by `Brain.ActivitySupplier` |
 | `Sensing` | whether this mob can see that entity, memoised for exactly one tick — and *both* systems go through it | server, cleared at the top of `Mob.serverAiStep` |
@@ -41,16 +41,16 @@ this page only asks it a question.
 |  | the goal selector | the brain |
 |---|---|---|
 | **what holds the state** | `GoalSelector.availableGoals`, an insertion-ordered set of `WrappedGoal`, beside a lock table and a set of disabled flags | a memory map, a sensor map, and `Brain.availableBehaviorsByPriority` — priority to activity to behaviour set |
-| **what fills it** | `Mob.registerGoals`, once, from the constructor, and only when the level is a `ServerLevel` | `Brain.Provider.makeBrain`, from an activity list built *per body* — and built again whenever the body changes |
+| **what fills it** | `Mob.registerGoals`, once, from the constructor, and only when the level is a `ServerLevel` | `Brain.Provider.makeBrain`, from an activity list built *per body* — and, for a villager, built again when its body changes |
 | **what decides** | `Goal.canUse`, re-asked on every other tick | `Behavior.hasRequiredMemories` then `Behavior.checkExtraStartConditions`, asked once a tick |
-| **what arbitrates** | the flag table. Lower priority number wins a contested flag, and a non-interruptable incumbent wins outright | the active activity. A behaviour whose activity is not active is not asked at all |
-| **what persists across a save** | nothing. Not the running set, not the flags | 53 of the 116 memories, through `Brain.Packed` |
+| **what arbitrates** | the flag table. Lower priority number wins a contested flag, and a non-interruptable incumbent wins outright | the active activity. A behaviour whose activity is not active is not started at all |
+| **what persists across a save** | nothing. Not the running set, not the flags | 52 of the 115 memories, through `Brain.Packed` |
 | **what the world can push in** | `Mob.updateControlFlags` every five ticks, and the leash, both on one selector only | the schedule attribute, POI claims, hostiles seen by sensors, `Attributes.FOLLOW_RANGE` |
-| **which mobs use it** | every `Mob`. 58 goal classes and 10 targeting ones | 20 classes override `LivingEntity.makeBrain` — but only `Villager` sets a schedule |
+| **which mobs use it** | every `Mob` ticks one, and almost every mob without a brain fills it. 58 goal classes and 10 targeting ones | 20 classes override `LivingEntity.makeBrain` — but only `Villager` sets a schedule |
 
 ### Where both of them sit in one mob tick
 
-The profiler section names, because they are what a profile actually shows:
+The profiler section names, because they are what a profile shows:
 
 ```
 LivingEntity.tick
@@ -73,8 +73,8 @@ what it wraps in *server side and effective AI* is the one call to
 `Mob.serverAiStep`, not the jump and travel sections beneath it.
 `Mob.isEffectiveAi` is the more interesting half of the condition, and what
 it is — one of five predicates that decide which copy of an entity may do
-anything — is
-[authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)'s.
+anything — belongs to
+[authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off).
 What belongs here is the guard's *scope*. On the client neither selector nor brain is ticked at all — only the
 jump, travel and head-turn sections beneath the gate, and the debug
 renderers.
@@ -109,9 +109,11 @@ villager's profession selects its work package.
 
 ## What fills it
 
-Goals go in exactly once. The `Mob` constructor calls `Mob.registerGoals`
+Goals go in once, for almost every mob. The `Mob` constructor calls `Mob.registerGoals`
 only when the level it is being built into is a `ServerLevel`, so a
-client-side mob's selectors are empty for its whole life. After that the set
+client-side mob's selectors stay all but empty for its whole life (a few mobs
+add a goal from the constructor or from loaded data, which nothing on the
+client ever ticks). After that the set
 is fixed, but for the few mobs that add or remove a goal on a state change.
 
 Memories are filled continuously, by sensors and by behaviours alike. A
@@ -143,7 +145,7 @@ codebase offers.
 ## What decides
 
 A goal is asked `Goal.canUse` **every other tick**, staggered across mobs by
-`tickCount + id`, with an exception for a mob's first two ticks, where the
+`tickCount + id`, with an exception for a mob's first tick, where the
 full pass runs whatever the parity. On the off tick
 `GoalSelector.tickRunningGoals` is called with *false*, so only goals that
 answer `Goal.requiresUpdateEveryTick` are ticked at all — and, more
@@ -174,7 +176,7 @@ in two different phases of the same tick:
 flowchart TD
     A["one behaviour, in one Brain.tick"]
     E{"is its activity active?"}
-    F["never asked"]
+    F["never started"]
     G["Behavior.tryStart — its memories, then its extra conditions"]
     X["stays STOPPED until a later tick"]
     H["RUNNING, to a rolled end timestamp"]
@@ -182,7 +184,8 @@ flowchart TD
     J{"timed out, or Behavior.canStillUse false?"}
     K["Behavior.doStop, in the Brain.tick that started it"]
     L["Behavior.tick"]
-    A --> E
+    A -- "STOPPED" --> E
+    A -- "already RUNNING" --> S
     E -- "no" --> F
     E -- "yes, and it is STOPPED" --> G
     G -- "either test fails" --> X
@@ -195,11 +198,13 @@ flowchart TD
 
 *One behaviour through one `Brain.tick`. The two diamonds are the whole of
 this page: the first is asked in phase three and the second in phase four, and
-between them a behaviour that started has already reached the end of its
-life.*
+a one-shot, or a behaviour that keeps the default `Behavior.canStillUse`, ends
+at the second in the very tick it started.*
 
-The branch marked *never asked* is what this page turns on. **An activity
-is a filter, not a mode.** The brain's active set is always the core
+The branch marked *never started* is what this page turns on. **An activity
+is a filter, not a mode**, and it filters starting: a behaviour already
+running when its activity leaves is still ticked, which is why `SleepInBed`
+checks the rest activity itself. The brain's active set is always the core
 activities plus exactly one other, so `Activity.CORE` behaviours run at every
 hour of the day and switching activity only swaps the second half. (*Core
 activities* is plural in the API and singular in practice: nothing in 26.3
@@ -207,9 +212,9 @@ calls `Brain.setCoreActivities` with anything but `Activity.CORE` alone.)
 
 The *canStillUse* branch is sharper than "a behaviour runs for one tick".
 `Behavior.canStillUse` defaults to false, and phases 3 and 4 are both inside
-the *same* `Brain.tick` — so for a behaviour that does not override it,
-`Behavior.tick` is not called once. Everything it does, it does in
-`Behavior.start`. The duration rolled at start between the behaviour's
+the *same* `Brain.tick` — so for a `Behavior` subclass that does not override
+it, `Behavior.tick` is not called once. Everything it does, it does in
+`Behavior.start` (a one-shot does its work in its trigger). The duration rolled at start between the behaviour's
 minimum and maximum (`Behavior.DEFAULT_DURATION` is 60) matters only for the
 ones that do override it, which is why the same behaviour class configured
 with different bounds behaves differently in two packages.
@@ -246,7 +251,7 @@ how far through an attack a mob was — all of it is rebuilt from scratch when
 the chunk reloads and the constructor calls `Mob.registerGoals` again.
 
 A brain saves `Brain.Packed`, and `Brain.pack` walks the memories keeping
-only those whose `MemoryModuleType` can serialise: 53 of 116, the remaining
+only those whose `MemoryModuleType` can serialise: 52 of 115, the remaining
 63 transient by construction. Time-to-live travels with them, so a memory can
 expire across a reload as easily as within a tick — `MemorySlot` counts down
 in phase 1 of every `Brain.tick` and clears itself at zero.
@@ -272,12 +277,13 @@ in a boat by itself loses only the jump.
 The second is the lead in your hand. `Leashable.tickLeash` runs from
 `Entity.baseTick` ([entity
 anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)
-puts it among the capability interfaces), and when the mob is too far from
-whatever holds it, `Mob.leashTooFarBehaviour` disables `Goal.Flag.MOVE`
-outright — so a leashed mob at the end of its rope is not *choosing* to stand
-still, it has had the flag its movement goals need taken away —
-until `PathfinderMob.closeRangeLeashBehaviour` puts it back. Both levers touch
-**`Mob.goalSelector` only**; `Mob.targetSelector` is never disabled.
+puts it among the capability interfaces), and when the mob is pulled past the
+distance a lead can hold, `Mob.leashTooFarBehaviour` breaks the lead and
+disables `Goal.Flag.MOVE` outright — so a mob that has just snapped its lead
+is not *choosing* to stand still, it has had the flag its movement goals need
+taken away — until `Mob.updateControlFlags` puts it back within five ticks.
+Both levers touch **`Mob.goalSelector` only**; `Mob.targetSelector` is never
+disabled.
 `GoalSelector.tick` then stops any running goal holding a disabled flag and
 refuses to start another.
 
@@ -303,14 +309,16 @@ brain-dead.
 ### And neither library is anything but more of the same
 
 There
-are 103 classes under `world/entity/ai/behavior` and 61 under
-`world/entity/ai/goal`, and every one is an instance of the two shapes above:
-a `Behavior` with its required memories and its start conditions, or a `Goal`
-with its flags and its `Goal.canUse`. Reading a third is reading the first
-twice. The sensors are the same — 26 classes, each a `Sensor` with a scan
-rate and a list of memories it writes, from `TemptingSensor` to
-`PiglinSpecificSensor` — and so are the eighteen `*Ai` classes, which are
-nothing but the lists.
+are 103 classes at the top of `world/entity/ai/behavior` and 61 at the top of
+`world/entity/ai/goal`, and nearly all of them are one of the shapes above — a
+behaviour with its required memories and its start conditions, whether a
+`Behavior` subclass or a one-shot built with `BehaviorBuilder`, or a `Goal`
+with its flags and its `Goal.canUse` — beside a handful of the machinery that
+runs them and the value types they use. Reading a third is reading the first twice. The sensors are the
+same — 23 `Sensor` subclasses, each with a scan rate and a list of memories it
+writes, from `TemptingSensor` to `PiglinSpecificSensor` — and so are the
+eighteen `*Ai` classes, which hold the lists and, for the busier mobs, the
+helpers the lists call.
 
 Nor is either of them data-driven. The villager's day is data
 (`Timelines.VILLAGER_SCHEDULE` in `Registries.TIMELINE`) — but
@@ -335,7 +343,7 @@ name, and not a typo: it is the last survivor of the old convention, on a
 mob that has no goals at all. Nor do most of the other nineteen: a brain mob
 typically registers none.
 
-**One** — brain mobs with a schedule. `Brain.setSchedule` has exactly two
+**One brain mob** has a schedule: `Brain.setSchedule` has exactly two
 call sites and both are in `Villager`, picking the adult attribute or the
 baby one. The other nineteen never consult a clock: they call
 `Brain.setActiveActivityToFirstValid`, which walks a priority list and takes
@@ -361,24 +369,23 @@ sequenceDiagram
     Note over Brain,SIB: one Brain.tick, phase three, ascending priority
     Brain->>MTS: priority 1, core
     Note over MTS: a wanted position leaves here for the pathfinder
-    Brain->>AP: priority 6, core
-    AP->>Brain: writes POTENTIAL_JOB_SITE
+    Brain->>AP: priority 6, core, which runs only while JOB_SITE is empty
     Brain->>UAFS: priority 99, last in the package
     UAFS->>Brain: updateActivityFromSchedule
     Brain->>EAS: getValue, VILLAGER_ACTIVITY at this position
     EAS-->>Brain: WORK, from tick 2000
     Brain->>Brain: setActiveActivity<br/>IfPossible
     end
-    Note over Brain,SIB: the next Brain.tick is the first to run the work package
+    Note over Brain,SIB: with a job site held, the next Brain.tick is the first to run the work package
     rect rgba(0, 0, 0, 0.04)
-    Note over Brain,SIB: tick 12000, REST, which has no requirement
-    Brain->>SIB: rest package, priority 3
+    Note over Brain,SIB: after tick 12000, REST, which has no requirement
+    Brain->>SIB: rest package, priority 3, once the walk home reaches the bed
     Brain->>SIB: tickOrStop, and again every tick until dawn
     end
 ```
 
 *A villager's day as four behaviours in priority order; the two shaded bands
-are two ticks twelve thousand apart. The one to watch is the schedule
+are two ticks about ten thousand apart. The one to watch is the schedule
 behaviour at 99: it runs last, so the activity it asks for is the next tick's
 — and `Brain.setActiveActivityIfPossible` takes it only if that activity's
 requirements are met, and falls back to the default without saying so.*
@@ -389,37 +396,40 @@ last slot in every package that has one,
 so the activity a villager switches to is never the one the rest of *this*
 tick runs: the switch lands and the next tick acts on it. And it is only
 consulted when a behaviour asks — `Brain.updateActivityFromSchedule` refuses
-if fewer than 21 ticks have passed since the last one (the test is a strict
-*greater than* 20). Five of the ten packages carry no such behaviour: core,
+unless more than twenty ticks have passed since the last one. Five of the ten packages carry no such behaviour: core,
 panic and hide have nothing at 99 at all, and pre-raid and raid have
 `ResetRaidStatus` there instead. Core is never the activity a villager is
 stuck in, because it is always active alongside one other; the omission is how
 the other four pin the
 villager, and each carries its own way out rather than leaving it
 to the clock: `VillagerCalmDown` sits at priority 0 in the panic package and
-calls `Brain.updateActivityFromSchedule` itself the moment the fear memories
+calls `Brain.updateActivityFromSchedule` itself once the fear memories
 clear, `SetHiddenState` does the same for hide, and `ResetRaidStatus` for the
-two raid packages. Nothing is asking the clock on a schedule; the escape
-hatch asks once, on its own terms.
+two raid packages. Nothing is asking the clock on a schedule; each escape
+hatch asks on its own terms, and the brain's twenty-tick throttle meters them
+all.
 
 The rest of the day hangs off that. **Claiming a job site** is `AcquirePoi`
 from the core package, and the claim itself — the scan, the best five, the
-one pathfind that decides which of them is reachable — is [points of
-interest](../world/points-of-interest.md#noon-and-a-bed-forty-eight-blocks-away)'s,
+one pathfind that decides which of them is reachable — belongs to [points of
+interest](../world/points-of-interest.md#noon-and-a-bed-forty-eight-blocks-away),
 told there against a bed. A bell across a
 ravine is invisible to a villager. What is this page's is what the memory
 then means: `AcquirePoi` writes
 `MemoryModuleType.POTENTIAL_JOB_SITE`, not the job site itself;
 `AssignProfessionFromJobSite` waits until the villager is within two blocks
 of that position, then erases the memory, writes `MemoryModuleType.JOB_SITE`
-and sets the profession — which is why walking to the workstation is a
-required step and not decoration, and why a villager that seems to be ignoring
-a perfectly good workstation is usually in one of two states rather than
-broken: it claimed the block and has not arrived yet, so the memory still says
-*potential*, or the pathfind inside `AcquirePoi` failed and the site was
-skipped as unreachable. Two more behaviours can take a claim away afterwards —
-`PoiCompetitorScan` hands a contested one to the more experienced villager, and
-`ValidateNearbyPoi` erases it when the block is gone.
+and sets the profession if it has none — which is why walking to the
+workstation is a required step and not decoration, and why a villager that
+seems to be ignoring a perfectly good workstation is usually in one of three
+states rather than broken: it claimed the block and has not arrived yet, so
+the memory still says *potential*; the pathfind inside `AcquirePoi` failed and
+the site was skipped as unreachable; or it did not arrive within 1,200 ticks
+and `GoToPotentialJobSite` let the claim go. Three more behaviours can take a
+claim away afterwards — `PoiCompetitorScan` hands a contested one to the more
+experienced villager, `YieldJobSite` has a villager with no profession hand its
+claim to a neighbour whose profession works there, and `ValidateNearbyPoi`
+erases it when the block is gone.
 
 **Work** is a weighted `RunOne` — one of the `GateBehavior` composites, which
 are behaviours whose children are behaviours — over six: `WorkAtPoi` (or
@@ -433,10 +443,11 @@ a path, hands it to the navigation, and records a failure as
 `MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE`. Below that hand-off is
 [pathfinding](pathfinding.md#the-pipeline) and then [movement and
 collision](movement-and-collision.md#the-tick). **Bed** is `SleepInBed`, whose entry
-conditions are [the night shift](../world/points-of-interest.md#after-the-claim-the-night-shift)'s.
-What matters here is that it is this page's counter-example: it never times
-out, because it overrides `Behavior.canStillUse`, so unlike almost every
-behaviour it is still running on the tick after the one that started it. It
+conditions belong to [the night shift](../world/points-of-interest.md#after-the-claim-the-night-shift).
+What matters here is that it is this page's counter-example: it overrides
+`Behavior.canStillUse`, so, like `MoveToTargetSink` and unlike a one-shot, it
+is still running on the tick after the one that started it, and it overrides
+`Behavior.timedOut` to answer no, so it never times out. It
 ends when `Brain.isActive` for `Activity.REST` goes false at dawn.
 
 ## The goal selector's trace: the zombie
@@ -458,14 +469,17 @@ Every other tick each of the twelve is re-asked, and the flag table settles
 it. The target goals hold `Goal.Flag.TARGET` and write `Mob.setTarget`. The
 attack goals hold `Goal.Flag.MOVE` and `Goal.Flag.LOOK` and drive the
 navigation, with `SpearUseGoal` at priority 2 sitting above `ZombieAttackGoal`
-at 3, so it is usually the one holding them. `LookAtPlayerGoal` wants
+at 3 — though it wants a spear in the main hand, so for most zombies the
+attack goal is the one holding them. `LookAtPlayerGoal` wants
 `Goal.Flag.LOOK` alone and `RandomLookAroundGoal` wants `Goal.Flag.MOVE` as
 well, and both lose to whoever already has them. No activity, no schedule,
-nothing persisted, nothing the world can push in: the zombie's entire mind is
-a handful of running bits and one target field. Even that field is not read
+nothing persisted but a door-breaking flag, nothing the world can push in but
+the control flags and a neighbour's alert: the zombie's entire mind is a handful of running bits and
+one target field. Even that field is not read
 directly — `Mob.getTarget` filters through `Mob.asValidTarget` on every call,
 so a target that turned creative or spectator is gone the moment it is asked
-for, and brain mobs source theirs from `Mob.getTargetFromBrain` instead.
+for, and nine of the brain mobs source theirs from `Mob.getTargetFromBrain`
+instead.
 
 > **For a 1.21-era reader.** There is no *Schedule* class in 26.3 and no
 > *schedule* registry, so the file a villager's timetable used to live in is
@@ -473,8 +487,8 @@ for, and brain mobs source theirs from `Mob.getTargetFromBrain` instead.
 > an `EnvironmentAttribute` rather than off the mob:
 > `Timelines.VILLAGER_SCHEDULE` is the data, `Brain.setSchedule` takes an
 > attribute rather than a schedule, and the lookup now takes a **position**.
-> `Activity`, `MemoryModuleType`, `Sensor` and the behaviour classes are
-> unchanged, and `world/entity/schedule` is a package that still exists and
+> `Activity`, `MemoryModuleType`, `Sensor` and the behaviour classes keep
+> their shapes, and `world/entity/schedule` is a package that still exists and
 > holds one class, `Activity`.
 
 ## Where to look
@@ -483,13 +497,14 @@ The two systems have one entry point each and they are short:
 `GoalSelector.tick`, whose three phases are the whole arbiter, and
 `Brain.tick`, whose four are. Read `WrappedGoal.canBeReplacedBy` beside the
 first — it is the entire priority rule in one method — and
-`Behavior.tryStart` and `Behavior.canStillUse` beside the second, because
-between them they explain why most behaviours never see a second tick.
+`Behavior.tryStart` and `Behavior.canStillUse` beside the second, with
+`OneShot`, because between them they explain which behaviours see a second tick.
 `Mob.registerGoals` on any mob shows a goal list; `VillagerGoalPackages` shows
 what a brain's lists look like instead, and `Villager.refreshBrain` is how one
-is rebuilt mid-life. `Brain.updateActivityFromSchedule` is the six lines the
-opening is about. Two doors: `BehaviorBuilder`, the DSL nearly every behaviour
-is declared with, and `Sensing`, the one-tick memo both systems share.
+is rebuilt mid-life. `Brain.updateActivityFromSchedule` is the method the
+opening is about. Two doors: `BehaviorBuilder`, the DSL the one-shot
+behaviours, over half of them, are declared with, and `Sensing`, the one-tick
+memo both systems share.
 
 ---
 

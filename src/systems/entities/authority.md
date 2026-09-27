@@ -1,19 +1,19 @@
 # Authority: who is allowed to simulate
 
-> Verified against **Minecraft 26.3** · Part VI · A zombie, a player and a boat each take one step, on the server and on the client, and only one side of each pair does any arithmetic.
+> Verified against **Minecraft 26.3** · Part VI · A zombie, a player and a boat each take one step, on the server and on the client, and only one side of each pair decides where it ends up.
 
 A zombie walks towards you across a field. Both programs have a `Zombie`
 object; both tick it every twentieth of a second; both call the same
 `Entity.tick`. Only one of them works out where it goes. Standing next to
 the zombie is another player, and their copy is the other way up — and the
-boat you are sitting in is a third case again, authoritative on your machine
-and nowhere else. Five predicates on `Entity` — one of them final — decide
+boat you are steering is a third case again, authoritative on your machine
+and nowhere else. Five predicates on `Entity` — two of them final — decide
 all of it, and they invert the naive picture in **both** directions: **the client runs no physics
 at all for the mob chasing you, while the server runs your player's physics
 every tick and then overwrites the answer with a number your client sent.**
 
-This is the single most error-prone idea in the entity part, and four later
-parts rest on it — [movement and collision](movement-and-collision.md#who-is-allowed-to-run-this-at-all)
+This is the single most error-prone idea in the entity part, and this part
+and three later ones rest on it — [movement and collision](movement-and-collision.md#who-is-allowed-to-run-this-at-all)
 here, every page in Part VIII about a player, [what the client is
 told](../networking/what-the-client-is-told.md#gate-1-who-is-allowed-to-see-it)
 in Part IX, and in Part X both [the client
@@ -21,7 +21,7 @@ level](../client/the-client-level.md#where-the-two-levels-differ), for what
 the client is allowed to simulate, and [prediction and
 acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other),
 for what it is allowed to *guess* while it waits to be told.
-Nineteen pages in this book link back to this one. It is stated in full once,
+Nineteen pages in the book's thirteen parts link back to this one. It is stated in full once,
 here.
 
 ## Three cases, read on both sides
@@ -30,12 +30,12 @@ The whole answer fits in one table, and the rest of the page is that table
 explained. The columns are three shapes an entity can have; the rows are what
 each predicate answers and what follows from it.
 
-| | a tracked mob | a player | a boat you are riding |
+| | a tracked mob | a player | a boat you are steering |
 |---|---|---|---|
 | `Entity.isClientAuthoritative` | false | **true**, unconditionally | true, inherited from you |
 | `Entity.isLocalInstanceAuthoritative`, **server** | **true** | false | false |
 | `Entity.isLocalInstanceAuthoritative`, **client** | false | true only on *your own* player | **true**, on your machine only |
-| `Entity.canSimulateMovement`, server | true | **true** — the override | false |
+| `Entity.canSimulateMovement`, server | true | **true** — its move-simulation type | false |
 | `LivingEntity.travel` runs on the server | yes | yes, and the result is overwritten | n/a |
 | `LivingEntity.travel` runs on the client | **never** | only for your own player | n/a — `AbstractBoat.floatBoat` and `AbstractBoat.controlBoat` do it instead |
 | `Entity.checkFallDamage` inside `Entity.move` | server only | **your own client only** — the server reaches it by the packet path | client only |
@@ -46,58 +46,59 @@ every mob you can see. A fourth shape is worth naming here so that it does not
 look like an omission later: an entity nobody is riding and nothing is
 steering — an empty boat, a minecart — reaches the base implementations,
 which answer false to both roots, and is simulated by the server alone. A
-dropped item, an arrow in flight, an experience orb, a falling block and lit
-TNT answer false to both roots too, but each declares
-`MoveSimulationType.SERVER_AND_CLIENT`, so `Entity.canSimulateMovement` is
-true for it on both sides.
+dropped item, any projectile in flight, an experience orb, a falling block and
+lit TNT (and a dying ender dragon) answer false to both roots too, but each
+declares `MoveSimulationType.SERVER_AND_CLIENT`, so `Entity.canSimulateMovement`
+is true for it on both sides.
 
 The row that surprises people is `Entity.checkFallDamage`. `Entity.move` gates
 it on `Entity.isLocalInstanceAuthoritative`, which for a player is true on your
 own client and **false on the server** — so the copy that runs it every tick is
-the one that cannot hurt you. Three names sit close together here and they are
-three different methods, not overrides of each other:
+the one that cannot hurt you. Three names sit close together here:
 `Entity.checkFallDamage` is the gate inside `Entity.move`;
-`LivingEntity.checkFallDamage` is the living override of it, and it needs a
-`ServerLevel` before it computes any damage, so your client only accumulates
-the fall distance and lets `Block.fallOn` fire; and
-`Entity.doCheckFallDamage` is a separate entrance the server uses instead,
-driven by the movement packet, which is [Part VIII's
+`LivingEntity.checkFallDamage` overrides it and adds the landing particles only
+on a `ServerLevel`, so your client's copy accumulates the fall distance and
+calls `Block.fallOn`, whose damage reaches `Entity.hurt`, which acts only on a
+`ServerLevel`; and `Entity.doCheckFallDamage` is the entrance the server uses
+instead, driven by the movement packet, which calls the same method and is [Part VIII's
 subject](../player/input-to-movement.md#what-the-server-does-with-the-packet-it-gets).
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
-| `Entity` | the five predicates, and every gate inside `Entity.move` that reads them | both main threads |
-| `Player` | overrides four of the five, and is the reason the picture inverts | both |
-| `Mob` | narrows `Entity.isEffectiveAi` with `Mob.isNoAi` | both, but only the server's copy acts on the answer |
+| `Entity` | the five predicates, and every gate inside `Entity.move` that reads them | the Server thread and the Render thread |
+| `Player` | overrides three of the five and answers its own move-simulation type, and is the reason the picture inverts | both |
+| `Mob` | narrows `Entity.isEffectiveAi` with `Mob.isNoAi` | both; the AI that acts on it runs on the server |
 | `LivingEntity` | `LivingEntity.aiStep`, which either simulates or coasts | both |
-| `ClientPacketListener` | whether an inbound position packet moves the entity or only updates a codec | client main |
-| `ServerGamePacketListenerImpl` | re-runs the client's numbers for the entities the client owns | server main |
+| `ClientPacketListener` | whether an inbound position packet moves the entity or only updates a codec | the Render thread |
+| `ServerGamePacketListenerImpl` | re-runs the client's numbers for the entities the client owns | the Server thread |
 
 ## Five predicates, and the final one the other four hang off
 
 `Entity.isLocalInstanceAuthoritative` is the root and it is **final** — no
 class overrides it. It asks a different question on each side: on the client,
 *am I locally client-authoritative?*; on the server, *am I **not**
-client-authoritative?* Everything else hangs off those two.
+client-authoritative?* Everything else hangs off those two, bar the answers a
+type or `Player` gives first: on the server a player asks neither question,
+and the entities above simulate on both sides whatever the root says.
 
 ```mermaid
 flowchart TD
-    SIM["Entity.canSimulateMovement"]
+    SIM["Entity.canSimulateMovement — final, it reads the type"]
     AI["Entity.isEffectiveAi"]
-    SIMP["Player: not a client, or I am the local player"]
-    AIP["Player: the same"]
-    AIM["Mob: and not Mob.isNoAi"]
+    SIMT["the type: a player's is not a client or the local player, and an item's, a projectile's, TNT's and a few more are both sides"]
     Q["Entity.isLocalInstanceAuthoritative — final"]
+    AIP["Player: not a client, or I am the local player"]
+    AIM["Mob: and not Mob.isNoAi"]
     LCA["Entity.isLocalClientAuthoritative"]
     NCA["Entity.isClientAuthoritative, negated"]
     LCAD["base: the controlling passenger, or false"]
     LCAP["Player: am I the local player?"]
     CAD["base: the controlling passenger, or false"]
     CAP["Player: true, so the root is false"]
+    SIM -- "or" --> SIMT
     SIM -- "by default" --> Q
-    SIM -- "or" --> SIMP
     AI -- "by default" --> Q
     AI -- "or" --> AIP
     AI -- "or" --> AIM
@@ -109,15 +110,17 @@ flowchart TD
     NCA --> CAP
 ```
 
-*Every arrow means one thing — `is answered by` — so the two pointing down
-into the root are the hanging-off the heading names, and the root's own two
-edges are the only place a machine is named. Read it as four questions and one
-that is asked twice.*
+*Every arrow means one thing, `is answered by`: two of the predicates are
+answered by the root unless a type or `Player`'s override answers instead, and
+the root is answered by the other two, one on each machine. `Entity.canSimulateMovement`
+is final like the root, so what a player or an item changes there is its
+move-simulation type, not the method.*
 
 Two things in that picture are easy to miss. The base implementations of
 both `Entity.isLocalClientAuthoritative` and `Entity.isClientAuthoritative`
 **delegate to the controlling passenger** — an entity with nobody steering it
-answers false to both, and an entity with a rider inherits the rider's answer.
+answers false to both, and an entity with a controlling passenger inherits
+that passenger's answer.
 That single line is the whole vehicle model. And `Player` answers
 `Entity.getMoveSimulationType` with `MoveSimulationType.AUTHORITATIVE_SIDE_AND_SERVER`,
 which the final `Entity.canSimulateMovement` reads, and overrides
@@ -129,7 +132,7 @@ unconditional true.
 
 Three classes narrow the AI predicate further and are worth naming because
 they are the exceptions people trip over: `Mob.isEffectiveAi` adds
-`Mob.isNoAi`, which is where the *NoAI* tag actually bites (what the guard
+`Mob.isNoAi`, which is where the *NoAI* tag bites (what the guard
 around it does and does not wrap is [goals and
 brains](ai-goals-and-brains.md#where-both-of-them-sit-in-one-mob-tick)), and both
 `ArmorStand.isEffectiveAi` and `Mannequin.isEffectiveAi` add a physics or
@@ -142,12 +145,12 @@ nothing is riding it, so `Entity.canSimulateMovement` is false and
 `LivingEntity.aiStep` never reaches `LivingEntity.travel`. What it does
 instead is two things: `Entity.commonTick` steps its `InterpolationHandler`
 just before the zombie's own tick, and `LivingEntity.aiStep` opens with the
-other half — when nothing is interpolating, **scale the stored delta by
-0.98** — and nothing then applies that delta, because the only thing
-that would is `Entity.move`, which nothing in the mob's own tick reaches on
-this side — and this is precisely the seam where the client's other answer
-begins: what it may guess rather than simulate is [prediction and
-acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)'s.
+other half: when nothing is interpolating, **scale the stored delta by
+0.98**. Nothing then applies that delta, because the only thing that would is
+`Entity.move`, which nothing in the mob's own tick reaches on this side, and
+this is precisely the seam where the client's other answer begins: what it may
+guess rather than simulate belongs to [prediction and
+acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other).
 (A piston or a shulker box can still drive a client-side mob into
 `Entity.move`, with a vector of their own rather than its stored delta —
 [movement and collision](movement-and-collision.md#building-the-delta) has the
@@ -160,10 +163,11 @@ it, and standing perfectly still when the interpolation runs out.
 ## The player: simulated twice, believed once
 
 A `ServerPlayer` passes `Entity.canSimulateMovement` and
-`Entity.isEffectiveAi` — both true on the server by `Player`'s override — so
-the server's copy runs the whole of `LivingEntity.travel`. It also fails
-`Entity.isLocalInstanceAuthoritative`, so none of the consequences that gate
-on it fire. The predicates are why a copy that is not authoritative simulates
+`Entity.isEffectiveAi` — both true on the server, by `Player`'s move-simulation
+type and its override — so the server's copy runs the whole of
+`LivingEntity.travel`. It also fails `Entity.isLocalInstanceAuthoritative`,
+so the one gate inside `Entity.move` that reads it alone, the fall damage,
+does not fire. The predicates are why a copy that is not authoritative simulates
 at all; what the server then does with the answer is [the two-phase
 tick](../player/the-two-phase-tick.md#the-bracket-and-what-survives-it) —
 the physics run in the connection phase, after every level has ticked, inside
@@ -175,22 +179,23 @@ simulation is a sanity check whose position nobody uses.
 
 A player's position on the server moved by the packet path rather than by the
 server's own arithmetic, so *how far did this entity move this tick* has two
-possible answers for a player and one for everything else — and a block has to
+possible answers for a player, and for anything a player is steering, and one
+for everything else — and a block has to
 know which it is being given. `SweetBerryBushBlock.entityInside` asks
 `Entity.isClientAuthoritative` to decide **how to find out**:
-`Entity.getKnownMovement`, the distance the client reported, for a player
-whose movement the server did not compute, and old-position-minus-current for
-everything else. The predicate is not only a switch for physics.
+`Entity.getKnownMovement`, the distance the client reported, for a player or
+anything a player steers, whose movement the server did not compute, and
+old-position-minus-current for everything else. The predicate is not only a switch for physics.
 
 ## The boat: authoritative on exactly one machine
 
-Sit in a boat and the base delegation makes it yours. On your client
+Sit in a boat's first seat and the base delegation makes it yours. On your client
 `Entity.isLocalClientAuthoritative` walks to the controlling passenger, finds
 you, and returns true, so your machine simulates the boat for real. On the
 server the same delegation makes `Entity.isClientAuthoritative` true, so the
 server's copy is *not* authoritative and does not simulate — it zeroes its
 own delta outright. Every other client's copy does the same, and is moved
-only by its `LinearInterpolationHandler`.
+by its `LinearInterpolationHandler`.
 
 ```mermaid
 sequenceDiagram
@@ -205,16 +210,16 @@ sequenceDiagram
     participant SAB as AbstractBoat
     end
 
-    Note over AB: ClientLevel ticks it, and this is the authoritative copy
     AB->>AB: floatBoat, then controlBoat, then move for real
     LP->>Wire: ServerboundMoveVehiclePacket.fromEntity, once per client tick
     Wire->>SGPL: handleMoveVehicle
-    SGPL->>SAB: move, MoverType.PLAYER over the reported distance, then absSnapTo
-    SGPL->>SAB: setOnGroundWithMovement, then doCheckFallDamage
-    Note over SGPL,SAB: never simulated here, so the physics consequences land here
+    SGPL->>SAB: move, MoverType.PLAYER over the reported distance
     alt the move is accepted
+    SGPL->>SAB: absSnapTo the reported position
+    SGPL->>SAB: setOnGroundWithMovement, then doCheckFallDamage
     SGPL-->>Wire: nothing
     else it is rejected
+    SGPL->>SAB: absSnapTo the old position
     SGPL->>Wire: ClientboundMoveVehiclePacket
     Wire->>CPL: handleMoveVehicle
     CPL->>AB: absSnapTo the server's position
@@ -222,10 +227,11 @@ sequenceDiagram
     end
 ```
 
-*Two copies of one boat, one lane each, because that is the whole of this
-page: yours is simulated and the server's is only told. The alt block is the
-figure's one mark outside the book's table, and it is here because accepted
-and rejected are the same moment, not two.*
+*Two copies of one boat, one lane each: yours is simulated, and the server's
+is moved over the distance yours reports and then kept or snapped back (a
+report too far off is refused before it is moved at all). The alt is one
+moment with two outcomes, and only the accepted one lands the fall damage on
+the server's copy.*
 
 The inbound half of that is the sharpest demonstration of what the predicate
 is for. `ClientboundMoveVehiclePacket` is not a routine update — the server
@@ -273,39 +279,42 @@ fails.
 
 ## Questions players ask
 
-**Why does a mob rubber-band and my own player does not?** Neither one is
-being corrected, and for opposite reasons. Your client does simulate your own
-player, and the boat or horse you are riding — but it never simulates a
+**Why does a mob rubber-band and my own player does not?** On an ordinary
+tick neither one is being corrected, and for opposite reasons. Your client does simulate your own
+player, and the boat or horse you are steering — but it never simulates a
 tracked mob, so there is nothing about the mob for the server to disagree
 with. What you see on a mob is the gap between position packets, walked by
 `InterpolationHandler`.
 
-**Why does a boat feel responsive and a horse feel heavy?** Both are ridden,
+**Why does a boat feel responsive and a horse feel heavy?** You steer both,
 and both are authoritative on your machine — but a horse is a `LivingEntity`
 going through `LivingEntity.travelRidden`, which asks the mob for its own
 speed and drag, while a boat runs its own physics directly. The authority
 answer is the same; the layer above it is not.
 
-**Does *NoAI* stop a mob moving?** Completely — a *NoAI* mob does not even
-fall. `Mob.isEffectiveAi` is the gate on `Mob.serverAiStep`, which is the
-obvious half, and it is also the second half of the gate on
-`LivingEntity.travel`, so nothing reaches `Entity.move` for that mob at all.
+**Does *NoAI* stop a mob moving?** On its own, completely — a *NoAI* mob does
+not even fall. `Mob.isEffectiveAi` is the gate on `Mob.serverAiStep`, which is
+the obvious half, and it is also the second half of the gate on
+`LivingEntity.travel`, so nothing in the mob's own tick reaches `Entity.move`.
+What still moves it comes from outside: a piston, a shulker or a shulker box,
+a vehicle carrying it, and a player steering it, whose branch asks only
+`Entity.canSimulateMovement`.
 
 ## Where to look
 
-Read the five predicates first, in the order the figure draws them:
+Read the five predicates first, from the root out:
 `Entity.isLocalInstanceAuthoritative`, then the two it asks —
 `Entity.isLocalClientAuthoritative` and `Entity.isClientAuthoritative` — then
 `Entity.canSimulateMovement` and `Entity.isEffectiveAi`, which default to it.
-`Player.isClientAuthoritative` and `Mob.isNoAi` are the two overrides that
-matter. Then read the two methods that spend them, `Entity.move` and
+`Player.isClientAuthoritative` and `Mob.isEffectiveAi`, with its
+`Mob.isNoAi`, are the two overrides that matter. Then read the two methods that spend them, `Entity.move` and
 `LivingEntity.aiStep`, with the table above open. For the packet half,
 `ServerGamePacketListenerImpl.handleMoveVehicle` on the server and
 `ClientPacketListener.handleEntityPositionSync` on the client are the two
-branches the last section turns on, and `InterpolationHandler` is what moves a
+branches the boat's section turns on, and `InterpolationHandler` is what moves a
 mob when nothing simulates it. `SweetBerryBushBlock.entityInside` is a door
 worth opening for one line: it is the only place in the game that reads a
-predicate to choose *which number to believe*.
+predicate to choose *which measurement of a movement to believe*.
 
 ---
 
