@@ -25,11 +25,11 @@ which this page borrows whole and never explains.
 
 | class | what it decides | thread |
 |---|---|---|
-| `Fluid` | the registry object: its `Fluid.stateDefinition`, and every per-fluid number as an overridable method | built at bootstrap, read anywhere |
-| `FluidState` | one interned combination of `FlowingFluid.FALLING` and `FlowingFluid.LEVEL` — what a block reports and what a tick names | immutable |
-| `FlowingFluid` | the whole algorithm: what a position should hold, whether to go down or sideways, and which sides win | Server |
-| `WaterFluid` | water's numbers, and whether two sources may make a third | Server |
-| `LavaFluid` | lava's numbers, and the one override that turns liquid into rock | Server |
+| `Fluid` | the registry object: its `Fluid.stateDefinition`, and the numbers every fluid has, the tick delay first, as overridable methods | built at bootstrap, read anywhere |
+| `FluidState` | one interned combination of its fluid's properties — what a block reports; a tick names the `Fluid` | immutable |
+| `FlowingFluid` | the whole algorithm: what a position should hold, whether to go down or sideways, and which sides win, with the slope numbers | Server; the flow's direction read on both sides |
+| `WaterFluid` | water's numbers, and whether two sources may make a third | Server; its particles on the client |
+| `LavaFluid` | lava's numbers, and the one override that turns liquid into rock | Server; its particles and sounds on the client |
 | `LiquidBlock` | the block form of a fluid, and where a fluid tick is booked from when the fluid is the block | Server |
 | `SimpleWaterloggedBlock` | that a stair can be full of water without being a water block | Server |
 | `BucketItem` | where a source comes from, and the one attribute that stops it arriving | Server, with a client prediction |
@@ -48,7 +48,7 @@ state it defines, and the flowing subclasses — `WaterFluid.Flowing`,
 initialiser in `Fluids` then walks `BuiltInRegistries.FLUID` and pours every
 state of every fluid into `Fluid.FLUID_STATE_REGISTRY`, the one global id table.
 
-**Thirty-seven** — every fluid state in the game: one for `Fluids.EMPTY`, and
+**Thirty-seven fluid states** make up the game: one for `Fluids.EMPTY`, and
 eighteen each for water and lava (two from the source object, sixteen from its
 flowing twin).
 
@@ -57,7 +57,8 @@ Each fluid being *two* registry objects is not bookkeeping. `Fluids.WATER` is a
 `WaterFluid.Source.isSource` returns true without consulting any property;
 `Fluids.FLOWING_WATER` is a `WaterFluid.Flowing` whose
 `WaterFluid.Flowing.getAmount` reads `FlowingFluid.LEVEL` and whose
-`WaterFluid.Flowing.isSource` returns false without consulting anything either. `WaterFluid.isSame` answers true for either, which is how
+`WaterFluid.Flowing.isSource` returns false without consulting anything
+either. `WaterFluid.isSame` answers true for either, which is how
 the algorithm treats water as one substance no matter which object it is
 holding. The scheduler does not: a scheduled tick is keyed on the fluid object,
 so `Fluids.WATER` and `Fluids.FLOWING_WATER` are two different appointments and
@@ -125,28 +126,28 @@ sequenceDiagram
     end
 
     BI->>SL: setBlock of the source — neighbours, clients, immediate
-    SL->>LB: the section write lands, then onPlace, with no UPDATE_SKIP_ON_PLACE
+    SL->>LB: the section write lands, then onPlace, which these flags do not skip
     LB->>SL: scheduleTick for Fluids.WATER, five ticks out
     SL->>LTs: schedule into this chunk's fluid container
     SL->>CPL: one ClientboundBlockUpdatePacket at broadcast time
     Note over BI,CPL: five ticks later, inside ServerLevel.tick
-    LTs->>SL: the drain hands the position back to tickFluid
+    LTs->>SL: the fluid queue hands the position back to tickFluid
     SL->>FF: FlowingFluid.tick, through FluidState.tick — a source skips the scan
     FF->>FF: spread tries down, stone refuses
     FF->>FF: spreadToSides scores the four sides
     FF->>SL: setBlock of flowing water at amount 7, four times
     SL->>LB: onPlace on each new block
     LB->>SL: each new block books its own tick
-    SL->>LB: the shape pass books the source again
-    SL->>CPL: four more block changes, in one section packet
+    SL->>LB: neighborChanged on the source, which books it again
+    SL->>CPL: four more block changes, in one section packet when they share a section
 ```
 
-*A bucket emptied, and the five ticks before anything moves. The box on the
-right is the only lane on the other machine, and it hears exactly twice: once
-for the source and once for the four blocks the water reached — nothing about
-the appointment, the scan or the scoring crosses. The note bar is the whole
-delay, and the two self-messages under it are the search this page is really
-about.*
+*A bucket emptied, and the five ticks before anything moves: the box on the
+right is the only lane on the other machine, and of the broadcast block
+changes it hears two, the source and then the four blocks the water reached —
+nothing about the
+appointment, the scan or the scoring crosses. The note bar is the whole delay,
+and the two self-messages under it are the search this page is really about.*
 
 `BucketItem.use` picks the position, then `BucketItem.emptyContents` asks two
 questions before it places anything. Is the block there a `LiquidBlockContainer` —
@@ -158,7 +159,7 @@ attribute, so there the bucket plays a hiss, throws eight smoke particles and
 returns success having placed nothing: this page's whole trace never happens in
 the Nether ([environment attributes](environment-attributes-and-timelines.md)).
 The first question only decides whether the position is a legal target; the
-evaporation branch returns before the waterlogging is actually done, so a
+evaporation branch returns before the waterlogging is done, so a
 bucket on a Nether stair hisses too.
 On overworld stone it destroys and drops whatever was there and calls
 `Level.setBlock` with the source's `FluidState.createLegacyBlock` and the flag
@@ -176,9 +177,10 @@ moves, and so does `SimpleWaterloggedBlock.placeLiquid` — but the habit is not
 `LiquidBlock`'s alone. Sixty-three call sites across fifty-six classes schedule a
 fluid tick, because every waterloggable block books water's tick from its own
 override of `BlockBehaviour.updateShape`, `WaterloggedTransparentBlock`
-included. Nothing in `FlowingFluid`
-books its own future except the single line in `FlowingFluid.tick` that follows
-a state change.
+included. Nothing in `FlowingFluid` books its own future except the single
+line in `FlowingFluid.tick` that follows a state change — and that booking is
+a duplicate the queue drops, because the write one line earlier has
+already booked the same appointment through `LiquidBlock.onPlace`.
 
 The client is told none of this, because there is nothing to tell. The placing
 player's client ran `BucketItem.use` itself inside
@@ -189,8 +191,9 @@ windows](../client/prediction-and-acks.md#the-six-windows)) — so the source
 appears locally with no round trip; the blocks the water later touches arrive the way any
 run of block changes does ([one flush a tick, two
 audiences](../networking/what-the-client-is-told.md#block-changes-one-flush-a-tick-two-audiences)),
-which for a spreading flow means a single
-`ClientboundSectionBlocksUpdatePacket`. `LevelChunk.setBlockState` skips
+which for a flow spreading inside one section means one
+`ClientboundSectionBlocksUpdatePacket` a tick. `LevelChunk.setBlockState`
+skips
 `LiquidBlock.onPlace` off the server, and the client's fluid queue is a black
 hole ([where an appointment waits](scheduled-ticks.md#where-an-appointment-waits)),
 so no client ever runs the spread. What it does run is `FluidState.animateTick` from
@@ -217,7 +220,7 @@ order of its three branches is most of a fluid's character.
 flowchart TD
     T["FlowingFluid.tick, on a state that is not a source"]
     T --> SCAN["FlowingFluid.getNewLiquid: one pass over the four horizontal neighbours"]
-    SCAN --> B1{"two or more sources, and a floor under them"}
+    SCAN --> B1{"two or more sources, conversion allowed, and a floor under this block"}
     B1 -- yes --> SRC["a source, not falling"]
     B1 -- no --> B2{"the same fluid directly above"}
     B2 -- yes --> FALL["flowing at amount 8, falling"]
@@ -228,9 +231,10 @@ flowchart TD
 ```
 
 *Three ways for one fluid block to decide what it should now be, in the order
-they are asked. The order is the character: a block becomes a source only if the
-first question says so, and becomes falling only if the second does, so a
-falling column can never convert itself and a pool under a ceiling can.*
+they are asked. The order is the character: source conversion is asked first,
+so even a block with the same fluid overhead becomes a source when two sources
+and a floor allow it, and only a block that fails the first question can be
+made to fall.*
 
 That is only the answer. What is done with it is a second, shorter fork, and its
 first question is the one a reader guesses wrong: an *empty* answer never
@@ -243,21 +247,20 @@ flowchart TD
     E -- yes --> AIR["plain air, neighbours and clients, nothing scheduled"]
     E -- no --> CMP{"the same state that is already here"}
     CMP -- yes --> KEEP["write nothing, schedule nothing"]
-    CMP -- no --> SET["the new state, the same two flags, and a tick FlowingFluid.getSpreadDelay out"]
+    CMP -- no --> SET["the new state, the same two flags, and LiquidBlock.onPlace books the next tick"]
     AIR --> SPREAD["FlowingFluid.spread, which returns at once on an empty state"]
     KEEP --> SPREAD
     SET --> SPREAD
 ```
 
-*What a tick does about the answer. Only one of the three arms books another
-tick, which is how a flow stops on its own; and all three arrive at
-`FlowingFluid.spread`, which is why even the block that just became air still
-tries to push its neighbours once.*
+*What a tick does about the answer: only one of the three arms books another
+tick, which is how a flow stops on its own. All three arrive at
+`FlowingFluid.spread`, which returns at once for the block that just became
+air.*
 
 The scan that feeds the branches counts a neighbour only if
 `FlowingFluid.canPassThroughWall` says the face between the two positions is
-open, so a pane of glass between two source blocks is enough to stop them making
-a third.
+open.
 
 ### Why the wall test is affordable
 
@@ -269,7 +272,8 @@ merge the two collision shapes with `Shapes.mergedFaceOccludes` ([shapes and
 collision](../../reference/math-and-primitives.md#shapes-and-collision)), and it
 memoises that answer in `FlowingFluid.OCCLUSION_CACHE`, a thread-local
 200-entry map keyed by `FlowingFluid.BlockStatePairKey`, which hashes both
-states by identity. A block with a dynamic shape (`Block.hasDynamicShape`)
+states by identity and the direction. A block with a dynamic shape
+(`Block.hasDynamicShape`)
 skips the cache entirely, because its answer cannot be keyed on the state.
 
 The first branch is source conversion, and it is where infinite water lives: two
@@ -281,7 +285,7 @@ rules](../../reference/gamerules.md)) — and something solid
 `GameRules.LAVA_SOURCE_CONVERSION`, false by default, so infinite lava is one
 rule away rather than a property of lava. The second branch is the same fluid
 overhead, which always produces a falling state at full amount, however little
-is actually falling past. The fallback is the highest same-fluid neighbour minus
+is falling past. The fallback is the highest same-fluid neighbour minus
 `FlowingFluid.getDropOff` — one for water, two for lava outside the Nether — and
 zero or less is empty.
 
@@ -353,14 +357,16 @@ source's four neighbours all refuse, the map comes back empty, and
 
 `FlowingFluid.spreadTo` does the placing and is deliberately dumb. A
 `LiquidBlockContainer` gets `LiquidBlockContainer.placeLiquid`; anything else
-that is not air — air, the usual target, is skipped — has
+that is not air (air, the usual target, is skipped) has
 `FlowingFluid.beforeDestroyingBlock` run over it —
 `WaterFluid.beforeDestroyingBlock` drops the block's items through
 `Block.dropResources`, `LavaFluid` plays a fizz — and then
-`LevelWriter.setBlock` with flags 3. It schedules nothing at all. Every new
-flowing block books its own tick from its own `LiquidBlock.onPlace`, and the
-shape-update pass at the tail of `Level.setBlock` reaches back to the source,
-whose `LiquidBlock.updateShape` books the source again.
+`LevelWriter.setBlockAndUpdate`, flags 3. It schedules nothing itself (a
+`LiquidBlockContainer.placeLiquid` books its own). Every new flowing block
+books its own tick from its own `LiquidBlock.onPlace`, and the neighbour
+update at the tail of `Level.setBlock` reaches back to the source, whose
+`LiquidBlock.neighborChanged` books the source again before the shape pass's
+booking is dropped as a duplicate.
 
 ## How a flow stops
 
@@ -377,11 +383,12 @@ The loud one is what happens when the source is taken back.
 cannot fill a bucket from flowing water — the flag word runs
 `Level.updateNeighborsAt`, each neighbouring `LiquidBlock.neighborChanged` books
 a fluid tick, and five ticks later those blocks compute
-`FlowingFluid.getNewLiquid` with no source in reach. Only the outermost block
-of the flow comes back empty and turns to air; every ring behind it comes back
-one level *lower* than the ring beyond, writes that, and books itself again. So
-the pool re-levels repeatedly on its way out, one ring per tick delay, and each
-ring's last act is to schedule nothing.
+`FlowingFluid.getNewLiquid` with no source in reach. Each block that ticks
+comes back with its highest same-fluid neighbour's amount less the drop-off —
+*lower* than before, and empty once nothing beside it holds more than the
+drop-off — writes that, and books itself again unless it came back empty. So
+the pool re-levels repeatedly on its way out, and each block's last act is to
+schedule nothing.
 
 ## Lava is water with worse numbers, and three exceptions
 
@@ -402,19 +409,24 @@ dimension rather than of a place in it, and the Nether's dimension type sets it
 special-cased anywhere in `LavaFluid`; it is the same three methods reading one
 boolean.
 
-On top of the numbers, `LavaFluid.getSpreadDelay` multiplies the delay by four,
-three times in four, whenever a non-falling flow is about to get deeper. Lava
-does not creep — it creeps unevenly, and the unevenness is rolled fresh on each
-tick.
+On top of the numbers, `LavaFluid.getSpreadDelay` multiplies the delay by
+four, three times in four, whenever a non-falling flow is about to get deeper
+— but the booking it feeds is the one `FlowingFluid.tick` makes after its own
+write, which the queue drops, because the write has already booked
+`Fluid.getTickDelay` through `LiquidBlock.onPlace`. So lava keeps its steady
+delay, and the uneven creep the method is written to make never reaches the
+world.
 
 ### The three places lava stops behaving like a fluid
 
-All three end in a fizz and in the spread being abandoned, and two of them
-leave a block behind. `LavaFluid.spreadTo` intercepts a downward spread onto water: the fizz plays
-and nothing spreads, whatever the water is in, and the target becomes
-`Blocks.STONE` when — and only when — it was a `LiquidBlock`. So a lavafall into
-a pool builds a plug rather than replacing the water, while a lavafall onto a
-waterlogged stair is merely stopped. The other two share one method, `LiquidBlock.shouldSpreadLiquid`, called from
+All three end in a fizz and leave a block behind. `LavaFluid.spreadTo`
+intercepts a downward spread onto water:
+the fizz plays, nothing spreads down, and the target becomes `Blocks.STONE` —
+the method checks it is a `LiquidBlock`, which it always is, because lava
+cannot pour into anything else that holds water, and runs over a waterlogged
+stair as over any solid top. So a lavafall into a pool builds a plug rather
+than replacing the water. The other two share one method,
+`LiquidBlock.shouldSpreadLiquid`, called from
 `LiquidBlock.onPlace` and `LiquidBlock.neighborChanged`: for lava it walks
 `LiquidBlock.POSSIBLE_FLOW_DIRECTIONS` and tests each direction's *opposite*, so
 the faces it inspects are the top and the four sides and never the bottom. Water
@@ -436,8 +448,9 @@ Where a source comes from and who books its tick: `BucketItem.emptyContents` ·
 order it decides: `FlowingFluid.tick` · `FlowingFluid.getNewLiquid` ·
 `FlowingFluid.spread` · `FlowingFluid.spreadToSides` ·
 `FlowingFluid.getSpread` · `FlowingFluid.getSlopeDistance` ·
-`FlowingFluid.spreadTo`. The two numbers files that make lava lava:
-`WaterFluid` · `LavaFluid.spreadTo`.
+`FlowingFluid.spreadTo`. The numbers files, and what makes lava lava:
+`WaterFluid` · `LavaFluid` · `LavaFluid.spreadTo` ·
+`LiquidBlock.shouldSpreadLiquid`.
 
 ---
 

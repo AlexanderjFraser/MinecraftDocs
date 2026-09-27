@@ -851,7 +851,7 @@ V2, or B into A, if either runs short.
 | **A** | **the standard.** Part 4 ruled against the exemplar (`entities/entity-lifecycle`: its own agent under Part 2, its polish under V2–V17), the rulings written into `TEMPLATE.md` as *Voice* and the device amended (V9), Part 4 rewritten as the record; the ledger's 56 frame-level notes (`pass8_queue.py --part Frame`) struck *(no claim)* or routed to a page; pass 7's close's audit of the ledger's shape ([pass9.md](pass9.md), session O's entry) read and its workarounds written into Part 3 where they bind a session; the queue's routing tags checked (`pass5_queue.py --unsure`) so that R8's count is honest; Part 2 rehearsed on the exemplar and amended if the report's shape failed it | 56 | — | 3·2·1·0 | 5.2k | done 2026-09-26 | Part 4 ruled (11 ratified, 5 amended, V6 reversed, V18 new) and written into `TEMPLATE.md` as *Voice*; **the exemplar carried twenty-nine errors**, all fixed and re-derived; the book's *constant nobody reads* asides found to be javac's inlining, listed by page for the part sessions and written into Part 2; Part 2 amended in seven places from the rehearsal; the router taught two page forms and paragraph entries (the ledger is 1,398 entries); the queue's 75 guesses tagged, a sixth kind (*fact*) sent to the agents |
 | **B** | I · Anatomy, II · Foundations and the Maps | 25+3 · 61 · 24 | 4·2·3·9 / 3·0·0·13 / maps in frame | 14·18·2·2 / 29·34·7·6 | 32.5k | done 2026-09-26 | **293 corrections on sixteen pages** two fact-checks had passed, every one re-derived in the tree (54 inside a figure or a caption, nine of them 26.3 changes V1 and V2 missed); the 115 ledger entries struck, 36 wrong in whole or in part; 44 queue units settled; the queue router's part numerals fixed; the record's own audit found eight more errors beside the session's corrections; items handed to G, L, O and P |
 | **C** | III · The server | 81+3 | 6·1·1·22 | 28·34·5·11 | 20.9k | done 2026-09-26 | **176 corrections on six pages** (22 inside a figure or a caption, nine of them 26.3 changes V1 missed), every one re-derived in the tree; the 84 ledger entries struck, 41 of 83 wrong in whole or in part; 31 queue units settled; the record drafted by one agent per page and audited, which found **38 more errors, 15 of them in sentences the session had just written**; three probable upstream bugs written as mechanism (a relayed crash that skips the flush save, a lapsed ban's first login, the spawn search's stride); items handed to D, F, I, M, N and O |
-| **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | — | |
+| **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | done 2026-09-27 | **284 corrections on eleven pages** (43 inside a figure or a caption, seven of them 26.3 changes V1 and V2 missed), every one re-derived in the tree; the 114 ledger entries struck, 27 of 111 wrong in whole or in part; 47 queue units settled; the record audited by one agent per page, which found **76 of the errors, 55 of them in sentences the session had just written**; one probable upstream bug written as mechanism (lava's slower spread, booked and then dropped as a duplicate); four pages in other parts corrected with it; items handed to E, F, I, J, L, M and O |
 | **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | — | |
 | **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | — | |
 | **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | — | |
@@ -1150,3 +1150,43 @@ at most two sentences; each sentence whose meaning could move is quoted in the l
 `TEMPLATE.md`'s `Main` lane row; `ServerEntityGetter` and nine other unnamed classes queued in pass3.md §7. Left
 for D, F, I, M, N and O: the fourteen sentences on other parts' pages that repeat a claim corrected here, listed
 in the ledger's *For later sessions*. For P: V1's entry on `starting-a-server`, and this session's diff.
+
+**Session D — Part IV · The world (2026-09-27).** Eleven pages, each checked under Part 2 by its own agent while
+the session read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, the V1 and
+V2 entries on these pages, session C's four handoffs and session A's four V6 constants. **284 corrections**,
+every one re-derived in `reference/26.3` before it was made; 43 are inside a figure or a caption, seven are 26.3
+changes V1 and V2 did not see (a fourth attribute flag and the new mob-spawn settings type; a generating region
+that now reads the place, where the page had it answering every attribute with its default; thirteen attributes
+over sixty-seven biome files; the heightmaps' block tags; `AttributeType.toInt`; the Nether's fifteenth
+attribute), and four are sentences the version pass moved the fact under and left (*twelve statuses* twice,
+*forty-six*, and V2's *five of the ten*, which is six). Ledger entries checked: the 114 on these pages (83
+checked, 24 checked except a part, 3 wrong, 1 overtaken, 3 no claim — 27 of the 111 that made a claim wrong in
+whole or in part). The three worst corrections: `game-events-and-vibrations`' bold hook, *the sensor always hears
+you at least one tick late by design*, which is true of a mob and false of a player, whose movement packet is
+handled before the level tick moves the clock on, so the sensor chooses a player's footstep in the same server
+tick; `tickets-and-loading`'s bold *nothing is ever sent that the server is not also simulating*, where a chunk
+becomes sendable on the loading graph and ticks on the simulation graph, so past simulation distance a player is
+sent chunks that do nothing (the page's own hook, which the bold sentence contradicted); and
+`chunk-generation-pipeline`'s closer, *why does adding cores not speed up world generation?*, answered as if
+nothing ran in parallel, where the biome fill and the terrain job fork onto the worker pool and run many chunks
+at once. What the whole-part read found before the reports: thirteen sentences that disagreed with another
+sentence in the part (two left by the version pass, two owners for the warden's brain, the key's thread names
+spelled six ways), every one now corrected. **The record's audit was again the session's
+finding**: one agent per page re-derived every changed sentence against the record and read its neighbours and
+the corpus, and found **76 of the 284, 55 of them in sentences this session had just written** (the new hook's
+figure still drawing a refusal for a player; a spectator said to load nothing, where every joining player's
+spawn ticket loads chunks before its game mode exists; an autosave said to wait for the disk only on a flush,
+where it writes `level.dat` and every player's file on the Server thread; the torch said to light a tick late
+for a player at the edge, where every client lights it when the block arrives and only the server's light comes
+later). C's lesson held at a higher rate than C's: a part session's own corrections carry about one error in
+four, and a second reading against the tree finds them. The polish: the four bare number devices (V9), the four
+V6 constants (each now *the number X names*), the key's thread names everywhere, nine possessives on a link,
+eight *actually*, four em-dash chains, and every caption at most two sentences. Also corrected where a
+correction here made them disagree: `server/starting-a-server`, `server/server-tick`, the glossary's *Timeline*
+and *Heightmap*, and `rendering/lightmap-fog-and-sky`'s *free-running* End flash; `world/level/blockscan` and the
+modifier classes queued in pass3.md §7. One black-wall question cut from `lighting` because its answer could not
+produce its symptom, and left to the second edition. Written on its page as mechanism, one probable upstream
+bug: lava's ×4 spread delay is booked after the write and dropped as a duplicate of the plain delay
+`LiquidBlock.onPlace` already booked (`fluids`). Left for E, F, I, J, L, M and O: the sentences on their pages
+listed in the ledger's *For later sessions*. For P: the V1 and V2 entries on these pages, and this session's
+diff.

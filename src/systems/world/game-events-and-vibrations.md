@@ -5,17 +5,19 @@
 You walk across a stone floor and, eight blocks away, a sculk sensor's
 tendrils flick up and it pushes redstone power out of its side. Nothing
 scanned for you: the step itself posted a `GameEvent.STEP` into
-`GameEventDispatcher.post`, which walked the loaded chunk sections around
-you and called every listener inside its own radius *inline*, before
-`Entity.move` had finished. Nothing about that broadcast is deferred — and
-yet what a player believes about sculk lives entirely in the delay, because
-the very last stage puts one back. **The sensor always hears you at least one
-tick late by design: `VibrationSelector.chosenCandidate` hands over a
-candidate only if it was recorded on an *earlier* tick, so an event delivered
-inside `Entity.move` cannot be acted on in the tick that made it.** Everything
-else a player thinks is stealth — the wool box, the crouch — is one of the
-gates between that footstep and that slot, and two of them do not work the way
-the folklore says.
+`GameEventDispatcher.post`, which walked the loaded chunk sections around you
+and called each listener inside that listener's own radius — all but the
+catalyst's *inline* — before `Entity.move` had finished. Nothing about that
+broadcast waits for a later tick — and yet
+what a player believes about sculk lives entirely in the delay, which the last
+stages put back. **A sensor never acts on an event in the game tick that
+stamped it: `VibrationSelector.chosenCandidate` hands over a candidate only if
+it was recorded on an *earlier* tick — which costs a mob's footstep a whole
+server tick and yours nothing, because the server handles a player's movement
+packet before the level tick moves the clock on.** Everything else a player
+thinks is stealth — the wool box, the crouch — is one of the gates between
+that footstep and that slot, and the crouch does not work the way the folklore
+says.
 
 ## The cast
 
@@ -54,8 +56,8 @@ pack fails loudly; only the raw lookup silently becomes a step.
 
 A `GameEventListener` is four methods: a `PositionSource`
 (`BlockPositionSource` for a block, `EntityPositionSource` for a mob, the
-latter resolving a stored UUID against the level the first time it is
-asked), a `GameEventListener.getListenerRadius`,
+latter resolving a stored UUID against the level when it is asked, until it
+finds the entity), a `GameEventListener.getListenerRadius`,
 `GameEventListener.handleGameEvent` and a
 `GameEventListener.getDeliveryMode`. They are stored per chunk section in
 `LevelChunk.gameEventListenerRegistrySections`
@@ -138,13 +140,14 @@ flowchart TD
     G -->|"UNSPECIFIED"| H["GameEventListener.handleGameEvent, inline"]
 ```
 
-*From a footstep to a listener that has been handed it. Every exit on the left
+*From a footstep to a listener that has been handed it: every exit on the left
 is silent — nothing is loaded, nothing is retried, nothing is told. The two
-right-hand ends are the only two ways the walk finishes, and the sculk catalyst
-is the only listener in the game that takes the lower one.*
+right-hand ends are the only two ways the walk finishes, and the sculk
+catalyst is the only listener in the game that takes the queued one.*
 
 Both ends are a real delivery, and the difference is *when*. Everything below
-continues from the inline one, and narrows again: `VibrationSystem.Listener.handleGameEvent` is the vibration path, which
+continues from the inline one, and narrows again:
+`VibrationSystem.Listener.handleGameEvent` is the vibration path, which
 `Allay.JukeboxListener` is not on at all.
 
 ```mermaid
@@ -168,7 +171,7 @@ flowchart TD
 *Five refusals in the order they run, all of them landing in one place, and a
 short arm that arrives at the answer having asked almost none of them. Read the
 order rather than the tests: the busy check is first and costs nothing, the
-six-ray occlusion cast is last and costs the most, and the arm along the bottom
+six-ray occlusion cast is last and costs the most, and the arm down the right
 is a player standing on the block.*
 
 The order is not the one a player would guess. The busy check comes first,
@@ -178,16 +181,17 @@ expensive gate — comes last, after every cheap refusal has had its chance.
 Before any of it, `Entity.applyMovementEmissionAndPlaySound` decides
 whether there is an event to post, by accumulating `Entity.moveDist` and firing
 only when it passes `Entity.nextStep` — which is why walking emits a footstep
-per stride rather than per tick. Two gates ask the *user* rather than the
+per stride rather than per tick. Three gates ask the *user* rather than the
 system: `VibrationSystem.User.getListenableEvents` supplies the tag
-`VibrationSystem.User.isValidVibration` tests first, and
+`VibrationSystem.User.isValidVibration` tests first, the user's
+`PositionSource` must resolve, and
 `SculkSensorBlockEntity.VibrationUser.canReceiveVibration` refuses
 `GameEvent.BLOCK_DESTROY` and `GameEvent.BLOCK_PLACE` at the sensor's *own*
 position — which is why placing a sensor does not set it off — refuses a
 frequency of `VibrationSystem.NO_VIBRATION_FREQUENCY`, and otherwise defers
 to `SculkSensorBlock.canActivate`: inactive only.
 
-The short arm along the bottom of that figure is the gate a player most often
+The short arm down the right of that figure is the gate a player most often
 meets. `SculkSensorBlock.stepOn` runs from
 `Entity.applyEffectsFromBlocks` every tick an entity stands on the block, and
 calls `VibrationSystem.Listener.forceScheduleVibration` directly: no section
@@ -204,15 +208,16 @@ The occlusion test is worth reading slowly.
 nudges it a hundred-thousandth of a block along each of the six `Direction`
 values in turn, and runs `BlockGetter.isBlockInLine` with a
 `ClipBlockStateContext` looking for `BlockTags.OCCLUDES_VIBRATION_SIGNALS`.
-It reports *occluded* only if all six rays are stopped, and returns the
-moment one is not — so a single block of wool on the straight line is
-almost never enough, and a wool box is a box because a box is what makes
-all six fail.
+It reports *occluded* only if all six rays are stopped, and returns the moment
+one is not — but the six run a hundred-thousandth of a block apart to the same
+point, so a block of wool the straight line passes through stops all six, and
+only a line grazing a block's edge can slip one past. A wool box is a box
+because vibrations come from every side.
 
 ## One footstep, and the ticks it takes to arrive
 
 Every gate above passes, and the vibration still does not arrive for eight
-ticks. This is where they go.
+ticks of game time. This is where they go.
 
 ```mermaid
 sequenceDiagram
@@ -224,7 +229,7 @@ sequenceDiagram
     participant SSVU as SculkSensor<br/>BlockEntity.<br/>VibrationUser
     participant SSB as SculkSensorBlock
 
-    Note over Entity,SSB: tick T, the entity ticks and moves
+    Note over Entity,SSB: tick T, a mob moves in its own tick
     Entity->>SL: gameEvent, GameEvent.STEP at the entity's feet
     SL->>VSL: the dispatcher's walk reaches it, inline
     VSL->>VSel: addCandidate, a VibrationInfo stamped with game time T
@@ -233,8 +238,9 @@ sequenceDiagram
     VSel-->>VST: nothing, the candidate is not from an earlier tick
     Note over Entity,SSB: tick T plus 1
     VST->>VSel: chosenCandidate
-    VSel-->>VST: the VibrationInfo, then startOver clears the slot
+    VSel-->>VST: the VibrationInfo
     VST->>SL: sendParticles, one VibrationParticleOption
+    VST->>VSel: startOver clears the slot
     Note over VST,SSB: the countdown starts now, a block a tick
     Note over Entity,SSB: tick T plus 8, and only now does it arrive
     VST->>SSVU: onReceiveVibration — the event, the entities, the distance
@@ -243,15 +249,16 @@ sequenceDiagram
     Note over Entity,SSB: 30 ticks later deactivate, then 10 more before inactive
 ```
 
-*One footstep, and the eight ticks it takes to be heard. The three note bars are
-the wait: a candidate posted in tick T is deliberately not looked at until T
-plus 1, and then travels a block a tick. Count the arrows above the second bar
-against the arrows below it — almost all of the machinery runs in the tick the
-footstep happened, and none of it reaches the sensor.*
+*One footstep, and the eight ticks of game time it takes to be heard eight
+blocks away: a mob's candidate stamped in tick T is refused in tick T and chosen in
+tick T plus 1, then travels a block a tick. That first wait is a whole server
+tick for a mob, which moves inside its tick, and none for a player, whose move
+is handled from its packet before the level tick moves the clock on.*
 
 `VibrationSystem.Ticker.tick` is the whole of the wait, and runs from
-whoever hosts the listener: `SculkSensorBlock.getTicker` and
-`SculkShriekerBlock.getTicker` for the blocks — server-side only, and
+whoever hosts the listener: `SculkSensorBlock.getTicker`,
+`CalibratedSculkSensorBlock.getTicker` and `SculkShriekerBlock.getTicker` for
+the blocks — server-side only, and
 already gated by `Level.shouldTickBlocksAt` on their own chunk — and
 `Warden.tick` and `Allay.tick` for the mobs. One call does three things in
 order: select, if nothing is in flight; send or re-send the particle; then
@@ -262,8 +269,8 @@ That particle is the only thing the client is told.
 remaining tick count, and the client animates the flight from that alone:
 `ClientLevel.gameEvent` is an empty method and there is no vibration
 packet. When the block entity was loaded from disk,
-`VibrationSystem.Data.shouldReloadVibrationParticle` is set and the ticker
-re-sends the particle from a point interpolated along the path covered.
+`VibrationSystem.Data.shouldReloadVibrationParticle` answers yes and the
+ticker re-sends the particle from a point interpolated along the path covered.
 
 ## One slot, one tick late, and one refusal that waits
 
@@ -282,7 +289,9 @@ The latency falls out of the read side. `VibrationSelector.chosenCandidate`
 returns the candidate only if its stamp is strictly *less* than the current
 game time, so one added during tick T is invisible for the rest of tick T
 however the ordering falls, and the earliest it can be selected is the tick
-after. Travel is measured from there:
+after — the next server tick for a mob, and the same server tick for a player,
+whose move is handled from its packet before the level tick moves the clock
+on. Travel is measured from there:
 `VibrationSystem.User.calculateTravelTimeInTicks` is the floor of the
 distance — one block per tick — and the countdown's first decrement happens
 inside the same call that selected the vibration, so a source *n* whole
@@ -290,8 +299,8 @@ blocks away arrives *n* minus 1 ticks after selection, and anything closer
 than two blocks arrives on the selecting tick itself.
 
 Arrival is one call — `VibrationSystem.User.onReceiveVibration`, handed the
-event, the source entity, the projectile's owner and the distance the vibration
-actually travelled — and it can be refused.
+event, the source entity, the projectile's owner and the distance from the
+source's block to the listener's at arrival — and it can be refused.
 `VibrationSystem.User.requiresAdjacentChunksToBeTicking`
 is true for both sculk blocks, and `VibrationSystem.Ticker` will not deliver
 unless all nine columns of the 3 by 3 around the listener are loaded and
@@ -318,16 +327,16 @@ float stored when the candidate was made.
 
 `SculkSensorBlock.activate` sets `SculkSensorBlock.PHASE` to
 `SculkSensorPhase.ACTIVE` with that power, schedules a block tick
-`SculkSensorBlock.getActiveTicks` out — 30 for a plain sensor, 10 for a
-calibrated one, and never the constant `SculkSensorBlock.ACTIVE_TICKS`, which
-nothing reads — runs
+`SculkSensorBlock.getActiveTicks` out (30 for a plain sensor, the number
+`SculkSensorBlock.ACTIVE_TICKS` names, and 10 for a calibrated one), runs
 `SculkSensorBlock.tryResonateVibration` — which, for each of the six
 neighbours in `BlockTags.VIBRATION_RESONATORS`, posts the matching
 `GameEvent.RESONATE_1` … `GameEvent.RESONATE_15` at the *neighbour's*
 position, so an amethyst block beside a sensor rebroadcasts the frequency
 it heard — and then emits `GameEvent.SCULK_SENSOR_TENDRILS_CLICKING`, the
 single entry in `GameEventTags.SHRIEKER_CAN_LISTEN`. Shriekers do not hear
-you. They hear sensors hearing you.
+your footsteps; only standing on one sets it off directly. They hear sensors
+hearing you.
 
 Coming down takes two scheduled ticks. At 30, `SculkSensorBlock.tick` calls
 `SculkSensorBlock.deactivate`, which drops the power to zero, moves the
@@ -343,7 +352,7 @@ for inactive.
 |---|---:|---|---|
 | `SculkSensorBlockEntity` | 8 | `GameEventTags.VIBRATIONS` | activates for 30 ticks, power by distance, frequency on the comparator |
 | `CalibratedSculkSensorBlockEntity` | 16 | `GameEventTags.VIBRATIONS` | the same, but active for 10 ticks rather than 30, and when the block behind `CalibratedSculkSensorBlock.FACING` gives a redstone signal, only that exact frequency is accepted |
-| `SculkShriekerBlockEntity` | 8 | `GameEventTags.SHRIEKER_CAN_LISTEN` | needs a player behind the event, then `SculkShriekerBlockEntity.tryShriek` — warning level, darkness, and a warden at level 4 |
+| `SculkShriekerBlockEntity` | 8 | `GameEventTags.SHRIEKER_CAN_LISTEN` | needs a player behind the event, then `SculkShriekerBlockEntity.tryShriek` raises the warning level on a shrieker that can summon; when the shriek ends, darkness, and a warden at level 4 |
 | `Warden` | 16 | `GameEventTags.WARDEN_CAN_LISTEN` | anger through `Warden.increaseAngerAt`, a 40-tick `MemoryModuleType.VIBRATION_COOLDOWN`, and a disturbance location for `WardenAi` |
 | `Allay` | 16 | `GameEventTags.ALLAY_CAN_LISTEN`, note blocks only | `AllayAi.hearNoteblock` stores `MemoryModuleType.LIKED_NOTEBLOCK_POSITION`, after which it accepts that block and no other |
 | `Allay.JukeboxListener` | 10 | not a vibration at all | a plain `GameEventListener` for `GameEvent.JUKEBOX_PLAY` and `GameEvent.JUKEBOX_STOP_PLAY` — it makes the allay dance |
@@ -355,8 +364,8 @@ shrieks and tendril clicks that `GameEventTags.VIBRATIONS` leaves out, and
 leaves out the flap that sensors hear. The warden is also the one entity
 whose `Entity.dampensVibrations` is *unconditionally* true — a dropped item
 answers true too, but only while it holds something in
-`ItemTags.DAMPENS_VIBRATIONS` — so the warden is invisible to every other
-listener while being the most sensitive one on the list, and the one entity
+`ItemTags.DAMPENS_VIBRATIONS` — so the warden is invisible to every vibration
+listener, wardens included, and the one entity
 `SculkSensorBlock.stepOn` refuses by name. Its brain and the allay's are
 [Part VI](../entities/ai-goals-and-brains.md).
 
@@ -384,7 +393,7 @@ silent: `GameEventDispatcher.post` skips any column
 `ServerChunkCache.getChunkNow` does not already have, and a sensor whose
 3 by 3 neighbourhood is not ticking holds a finished vibration until it is.
 The second is visible on the debug channel; the first is not, because the
-broadcast happens only where a listener was actually visited —
+broadcast happens only where a listener was visited —
 `DebugSubscriptions.GAME_EVENTS`
 and `DebugSubscriptions.GAME_EVENT_LISTENERS`, broadcast through
 `ServerLevel.debugSynchronizers`
@@ -399,7 +408,7 @@ The broadcast, from the event to the door of a listener: `GameEvent` ·
 asks them: `VibrationSystem.Listener.handleGameEvent` ·
 `VibrationSystem.User.isValidVibration` ·
 `VibrationSystem.Listener.isOccluded` · `VibrationSelector.addCandidate` ·
-`VibrationSelector.chosenCandidate` · `VibrationSystem.Ticker.tick` ·
+`VibrationSystem.Ticker.tick` · `VibrationSelector.chosenCandidate` ·
 `SculkSensorBlock.activate`. And the two doors out of this page:
 `SculkSensorBlock.stepOn` for the shortcut, `DynamicGameEventListener.move`
 for how a listener that walks stays filed.
@@ -407,8 +416,8 @@ for how a listener that walks stays filed.
 The other index the world keeps about itself — where things worth walking to
 are, rather than what just happened — is [points of
 interest](points-of-interest.md#a-ticket-is-a-claim-nothing-enforces). The
-brain behind a warden or an allay is [entity
-anatomy](../entities/entity-anatomy.md)'s.
+brain behind a warden or an allay belongs to [goals and
+brains](../entities/ai-goals-and-brains.md).
 
 ---
 

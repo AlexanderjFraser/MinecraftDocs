@@ -330,8 +330,7 @@ one. Then the flag is set, and no later boot of that world searches again.
 `MinecraftServer.prepareLevels` replays a list. For each level a
 `ChunkLoadCounter` records which chunks are already `ChunkStatus.FULL`, calls
 `TicketStorage.activateAllDeactivatedTickets`, runs the distance manager again
-and counts what is new. The tickets it replays are the ones the last shutdown
-parked rather than dropped, and two of the nine `TicketType`s carry
+and counts what is new. The tickets it replays are the persisting ones the last shutdown parked rather than dropped, and two of the nine `TicketType`s carry
 `TicketType.FLAG_PERSIST` — `TicketType.FORCED`, from */forceload*, and
 `TicketType.PORTAL` — so those two are the only entries a *chunk_tickets* file
 contains ([tickets and

@@ -3,7 +3,8 @@
 > Verified against **Minecraft 26.3** · Part IV · A repeater's input goes high, and the two ticks before its output follows are one entry in a queue.
 
 A repeater set to its shortest delay is not counting anything. When the wire
-behind it changes, `DiodeBlock.neighborChanged` runs on the server thread,
+behind it changes, `DiodeBlock.neighborChanged`, which `RepeaterBlock`
+inherits, runs on the Server thread,
 notices that `DiodeBlock.POWERED` no longer matches the input, and books an
 appointment — a `ScheduledTick` naming this `Block` at this `BlockPos`, due
 two game ticks from now, at `TickPriority.HIGH` — and then forgets. Two ticks
@@ -39,7 +40,7 @@ blocks — `ObserverBlock`, `TargetBlock`, `LightningRodBlock`, `TripWireBlock`,
 | `ServerLevel` | when the drain runs, the per-chunk gate it runs under, and the type re-check that makes a tick cancellable | Server |
 | `SavedTick` | the disk form: a *relative* delay in place of an absolute time | Server, written by the IO worker |
 | `ProtoChunkTicks` | a generating chunk's bookings, all at delay zero | worldgen workers |
-| `BlackholeTickAccess` | accept every booking and run nothing — the client's answer to the whole system, and also an `ImposterProtoChunk`'s | Render, and the server thread |
+| `BlackholeTickAccess` | accept every booking and run nothing — the client's answer to the whole system, and also an `ImposterProtoChunk`'s | Render, and worldgen workers |
 
 Those containers implement one small interface stack — `TickAccess`
 (schedule, ask, count), `TickContainerAccess` per chunk, `LevelTickAccess` per
@@ -51,9 +52,9 @@ will.
 
 ## The pipeline, end to end
 
-The pipeline has a seam in it that is also this page's one threading fact — **the
-drain is server-thread only, and booking is not** — so it is two figures. This
-is booking, and anything may do it from anywhere.
+The pipeline has a seam in it, booking and the drain, so it is two figures. This
+is booking into a live level; the worker pool books into a generating chunk's
+own list instead ([below](#appointments-that-survive-a-restart)).
 
 ```mermaid
 flowchart TD
@@ -72,14 +73,15 @@ flowchart TD
     D -- "no" --> Q
 ```
 
-*Everything that can happen to an appointment before it is a queued tick — and
-two of the three outcomes are that it is not one. The right-hand refusal is the
+*Everything that can happen to an appointment booked into a live level before
+it is a queued tick — and two of the three outcomes are that it is not one.
+The right-hand refusal is the
 page's subject: the dedup slot is checked against the type and position alone,
 so the second booking is thrown away whether or not it is due sooner than the
 one already there.*
 
 The drain is the other half, it runs once per level tick per type, and it never
-leaves the server thread.
+leaves the Server thread.
 
 ```mermaid
 flowchart TD
@@ -99,11 +101,11 @@ flowchart TD
     RUN --> AGAIN
 ```
 
-*The three phases of one drain, and the two ways back to the index that are not
-failures. A container returns to the index when its chunk is not ticking and
-when the budget runs out, and in both cases its ticks are late and never lost.
-The bottom-right box is the loop this page's repeater lives in: the run books
-the next appointment, which re-enters the figure above.*
+*The three phases of one drain, and the ways back to the index, none of them a
+failure: a container whose next tick is not yet due waits for it, and one
+whose chunk is not ticking or whose budget ran out is late, never lost. The
+bottom-right box is the loop this page's repeater lives in — the run books the
+next appointment, which re-enters the figure above.*
 
 Everything below is one stage of those two figures.
 
@@ -125,7 +127,7 @@ The sub-order is the FIFO tie-breaker for two ticks at the same time and
 priority, and it carries the one threading fact of this page.
 `Level.subTickCount` is a plain counter incremented by
 `Level.nextSubTickCount`, because a level's scheduler is touched only from the
-server thread; `WorldGenRegion.subTickCount` is an atomic one, because
+Server thread; `WorldGenRegion.subTickCount` is an atomic one, because
 generation books ticks from the worker pool. **The drain is server-thread
 only. Booking is not.**
 
@@ -143,9 +145,9 @@ those ticks then *do* is [fluids](fluids.md).
 ## Where an appointment waits
 
 Every `LevelChunk` owns exactly two containers, `LevelChunk.blockTicks` and
-`LevelChunk.fluidTicks`, and they are the only place a pending tick ever lives
-([what placing a block actually
-does](chunk-anatomy.md#what-placing-a-block-actually-does)): a priority queue,
+`LevelChunk.fluidTicks`, and they are the only place a live chunk's tick waits
+until a drain collects it ([the four shapes a chunk
+takes](chunk-anatomy.md#the-four-shapes-a-chunk-takes)): a priority queue,
 `LevelChunkTicks.tickQueue`, in `ScheduledTick.DRAIN_ORDER`, beside the dedup
 set that decides what gets into it.
 
@@ -155,7 +157,7 @@ set that decides what gets into it.
 chunk holds, defaulting for an unknown chunk to the largest possible long. The
 index is maintained by `LevelTicks.chunkScheduleUpdater`, the callback every
 container is handed through `LevelChunkTicks.setOnTickAdded` when it
-registers, and it fires only when the tick just added *is* the container's new
+registers, and it acts only when the tick just added *is* the container's new
 head. **A chunk with nothing due costs one map entry and one comparison per
 level tick, and a chunk with an empty queue costs nothing at all** — which is
 what makes tens of thousands of loaded chunks affordable.
@@ -182,7 +184,8 @@ accident, noted only so it does not confuse you.)
 section, blocks first and then fluids, each with the current game time and a
 budget of `ServerLevel.MAX_SCHEDULED_TICKS_PER_TICK`, 65536 — a budget per
 call, so 65536 block ticks *and* 65536 fluid ticks ([the level
-tick](../server/server-level-tick.md#scheduled-ticks-twice-and-a-promise-to-the-same-block)). The whole section is skipped in a
+tick](../server/server-level-tick.md#scheduled-ticks-twice-and-a-promise-to-the-same-block)).
+The whole section is skipped in a
 debug world and whenever `TickRateManager.runsNormally` is false. Each call
 is three phases.
 
@@ -206,8 +209,9 @@ same container while its next tick is still due and still beats the next-best
 container's head — containers are re-heaped only when the winner stops
 winning. Where a container goes next turns on the budget as much as on its
 own head. **Overtaken but still due, with budget left**: back into the
-container queue, to be polled again this tick. **Head no longer due, or still
-due but the budget is spent**: back to the index, and asked again next tick.
+container queue, to be polled again this tick. **Head no longer due**: back to
+the index at its head's time. **Still due but the budget is spent**: back to
+the index, and asked again next tick.
 **Drained empty**: neither. Then
 `LevelTicks.rescheduleLeftoverContainers` runs over whatever is still sitting
 in the container queue when the drain stopped and returns each to the index at
@@ -224,15 +228,15 @@ re-read the world there and run `BlockBehaviour.BlockStateBase.tick` or
 named. **A tick is a promise to a type**, and that check is the whole of
 cancellation for anything a block does: break the block and its pending ticks
 evaporate with no cancellation code anywhere. The only code that removes a
-pending tick outright is bulk — `LevelChunkTicks.removeIf`, through the two
-area operations below. **Clean up** is
+pending tick outright is bulk — `LevelChunkTicks.removeIf`, through
+`LevelTicks.clearArea` below. **Clean up** is
 `LevelTicks.cleanupAfterTick`, emptying all four working collections including
-`LevelTicks.toRunThisTickSet`, which is built lazily and only if somebody
-actually asks `LevelTicks.willTickThisTick`. That laziness is the whole
-difference between the two questions a block can ask. `TickAccess.hasScheduledTick`
+`LevelTicks.toRunThisTickSet`, which is built lazily and only if somebody asks
+`LevelTicks.willTickThisTick`. That list is the whole difference between the
+two questions a block can ask. `TickAccess.hasScheduledTick`
 reads the container and answers *is one booked*; `LevelTickAccess.willTickThisTick`
 reads this already-collected list and answers *is one about to run in this very
-level tick* — a thing `LevelTicks.hasScheduledTick` can no longer see, because
+level tick* — a thing `TickAccess.hasScheduledTick` can no longer see, because
 `LevelChunkTicks.poll` freed the slot during collect.
 
 ### The comparisons, and which is used where
@@ -301,11 +305,9 @@ sequenceDiagram
 ```
 
 *One repeater, from the wire behind it changing to the appointment for turning
-itself off again. The two note bars are the two ticks nothing happens in, and
-the middle one is the fact the page is built on: the wire went back to zero and
-the booking already made was neither cancelled nor noticed. Every arrow that books
-goes through `ServerLevel` — the block never touches the queue directly, which
-is what makes the one threading rule enforceable.*
+itself off again. The first note bar is the tick the page is built on — the
+wire went back to zero and the booking already made was neither cancelled nor
+noticed — and the second opens the tick in which the appointment runs.*
 
 **The booking is a priority the block chooses, not one this queue assigns.**
 The repeater above asks for `TickPriority.HIGH` to turn on and
@@ -317,22 +319,24 @@ What this page supplies is what the priority then buys: the sub-tick order
 above.
 
 **A booking cannot be called off.** Nothing in the game cancels a single
-scheduled tick: the only removals are the bulk area operations above, for
-`/clone` and the gametest framework. So a booking made while the input was
+scheduled tick: the only removal is the gametest framework's bulk
+`LevelTicks.clearArea` above. So a booking made while the input was
 present survives the input going away, and the block finds out only when its
 turn comes. That is the queue's half of pulse extension; what a repeater does
 when it gets that turn is the diode page's.
 
 **Nothing here uses `Block.UPDATE_NEIGHBORS`** ([block update
 flags](../../reference/block-update-flags.md) has the bits), so the write in
-the diagram above fans out through no channel `Level.setBlock` opened. How a
+the diagram above wakes no neighbour through `Level.setBlock`'s neighbour
+channel; only its shape pass runs. How a
 diode's signal leaves instead is [diodes and the
 observer](../blocks/diodes-and-observers.md#a-diode-never-writes-into-its-target).
 
 ## The other kind of turn: random ticks
 
-The appointment book is one of two ways a block gets a turn, and the contrast
-is what defines it: a random tick is booked by nobody, aimed at no block, and
+The appointment book is one of the ways a block gets a turn, and the contrast
+with random ticks is what defines it: a random tick is booked by nobody, aimed
+at no block, and
 carries no promise.
 
 It also reaches a different set of chunks, and the difference is one ring.
@@ -342,13 +346,14 @@ is the *entity*-ticking set; the scheduled-tick gate,
 block-ticking radius instead. So at the edge of a player's simulation distance
 there is a ring of chunks where appointments still come due and nothing is
 ever chosen at random. How the level tick then spends the rule's number, and
-why a section of solid stone costs nothing, is [the level
-tick](../server/server-level-tick.md#random-ticks-are-counted-per-section-and-empty-sections-are-free)'s.
+why a section of solid stone costs nothing, belongs to [the level
+tick](../server/server-level-tick.md#random-ticks-are-counted-per-section-and-empty-sections-are-free).
 
 Two things about that walk belong here, because they are about what a *promise*
 is worth. The first is that the eligible blocks are decided at bootstrap, not
 per tick: `BlockBehaviour.BlockStateBase.isRandomlyTicking` is baked into the
 state at `BlockBehaviour.BlockStateBase.initCache` from
+`BlockBehaviour.isRandomlyTicking`, which defaults to
 `BlockBehaviour.Properties.randomTicks`, so unlike an appointment, which names
 a type and is checked against the world when it comes due, a random tick's
 eligibility is settled before the world exists.
@@ -364,7 +369,8 @@ its motion is a scheduled tick.
 ## Appointments that survive a restart
 
 A `SavedTick` stores a **relative** delay rather than an absolute time, so a
-world closed and reopened a month later still fires its ticks on schedule:
+chunk that unloads while the world runs on fires its ticks the same number of
+ticks after it starts ticking again:
 `ScheduledTick.toSavedTick` subtracts the current game time on the way out and
 `SavedTick.unpack` adds the new one on the way back. `LevelChunkTicks.pack`
 writes the pending list first and then the live queue sorted by
@@ -380,7 +386,7 @@ for a chunk at `ChunkStatus.FULL` and a `ProtoChunkTicks` for one below it, and
 the `LevelChunkTicks` constructor holds the saved list as
 `LevelChunkTicks.pendingTicks` — *not* in the queue — while pre-seeding the
 dedup set from it, so a fresh booking cannot double up a saved one that is not
-unpacked yet. The queue fills only when `ChunkMap.prepareTickingChunk` reaches
+unpacked yet. The saved ticks enter the queue only when `ChunkMap.prepareTickingChunk` reaches
 `ServerLevel.startTickingChunk` → `LevelChunk.unpackTicks` →
 `LevelChunkTicks.unpack`, which counts sub-orders up from minus the list's
 length. **Every unpacked tick gets a negative sub-order**, and
@@ -416,13 +422,15 @@ when the sprint ends.
 
 **Where do my ticks go when a chunk stops ticking?** Nowhere. They sit in the
 chunk's own queue, the index entry is left untouched, and the moment the chunk
-is block-ticking again they are all collected in one drain. If the chunk
-unloads first they are written to disk with it. The only appointment actually
-lost is one booked into a chunk with no registered container.
+is block-ticking again the due ones are collected, as far as the drain's
+budget goes. If the chunk
+unloads first they are written to disk with it. Outside generation and the
+test framework's area clear, the only appointment lost is one booked into a
+chunk with no registered container.
 
 > **For a 1.21-era reader.** `BlockBehaviour.updateShape` no longer takes a
 > `LevelAccessor`. It takes a `LevelReader` and a separate
-> `ScheduledTickAccess` — a small interface whose whole job is booking:
+> `ScheduledTickAccess` — a small interface for booking:
 > `ScheduledTickAccess.createTick`, `ScheduledTickAccess.getBlockTicks`,
 > `ScheduledTickAccess.getFluidTicks` and four `ScheduledTickAccess.scheduleTick`
 > overloads that compose them. Every waterloggable block books water's tick
@@ -436,9 +444,10 @@ the block's side in: `ScheduledTickAccess.scheduleTick` ·
 `LevelAccessor.createTick` · `LevelChunkTicks.schedule`. One drain, in its
 three phases: `LevelTicks.tick` · `LevelTicks.sortContainersToTick` ·
 `LevelTicks.drainContainers` · `LevelTicks.runCollectedTicks` ·
-`ServerLevel.tickBlock`. The gate the collect phase asks:
-`ServerLevel.isPositionTickingWithEntitiesLoaded`. And the three containers
-that are not a live chunk's: `SavedTick` · `ProtoChunkTicks` ·
+`ServerLevel.tickBlock` · `LevelTicks.cleanupAfterTick`. The gate the collect
+phase asks:
+`ServerLevel.isPositionTickingWithEntitiesLoaded`. And the disk form and the
+two stand-ins for a live chunk's containers: `SavedTick` · `ProtoChunkTicks` ·
 `BlackholeTickAccess`.
 
 ---

@@ -351,8 +351,7 @@ frame. → [the GUI render tree](../systems/client/the-gui-render-tree.md)
 ## H
 
 **Heightmap** — a per-chunk 2D array holding the first *free* Y above the
-topmost block matching a predicate; six types exist, and a live chunk keeps the
-four that survive worldgen. → [chunk anatomy](../systems/world/chunk-anatomy.md)
+topmost block matching a predicate; six types exist, and a live chunk keeps the four that survive worldgen and any asked for since. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
 **Holder** — a reference to a registry entry that can exist before the
 entry is bound: `Holder.Reference` for a registered value, `Holder.Direct`
@@ -758,7 +757,7 @@ only, then full, then block-ticking, then entity-ticking. → [tickets and loadi
 
 **Timeline** — one clock's data-driven curve set: an optional period, the
 named instants on that clock, and one `AttributeTrack` per environment
-attribute — keyframed over *modifier arguments*, not over values. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#arguments-not-values)
+attribute — keyframed over *modifier arguments*, which for an override are the values themselves. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#arguments-not-values)
 
 **Trigger** (advancements) — the server-side hook that tells **one** player's
 advancement state that something happened, by sweeping that player's listener

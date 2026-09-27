@@ -250,7 +250,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   column of the page's own four-path table and cutting them needs the table
   redrawn. Still true, still deliberate, and it is **pass 7's**, because the
   table is the figure. [kind=figure]~~ — **settled, pass 7 session B**, the figure half: the four-path table is the comparison (F10 — a comparison is a table, never a figure) and the four sequence diagrams are the order *within* each path, which the table cannot carry; they divide the work and all four stay. What the page borrows from other parts is prose, not figure, and goes to pass 10. [kind=book]
-- **Part IV's landing page says "Nothing in this part needs Part V or
+- ~~**Part IV's landing page says "Nothing in this part needs Part V or
   beyond"**, which is true of dependencies and not of links: `chunk-anatomy`
   links `blocks-and-states`, `fluids` links `prediction-and-acks`, `lighting`
   links `the-client-level`. The book needs one distinction it does not have —
@@ -258,13 +258,13 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   not — and once it has it, three sentences want it: this one, the
   introduction's "the two dashed arrows are the only places a part reaches
   forward", and `lectures.md`'s weaker version. **Pass 10's**, with the
-  distinction written into `TEMPLATE.md` first. [kind=book]
+  distinction written into `TEMPLATE.md` first. [kind=book]~~ *Second edition: the sentence is true of dependencies, which `check_deps.py` enforces, and the distinction between a part-level dependency and a page-level forward link is a book decision `TEMPLATE.md` does not make — pass 8, session D.*
 
 ## Session D — Part IV · The world (pass 5) *(2026-09-05)*
 
-What this session's reading raised for the sessions and passes that come after
+~~What this session's reading raised for the sessions and passes that come after
 it. Everything it acted on itself is struck in place above, or logged in
-[pass9.md](pass9.md). [kind=record]
+[pass9.md](pass9.md). [kind=record]~~ *Record: the preface to pass 5 session D's handoff units, each settled on its own line — pass 8, session D.*
 
 **Routed to a later part's session.**
 
@@ -373,7 +373,7 @@ it. Everything it acted on itself is struck in place above, or logged in
   which reads at first as a pointer into the source.~~ **Done, pass 6 session
   D**: now "the two area operations below". [kind=lecture]
 
-**From pass 6, session D — Part IV · The world** *(2026-09-10)* [kind=record]
+~~**From pass 6, session D — Part IV · The world** *(2026-09-10)* [kind=record]~~ *Record: the heading of pass 6 session D's entry, its units settled on their own lines — pass 8, session D.*
 
 **For pass 7, the figures.**
 
@@ -409,70 +409,70 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **For pass 8, the voice.**
 
-- The **possessive-link construction** — "is [page name](link)'s." — stopped
+- ~~The **possessive-link construction** — "is [page name](link)'s." — stopped
   two of this part's readers dead, on `chunk-anatomy` (twice),
   `chunk-generation-pipeline` and `chunk-storage`, where one instance was also
   missing its *s*. It is a corpus-wide device and wants one ruling.
-  [kind=voice]
-- **The dead-constant aside** is still four to a part in Part IV
+  [kind=voice]~~ *Done: the part's possessives on a link are gone, rewritten under V8 — pass 8, session D.*
+- ~~**The dead-constant aside** is still four to a part in Part IV
   (`LevelChunkSection.BIOME_CONTAINER_BITS`, `ChunkStatus.MAX_STRUCTURE_DISTANCE`,
   `ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE`, `SculkSensorBlock.ACTIVE_TICKS`),
   and every reader skipped every one of them as a note about how the source
-  reads rather than how the system works. [kind=voice]
-- `scheduled-ticks` uses **`DiodeBlock` and `RepeaterBlock` for the same block**
+  reads rather than how the system works. [kind=voice]~~ *Done under V6: all four now give the number with the constant's name, and none says the constant is unread — pass 8, session D.*
+- ~~`scheduled-ticks` uses **`DiodeBlock` and `RepeaterBlock` for the same block**
   from its first sentence to its last and never relates them; its reader could
-  not judge any finding that turned on it. [kind=voice]
-- `chunk-storage` uses **"lane"** as its central noun — chunk lane, entities
+  not judge any finding that turned on it. [kind=voice]~~ *Done: the opening now says `RepeaterBlock` inherits `DiodeBlock.neighborChanged` — pass 8, session D.*
+- ~~`chunk-storage` uses **"lane"** as its central noun — chunk lane, entities
   lane, IO lane, "three lanes" — 185 lines before it says what one is.
-  [kind=voice]
-- **"Level" runs two ways at once** across `tickets-and-loading`,
+  [kind=voice]~~ *Ruled: *lane* is glossed at its first table use (the `IOWorker` row, one task at a time), and the opening's first use is the image the section later explains — pass 8, session D.*
+- ~~**"Level" runs two ways at once** across `tickets-and-loading`,
   `chunk-storage` and `chunk-generation-pipeline`: a ticket level counts *down*
   toward loaded, and no page says so where a reader first meets it. Both
-  readers of those pages named it. [kind=voice]
-- `points-of-interest`'s catalogue row asks a reader to align thirteen
+  readers of those pages named it. [kind=voice]~~ *Done: *The number line* now says the scale runs down, the lower the level the more is loaded — pass 8, session D.*
+- ~~`points-of-interest`'s catalogue row asks a reader to align thirteen
   `PoiTypes` names against a comma list of thirteen blocks by position, and the
   alignment breaks at the leatherworker's cauldrons. A table or a re-ordering.
-  [kind=voice]
-- `chunk-generation-pipeline` calls the FULL step's dependency list both
+  [kind=voice]~~ *Done: the blocks now follow the names in order — pass 8, session D.*
+- ~~`chunk-generation-pipeline` calls the FULL step's dependency list both
   *eleven* (the index) and *twelve* (the count) throughout. Pick a reading and
-  say it once. [kind=voice]
-- `lighting` says "the upward walk it is known for" — folklore corrected before
-  it is stated. [kind=voice]
+  say it once. [kind=voice]~~ *Ruled: the page states the two readings once, *a radius of 11 is a list of twelve*, and uses each where it is that thing — pass 8, session D.*
+- ~~`lighting` says "the upward walk it is known for" — folklore corrected before
+  it is stated. [kind=voice]~~ *Done: *its upward walk* — pass 8, session D.*
 
-**Cut, with the reason** *(pass 6, session D)* [kind=record]
+~~**Cut, with the reason** *(pass 6, session D)* [kind=record]~~ *Record: the heading of pass 6 session D's cuts, each settled on its own line — pass 8, session D.*
 
-- `fluids`, *Questions players ask*, "Why is my infinite pool not infinite?"
+- ~~`fluids`, *Questions players ask*, "Why is my infinite pool not infinite?"
   and "Why does water refuse to run the way that looks downhill?" — both were
   second tellings of bold body sentences (the first branch of
   `FlowingFluid.getNewLiquid`, and the running-minimum paragraph that is the
   page's hook). Nothing is lost: the body says both, in bold, where they
-  happen. [kind=record]
-- `chunk-generation-pipeline`, *Questions players ask*, "Why is there a limit
+  happen. [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
+- ~~`chunk-generation-pipeline`, *Questions players ask*, "Why is there a limit
   on how far out I can build?" — a second telling of the
   `ChunkPyramid.SAFETY_MARGIN_CHUNKS` paragraph, which keeps the fact because
-  it is where the arithmetic that produces it lives. [kind=record]
-- `lighting`, *Questions players ask*, "Why does breaking one block re-light
+  it is where the arithmetic that produces it lives. [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
+- ~~`lighting`, *Questions players ask*, "Why does breaking one block re-light
   half a room?" and "Does an empty sky section cost anything?" — the first is
   the **Up to 14** number block restated (its one extra clause, that the client
   must re-mesh each, moved into that block); the second was both a second
   telling of *Two 4-bit fields* and the page's one false sentence, corrected in
-  the body it duplicated. [kind=record]
-- `scheduled-ticks`, *Questions players ask*, "I rescheduled the tick for
+  the body it duplicated. [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
+- ~~`scheduled-ticks`, *Questions players ask*, "I rescheduled the tick for
   sooner and nothing changed" and "Why does lava set things alight faster than
   the number of random ticks suggests?" — the first is the opening paragraph
   restated (its one new distinction, what `willTickThisTick` sees that
   `hasScheduledTick` cannot, moved into *What one drain actually does*); the
-  second restates a bold sentence forty lines above. [kind=record]
-- `tickets-and-loading`, *Questions players ask*, "Why does sprinting outrun
+  second restates a bold sentence forty lines above. [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
+- ~~`tickets-and-loading`, *Questions players ask*, "Why does sprinting outrun
   chunk loading?" — three facts, all three in the paragraph that ends *at most
   four view chunks are ever loading at once and they are the four nearest*.
-  [kind=record]
-- `chunk-storage`, *Questions players ask*, "Do the file timestamps mean
+  [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
+- ~~`chunk-storage`, *Questions players ask*, "Do the file timestamps mean
   anything?" — not a question a player asks; the fact moved into *Inside a
-  region file* beside `RegionFile.timestamps`. [kind=record]
-- `world/README`, the hand-forward paragraph — six lines to two. Nothing lost
+  region file* beside `RegionFile.timestamps`. [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
+- ~~`world/README`, the hand-forward paragraph — six lines to two. Nothing lost
   but the sentence saying neither is a dependency, which `check_deps.py`
-  enforces anyway. [kind=record]
+  enforces anyway. [kind=record]~~ *Record: a cut pass 6 session D made and logged — pass 8, session D.*
 
 **For pass 7, the figures.**
 
@@ -489,21 +489,21 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **For pass 8, the voice.**
 
-- `scheduled-ticks`:368 asks the reader to call `TickAccess.hasScheduledTick`
+- ~~`scheduled-ticks`:368 asks the reader to call `TickAccess.hasScheduledTick`
   and :370 says `LevelTicks.hasScheduledTick` "can no longer see" — the same
-  method under two names in one paragraph. [kind=voice]
-- `scheduled-ticks`:377 — "**Does `/tick freeze` stop scheduled ticks?** Yes,
+  method under two names in one paragraph. [kind=voice]~~ *Done: both are `TickAccess.hasScheduledTick` now — pass 8, session D.*
+- ~~`scheduled-ticks`:377 — "**Does `/tick freeze` stop scheduled ticks?** Yes,
   and among the tick commands it is the only one that does" is a claim about a
   command set no page enumerates. Re-derived and found *sound* this session
   against `TickRateManager.runsNormally`, but the population is unnamed, which
-  is the shape pass 8 is hunting. [kind=voice]
-- `tickets-and-loading` names *thirteen* from three different anchors — the
+  is the shape pass 8 is hunting. [kind=voice]~~ *Ruled: the sentence stands; its population is `/tick`'s subcommands (query, rate, step, sprint, freeze and unfreeze, in `TickCommand`), and only freeze sets the frozen flag, re-derived in this pass's check — pass 8, session D.*
+- ~~`tickets-and-loading` names *thirteen* from three different anchors — the
   header line, the walk, and the level-31 ticket. Already logged above as pass-8
-  wording debt; still true after this session's edits. [kind=voice]
-- `points-of-interest`:192, 228 and 333 spell entity events as bare numbers
+  wording debt; still true after this session's edits. [kind=voice]~~ *Ruled: the three name one thirteen, past the edge of view where the ticket sits, and the number device now carries its noun — pass 8, session D.*
+- ~~`points-of-interest`:192, 228 and 333 spell entity events as bare numbers
   ("entity event 14") where `synched-entity-data`:313 says `EntityEvent`
   declares all 62. The one place the book prefers a magic number to a name.
-  [kind=voice]
+  [kind=voice]~~ *Done: both prose numbers now carry the constant, `EntityEvent.VILLAGER_HAPPY` and `EntityEvent.VILLAGER_ANGRY`; the figure keeps the number — pass 8, session D.*
 
 **A coverage question this session could not close.**
 
@@ -1257,8 +1257,8 @@ drop the number.
   character is invented" is true of the wrap path;
   `ComponentRenderUtils.clipText` in the same class appends
   `CommonComponents.ELLIPSIS`. [kind=fact]
-- `world/points-of-interest.md:124` — "**a dozen** shapes" of read-only query
-  is 13 method names / 14 methods. The hedge covers it; *thirteen* reads better.
+- ~~`world/points-of-interest.md:124` — "**a dozen** shapes" of read-only query
+  is 13 method names / 14 methods. The hedge covers it; *thirteen* reads better.~~ *Ruled: *a dozen* is the walks, thirteen of them, and the sentence names the ones it means; `exists` and `getType` are point lookups beside them — pass 8, session D.*
 - ~~`entities/ai-goals-and-brains.md:381,390` — "everything it will ever do" /
   "the twelve": a door-breaking `Zombie` gains a thirteenth goal at
   `Zombie.java:158`, outside `Mob.registerGoals`.~~ **Done, session F (pass
@@ -1275,10 +1275,10 @@ drop the number.
   two pages no inbound edge.~~ **Done, session D (pass 5)**: the superlative is
   gone, replaced by *off the conveyor, ahead of it*, which is what the figure
   draws.
-- `world/chunk-storage.md:203` — "**Three** places do make the server thread [kind=voice]
+- ~~`world/chunk-storage.md:203` — "**Three** places do make the server thread [kind=voice]
   wait on a disk": a fourth blocking join at `ServerChunkCache.java:126`/`149`
   can end at the disk, though it drives the main-thread queue rather than
-  raw-joining the IO lane.
+  raw-joining the IO lane.~~ *Done: *Three places besides a synchronous chunk load* — pass 8, session D.*
 - `client/the-client-level.md:129` — "the chunk cache and **one** packet [kind=voice]
   handler call `LevelExtractor` directly" is right for the dirty-marking path;
   three `ClientPacketListener` sites touch `levelExtractor` in all.
@@ -1393,7 +1393,7 @@ drop the number.
 says "more than twenty ticks have passed" and
 `entities/ai-goals-and-brains.md:335` says "fewer than 21 ticks have passed"
 for the same test, `Brain.java:389` (`gameTime - lastScheduleUpdate > 20L`).
-Both are true; one wording should win.
+Both are true; one wording should win. **IV's share done, pass 8 session D** — `points-of-interest` and `environment-attributes-and-timelines` both say *more than twenty* ticks; the dead-constant half is V6.
 
 **A claim a decompile cannot settle, corpus-wide.** `javac` inlines primitive
 `static final` constants at their use sites, so **"declared and never read" is
@@ -1431,7 +1431,7 @@ which the same page states at :388;
 `blocks/block-interaction.md:182` "three outcomes" is three distinct returned
 states and four branches;
 `blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
-is four *named* steps over five statements. [kind=voice]
+is four *named* steps over five statements. [kind=voice] **IV's share overtaken, pass 8 session D** — `chunk-generation-pipeline`'s *seven of the twelve* is V2's five of ten.
 
 **Two rules for the word *classes*, corpus-wide.** A package's class count is
 one number under two rules — `package-info.java` counted, or not — and the
@@ -1450,13 +1450,13 @@ two rules"; session L settled the Part XII half by adopting the atlas rule; the
 corpus still has both. **Pass 5 (or session O) should pick one and say it once**
 — the natural rule is the one `what-this-book-skips` already states.
 
-**One editorial number worth a look.**
+~~**One editorial number worth a look.**
 `world/environment-attributes-and-timelines.md:5` opens on "at tick 12542 … the
 sun goes under". 12542 is a real keyframe (*monsters_burn*,
 *bees_stay_in_hive*), but the geometric horizon crossing the page's own
 sun-angle Bézier implies is ~12782, and sunrise ~23218 against the 23460
 keyframe. The gameplay flip is about 240 ticks inside the geometric day at each
-end — a better sentence than the one there, if pass 5 wants it. [kind=voice]
+end — a better sentence than the one there, if pass 5 wants it. [kind=voice]~~ *Overtaken: the opening no longer says the sun goes under at 12542; it says the mobs that burn stop being in danger there — pass 8, session D.*
 
 
 ## Session L — Part XII World generation (pass 4) *(2026-09-05)*
@@ -2034,21 +2034,21 @@ fix the vocabulary before the pages.
 
 ## Session D — Part IV The world (pass 4) *(2026-09-04)*
 
-Wording debt from forty-nine fact fixes across eleven pages. Nothing here was
-acted on; pass 4 does not polish. [kind=record]
+~~Wording debt from forty-nine fact fixes across eleven pages. Nothing here was
+acted on; pass 4 does not polish. [kind=record]~~ *Record: the preface to the units under it, each settled on its own line — pass 8, session D.*
 
-**Rewrites to re-read.** Four fixes grew a sentence into a passage:
+~~**Rewrites to re-read.** Four fixes grew a sentence into a passage:~~ *Ruled: the grown rewrites were read again in this pass's check, and the two on this part's pages are settled on their own lines — pass 8, session D.*
 
-- `points-of-interest`'s **hook**. The old one was a clean negative ("two facts
+- ~~`points-of-interest`'s **hook**. The old one was a clean negative ("two facts
   that never speak to each other") and the true replacement is a direction
   ("speak in one direction only … can only take a claim away"), which costs a
   clause and a sentence in the page's densest paragraph. It is now three
-  sentences where it was two. Worth trying as one.
-- `environment-attributes-and-timelines`' **easing paragraph** gained four lines
+  sentences where it was two. Worth trying as one.~~ *Ruled: the hook stands as a direction, checked true this pass, and the clause it costs is the claim — pass 8, session D.*
+- ~~`environment-attributes-and-timelines`' **easing paragraph** gained four lines
   and three numbers (0.67×, 1.19×, 13,564 against 10,436). The day-length fact
   is the better punchline and probably wants to be *in the hook* rather than two
   thirds of the way down a page whose hook is about colour — a structural call,
-  not a wording one.
+  not a wording one.~~ *Second edition: moving the day-length fact into the hook is a restructuring of the opening, not a polish — pass 8, session D.*
 - ~~`chunk-generation-pipeline`'s **radius-11 derivation** now explains~~ [kind=lecture]
   ~~`ChunkStep.Builder.getRadiusOfParent` in the middle of a paragraph that was
   already the page's most arithmetical. The true rule ("a debt counts only when
@@ -2066,7 +2066,7 @@ acted on; pass 4 does not polish. [kind=record]
   section's own subject raises. Kept; the section's real problem was its
   heading, struck above.
 
-**The dead-constant tic.** Four fixes in this part took the same shape: *the
+~~**The dead-constant tic.** Four fixes in this part took the same shape: *the
 number is right, the constant that names it has no readers*, so the prose now
 says so — `AcquirePoi.SCAN_RANGE`, `SculkSensorBlock.ACTIVE_TICKS`,
 `LevelChunkSection.BIOME_CONTAINER_BITS`,
@@ -2074,16 +2074,16 @@ says so — `AcquirePoi.SCAN_RANGE`, `SculkSensorBlock.ACTIVE_TICKS`,
 `ChunkStatus.MAX_STRUCTURE_DISTANCE` which the pipeline page already flagged.
 Five instances of one aside in one part is a tic. Pass 5 should pick one voice
 for it and use it everywhere in the corpus, and probably drop the aside on the
-pages where the constant is not otherwise mentioned.
+pages where the constant is not otherwise mentioned.~~ *Done under V6: no Part IV page now says a constant has no reader, and `AcquirePoi.SCAN_RANGE` is no longer named — pass 8, session D.*
 
-**Named-qualifier debt.** The count corrections replaced round motifs with
+~~**Named-qualifier debt.** The count corrections replaced round motifs with
 awkward ones: "eleven chunks past the edge of view" became "thirteen chunks past
 the ticket that asked for it", and "up to 27 sections across nine chunks" became
 "up to fourteen sections across seven chunk columns". Both are true and neither
 scans. `tickets-and-loading`'s header line was rewritten for the same reason and
 lost its scenario ("a chunk eleven chunks away becomes a ticking part of the
 world" → "a column of chunks thirteen past the edge of view is asked for"); the
-header should get its ticking image back around the true number.
+header should get its ticking image back around the true number.~~ *Ruled: the counts now carry their nouns (**Thirteen chunks**, **Up to fourteen sections**) under V9 — pass 8, session D.*
 
 **Structural findings, not acted on.**
 
@@ -2554,7 +2554,7 @@ correction):
     the session's own tics.
 
 
-- **2026-09-02, session E — Part IV.** *(Pass 6 session E: `pass5_queue.py`
+- ~~**2026-09-02, session E — Part IV.** *(Pass 6 session E: `pass5_queue.py`
   routes this unit to `blocks/block-entities` because the text names it as a
   candidate destination for one of Part IV's cuts. It is a pass-3 log entry, not
   work — tag it `[kind=record]` at the next sweep.)* **The length debt is this session's
@@ -2569,12 +2569,12 @@ correction):
   (arguably `what-the-client-is-told`), and the second half of the
   `ImposterProtoChunk` paragraph; `lighting` — the sky-column section, its
   most self-contained; `environment-attributes-and-timelines` — *what
-  crosses the wire*, or the *what a type allows* subsection;
-  `points-of-interest` — the *who else asks* table; `game-events-and-vibrations`
+  crosses the wire*, or the *what a type allows* subsection;~~ *Record: pass 3 session E's cut log for Part IV, its questions settled by passes 5 and 6 — pass 8, session D.*
+  ~~`points-of-interest` — the *who else asks* table; `game-events-and-vibrations`
   — one *Questions players ask* entry. Nothing above is a factual cut; all of
-  it is length.
+  it is length.~~ *Record: part of the same cut log — pass 8, session D.*
 
-  **Judged whole, pass 6 session D, and mostly declined.** A9 replaced the
+  ~~**Judged whole, pass 6 session D, and mostly declined.** A9 replaced the
   line budget with the hook test, and on that test most of this list survives.
   `chunk-anatomy`'s *what the client actually receives* is the chunk's third
   serialised form beside memory and disk, so it stayed and became an H3 that
@@ -2588,9 +2588,9 @@ correction):
   worth keeping, which is the one it already keeps. What *was* cut is logged
   under **Cut, with the reason (pass 6, session D)** above, and it is six
   closers' worth of second telling rather than any of these. The ten pages came out
-  at 4,185 lines against 4,160 — up, as A9 says a part may be.
+  at 4,185 lines against 4,160 — up, as A9 says a part may be.~~ *Record: judged and mostly declined by pass 6 session D — pass 8, session D.*
 
-  **Cuts made, all of them names rather than claims.** `chunk-anatomy` drops
+  ~~**Cuts made, all of them names rather than claims.** `chunk-anatomy` drops
   `Block.UpdateFlags` as a named catalogue (the four flags the write path
   actually tests survive; the catalogue belongs to `blocks-and-states`),
   `CarvingMask`'s internal shape, `UpgradeData.EMPTY`, and a dozen field
@@ -2617,9 +2617,9 @@ correction):
   class" aside — **which wants a home in `naming-drift`**.
   `environment-attributes-and-timelines` drops the twenty-one-class *called
   by* roster; its author suggests it becomes a Reference table, and session
-  O should rule.
+  O should rule.~~ *Record: the cuts pass 3 session E made — pass 8, session D.*
 
-  **Voice debt.** Eight of the ten pages end their opening paragraph on a
+  ~~**Voice debt.** Eight of the ten pages end their opening paragraph on a
   bolded sentence — the same device session C already flagged for Part II,
   now used corpus-wide, and by pass 5 it will be a tic rather than a
   signature. Two hooks are close cousins in shape ("X does not do the thing
@@ -2628,15 +2628,15 @@ correction):
   in the lecture order. Three pages now carry a *Questions players ask*
   close (`chunk-anatomy`, `lighting`, `points-of-interest`) plus the pilot's,
   which is four in one part; check whether that reads as a part-level
-  convention or a template.
+  convention or a template.~~ *Overtaken: answered by pass 6 session D under A5, in the unit below — pass 8, session D.*
 
-  **Answered, pass 6 session D**: by the time this pass reached the part the
+  ~~**Answered, pass 6 session D**: by the time this pass reached the part the
   closer was on **ten of ten**, which is a template and not a convention, and
   the test in A2 took it to eight. On the bolded ending, A5 asks *does the page
   come back to it* rather than *how many*: six of the ten do come back to it,
   and all six keep it. The two close-cousin hooks are still close cousins and
   are pass 8's — but they are now four lectures apart in the watch order, which
-  is what session E asked for. [kind=voice]
+  is what session E asked for. [kind=voice]~~ *Record: pass 6 session D's answer to the unit above — pass 8, session D.*
 
   ~~**`level-data-and-rules`'s Reference framing is provisional.** Session E~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session D (pass 5), which rewrote the page; no *Responsibility*-era heading remains.
   changed only its header, its links and its opening; it still carries a
@@ -2726,7 +2726,7 @@ was cut or moved, and why)*
   pages where pass 2 had four, so the part is longer, not shorter — the
   length bill for it comes due here.
 
-- **2026-09-02, session A.** `tickets-and-loading`: the *data it owns* [kind=record]
+- ~~**2026-09-02, session A.** `tickets-and-loading`: the *data it owns* [kind=record]
   inventory is gone — `ChunkHolder.queueLevel`, `ChunkMap.unloadQueue`,
   `ChunkMap.serverViewDistance` and `MIN_VIEW_DISTANCE`, `ChunkMap.playerMap`,
   `ChunkMap.getUpdatingChunkIfPresent`, `ServerPlayer.requestedViewDistance`
@@ -2745,7 +2745,7 @@ was cut or moved, and why)*
   resource-pack settings, data packs) is cut; the *Interfaces* callers are
   folded into one sentence. Wording left rough on purpose: both pilots
   still carry em-dash chains in the decision tables' gate cells, and the
-  tickets page says "graph" and "tracker" for the same object.
+  tickets page says "graph" and "tracker" for the same object.~~ *Record: pass 3 session A's cut from `tickets-and-loading` — pass 8, session D.*
 
 
 - ~~**2026-09-02, session C — Parts I and II.** Cuts are names, not claims, [kind=record]
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation.
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4034,7 +4034,7 @@ that takes it. Everything session F did act on is struck above or logged in
   `ai-goals-and-brains`:339 "fewer than 21 ticks", `points-of-interest`:236 [kind=voice]
   "more than twenty ticks", `environment-attributes-and-timelines`:384 "more
   than 20 game ticks". (This is already logged at :805-809; the third
-  spelling is new.)
+  spelling is new.) **IV's two done, pass 8 session D** — both say *more than twenty*; `ai-goals-and-brains`' *fewer than 21* is session F's.
 - `pathfinding`:33-35 and `ai-goals-and-brains`:135-138 share the sentence
   *there is not a future, an executor or a thread anywhere in…* verbatim. The
   two are a declared pair, so the repetition may be deliberate; it reads as an
@@ -5060,11 +5060,11 @@ for other passes and the cuts it logged.*
 
 ### Cuts logged (nothing dropped without a line here)
 
-- **The fourteen `AttributeTypes` names, spelled out** —
+- ~~**The fourteen `AttributeTypes` names, spelled out** —
   `world/environment-attributes-and-timelines`. An inventory a reader cannot
   hold and nothing later on the page needed more than three of; the sentence
   now names the four families and their sizes. The names live in the class
-  index. [kind=record]
+  index. [kind=record]~~ *Record: a cut pass 6 session A made (the count is fifteen now) — pass 8, session D.*
 - **The modifier-library roll call** — same page: `BooleanModifier`'s six
   gates, `FloatModifier`'s six operations, `ColorModifier`'s four (with
   `ColorModifier.BlendToGray` and `FloatWithAlpha`) and `IntegerModifier`, all
@@ -5163,11 +5163,11 @@ for other passes and the cuts it logged.*
 
 ### For pass 8 (the voice)
 
-- **`world/environment-attributes-and-timelines`:83-86** — *"rain at
+- ~~**`world/environment-attributes-and-timelines`:83-86** — *"rain at
   `Level.getRainLevel` minus the thunder level, so a thunderstorm never
   counts twice"* packs two blends and a subtraction into one clause, and the
   subtraction reads as applying to the value rather than to the rain layer's
-  weight. Re-derived and true; the sentence is the problem. [kind=voice]
+  weight. Re-derived and true; the sentence is the problem. [kind=voice]~~ *Done: the subtraction is its own sentence — pass 8, session D.*
 - **Same page, the `ClientboundSetTimePacket` paragraph** — one sentence
   carrying the full sync, the per-mutator broadcast and the routine empty-map
   broadcast, joined by *and … and … but*; the reader lost the subject.
@@ -6719,28 +6719,28 @@ Part 3; these are the pieces of work that ruling created.
   and `check_mermaid.js --probe` now gates it with six cases. Session O should
   read it as the shape to look for: **a standard whose only enforcement is the
   stylesheet is a standard nothing checks.** [kind=record]~~ *Record: the caption rule is in `TEMPLATE.md` and gated by `check_mermaid.js` — pass 8, session C.*
-- **An explicit `<br/>` turns the theme's wrap off for the whole label.** F18
+- ~~**An explicit `<br/>` turns the theme's wrap off for the whole label.** F18
   sends part sessions to break a long name in a message, and doing that to a
   message that carries any other words makes the figure *wider*: four such
   repairs took `world/lighting`'s trace from 0.69 to 0.55 and its type from
   11.1px to 8.8px, and removing them put it back. F18's three options are now in
-  their measured order and `TEMPLATE.md` says why. [kind=record]
-- **A subgraph title is clipped to one wrapped line, silently.** Mermaid wraps
+  their measured order and `TEMPLATE.md` says why. [kind=record]~~ *Record: a pass 7 finding about figures, acted on there — pass 8, session D.*
+- ~~**A subgraph title is clipped to one wrapped line, silently.** Mermaid wraps
   the title at the theme's width and draws only the first line, so
   `chunk-generation-pipeline`'s nested-ring pyramid lost *STRUCTURE_STARTS: 23
   by 23, 529 chunks* and its innermost ring lost its whole status name. About
   twenty-five characters is the budget; the rest goes in the caption.
   `TEMPLATE.md`'s *What mermaid 11.6.0 rejects* has it, with the second rule
   the same page found — **no second colon in a `stateDiagram-v2` transition**,
-  which fails the parse outright. [kind=record]
-- **Seven lanes is 0.70 and 11.2px, exactly.** Five of Part IV's twenty-seven
+  which fails the parse outright. [kind=record]~~ *Record: a pass 7 finding about figures, acted on there — pass 8, session D.*
+- ~~**Seven lanes is 0.70 and 11.2px, exactly.** Five of Part IV's twenty-seven
   figures are still below 0.75 and every one of them is a seven-lane sequence
   diagram with no label over twelve words — the arithmetic F7's amendment
   states, met. Nothing but folding a lane moves them, and folding one is worth
   about 0.10 (`fluids` 0.68 → 0.79, `scheduled-ticks` 0.97 → 1.00). Session O
   should read *shrunk below 0.75* against the lane count before treating it as
-  a fault. [kind=record]
-- **Part IV's ten sections that asked a viewer for a figure**, none of them
+  a fault. [kind=record]~~ *Record: a pass 7 finding about figures, acted on there — pass 8, session D.*
+- ~~**Part IV's ten sections that asked a viewer for a figure**, none of them
   drawn: `chunk-anatomy`'s *The permit, and what happens to the thread that
   misses it*; `chunk-storage`'s *The way back in*; `environment-attributes`'
   *Arguments, not values*; `fluids`' *Four searches, and the losers still
@@ -6753,8 +6753,8 @@ Part 3; these are the pieces of work that ruling created.
   two that are a page's own hook carried entirely in prose** — *Arguments, not
   values* and *Four searches* — and the one that is a tool job rather than a
   drawing job is *The number line*, a 0–45 scale with bands, which mermaid
-  cannot draw and `map_source.py` could. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
-- **`chunk-anatomy`'s origin branch, cut.** The old first figure drew where
+  cannot draw and `map_source.py` could. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: ten new figures are new material, which pass 8 does not add (R10) — pass 8, session D.*
+- ~~**`chunk-anatomy`'s origin branch, cut.** The old first figure drew where
   each of the four shapes comes from — `ChunkMap.createEmptyChunk`,
   `SerializableChunkData.parse` on the pool, the stored-status-full read that
   builds a `LevelChunk` and wraps it, and the lookup that finds nothing. All of
@@ -6762,7 +6762,7 @@ Part 3; these are the pieces of work that ruling created.
   the paragraph beneath states; the two construction sites belong to
   `chunk-generation-pipeline` and `chunk-storage` by F11. Cut rather than
   moved, because both owner pages already trace their own half.
-  [kind=record]
+  [kind=record]~~ *Record: a pass 7 finding about figures, acted on there — pass 8, session D.*
 
 ## Pass 7, session E — Part V · Blocks *(2026-09-15)*
 
@@ -7182,10 +7182,10 @@ pass 4's close found.
 
 **Reopened by the audit.**
 
-- `world/fluids`' bucket sequence still spends `Block.UPDATE_SKIP_ON_PLACE`,
+- ~~`world/fluids`' bucket sequence still spends `Block.UPDATE_SKIP_ON_PLACE`,
   *the drain* and *the shape pass* before the prose defines them (:128–140;
   the flag's first sentence is :171). F6: a sentence above the figure, or the
-  names out of it. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  names out of it. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Done: the figure's early terms now say what they are (*which these flags do not skip*, *the fluid queue*), and the shape pass left the figure with the fluids correction — pass 8, session D.*
 - Three names are still figure-only in Part V:
   `DefaultRedstoneWireEvaluator.calculateTargetStrength`
   (`signal-and-dust`:47), `PistonBaseBlock` (a lane, `signal-and-dust`:227) and

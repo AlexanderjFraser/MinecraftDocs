@@ -50,12 +50,13 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, and D on 2026-09-27** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
 and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III, and the audit of its own
-record 38 more — and D onward have not. After it, nothing more is done here except a
+record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record — and E onward
+have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -483,3 +484,14 @@ understood; recording is after the release.
   ban's first login throws; the spawn search's stride). `reference/threads`, `TEMPLATE.md`'s `Main` lane row and
   pass3.md §7 corrected with them; fourteen sentences on other parts' pages handed to D, F, I, M, N and O.
   Deployed.
+
+- **2026-09-27, pass 8, session D — Part IV · The world (Opus).** Eleven pages checked under Part 2, one agent
+  per page, and the part read whole: **284 corrections**, every one re-derived in the tree (43 inside a figure or
+  a caption; seven 26.3 changes V1 and V2 missed, and four sentences the version pass left beside a fact it
+  moved). The 114 ledger entries struck, 27 of 111 found wrong in whole or in part; 47 queue units settled. The
+  record audited by one agent per page, which found **76 of the errors, 55 in sentences the session had just
+  written** — C's lesson at twice C's rate. One probable upstream bug written as mechanism (`fluids`: lava's ×4
+  spread delay is booked after the write and dropped as a duplicate). Four pages in other parts corrected with it
+  (`server/starting-a-server`, `server/server-tick`, the glossary twice, `rendering/lightmap-fog-and-sky`);
+  `world/level/blockscan` and the modifier classes into pass3.md §7; sentences on other parts' pages handed to E,
+  F, I, J, L, M and O. Deployed.

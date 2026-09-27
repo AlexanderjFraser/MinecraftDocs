@@ -22,10 +22,10 @@ re-encodes all 4,096 entries into a wider storage before it can be written.**
 |---|---|---|
 | `ChunkAccess` | everything a chunk has whatever its shape: position, height, sections, heightmaps, block entities, structures, the two volatile flags | abstract — whichever thread owns the shape below |
 | `ProtoChunk` | a chunk under construction: status, entities as NBT, the light engine it reports to | written on the worker pool, one writer at a time |
-| `LevelChunk` | a chunk that is part of a `Level`: block entities, tickers, tick containers, the full-status supplier | the server thread — on the client, the client's main thread |
-| `ImposterProtoChunk` | what a still-generating neighbour sees when the chunk it asked for is already live | the server thread |
+| `LevelChunk` | a chunk that is part of a `Level`: block entities, tickers, tick containers, the full-status supplier | the Server thread — on the client, the Render thread |
+| `ImposterProtoChunk` | what a still-generating neighbour sees when the chunk it asked for is already live | built on the Server thread, read by a neighbour's step on the worldgen worker |
 | `LevelChunkSection` | 16×16×16: two palette containers and four counters that let a whole section be skipped | whichever thread holds its permit |
-| `PalettedContainer` | the mapping from 4,096 (or 64) entries to values, and when to widen it | one writer at a time — a second is detected rather than blocked, and both threads die; reads are lock-free |
+| `PalettedContainer` | the mapping from 4,096 (or 64) entries to values, and when to widen it | one writer at a time — a second is detected, blocks, and both threads die; reads are lock-free |
 | `Strategy` | which palette and which bit width each entry count deserves, for block states and for biomes | immutable, shared by every container in the level |
 | `Heightmap` | the top of each of 256 columns, for one definition of *top* | with the chunk that owns it |
 
@@ -44,11 +44,11 @@ classDiagram
     }
     class LevelChunk {
         part of a Level
-        owned by the server thread
+        owned by the Server thread
     }
     class ImposterProtoChunk {
         what a still-generating neighbour is handed
-        reads delegate, writes are dropped
+        sections shared, most other writes dropped
     }
     class EmptyLevelChunk {
         void air, one fixed biome
@@ -67,8 +67,9 @@ and the solid one is a wrapper holding the chunk it pretends to be. The two
 subclasses hang off different parents, which is the thing to look at — an
 imposter is a proto chunk and an empty chunk is a live one.*
 
-The diagram is the hierarchy and nothing else, because the hierarchy is short
-enough to be the whole truth. `ChunkAccess` is the abstract chunk and has
+The diagram is the hierarchy and the two links across it, because the
+hierarchy is short enough to be the whole truth. `ChunkAccess` is the abstract
+chunk and has
 exactly two direct concrete lines — `ProtoChunk` (`ChunkType.PROTOCHUNK`) and `LevelChunk`
 (`ChunkType.LEVELCHUNK`) — with `ImposterProtoChunk` a subclass of the first
 and `EmptyLevelChunk` of the second. Nothing else extends it.
@@ -80,10 +81,13 @@ are, and the overworld's −64 and 384 give `LevelHeightAccessor.getSectionsCoun
 of **24**, section Y −4 through 19. Beside them sit the heightmaps, the block
 entities in two maps (`ChunkAccess.blockEntities` live, `ChunkAccess.pendingBlockEntities`
 still NBT, `ChunkAccess.getBlockEntitiesPos` the union),
-`ChunkAccess.structureStarts` and `ChunkAccess.structureReferences`, the per-section `ChunkAccess.postProcessing` offsets to revisit
+`ChunkAccess.structureStarts` and `ChunkAccess.structureReferences`, the
+per-section `ChunkAccess.postProcessing` offsets to revisit
 after load (`ProtoChunk.packOffsetCoordinates` packs four bits each of x, y
 and z into a short), `ChunkAccess.inhabitedTime` behind local difficulty
-([the level tick](../server/server-level-tick.md#two-chunk-sets-and-two-different-mob-caps)), `ChunkAccess.upgradeData`
+([the level
+tick](../server/server-level-tick.md#two-chunk-sets-and-two-different-mob-caps)),
+`ChunkAccess.upgradeData`
 and the nullable `ChunkAccess.blendingData` whose presence *is*
 `ChunkAccess.isOldNoiseGeneration` ([blending](../worldgen/blending.md)),
 and two *volatile* flags —
@@ -129,12 +133,12 @@ change without scanning. Its `LevelChunk.getPersistedStatus` is always
 holder for "the chunk at status X" and must be handed something
 `ProtoChunk`-typed even when that chunk is already live. Reads delegate to
 `ImposterProtoChunk.getWrapped`; writes are dropped unless *allowWrites*,
-which both of the two places that construct one pass as **false**, so
-every write to an imposter is dropped — heightmaps, structure starts and
+which both of the two places that construct one pass as **false** — heightmaps, structure starts and
 references and block-entity NBT unconditionally, and the rest for want of the
-flag. `ImposterProtoChunk.getSections` hands back the wrapped
-chunk's array unconditionally — only the single-section
-`ImposterProtoChunk.getSection` is gated — while
+flag. The sections are the exception: `ImposterProtoChunk.getSections` hands
+back the wrapped chunk's array unconditionally, and the single-section
+`ImposterProtoChunk.getSection`, though gated on the flag, falls back to that
+same array, so a write through a section lands on the live chunk; and
 `ImposterProtoChunk.markUnsaved` and `ImposterProtoChunk.setLightCorrect`
 always pass through and `ImposterProtoChunk.canBeSerialized` is false,
 because the `LevelChunk` under it is what gets saved. Its
@@ -162,13 +166,14 @@ added and removed sets are the renderer's feed of which sections exist.
 
 ## Sections and their four counters
 
-A chunk is four things nested inside each other, and the four counters hang off
-the middle one. Here is the whole of what one holds.
+A chunk's block storage is four things nested inside each other — the chunk,
+its sections, each section's containers and each container's data — and the
+four counters hang off the second. Here is the whole of it.
 
 ```mermaid
 flowchart TD
     LC["LevelChunk: one 16 by 16 column of the build height"]
-    HM["four Heightmaps, 256 entries of 9 bits each"]
+    HM["at least four Heightmaps, 256 entries of 9 bits each"]
     ARR["ChunkAccess.sections: 24 LevelChunkSection in the overworld, never a null slot"]
     CNT["four shorts: non-empty blocks, fluids, and a ticking count of each"]
     ST["LevelChunkSection.states: PalettedContainer of BlockState, 4,096 entries"]
@@ -184,10 +189,11 @@ flowchart TD
     BIO --> D2
 ```
 
-*Everything a chunk holds, down to the bit storage. The two containers of a
-section have a `PalettedContainer.Data` each and never share one; the four
-counters hang off the section rather than the containers, which is why they can
-answer without touching either. Nothing in this picture is light — the two 4-bit
+*A chunk's block storage, down to the bit storage: the two containers of a
+section have a `PalettedContainer.Data` each and never share one, and the four
+counters hang off the section rather than the containers, which is why they
+can answer without touching either. Nothing in this picture is light — the two
+4-bit
 fields live in the light engine's own storage, not on the section
 ([lighting](lighting.md#one-batch-and-what-it-publishes)).*
 
@@ -218,10 +224,9 @@ changed since the chunk arrived. The sole reader of
 random ticks.
 
 Biomes share the section but are coarse and read-only.
-Two bits per axis, 64 entries of 4×4×4 blocks each — the number
-`LevelChunkSection.BIOME_CONTAINER_BITS` names, though the 2 that matters is
-the literal in `Strategy.createForBiomes` and no reader of the constant
-survives the decompile. The field is a `PalettedContainerRO` and the
+Two bits per axis, 64 entries of 4×4×4 blocks each — the 2
+`LevelChunkSection.BIOME_CONTAINER_BITS` names. The field is a
+`PalettedContainerRO` and the
 *published* one is never mutated: `LevelChunkSection.fillBiomesFromNoise`,
 `LevelChunkSection.read` and `LevelChunkSection.readBiomes` each build a
 replacement through `PalettedContainerRO.recreate`, fill it, and swap the
@@ -230,14 +235,17 @@ place.
 
 Two different copies leave a section. The saver takes
 `LevelChunkSection.copy`, a deep copy of both containers and all four
-counters, on the server thread inside `SerializableChunkData.copyOf` — the
+counters, on the Server thread inside `SerializableChunkData.copyOf` — the
 IO lane never sees a live section, and even the NBT encoding of the copy
 runs on the background pool ([copy on the server, encode on a worker, write on
-the IO lane](chunk-storage.md#copy-on-the-server-encode-on-a-worker-write-on-the-io-lane)). The client
+the IO
+lane](chunk-storage.md#copy-on-the-server-encode-on-a-worker-write-on-the-io-lane)).
+The client
 mesher takes something cheaper: a `SectionCopy` takes `PalettedContainer.copy`
 of the block-state container alone (nothing at all when the section is air)
 plus an immutable snapshot of the chunk's block-entity map. A worker that
-means to write instead brackets its work with `LevelChunkSection.acquire`
+means to write many blocks at once instead brackets its work with
+`LevelChunkSection.acquire`
 and `LevelChunkSection.release`.
 
 ### The permit, and what happens to the thread that misses it
@@ -253,10 +261,11 @@ re-throws the same report the instant the permit comes free. Both threads die,
 deliberately: an interleaved section write would be a corrupt world rather than
 a crash.
 
-Exactly one thread writes a section at a time, then — the server thread for a
-live chunk, and on the worker pool whoever holds
-`LevelChunkSection.acquire`: either `NoiseBasedChunkGenerator`, which holds
-every section across its noise range, or the `BulkSectionAccess` that
+Exactly one thread writes a section at a time, then — the Server thread for a
+live chunk, and on the worker pool whoever holds the permit: most generation
+takes it for one write at a time, and two hold it across many through
+`LevelChunkSection.acquire`, `NoiseBasedChunkGenerator`, which holds every
+section across its noise range, and the `BulkSectionAccess` that
 `OreFeature`, its only user, holds over every section it touches until it
 closes. Those hold the permit already, so they write through the unchecked
 five-argument `LevelChunkSection.setBlockState` and
@@ -271,9 +280,10 @@ takes no lock, because a resize swaps in a whole new record rather than
 editing the old one. `PalettedContainer.read` from the wire is the exception
 that proves it: `PalettedContainer.createOrReuseData` hands back the *existing*
 record whenever the incoming bit count wants the same configuration, and the
-palette and the long array are then overwritten in place — which is the
-ordinary case on a client, where `ClientChunkCache` reuses the live
-`LevelChunk`. Which record a given entry count deserves is
+palette and the long array are then overwritten in place — and on a client the
+record overwritten can be one already in use, whenever `ClientChunkCache`
+reuses a `LevelChunk` it still holds
+at that position. Which record a given entry count deserves is
 decided by a top-level `Strategy` — no longer nested inside the container —
 whose `Strategy.createForBlockStates` and `Strategy.createForBiomes` are
 called once per level by `PalettedContainerFactory.create` over
@@ -297,19 +307,22 @@ second arrives — which for block states means jumping straight to the 4-bit
 rung. `LinearPalette` is a flat array of *2^bits* slots scanned by identity,
 `HashMapPalette` a `CrudeIncrementalIntIdentityHashBiMap`, and
 `GlobalPalette` writes nothing on the wire, maps an unknown value to id 0
-and answers `Palette.maybeHas` with an unconditional yes. Each of them calls
-`PaletteResize.onResize` when it fills, and the container *is* its own
+and answers `Palette.maybeHas` with an unconditional yes. Each of the first
+three calls `PaletteResize.onResize` when it fills, and the container *is* its
+own
 `PaletteResize`: `PalettedContainer.onResize` builds the next record,
-`PalettedContainer.Data.copyFrom` walks every entry of the old storage
-through the old palette into the new one, the record is published, and only
+`PalettedContainer.Data.copyFrom` walks every entry of the old storage through
+the old palette into the new one (or, from a single value, fills), the record
+is published, and only
 then is the value that triggered the growth added — under
 `PaletteResize.noResizeExpected`, which throws if a second growth were
 somehow needed.
 
 The palette is also what lets a search rule out a section it never reads.
 `LevelChunkSection.maybeHas` puts a predicate to the palette alone, so
-`ChunkAccess.findBlocks` — and the points-of-interest scan behind it — can
-dismiss 4,096 blocks with a handful of comparisons. The one rung where that
+the scan for block-light sources behind `ChunkAccess.findBlockLightSources`,
+and the points-of-interest check on a loaded chunk, can dismiss 4,096 blocks
+with a handful of comparisons. The one rung where that
 stops paying is `Configuration.Global`, whose `Palette.maybeHas` is an
 unconditional yes.
 
@@ -329,7 +342,8 @@ bits byte, the palette, a fixed-size long array at exactly the in-memory
 width. `PalettedContainer.pack` is the disk (the *palette* and optional
 *data* fields of a `PalettedContainerRO.PackedData`, behind
 `PalettedContainer.codecRW` and
-`PalettedContainer.codecRO` — [codecs](../foundations/codecs-nbt-json.md#disk-a-chest-writes-a-list-of-slots)),
+`PalettedContainer.codecRO` —
+[codecs](../foundations/codecs-nbt-json.md#disk-a-chest-writes-a-list-of-slots)),
 and it re-encodes into a fresh `HashMapPalette` before asking
 `Strategy.getConfigurationForPaletteSize` for the width — **the same ladder
 memory climbs**. What packing recomputes is the *palette*: unreferenced entries
@@ -356,16 +370,19 @@ tags. The writer pre-sizes that buffer from the sum of
 byte, and the reader refuses anything over two megabytes. Light rides beside
 it in `ClientboundLightUpdatePacketData`.
 
-The client applies the lot through `ClientPacketListener.handleLevelChunkWithLight` →
+The client applies the chunk through `ClientPacketListener.handleLevelChunkWithLight` →
 `ClientChunkCache.replaceWithPacketData` → `LevelChunk.replaceWithPacketData`,
 which clears the block entities, gives each section `LevelChunkSection.read`,
 installs the raw heightmaps with `ChunkAccess.setHeightmap` and rebuilds the
-sky-light sources. Biome-only refreshes come later as
+sky-light sources, while the light it carries is queued, for
+`ClientLevel.pollLightUpdates` to apply later in the same frame unless a
+backlog is ahead of it.
+Biome-only refreshes come later as
 `ClientboundChunksBiomesPacket` → `LevelChunk.replaceBiomes`, and the
 block-entity tags travel as
 `ClientboundLevelChunkPacketData.BlockEntityInfo`. When a chunk is sent, and
-to whom, is [what the client is
-told](../networking/what-the-client-is-told.md#what-a-chunk-packet-carries)'s.
+to whom, belongs to [what the client is
+told](../networking/what-the-client-is-told.md#what-a-chunk-packet-carries).
 
 ## The six heightmaps
 
@@ -385,10 +402,10 @@ transparent was the top one.
 |---|---|---|---|---|
 | `Heightmap.Types.WORLD_SURFACE_WG` | not air | `Heightmap.Usage.WORLDGEN` | proto only | no |
 | `Heightmap.Types.WORLD_SURFACE` | not air | `Heightmap.Usage.CLIENT` | yes | yes |
-| `Heightmap.Types.OCEAN_FLOOR_WG` | blocks motion | `Heightmap.Usage.WORLDGEN` | proto only | no |
-| `Heightmap.Types.OCEAN_FLOOR` | blocks motion | `Heightmap.Usage.LIVE_WORLD` | yes | **no** |
-| `Heightmap.Types.MOTION_BLOCKING` | blocks motion or holds fluid | `Heightmap.Usage.CLIENT` | yes | yes |
-| `Heightmap.Types.MOTION_BLOCKING_NO_LEAVES` | the same, but not a `LeavesBlock` | `Heightmap.Usage.CLIENT` | yes | yes |
+| `Heightmap.Types.OCEAN_FLOOR_WG` | in `BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP` | `Heightmap.Usage.WORLDGEN` | proto only | no |
+| `Heightmap.Types.OCEAN_FLOOR` | in the same tag | `Heightmap.Usage.LIVE_WORLD` | yes | **no** |
+| `Heightmap.Types.MOTION_BLOCKING` | in that tag, or holds fluid | `Heightmap.Usage.CLIENT` | yes | yes |
+| `Heightmap.Types.MOTION_BLOCKING_NO_LEAVES` | in `BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES`, or holds fluid | `Heightmap.Usage.CLIENT` | yes | yes |
 
 Which of the six a chunk carries follows its status:
 `ChunkStatus.heightmapsAfter` is the two *_WG* maps through
@@ -398,14 +415,16 @@ exactly those four. A `ProtoChunk` primes any of its status's maps that are
 missing the first time a block is written. What is *saved*, though, is not
 `Heightmap.Types.keepAfterWorldgen`: the saver writes every heightmap the
 chunk **holds**, so a proto chunk saves its two *_WG* maps along with any it
-has primed since, and a `LevelChunk` saves the four it was built with. Separately and privately,
+has primed since, and a `LevelChunk` saves the four it was built with and any
+asked for since, which `ChunkAccess.getHeight` primes on demand. Separately
+and privately,
 `ChunkAccess.skyLightSources` is a *second* 256-entry bit storage — a
 `ChunkSkyLightSources` — that only the sky-light engine reads
 ([the sky column is a table, not a flood](lighting.md#the-sky-column-is-a-table-not-a-flood)).
 
 ## What placing a block actually does
 
-`LevelChunk.setBlockState` is the one write path into a live chunk, and its
+`LevelChunk.setBlockState` is the ordinary write path into a live chunk, and its
 order matters more than any single step in it. Twelve steps, of which **three**
 consult the caller's flag word — and one of those three has only a part of
 itself skipped. The bits are enumerated in [block update
@@ -423,47 +442,56 @@ flags](../../reference/block-update-flags.md):
 | 8 | `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` | when the block did not change and the new one is no `BaseRailBlock`, off the server, or without `Block.UPDATE_NEIGHBORS` and not moved by a piston |
 | 9 | the section is re-read — if step 8 changed the block again, the call returns null | — |
 | 10 | `BlockBehaviour.BlockStateBase.onPlace` | on the client, or under `Block.UPDATE_SKIP_ON_PLACE` |
-| 11 | the new block entity is created or re-validated, and its ticker rebound | when the new state has no block entity |
+| 11 | the new block entity is created or re-validated, and its ticker rebound | when the new state has no block entity, or step 10 changed the block |
 | 12 | `LevelChunk.markUnsaved` | — |
 
 One step there is easy to misread. Step 9 exists because step 8 runs arbitrary
 block code that may write the same position again, and
-`LevelChunk.setBlockState` will not claim a placement it no longer owns —
+`LevelChunk.setBlockState` will not claim a placement step 8 took from it —
 which is the sharpest thing this write path says about itself: it is the only
 step whose whole job is to notice that the world moved underneath it. Step 8's
 own place in the wider update story, and the shape updates and redstone
-notifications that fire only *after* the chunk returns, are [back in
-`Level.setBlock`'s tail](../blocks/blocks-and-states.md#back-in-levelsetblocks-tail)'s.
+notifications that fire only *after* the chunk returns, are told in [back in
+`Level.setBlock`'s
+tail](../blocks/blocks-and-states.md#back-in-levelsetblocks-tail).
 
 `ProtoChunk.setBlockState` is the same idea with everything live stripped
 out: section write, light only past `ChunkStatus.INITIALIZE_LIGHT`, the
-status's heightmaps updated (primed first if absent), and no block entity,
+status's heightmaps updated (and any absent primed after the write), and no
+block entity,
 no `BlockBehaviour.BlockStateBase.onPlace`, no neighbours at all.
 
 ### What step 11 leaves behind, and what the chunk goes on holding
 
 The ticker step matters to a chunk's anatomy for one reason: the handle it
-creates belongs to the chunk and outlives the block entity in it.
+creates belongs to the chunk, not to the block entity in it.
 `LevelChunk.addAndRegisterBlockEntity` puts a wrapper in
-`LevelChunk.tickersInLevel`, and the level's flat ticker list holds *that*, so
-one entry per position stands for the life of the chunk however many times the
-thing at the position is replaced. What the wrappers are and how the level's
-list prunes itself is [loaded is not enough to
-tick](../blocks/block-entities.md#loaded-is-not-enough-to-tick)'s.
+`LevelChunk.tickersInLevel`, and the level's flat ticker list holds *that*: a
+block entity swapped in place, or kept through a state change, is rebound into
+the same wrapper, and one that is removed takes its wrapper out of the map and
+rebinds it to nothing, which the level's list then drops. What the wrappers
+are and how the level's list prunes itself is told in [loaded is not enough to
+tick](../blocks/block-entities.md#loaded-is-not-enough-to-tick).
 
-The other thing step 11 leaves is a debt to be paid when the chunk goes live:
+The other thing the chunk goes on holding is a debt from generation (and, for
+a chunk from an old save, from its upgrade), paid when
+the chunk starts ticking:
 `LevelChunk.postProcessGeneration` replays the post-processing offsets,
 promotes every pending block entity and applies `UpgradeData.upgrade`.
 
-*Pending* is the word to take seriously. A chest in a chunk freshly read from
-disk is not a `BlockEntity` yet; it is a `CompoundTag` in
+*Pending* is the word to take seriously. A block entity placed during
+generation that nothing has asked for since, every one in a half-generated
+chunk read back from disk, and one saved while still pending are not
+`BlockEntity`s yet (a structure's loot chest is made live when its loot table
+is set, and a full chunk read from disk makes the rest live as it loads); each
+is a `CompoundTag` in
 `ChunkAccess.pendingBlockEntities` ([block
 entities](../blocks/block-entities.md#create-keep-replace-remove)). Any call to
-`LevelChunk.getBlockEntity` promotes it through
+`LevelChunk.getBlockEntity` promotes one through
 `LevelChunk.promotePendingBlockEntity` on the first touch, whatever the
 `LevelChunk.EntityCreationType` asked for; `LevelChunk.postProcessGeneration`
-and `LevelChunk.registerAllBlockEntitiesAfterLevelLoad` promote the rest in
-bulk when the chunk goes live. Of the three creation types only
+promotes the rest in bulk when the chunk starts ticking. Of the three creation
+types only
 `LevelChunk.EntityCreationType.IMMEDIATE` and
 `LevelChunk.EntityCreationType.CHECK` have callers left in the game —
 `LevelChunk.EntityCreationType.QUEUED` has none.

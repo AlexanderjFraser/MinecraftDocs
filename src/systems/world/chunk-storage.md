@@ -8,15 +8,16 @@ no longer reachable from any ticket, its loading level climbs past
 that to a worker to turn into NBT, and hands *that* to a lane that
 compresses it and finds it somewhere to live in *r.X.Z.mca*. Nothing about
 that is surprising. What is surprising is that the chunk was almost
-certainly written several times before you left, and that neither of those
-writes was anybody's idea. A chunk you keep changing is written by a
+certainly written several times before you left, and that none of those writes
+was anybody's idea. A chunk you keep changing is written by a
 background sweep roughly every ten seconds — `ChunkMap.saveChunksEagerly`,
 at most `ChunkMap.CHUNK_SAVED_EAGERLY_PER_TICK` (20) chunks a tick, only
 while fewer than `ChunkMap.MAX_ACTIVE_CHUNK_WRITES` (128) writes are in
 flight, each chunk no sooner than
 `ChunkMap.EAGER_CHUNK_SAVE_COOLDOWN_IN_MILLIS` (10 000 ms) after its last —
-and the autosave everyone thinks of as *the* save is five minutes of wall
-clock whatever `/tick rate` says. **Almost every write of your world is one
+and the autosave everyone thinks of as *the* save comes every five minutes of
+the server's scheduled time, at any steady `/tick rate`. **Almost every write
+of your world is one
 nobody asked for.**
 
 ## The cast
@@ -28,7 +29,7 @@ nobody asked for.**
 | `IOWorker` | one store's single lane, and the write-behind map that lets a read answer from a write that has not landed | any *IO-Worker-n*, one task at a time |
 | `RegionFileStorage` | which *r.X.Z.mca* files are open — an LRU of `RegionFileStorage.MAX_CACHE_SIZE` (256) | the IO lane |
 | `RegionFile` | the sector allocator and the two header tables of one 32×32-chunk file, and the order the bytes land in | the IO lane |
-| `EntityStorage` | the *entities/* store: what a chunk's mobs cost to write, and that they are rebuilt on the server thread | Server builds and parses, IO lane writes |
+| `EntityStorage` | the *entities/* store: what a chunk's mobs cost to write, and that they are rebuilt on the Server thread | Server builds and parses, IO lane writes |
 | `SectionStorage` | the *poi/* store under `PoiManager`: which sections are dirty, and the one load that blocks | Server |
 | `MinecraftServer` | when the next autosave falls, and whether every region file is opened with DSYNC | Server |
 
@@ -49,17 +50,20 @@ flowchart LR
     R --> D
 ```
 
-*One chunk saved, across the three threads that touch it, coloured by which one.
-The server's share is the first box alone, and it ends at a snapshot: everything
-to the right of it happens after the tick that decided to save has moved on. The
-two middle boxes are the same lane at two priorities — the foreground call parks
-the tag in `IOWorker.pendingWrites` and returns, and the background one runs
-only when nothing is queued in front of it, which is why a write can sit there
-for a long time and cost nobody anything.*
+*One chunk saved, across the three lanes that touch it, coloured by which one:
+the server's share for a full chunk is the first box alone, and it ends at a snapshot, so
+everything to the right of it happens after the tick that decided to save has
+moved on. The two middle boxes are the same lane at two priorities — the
+foreground task waits for the encode and parks the tag in
+`IOWorker.pendingWrites`, and the background one runs only when nothing is
+queued in front of it, which is why a write can sit there for a long time and
+cost the Server thread nothing.*
 
-That figure is the page's answer to *why doesn't saving lag the server*. Apart from
-flushing the position's POI section, the server thread's whole share of a
-save is the middle of `ChunkMap.save`: `SerializableChunkData.copyOf`, which copies every `LevelChunkSection` with
+That figure is the page's answer to *why doesn't saving lag the server*. Apart
+from flushing the chunk's POI column and, for a chunk that is not full, the
+guard's read, the Server thread's whole share of a
+save is the middle of `ChunkMap.save`: `SerializableChunkData.copyOf`, which
+copies every `LevelChunkSection` with
 `LevelChunkSection.copy` and each non-empty block and sky `DataLayer` out of
 `LevelLightEngine.getLayerListener`, clones every heightmap the chunk
 holds, pulls block-entity NBT through
@@ -94,28 +98,28 @@ an old save still has entities inside a full chunk's *region/* entry,
 ### The other store under *data/*
 
 `SavedDataStorage` is the fourth folder and the one that is not a region
-store: no sectors, no LRU of open files, one gzipped `<id>.dat` per thing
-that has state. It saves on the same principle as a chunk, and for the same
-reason. `SavedDataStorage.scheduleSave` encodes every dirty entry **on the
-caller's thread** — the server thread, inside the save it was asked for —
+store: no sectors, no LRU of open files, one gzipped
+*data/\<namespace\>/\<path\>.dat* per thing that has state. It keeps the
+Server thread off the disk as a chunk does, and for the same reason.
+`SavedDataStorage.scheduleSave` encodes every dirty entry **on the
+caller's thread** — the Server thread, inside the save it was asked for —
 and hands the finished tags to `Util.ioPool`, at most
 `Util.maxAllowedExecutorThreads` writes at a time, chaining each onto
 `SavedDataStorage.pendingWriteFuture` so that two saves of one file cannot
 race. `SavedDataStorage.saveAndJoin` is the only place anything waits, and
-only a flush save or shutdown reaches it. Copy while the world is still,
-encode and write while it moves: the same bargain the chunk path makes, over
-a much smaller object. Which
-file holds what is [level data and
-rules](../../reference/level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds)'s.
+only a flush save, shutdown or the world upgrader reaches it. Encode while the
+world is still, write while it moves: half the bargain the chunk path makes,
+over a much smaller object. Which file holds what belongs to [level data and
+rules](../../reference/level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds).
 
 ## The four moments a chunk is written
 
 | the moment | what runs it | which chunks | what holds it back |
 |---|---|---|---|
-| **an unload** | the task `ChunkMap.scheduleUnload` queued, drained by `ChunkMap.processUnloads` | the one chunk being dropped, at whatever status it reached | nothing — no cooldown, and whatever `ChunkMap.unloadQueue` holds beyond 2,000 tasks drains regardless of the tick budget |
+| **an unload** | the task `ChunkMap.scheduleUnload` queued, drained by `ChunkMap.processUnloads` | the one chunk being dropped, at whatever status it reached | the tick's budget, except for the oldest tasks past 2,000 in `ChunkMap.unloadQueue`, which drain regardless; no cooldown |
 | **the eager sweep** | `ChunkMap.saveChunksEagerly`, the last statement of that same `ChunkMap.processUnloads` | everything in `ChunkMap.chunksToEagerlySave` | 20 a tick, fewer than 128 writes outstanding, the tick's time budget, and ten seconds per chunk |
-| **an autosave** | `MinecraftServer.autoSave` → `ServerLevel.save` → `ServerChunkCache.save` → `ChunkMap.saveAllChunks`, without flush | every holder in `ChunkMap.visibleChunkMap` | only the per-chunk gates: `ChunkMap.saveAllChunks` clears `ChunkMap.nextChunkSaveTime`, but `ChunkMap.saveChunkIfNeeded` still wants an accessible, ready, unsaved `LevelChunk` or `ImposterProtoChunk` |
-| **a flush save** | `/save-all flush`, `/stop`, `ServerChunkCache.close` | every accessible holder, over and over until a pass saves none | it blocks the server thread instead |
+| **an autosave** | `MinecraftServer.autoSave` → `ServerLevel.save` → `ServerChunkCache.save` → `ChunkMap.saveAllChunks`, without flush | every holder in `ChunkMap.visibleChunkMap` | only the per-chunk gates: `ChunkMap.saveAllChunks` clears `ChunkMap.nextChunkSaveTime`, but `ChunkMap.saveChunkIfNeeded` still wants an accessible, ready, unsaved `LevelChunk` (an `ImposterProtoChunk` passes its type test but is never unsaved) |
+| **a flush save** | `/save-all flush`, `/stop`, `ServerChunkCache.close` | every accessible holder, over and over until a pass saves none | it blocks the Server thread instead |
 
 The dirty set behind the second row is narrower than it looks.
 `ChunkMap.setChunkUnsaved` is installed as `WorldGenContext.unsavedListener`
@@ -132,10 +136,12 @@ world still writes village data through `SectionStorage.tick`, and stops
 letting go of chunks until something forces the issue. The only other drain
 of `ChunkMap.unloadQueue` and `ChunkMap.toDrop` is inside
 `ChunkMap.saveAllChunks` with flush, which runs `ChunkMap.processUnloads` on
-an always-true budget — so *`/save-all flush`* and shutdown do unload them,
-the first because `MinecraftServer.saveAllChunks` suppresses `ServerLevel.noSave`
-when *force* is set and the second because `ServerChunkCache.close` never
-consults it at all. An explicit save is a different question again:
+an always-true budget — so *`/save-all flush`* unloads them, since
+`MinecraftServer.saveAllChunks` suppresses `ServerLevel.noSave` when *force*
+is set. Shutdown needs neither: it clears `ServerLevel.noSave` on every level,
+which reopens the tick's drain, and ticks until `ChunkMap.hasWork` is false
+before its flush save. An explicit save is a
+different question again:
 `MinecraftServer.saveAllChunks` passes `ServerLevel.noSave` on to
 `ServerLevel.save` only when its *force* flag is clear, and `/save-all`
 sets that flag while `MinecraftServer.autoSave` does not.
@@ -155,17 +161,19 @@ Two shapes never reach the write at all. A proto chunk still at
 `ChunkStatus.EMPTY` with no valid structure start is dropped by the same
 block, and an `ImposterProtoChunk` refuses outright:
 `ImposterProtoChunk.tryMarkSaved` and `ImposterProtoChunk.canBeSerialized` are
-flat falses, not the pass-throughs the wrapper's other methods are
-(`ImposterProtoChunk.markUnsaved`, `ImposterProtoChunk.isLightCorrect` and
-`ImposterProtoChunk.setLightCorrect` all defer to the chunk underneath —
-[chunk anatomy](chunk-anatomy.md#the-four-shapes-a-chunk-takes)). The reason
-is the same in both cases: the `LevelChunk` under the imposter is what the
-saver will be handed instead.
+flat falses (so is `ImposterProtoChunk.isUnsaved`), where
+`ImposterProtoChunk.markUnsaved`, `ImposterProtoChunk.isLightCorrect` and
+`ImposterProtoChunk.setLightCorrect` defer to the chunk underneath ([chunk
+anatomy](chunk-anatomy.md#the-four-shapes-a-chunk-takes)). The imposter's
+reason is that the `LevelChunk` under it is what the saver will be handed
+instead.
 
 ## A chunk nobody needs any more
 
-The save above is the middle of a longer story, and the longer story is three
-ticks apart. This is the whole of it, from the level change that drops the chunk
+The save above is the middle of a longer story, which ordinarily runs inside
+one tick and stretches over several only when the budget runs out or a save
+dependency is pending. This is the whole of it, from the level change that
+drops the chunk
 to the write that finally records it.
 
 ```mermaid
@@ -179,27 +187,27 @@ sequenceDiagram
     participant PESM as PersistentEntity<br/>SectionManager
 
     DM->>CM: the level climbs past ChunkLevel.MAX_LEVEL, so the key joins ChunkMap.toDrop
-    Note over CM,CH: a later tick, in the unload phase of ServerChunkCache.tick
+    Note over CM,CH: the unload phase of the same ServerChunkCache.tick
     CM->>CM: processUnloads moves<br/>the holder to<br/>ChunkMap.<br/>pendingUnloads
     CM->>CH: getSaveSyncFuture, and the unload task is hung off it
-    CH-->>CM: the future completes, so the task is appended to unloadQueue
-    Note over CM,CH: a later tick again, while the budget says yes — or past the queue's first 2,000
-    CM->>CH: getSaveSyncFuture again — a different one, and the task rearms
+    CH-->>CM: the future is complete, or completes later, and the task joins unloadQueue
+    Note over CM,CH: the same drain while the budget says yes, or a later one, or among the oldest past 2,000
+    CM->>CH: getSaveSyncFuture again — the same one, or the task rearms and stops
     CM->>CM: this exact holder<br/>leaves ChunkMap.<br/>pendingUnloads, or<br/>a ticket took it back
     CM->>CM: setLoaded false, then save — PoiManager.flush and the proto-over-full guard
     CM->>SCD: copyOf takes the snapshot, a worker turns it into a CompoundTag
     CM->>IOW: store, handed the encode future, on the chunk lane
     CM->>SL: unload clears the block entities and the tick containers
-    SL->>PESM: later in the same level tick, processUnloads, then the entities lane
+    Note over SL,PESM: in a walk-away, the entities left rings earlier, when the chunk fell below FULL
     IOW-->>CM: the IOWorker.PendingStore future completes, one fewer active write
 ```
 
-*A chunk nobody needs, from the level that stopped needing it to the write that
-records it. The two note bars each open a later tick, and the two arrows
-that come back are the only two waits in the picture: everything else is a
-hand-off the server thread does not watch. The arrow into
-`PersistentEntitySectionManager` carries the entities, which leave by a
-different road and a later step.*
+*A chunk nobody needs, from the level that stopped needing it to the write
+that records it, ordinarily inside one tick: the two note bars mark where the
+budget or a pending save can push the rest to a later one, and the two dotted
+arrows are completions the Server thread does not wait for. The entities are
+not in it — in a walk-away they left by a different road, earlier, when the
+chunk fell below full.*
 
 Three things there are load-bearing. The first is that nothing happens until
 `ChunkHolder.saveSync` is done: every promotion future is chained into it by
@@ -215,18 +223,19 @@ that map, the removal fails, and the task quietly does nothing — nothing is
 lost and nothing is written twice. And if the sync future changed while
 waiting, the task rearms itself on the new one rather than proceeding.
 
-The third is that entities go by a different road and a later step.
-`PersistentEntitySectionManager.updateChunkStatus` saw the same level change
-and queued the position in `PersistentEntitySectionManager.chunksToUnload`.
+The third is that entities go by a different road, and earlier.
+`PersistentEntitySectionManager.updateChunkStatus` saw the chunk fall below
+full, rings before it was dropped, and queued the position in
+`PersistentEntitySectionManager.chunksToUnload`.
 If the chunk's entity file is still being read,
 `PersistentEntitySectionManager.storeChunkSections` returns false and the
 whole thing is retried next tick, so a half-loaded set never clobbers the
 file. Otherwise each entity `EntityAccess.shouldBeSaved` accepts is serialised
-with `Entity.save` **on the server thread**, the tag goes to the *entities*
-lane, and those entities are removed with
-`Entity.RemovalReason.UNLOADED_TO_CHUNK`. The filter runs before the removal,
-not after it, so what it turns away — a `Player`, an `EnderDragonPart`, a
-passenger, a vehicle carrying exactly one player — is neither written nor
+with `Entity.save` **on the Server thread**, its passengers inside it, the tag
+goes to the *entities* lane, and those entities and their passengers are
+removed with `Entity.RemovalReason.UNLOADED_TO_CHUNK`. The filter runs before
+the removal, not after it, so what it turns away on its own account — a
+`Player`, a vehicle carrying exactly one player — is neither written nor
 removed. The last of those is not an oddity: `ServerPlayer` writes its own
 root vehicle into the player file under *RootVehicle* under exactly that
 condition, so a boat with one rider travels in the player's file rather than
@@ -246,7 +255,7 @@ its guarantee is that one task at a time runs for that store, not that the
 same thread runs them. Its three priorities are strictly ordered:
 `IOWorker.Priority.FOREGROUND` for `IOWorker.store` and
 `IOWorker.loadAsync`, `IOWorker.Priority.BACKGROUND` for
-`IOWorker.storePendingChunk` — the task that actually touches the disk — and
+`IOWorker.storePendingChunk` — the task that touches the disk — and
 `IOWorker.Priority.SHUTDOWN` last. The lowest priority has exactly one user
 in the whole game: the barrier `IOWorker.waitForShutdown` parks behind
 everything else when the store closes. A flush is not one of them —
@@ -260,30 +269,31 @@ background tasks have run.
 already in it overwrites that entry's data *in place* without moving it, so
 N saves of one chunk before the lane drains become **one** disk write and
 one shared future. `IOWorker.loadAsync` looks in the same map first and
-returns a *copy* of the pending tag, so a chunk unloaded and re-loaded a
-second later never touches the region file — read-your-writes by lane order
+returns a *copy* of the pending tag, so a chunk re-loaded while its write is
+still pending never touches the region file — read-your-writes by lane order
 rather than by any lock. `IOWorker.STORE_EMPTY` is the null supplier that
 means *delete*, and `IOWorker.scanChunk` is the streaming `ChunkScanAccess`
 that `StructureCheck` uses to peek into chunks nobody has loaded.
 
 ### The three places that do wait
 
-Three places make the server thread wait on a disk. `ChunkMap.isExistingChunkFull`,
+Three places besides a synchronous chunk load and a flush save make the Server
+thread wait on a disk. `ChunkMap.isExistingChunkFull`,
 the guard that stops a `ProtoChunk` overwriting a finished chunk, answers
 from `ChunkMap.chunkTypeCache` when it can but joins the read future inline
 on a cold entry — the IO lane, then a datafix pass on the worker pool. And
 `SectionStorage.getOrLoad` joins too, for a POI section that
-`SectionStorage.prefetch` never fetched. The third is not a chunk-storage
+`SectionStorage.prefetch` has not fetched. The third is not a chunk-storage
 method at all: `StructureCheck.tryLoadFromStorage` joins `IOWorker.scanChunk`
 to peek at a chunk it will not load, which is what an eye of ender, a
-dolphin, an explorer map and `/locate` all end up doing on the server
-thread. None of the three is on the save path, which is why the save path
-costs a copy.
+dolphin, an explorer map and `/locate` all end up doing on the Server thread.
+Only the first is on the save path, and only for a chunk that is not full,
+which is why a full chunk's save costs a copy.
 
 ## Inside a region file
 
-The last box of the first figure is a file format, and it is where the ordering
-that makes a half-finished save survivable actually lives.
+The last box of the first figure is a file format, and it is where the
+ordering that makes a half-finished save survivable lives.
 
 ```mermaid
 flowchart TD
@@ -303,9 +313,9 @@ flowchart TD
     G4 --> Z
 ```
 
-*Two ways to write one chunk, and they put the content and the pointer to it in
-opposite orders. Follow the left arm and the bytes are on disk before the header
-that names them; follow the right arm and the header is written first, pointing
+*Two ways to write one chunk, putting the content and the pointer to it in
+opposite orders: on the left the bytes are on disk before the header that
+names them, and on the right the header is written first, pointing
 at a stub, and the real payload only lands when the temp file is moved. Both
 arms meet at the last box, which is the rule that makes either safe: the old
 sectors are not freed until the new ones can be found.*
@@ -317,9 +327,10 @@ the low byte, and a 1024-entry `RegionFile.timestamps`. Free space is a
 `RegionBitmap`, with the header's two sectors forced used at construction
 and `RegionBitmap.allocate` handing out the first run big enough. Nothing
 ever reads the timestamp table back: `RegionFile.write` stamps each entry
-with epoch seconds from `RegionFile.getTimestamp`, and the only clock the
-save path consults is the monotonic `Util.getMillis` behind
-`ChunkMap.nextChunkSaveTime`. Two clocks, and neither of them is game time. Each
+with epoch seconds from `RegionFile.getTimestamp`, and the only clock that
+spaces one chunk's writes is the monotonic `Util.getMillis` behind
+`ChunkMap.nextChunkSaveTime`, while the autosave counts server ticks. None of
+them is game time, which the chunk carries only as data. Each
 stored chunk starts with `RegionFile.CHUNK_HEADER_SIZE` (5) bytes — a length
 and a compression id — and both `RegionFile.write` and
 `RegionFile.getChunkDataInputStream` are synchronised on the `RegionFile`
@@ -366,10 +377,11 @@ lane; `ChunkMap.readChunk` then hops to `Util.backgroundExecutor` under the
 name *upgradeChunk* for `ChunkMap.upgradeChunkTag`, which is
 where datafixing happens; `SerializableChunkData.parse` runs on the same
 pool under *parseChunk*, so those two stages share a lane; and
-`SerializableChunkData.read` runs on the server
-thread, where the sections are installed, the saved light is queued into the
-light engine, and `PoiManager.checkConsistencyWithBlocks` re-derives each
-section's points of interest from its blocks. Running beside all of it,
+`SerializableChunkData.read` runs on the Server thread, where the sections are
+installed, the saved light is queued into the
+light engine, and `PoiManager.checkConsistencyWithBlocks` re-derives the
+points of interest of any section whose stored record is missing or not marked valid.
+Running beside all of it,
 `SectionStorage.prefetch` pulls the POI file in, and the two are joined
 before the server-thread step — which is exactly why that step's
 `SectionStorage.getOrLoad` calls do not block. From there the [generation
@@ -385,10 +397,12 @@ schedules both the datafix and `EntityType.loadEntitiesRecursive` on
 
 *Optimize World* in the world-select screen is the same read and the same
 write with the game in between removed. `WorldUpgrader` starts a single daemon
-thread named *World Upgrader* and hands each of the three stores to a
+thread, *World Upgrader #n*, and hands each of the three stores to a
 `RegionStorageUpgrader`, which walks every *r.X.Z.mca* file in the folder,
-datafixes each chunk tag and writes it back — optionally into fresh region
-files, which is what compacts a save whose sectors have fragmented.
+datafixes each chunk tag and writes back the ones that changed — or every one,
+into fresh region files, which is what compacts a save whose sectors have
+fragmented, though only the dedicated server's *--recreateRegionFiles* asks
+for that and the button never does.
 `UpgradeProgress` is the counter the screen reads. Nothing here loads a chunk,
 generates one, or consults a status: the world is a folder of tags, and the
 button's whole promise is that every tag is at the current data version before
@@ -396,29 +410,37 @@ a server ever opens the save.
 
 ## Questions players ask
 
-**Does the game stall when it saves?** Only on a flush.
+**Does the game stall when it saves?** The chunk stores wait for the disk only
+on a flush, though an autosave still copies every unsaved chunk, serialises
+the loaded entities, and writes `level.dat` and every player's file itself, on
+the Server thread, in the tick it falls.
 `ChunkMap.saveAllChunks` with flush loops over the accessible holders,
 blocking the main-thread executor on each `ChunkHolder.isReadyForSaving`
 until a whole pass saves nothing, then flushes POIs with
 `SectionStorage.flushAll`, runs `ChunkMap.processUnloads` with an
 always-true budget, and finally joins `IOWorker.synchronize` with flush.
-That is the only place where waiting for the disk is the point rather than
-an accident, and it is what `/save-all flush` and `/stop` do.
+That, with the entity store's and the saved data's own joins in the same save,
+is where waiting for the disk is the point rather than an accident, and it is
+what `/save-all flush` and `/stop` do.
 
-**Why does lowering the tick rate not push out my autosave?** Because the
-interval is wall clock. `MinecraftServer.computeNextAutosaveInterval` is the
-tick rate times 300 — or, while the server is sprinting, 300 times the rate
-its recent tick times imply — floored at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS`
-(100 — the typo is Mojang's); the very first interval is
-`MinecraftServer.AUTOSAVE_INTERVAL` (6000 ticks).
-`MinecraftServer.onTickRateChanged` recomputes it on every `/tick rate`, but
-assigns the result only when it is **smaller** than the pending countdown,
-so changing the rate can bring the next autosave forward and can never push
-it back. [The server tick](../server/server-tick.md#the-bookkeeping-at-the-bottom) has the rest of that
+**Does lowering the tick rate push out my autosave?** Only the one already
+counting down, and never past five minutes. The interval is counted in ticks:
+`MinecraftServer.computeNextAutosaveInterval` is the tick rate times 300 — or,
+while the server is sprinting, 300 times the rate its recent tick times imply
+— floored at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS` (100, and the typo is
+Mojang's), and the very first is `MinecraftServer.AUTOSAVE_INTERVAL` (6000
+ticks), so each autosave is five minutes of the server's scheduled time at any
+rate. `MinecraftServer.onTickRateChanged` recomputes it on every `/tick rate`
+but assigns it only when it is **smaller** than the ticks left: a slower rate
+stretches those ticks, up to five minutes from the change, and a faster one
+can only bring the save forward. [The server
+tick](../server/server-tick.md#the-bookkeeping-at-the-bottom) has the rest of
+that
 loop.
 
-**Why is my *entities/* folder full of files with nothing in them?** It is
-not — but emptying a chunk costs one write. `EntityStorage.storeEntities`
+**Why is my *entities/* folder full of files with nothing in them?** Because
+nothing deletes a region file once its entries are cleared — and emptying a
+chunk costs one write. `EntityStorage.storeEntities`
 with an empty set only writes when `EntityStorage.emptyChunks` did not
 already contain the position, and that write is `IOWorker.STORE_EMPTY`,
 which zeroes the region entry and deletes any sidecar. The first time a
@@ -442,9 +464,12 @@ Next door: [tickets and loading](tickets-and-loading.md) raises the level,
 [chunk anatomy](chunk-anatomy.md) owns what `LevelChunkSection.copy` copies,
 [lighting](lighting.md) owns the layers the unload throws away, [points of
 interest](points-of-interest.md) owns the *poi/* store, [the server
-tick](../server/server-tick.md#the-budget-and-where-it-stops-applying) owns the budget every method here is handed,
+tick](../server/server-tick.md#the-budget-and-where-it-stops-applying) owns
+the budget every method here is handed,
 [how a server dies](../server/how-a-server-dies.md) is the save that does
-not happen, and [entity lifecycle](../entities/entity-lifecycle.md#ending-two-the-chunk-goes-away) is what
+not happen, and [entity
+lifecycle](../entities/entity-lifecycle.md#ending-two-the-chunk-goes-away) is
+what
 `Entity.RemovalReason.UNLOADED_TO_CHUNK` means to a mob.
 
 ---

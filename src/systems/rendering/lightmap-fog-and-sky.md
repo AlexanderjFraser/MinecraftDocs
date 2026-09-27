@@ -262,8 +262,7 @@ buffer by `MoonPhase.index`.
 **The End takes a different branch entirely.** With
 `DimensionType.Skybox.END`, `SkyRenderer.extractRenderState` fills only the
 End-flash fields: the sun angle, the moon phase, the sky colour and the dark
-disc are never sampled. And `EndFlashState` is not the dragon fight — it is a
-free-running flash on a six-hundred-tick cycle, seeded per interval for its
+disc are never sampled. And `EndFlashState` is not the dragon fight — it is a flash on a six-hundred-tick cycle of the dimension's clock, seeded per interval for its
 offset, duration and angles, advanced by `EndFlashState.tick` in any dimension
 whose skybox is the End's. The sky is also skipped five ways, four of them in one method:
 `LevelRenderer.addSkyPass` bails in lava, in powder snow, when

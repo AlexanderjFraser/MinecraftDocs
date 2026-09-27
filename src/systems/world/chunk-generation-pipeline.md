@@ -4,8 +4,9 @@
 
 A player walks east, a loading ticket lands on the chunk that just entered
 view, and `ChunkHolder.updateFutures` asks that chunk for `ChunkStatus.FULL`.
-Nothing in the request mentions neighbours. But *FULL* is the last of ten
-steps, and the steps below it read — and two of them write — the chunks
+The request names that chunk and the eight around it, and nothing further out.
+But *FULL* is the last of ten
+steps, and the steps below it read — and one of them writes — the chunks
 around the one being built, so the first thing `ChunkGenerationTask.create`
 does is walk out to Chebyshev distance 11 and take a claim on every holder in
 that square: **asking for one chunk asks for 529 of them, and the eleven
@@ -20,11 +21,11 @@ Change the pyramid and the world's loading radius changes with it.
 
 | class | what it decides | thread |
 |---|---|---|
-| `ChunkStatus` | the ten names and their order, and nothing else — no task, no radius, no work | static, a `BuiltInRegistries.CHUNK_STATUS` entry |
+| `ChunkStatus` | the ten names and their order, each with the chunk type and the heightmaps it leaves — no task, no radius, no work | static, a `BuiltInRegistries.CHUNK_STATUS` entry |
 | `ChunkPyramid` | the two step lists — one for generating, one for loading — that say what each status needs and what runs it | static |
 | `ChunkStep` | one status's direct and accumulated dependencies, its block-state write radius, and its body | static |
 | `ChunkGenerationTask` | one (chunk, target) walk: which layer is in flight, which pyramid it is using, and when to yield | the *worldgen* executor |
-| `GenerationChunkHolder` | one chunk's ten futures, its ticket-derived ceiling, and the compare-and-set that runs each step exactly once | any — every field of it is atomic |
+| `GenerationChunkHolder` | one chunk's ten futures, its ticket-derived ceiling, and the compare-and-set that runs each step exactly once | any — its mutable fields are atomic or volatile |
 | `ChunkMap` | makes the tasks, owns both executors, and turns the *EMPTY* step into a disk read | Server, but `ChunkMap.applyStep` runs on whatever thread reached it |
 | `ChunkTaskDispatcher` | which chunk's batch of work the executor gets next, and re-sorts the queue when tickets move | its own single-file queue on the worker pool |
 | `WorldGenRegion` | what a running step may read and what it may write, checked per call | the thread running the step |
@@ -32,12 +33,12 @@ Change the pyramid and the world's loading radius changes with it.
 ## The pyramid, drawn
 
 The pipeline is ten steps in a fixed order, and three facts about each of
-them — how wide it is swept, where it runs, and whether it may write outside
-its own chunk. Those are three columns, so they are a table:
+them — how wide it is swept, where it runs, and how far from its own chunk it
+may write. Those are three columns, so they are a table:
 
 | # | status | swept to | where it runs | may write |
 |--:|---|--:|---|--:|
-| 1 | `ChunkStatus.EMPTY` | 11 | the disk read — region file and parse on the pool, chunk object on the server thread | — |
+| 1 | `ChunkStatus.EMPTY` | 11 | the disk read — region file on the IO lane, upgrade and parse on the pool, chunk object on the Server thread | — |
 | 2 | `ChunkStatus.STRUCTURE_STARTS` | 11 | inline, worldgen executor | — |
 | 3 | `ChunkStatus.STRUCTURE_REFERENCES` | 3 | inline, worldgen executor | — |
 | 4 | `ChunkStatus.BIOMES` | 3 | **forked** to the worker pool, as *createBiomes* | — |
@@ -46,9 +47,9 @@ its own chunk. Those are three columns, so they are a table:
 | 7 | `ChunkStatus.INITIALIZE_LIGHT` | 1 | **the light executor** | — |
 | 8 | `ChunkStatus.LIGHT` | 0 | **the light executor** | — |
 | 9 | `ChunkStatus.SPAWN` | 0 | inline, worldgen executor | — |
-| 10 | `ChunkStatus.FULL` | 0 | **the server thread** | — |
+| 10 | `ChunkStatus.FULL` | 0 | **the Server thread** | — |
 
-Five of the ten leave the worldgen executor and one of them —
+Six of the ten leave the worldgen executor and one of them —
 `ChunkStatus.EMPTY` — is not worldgen work at all. The *swept to* column is how
 wide that layer is swept **when the target is FULL and the task has decided it
 must generate**: `ChunkGenerationTask.getRadiusForLayer` asks the FULL step of
@@ -76,9 +77,9 @@ flowchart TD
 ```
 
 *The pyramid seen from above: each box is a ring of neighbours, labelled with
-how deep into the pipeline that ring must already be. Nothing here is an order
-in time — these are four rings at one instant. The outer one is the number to
-take away: radius 11 is 23 by 23, so one chunk reaching `ChunkStatus.FULL` has
+how deep into the pipeline that ring must already be, four rings at one
+instant rather than an order in time. The outer one is the number to take
+away: radius 11 is 23 by 23, so one chunk reaching `ChunkStatus.FULL` has
 claimed 529.*
 
 That is `ChunkStep.accumulatedDependencies` drawn: a list indexed by distance,
@@ -100,7 +101,8 @@ then widens the array outward, taking the later of the two statuses at every
 distance already covered.
 
 The generation pyramid's declared requirements, with the parent requirement
-resolved in:
+resolved in (*INITIALIZE_LIGHT* and *FULL*, like *STRUCTURE_STARTS*, declare
+nothing beyond their parent):
 
 | step | needs | may write |
 |---|---|---|
@@ -130,8 +132,7 @@ The three that pay are *TERRAIN* wanting *BIOMES*, *FEATURES* wanting *TERRAIN*
 and *LIGHT* wanting *INITIALIZE_LIGHT*, each one ring. Three ones on top of
 *STRUCTURE_STARTS* out to 8 is where the 11 comes from — a radius of 11 is a
 list of twelve, and the walk that claims it is 23 chunks on a side, or 529.
-`ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and the pyramid writes
-the literal each time — no reader of the constant survives the decompile.
+The 8 is the distance `ChunkStatus.MAX_STRUCTURE_DISTANCE` names.
 
 The same arithmetic sets the edge of the world. `ChunkPyramid.SAFETY_MARGIN_CHUNKS`
 is 32 plus the twelve accumulated entries plus one, doubled — 90 chunks —
@@ -148,8 +149,8 @@ Two different numbers reach a holder from the ticket system.
 `DistanceManager.runAllUpdates` first gives every touched holder
 `GenerationChunkHolder.updateHighestAllowedStatus`, which is
 `ChunkLevel.generationStatus` of the new ticket level — the number line that
-maps 34 through 44 onto ever-earlier statuses is [the number
-line](tickets-and-loading.md#the-number-line)'s. That is a ceiling, not a
+maps 34 through 44 onto ever-earlier statuses belongs to [the number
+line](tickets-and-loading.md#the-number-line). That is a ceiling, not a
 goal: `GenerationChunkHolder.isStatusDisallowed` gates every request against
 it and hands back `GenerationChunkHolder.UNLOADED_CHUNK_FUTURE` for anything
 above. Then `ChunkHolder.updateFutures` crosses `FullChunkStatus.FULL`,
@@ -179,7 +180,7 @@ so `GenerationChunkHolder.rescheduleChunkTask` calls
 holder set: a `StaticCache2D` whose radius is the *generation* pyramid's
 accumulated radius of `ChunkStatus.EMPTY` for the target — 11 for *FULL* —
 filled by `GeneratingChunkMap.acquireGeneration`, the five-method interface
-`ChunkMap` implements and the pipeline actually holds. That radius is taken
+`ChunkMap` implements and the pipeline holds. That radius is taken
 from the generation pyramid unconditionally, before anything has looked at
 the disk, so even a chunk that turns out to be sitting complete in a region
 file claims all 529 holders first.
@@ -203,18 +204,22 @@ itself on the pool. The dispatcher in front of it is a
 `ChunkTaskPriorityQueue` of `ChunkTaskPriorityQueue.PRIORITY_LEVEL_COUNT`
 buckets — 46, `ChunkLevel.MAX_LEVEL` plus two — keyed by the holder's queue
 level, and `ChunkTaskDispatcher.scheduleForExecution` hands over one chunk's
-runnables at a time, polling again only when they have all completed. So all
-worldgen for a dimension is a single file, however many `Worker-Main-n`
+runnables at a time, polling again only when they have all returned. So the
+steps a dimension runs inline run single file, however many `Worker-Main-n`
 threads the shared pool has ([four threads worth
 memorising](../anatomy/anatomy.md#four-threads-worth-memorising) sizes it, and
-serialising onto a pool is what a `ConsecutiveExecutor` is for). **There is no
-generation thread setting**: the only knob is the pool's, and widening the pool
-widens everything else that shares it instead.
+serialising onto a pool is what a `ConsecutiveExecutor` is for); what runs in
+parallel is what a step hands off: the disk read's upgrade and parse and the
+biome and terrain forks on the pool, many chunks' at once, the light work on
+its own executor, and *FULL* on the Server thread. **There is no generation
+thread setting**: the only
+knob is the pool's, and widening it widens those forks and everything else that
+shares the pool.
 
-**One** — worldgen runnables executing at a time per dimension
+**One worldgen runnable** executes at a time per dimension
 (`ChunkMap.worldgenTaskDispatcher`, over a single `ConsecutiveExecutor`).
 
-Overlap comes from yielding, not from threads.
+Overlap comes from yielding.
 `ChunkGenerationTask.runUntilWait` returns the moment a layer holds a future
 that is not yet done; `ChunkMap.runGenerationTask` chains a resubmit onto
 that future and the executor moves to another chunk's task at once. No worldgen thread
@@ -228,7 +233,7 @@ new bucket — at a higher priority inside the dispatcher's own four-slot queue
 than new submissions get, so "closer to a player runs first" stays true while
 the player is moving. `ThrottlingChunkTaskDispatcher` is a subclass of the
 same thing but is *not* worldgen: it caps how many player-view chunks the
-ticket tracker may have in flight, on the main thread.
+ticket tracker may have in flight, on the Server thread.
 
 ## The EMPTY step asks the only question that changes the walk
 
@@ -247,14 +252,16 @@ The futures are not done, so the task yields and is re-entered when they land
 
 ### A file that will not parse is regenerated, not skipped
 
-There is a fourth outcome, and it rejoins the third. `SerializableChunkData.parse` returning null logs *missing level
+There is a fourth outcome, and it rejoins the third.
+`SerializableChunkData.parse` returning null logs *missing level
 data* and empties the optional, so the step falls through to
 `ChunkMap.createEmptyChunk` exactly as though the file had never existed; and
 anything thrown along the way reaches `ChunkMap.handleChunkLoadFailure` on the
-server thread, which re-throws a JVM *Error* as a crash report and otherwise
+Server thread, which re-throws a JVM *Error* as a crash report and otherwise
 reports the failure through `MinecraftServer.reportChunkLoadFailure` and hands
-back an empty chunk. Either way the position is marked replaceable in
-`ChunkMap.chunkTypeCache`, which is what licenses the generator to build over
+back an empty chunk. Either way the empty proto chunk fails the load test
+below, so the walk generates, and the position is marked replaceable in
+`ChunkMap.chunkTypeCache`, which lets the saver write a half-made chunk over
 it — **an unreadable chunk is regenerated, not skipped, and the old bytes stay
 on disk until something writes over them**.
 
@@ -309,7 +316,7 @@ and the structures they place — is Part XII's subject
 the radius-11 square that is not already past it — seed and placement state
 only, no terrain — and is skipped entirely when `WorldOptions.generateStructures`
 is off. Either way `ServerLevel.onStructureStartsAvailable` posts the chunk's
-starts to the server thread. *STRUCTURE_REFERENCES* then records, per chunk,
+starts to the Server thread. *STRUCTURE_REFERENCES* then records, per chunk,
 which starts within eight chunks reach into it: the reason starts needed a
 radius of 8 around *it*. *BIOMES* forks — `ChunkGenerator.createBiomes`,
 which no generator overrides, puts the work on the pool under
@@ -340,7 +347,7 @@ the step's `ChunkStep.directDependencies` — too far away, or at a status that
 distance does not guarantee — throws out of `WorldGenRegion.getChunk` as a
 crash report naming the step, the requested and actual statuses, the distance
 and the whole dependency list. A read that is merely outside the *write* zone
-is a log warning from `WorldGenRegion.warnIfReadOutsideWriteZone`, naming the
+is one line in the log, at error level, from `WorldGenRegion.warnIfReadOutsideWriteZone`, naming the
 feature through `WorldGenRegion.currentlyGenerating`. The first is a bug in
 the pyramid; the second is a bug in a feature, and the game keeps going.
 
@@ -357,22 +364,24 @@ generation task genuinely parks here ([what actually kicks
 it](lighting.md#what-actually-kicks-it)).
 
 Both are passed a *lighted* flag from `ChunkStatusTasks.isLighted`, and what
-it decides — that light saved on disk is re-enabled rather than recomputed — is
-[lit before you ever see it](lighting.md#lit-before-you-ever-see-it)'s.
+it decides — that light saved on disk is re-enabled rather than recomputed —
+is told in [lit before you ever see
+it](lighting.md#lit-before-you-ever-see-it).
 
 ## FULL is assembled on the server thread
 
 `ChunkStatusTasks.full` is scheduled exactly like the other nine steps, but
 its body is a *supplyAsync* on `WorldGenContext.mainThreadExecutor` — the
 `ServerChunkCache.MainThreadExecutor`, a `BlockableEventLoop` pinned to the
-server thread. There are two shapes it can take. If the chunk is already an
+Server thread. There are two shapes it can take. If the chunk is already an
 `ImposterProtoChunk`, because the file held a finished chunk, it unwraps the
 `LevelChunk` inside and replaces nothing. Otherwise a `LevelChunk` is built
 from the `ProtoChunk`, sharing its sections, and
 `GenerationChunkHolder.replaceProtoChunk` rewrites slots 0 through 8 of the
 holder's future array to an `ImposterProtoChunk` over it with writes
-disallowed — every slot checked, and the whole step thrown out if any of them
-is not a `ProtoChunk` or was changed by another thread in the meantime.
+disallowed — every slot checked, and an exception thrown if any of them is not
+a `ProtoChunk` or was changed by another thread in the meantime, which
+`GenerationChunkHolder.applyStep` relays as a crash.
 
 Then the chunk becomes part of the world, in order: `LevelChunk.setFullStatus`
 wired to the holder, `LevelChunk.runPostLoad` turning `ProtoChunk.getEntities`
@@ -396,10 +405,12 @@ as its own tickets dictate — which the outer rings, only ever raised to the
 status their distance demanded, mostly are.
 `ChunkHolder.scheduleFullChunkPromotion` was called back in
 `ChunkHolder.updateFutures`, long before any of this; what happens now is its
-confirmation landing on the server thread and `ChunkMap.onFullChunkStatusChange` tells
-the entity manager. `ChunkLoadCounter` watches this from outside — it counts
-holders that reach *FULL* for the spawn progress bar, and that count is what
-`MinecraftServer.prepareLevels` loops on until it is zero.
+confirmation landing on the Server thread and `ChunkMap.onFullChunkStatusChange` tells
+the entity manager. `ChunkLoadCounter` watches this from outside — at start-up
+it holds the holders the restored saved tickets raise to *FULL*, and for a
+joining player those its spawn ticket raises, drops each as it arrives and
+feeds the load progress, and `MinecraftServer.prepareLevels` loops until none
+is left.
 
 ## The whole walk, once
 
@@ -424,48 +435,52 @@ sequenceDiagram
     Note over CTD,CGT: thread hop — the worldgen ConsecutiveExecutor, one task at a time per dimension
     CTD->>CGT: runUntilWait, once the executor reaches this chunk
     CGT->>CM: layer EMPTY at radius 1 — applyStep becomes scheduleChunkLoad
-    CM->>Worker: the region read, then upgradeChunk and parseChunk, on the pool
-    Worker->>CM: back on the server thread, SerializableChunkData.read builds the chunk
+    CM->>Worker: the pool's upgradeChunk and parseChunk, after the region read on the IO lane
+    Worker->>CM: back on the Server thread, no file, so createEmptyChunk
     Note over CTD,CGT: the task yields on the first unfinished future, and is resubmitted
     CGT->>CGT: nothing on disk, so EMPTY again, now to radius 11
     CGT->>CM: STRUCTURE_STARTS to 11, then STRUCTURE_REFERENCES to 3
-    CM->>SL: onStructureStartsAvailable, posted to the server thread
+    CM->>SL: onStructureStartsAvailable, posted to the Server thread
     CGT->>Worker: BIOMES to 3 and TERRAIN to 2, forked to the pool
     CGT->>CM: FEATURES to 1, inline
     CGT->>TLE: INITIALIZE_LIGHT at 1, then LIGHT at 0, on the light executor
-    CGT->>SL: SPAWN inline, then FULL on the main-thread executor
-    SL->>CM: the LevelChunk is built, wrapped, loaded and registered
+    CGT->>CM: SPAWN at 0, inline
+    CGT->>SL: FULL, on the main-thread executor
+    SL-->>CGT: the LevelChunk, built, wrapped, loaded and registered
     CGT->>CM: releaseGeneration on all 529, and the task is removed
 ```
 
-*One chunk from a level change to a live `LevelChunk`. Count the executors
-rather than the lanes: the task itself runs on the worldgen one, and it sends
-work to the worker pool twice, to the light executor once, and back to the
-server thread for `ChunkStatus.FULL` — four executors for one chunk, which is
-why a single generating chunk keeps four different queues busy and none of them
-saturated.
-The self-message in the middle is the load-or-generate decision, and everything
-below it is work that the other answer would have skipped.*
+*One chunk from a level change to a live `LevelChunk`, handed between the
+worldgen executor the task runs on, the IO lane for the region read, the
+worker pool for its upgrade and parse stages and the two forks, the light
+executor, and the Server thread for the read's result, the posted structure
+starts and `ChunkStatus.FULL`. The self-message in the middle is the
+load-or-generate decision: below it, the sweep to radius 11 and the structure,
+biome, terrain, feature and spawn generation are what a chunk already on disk
+would skip, and the structure-start replay, the light steps and FULL are what
+it would still run.*
 
 ## Questions players ask
 
-**Why does adding cores not speed up world generation?** Because a dimension's
-worldgen is one `ConsecutiveExecutor` running one task at a time, and the
-dispatcher in front of it releases one chunk's work at a time. The pool is busy in parallel with plenty else — the *light*
-executor beside it, the disk read and its datafix, the POI prefetch, the biome
-and terrain forks, the second dimension — but none of that is a second worldgen
-lane. There is no thread-count setting for generation.
+**Why does adding cores not speed up world generation?** It speeds up only
+the part that forks. A dimension's inline steps run on one `ConsecutiveExecutor`,
+one task at a time, and the dispatcher in front of it releases one chunk's work
+at a time; what it forks onto the worker pool — the biome fill and the terrain
+job, the noise, the surface and the carvers — runs many chunks at once, and a
+wider pool runs more of it. The structure starts, the features and
+the spawns stay single file, and there is no thread-count setting for generation.
 
 **Why does a chunk I have visited before still take work to load?** It walks
 all ten steps. Five of them pass through and cost nothing, but the disk
 read, the structure-start replay, both light steps and the *FULL* assembly are
-real work, and the light steps need the 3×3 neighbours read first.
+real work, and its *LIGHT* step needs the 3×3 neighbours read first.
 
 **Why does a chunk sometimes hang on the edge of the view forever?** Its
 ticket level puts the ceiling below *FULL*.
 `GenerationChunkHolder.isStatusDisallowed` refuses anything higher, so the
-chunk sits at *STRUCTURE_STARTS* or *BIOMES*, correct and unfinished, for as
-long as the level says so.
+chunk sits at whatever its level allows — *STRUCTURE_STARTS* at the outer
+edge, *INITIALIZE_LIGHT* just outside the ring that reaches *FULL* — correct
+and unfinished, for as long as the level says so.
 
 > **For a 1.21-era reader.** The *noise*, *surface* and *carvers* statuses are
 > gone: *terrain* does their work, as one step. The pool jobs *init_biomes* and
@@ -478,7 +493,7 @@ The two lists that decide everything: `ChunkPyramid.GENERATION_PYRAMID` ·
 task's life, in order: `ChunkGenerationTask.create` ·
 `ChunkGenerationTask.runUntilWait` ·
 `ChunkGenerationTask.canLoadWithoutGeneration` ·
-`ChunkGenerationTask.scheduleChunkInLayer`. Where a step actually runs:
+`ChunkGenerationTask.scheduleChunkInLayer`. Where a step runs:
 `ChunkMap.applyStep` · `GenerationChunkHolder.acquireStatusBump` ·
 `ChunkStatusTasks.full`. And what polices a running step:
 `WorldGenRegion.getChunk` · `WorldGenRegion.ensureCanWrite`.

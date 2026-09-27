@@ -7,9 +7,10 @@ A world is too big to hold, so the server holds a moving window of it, and
 almost everything in this part exists to decide the window's edge: which
 chunks are worth building, how far past the edge to build them, which of
 them tick, which of them you are owed a copy of, and when one is finally
-written down and let go. A player recognises the part by its edge — the ring of
-half-made terrain past render distance, the mobs that stop moving when you
-fly away from them, the *Saving world* bar. Almost none of that edge is one
+written down and let go. A player recognises the part by its edge — the chunks
+that appear at the rim of render distance as you walk, the mobs that stop
+moving when you fly away from them, the *Saving world* bar. Almost none of
+that edge is one
 number: **render distance, simulation distance and the mob-spawning radius
 are three different radii, answered by three different mechanisms, and only
 two of them are settings** ([two graphs, one
@@ -20,7 +21,7 @@ store](tickets-and-loading.md#two-graphs-one-store)).
 Part IV is a conveyor with a vocabulary page in front of it — and the conveyor
 is a **ring**, because a chunk written out comes back in through the door it
 left by. One page defines the thing being handed; four more are the ring, and
-they hand a chunk along it in order. The other five are not on the line at all
+a chunk goes round it in order. The other five are not on the line at all
 — one is what the place and the hour decide, and four act on the chunk the ring
 delivers. Every box below is one of those ten lectures except the one in lower
 case, which is a chunk's *state* rather than a page: the live `LevelChunk` the
@@ -41,7 +42,7 @@ flowchart TD
     PI["10 · Points of interest: what is worth going to"]
     CA -- "the vocabulary the ring spends" --> TL
     TL -- "a holder, a ceiling, three futures" --> GP
-    GP -- "two of its twelve statuses" --> LI
+    GP -- "two of its ten statuses" --> LI
     LI -- "sections dirtied, one packet of them" --> LC
     LC -- "nobody needs it any more" --> CS
     CS -- "a ticket wants it back" --> TL
@@ -52,33 +53,38 @@ flowchart TD
     EA -- "a value for a position and an instant" --> LC
 ```
 
-*The part numbered to the watch order. Four pages and the live chunk make the
-ring, and five arrows carry a chunk round it; chunk anatomy hands the ring its
-vocabulary, lecture one hands the live chunk its values, and the last four act
-on the live chunk, one of them through another page. Lighting is an inclusion
-rather than a hand-off — two of the pipeline's own twelve statuses, run on a
-different executor.*
+*The part numbered to the watch order: four pages and the live chunk make the
+ring, and five arrows run round it, the one into lighting an inclusion rather
+than a hand-off — two of the pipeline's own ten statuses, run on a different
+executor. Chunk anatomy hands the ring its vocabulary, lecture one hands the
+live chunk its values, and the last four act on the live chunk, one of them
+through another page.*
 
 Follow the numbers rather than the arrows and the surprise is where they
 disagree: the first lecture is watched first and sits off the line, and the
 sixth hands back to the third.
 
-Two later parts hang off that line rather than feeding it: Part V's blocks
-assume [chunk anatomy](chunk-anatomy.md)'s sections and palettes, and Part
-XII's terrain is the cargo on [the generation
+Later parts hang off that line rather than feeding it: Part V's blocks assume
+the sections and palettes of [chunk anatomy](chunk-anatomy.md), Part VI's
+entities tick where the tickets say, and Part XII's terrain is the cargo on
+[the generation
 pipeline](chunk-generation-pipeline.md).
 
 ## Before you start
 
-[The server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order) and [the level
-tick](../server/server-level-tick.md#the-chunk-source-does-five-things-in-one-call). Almost everything here happens on the Server
-thread inside that loop, or on a worker the loop is waiting for — the one
-exception being the IO lane that [chunk storage](chunk-storage.md) is about —
-and the level tick is where the chunk source is asked to do its five things.
+[The server
+tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
+and [the level
+tick](../server/server-level-tick.md#the-chunk-source-does-five-things-in-one-call).
+Almost everything here happens on the Server thread inside that loop or on the
+worker pool beside it — the IO lane that [chunk storage](chunk-storage.md) is
+about has threads of its own — and the level tick is where the chunk source is
+asked to do its five things.
 Part II's [codecs](../foundations/codecs-nbt-json.md#disk-a-chest-writes-a-list-of-slots) and
 [registries](../foundations/identifiers-and-registries.md#the-table) are assumed
 wherever a chunk is written to disk or a type is looked up by name, and
-[tags](../foundations/tags.md#a-tag-is-a-key-and-a-file) wherever a behaviour is defined by a set the
+[tags](../foundations/tags.md#a-tag-is-a-key-and-a-file) wherever a behaviour
+is defined by a set the
 data pack owns — which is most of what the last two pages do.
 
 Nothing in this part needs Part V or beyond.
@@ -91,9 +97,9 @@ scheduled ticks and must follow it; the other three can be watched in any
 order once you have the vocabulary page.
 
 1. [Environment attributes and timelines](environment-attributes-and-timelines.md)
-   — off the conveyor, ahead of it, and the page [the level
-   tick](../server/server-level-tick.md#the-cache-that-is-dropped-before-the-border)
-   already asked you to watch. Whether lava flows fast, what colour the sky is
+   — off the conveyor, ahead of it, and the page [Part
+   III](../server/README.md#before-you-start) already asked you to watch.
+   Whether lava flows fast, what colour the sky is
    and when a villager goes to work are one mechanism. The night does not
    *set* the sky's colour — it multiplies whatever the biome produced.
 2. [Chunk anatomy](chunk-anatomy.md) — what a chunk is made of, down to
@@ -101,18 +107,19 @@ order once you have the vocabulary page.
    holding two *distinct* block states costs exactly what one holding sixteen
    costs.
 3. [Tickets and loading](tickets-and-loading.md) — a player takes one step
-   east and a column twenty-one chunks wide is asked for. Nothing asks for a
+   east and, at view distance 10, a column twenty-one chunks wide is asked
+   for. Nothing asks for a
    chunk *because* it is loaded: it asks for a *level*, and two graphs reading
    one ticket store answer different questions about it.
-4. [The chunk generation pipeline](chunk-generation-pipeline.md) — one
-   chunk from *EMPTY* to *FULL* through twelve statuses and a pyramid of
+4. [The chunk generation pipeline](chunk-generation-pipeline.md) — one chunk
+   from *EMPTY* to *FULL* through ten statuses and a pyramid of
    neighbour requirements. Asking for one chunk asks for 529.
 5. [Lighting](lighting.md) — a torch is placed. Two 4-bit fields flooded on
    a worker and published as a copy. There is no light thread, and no light
    phase of the tick.
-6. [Chunk storage](chunk-storage.md) — a chunk nobody needs is copied,
-   encoded and written, on three different threads, and the save path waits
-   for none of it. Almost every write of your world is one nobody asked for.
+6. [Chunk storage](chunk-storage.md) — a chunk nobody needs is copied, encoded
+   and written, on three different lanes, and the unload waits for neither the encode nor the write.
+   Almost every write of your world is one nobody asked for.
 7. [Scheduled ticks](scheduled-ticks.md) — how anything happens *later*: an
    appointment book of two queues per chunk, and a dedup rule that quietly
    drops the second appointment even when it is sooner.
@@ -122,7 +129,8 @@ order once you have the vocabulary page.
    still votes on where the rest of it goes.
 9. [Game events and vibrations](game-events-and-vibrations.md) — a footstep
    reaches a sculk sensor, through a cascade of tests that is most of the
-   lecture. The sensor always hears you at least one tick late by design.
+   lecture. The sensor never acts on a footstep in the game tick that stamped
+   it, which costs a mob a tick and a player nothing.
 10. [Points of interest](points-of-interest.md) — a villager claims a bed
     from 48 blocks away, the moment a path to it exists. Sleeping in it sets
     the bed's *occupied* flag and tells the index nothing, and the only
@@ -131,16 +139,18 @@ order once you have the vocabulary page.
 
 ## Where the part stops
 
-{{#include ../../generated/coverage-world.md}} — the lowest figure in the
-book, and what it leaves over is one more instance of a shape a page above
-teaches: the modifier classes an attribute's arithmetic uses are the library
-[environment
+{{#include ../../generated/coverage-world.md}}, and what it leaves over is
+mostly two small libraries of shapes the pages above teach:
+`world/level/blockscan`, a block search that asks each section's palette
+first, as [chunk
+anatomy](chunk-anatomy.md#the-palette-and-the-ladder-it-climbs) describes, and
+the modifier classes an attribute's arithmetic uses, the library [environment
 attributes](environment-attributes-and-timelines.md#arguments-not-values)
-describes rather than enumerates, and the rest are look-up tables.
+describes rather than enumerates.
 
-Two omissions are deliberate. **The world border** is the one mechanism here
-with no lecture — a per-dimension `SavedData` answering a question about a
-position, with no chunk, no tick phase and no thread to trace — so it sits on
+Two omissions are deliberate. **The world border** has no lecture — a
+per-dimension `SavedData` answering a question about a position, with no chunk
+to follow and one step of the level tick to move its edge — so it sits on
 [level data and
 rules](../../reference/level-data-and-rules.md#the-border-is-per-dimension).
 And **sending a chunk** stops at eligibility: the packet and its pacing are
@@ -156,9 +166,10 @@ which this part reads. [Math and
 primitives](../../reference/math-and-primitives.md#three-long-keys) —
 `ChunkPos` and `SectionPos`, and the packings the conveyor pages assume.
 [Block update flags](../../reference/block-update-flags.md) — the flag word
-three pages here spend. [Registries](../../reference/registries.md) — three
-of this part's mechanisms are registry-backed: environment attributes,
-timelines and points of interest.
+three pages here spend. [Registries](../../reference/registries.md) — most of
+this part's vocabularies are registries: chunk statuses, ticket types, fluids,
+game events, point-of-interest types, environment attributes, timelines and
+world clocks.
 [Threads](../../reference/threads.md#the-threads-a-lecture-leans-on) — the
 worker pool and the IO lane. [Diagram lanes](../../reference/lanes.md).
 

@@ -74,6 +74,412 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session D — Part IV · The world *(2026-09-27)*
+
+Eleven pages, each checked under Part 2 by its own agent while the session read the part whole: the landing
+page, `environment-attributes-and-timelines`, `chunk-anatomy`, `tickets-and-loading`,
+`chunk-generation-pipeline`, `lighting`, `chunk-storage`, `scheduled-ticks`, `fluids`,
+`game-events-and-vibrations` and `points-of-interest`. The prompts carried each page's pass 5–7 ledger
+entries and, by hand, the V1 and V2 entries on these pages, session C's four handoffs and session A's four V6
+constants. The whole-part read, written before any report was opened, listed thirteen sentences that
+disagreed with another sentence in the part (among them *twelve statuses* on two pages after V2 made them
+ten, *forty-six* after V1 made the total 51, two owners for the warden's brain, and the key's thread names
+written six ways), the four V6 constants and four bare number devices; every one is among the corrections
+or the polish below. The session re-derived every finding in `reference/26.3` before making it. The record
+was then audited by eleven agents, one per page, each told to re-derive every changed sentence against the
+record, read its neighbours and grep the rest of the book: **the audit found 76 more errors**, 55 of them in
+sentences this session had just written and the rest beside a correction that the correction had not
+reached; all 76 are marked *from the record's audit*. Page lines are the pages before this session's edits. Four pages outside the part were corrected where a correction here made them disagree, the glossary twice
+(under *Elsewhere*).
+
+**284 corrections**, 43 of them inside a figure or a caption. Seven are 26.3 changes V1 and V2 did not see
+(corrections 18, 22, 23, 26, 27, 39 and 57), and four are sentences the version pass changed the fact under
+and left (2, 21, 83 and 113, the last overturning V2's item 5). Six overturn a claim a pass 5 or 6 session
+listed as introduced. One probable upstream bug is written on its page as what the code does (correction
+228, under *For later sessions*). The 114 pass 5–7 ledger entries on these pages: 83 checked, 24 checked
+except a part, 3 wrong, 1 overtaken, 3 no claim — so 27 of the 111 that made a claim were found wrong in
+whole or in part.
+
+### Corrections
+
+1. `world/README`:10–11 — the edge *the ring of half-made terrain past render distance* — a chunk below block-ticking level is never sent, so a player never sees it; now *the chunks that appear at the rim of render distance as you walk* — `server/level/ChunkMap.java`:739–763, :936–940.
+2. `world/README`:44 (f1 label), :59 (caption), :108 — *twelve statuses* — ten (V2 moved the pipeline and left the summary) — `world/level/chunk/status/ChunkStatus.java`:20–29.
+3. `world/README`:55–60 (caption) — *five arrows carry a chunk round it*, then *Lighting is an inclusion rather than a hand-off* — the arrows run round the ring, the one into lighting an inclusion; cut to two sentences — *(page-internal)*.
+4. `world/README`:66 — *Two later parts hang off that line* — Part VI's landing page leans on it too (tickets and chunk anatomy) — `src/systems/entities/README.md`:80–84.
+5. `world/README`:73–77 — *on a worker the loop is waiting for — the one exception being the IO lane* — the chunk encode and the light and worldgen executors run on the worker pool unwaited; the IO lane has threads of its own — `ChunkMap.java`:185–192, :852; `server/MinecraftServer.java`:371; `world/level/chunk/storage/IOWorker.java`:45.
+6. `world/README`:93–96 — *the page the level tick already asked you to watch* — Part III's landing page asks; the level tick page only cites it — `src/systems/server/README.md`:76–84.
+7. `world/README`:103–104 — *a column twenty-one chunks wide* — at view distance 10 — `server/level/DistanceManager.java`:372–374.
+8. `world/README`:113–114 — *on three different threads, and the save path waits for none of it* — three lanes, and the unload waits for none (a flush does) — `ChunkMap.java`:425–449, :528–568.
+9. `world/README`:125 — *The sensor always hears you at least one tick late by design* — true of a mob; a player's step is chosen in the same server tick (as correction 238) — `world/level/gameevent/vibrations/VibrationSelector.java`:52–53; `server/MinecraftServer.java`:1095–1106; `server/level/ServerLevel.java`:367, :438.
+10. `world/README`:134–139 — *4% … the lowest figure in the book*, the leftover *the modifier classes … and the rest are look-up tables* — anatomy 0%, player 1% and server 2% are lower; the largest leftover is 26.3's `world/level/blockscan` (436 lines, a palette-first block search), then the modifier classes (305), and the rest are not all tables — `src/generated/coverage-*.md`; `python tools/pass5_coverage.py --part world`; `world/level/blockscan/BlockScanUtils.java`:43.
+11. `world/README`:141–143 — the world border is *the one mechanism here with no lecture*, *no tick phase* — `world/level/blockscan` has none either; a step of the level tick ticks the border when the tick rate runs normally — `ServerLevel.java`:343–344; `world/level/border/WorldBorder.java`:319–321.
+12. `world/README`:159–161 — *three of this part's mechanisms are registry-backed* — the part's vocabularies in `reference/registries`: chunk statuses, ticket types, fluids, game events, point-of-interest types, environment attributes, timelines, world clocks — `core/registries/BuiltInRegistries.java`:188, :192, :216, :245, :326, :342; `core/registries/Registries.java`:285, :294.
+13. `world/README`:22–24 — *four more are the ring, and they hand a chunk along it in order* — lighting is an inclusion, as the caption now says; *a chunk goes round it in order* — *(page-internal against the caption)*. *(from the record's audit)*
+14. `world/README`:113–114 (the session's own correction 8) — *the unload waits for none of it* — the unload does the copy itself; it waits for neither the encode nor the write — `server/level/ChunkMap.java`:528–568, :546, :849–855. *(from the record's audit)*
+15. `world/README`:134–139 (the session's own correction 10) — *26.3's `world/level/blockscan`* — a version note in the body (rule 3); *26.3's* cut. *(from the record's audit)*
+16. `world/environment-attributes-and-timelines`:8–9 — *every mob standing in the open stops being in danger of burning* — every mob that burns in daylight (`Mob.burnUndead` runs `Mob.isSunBurnTick` only for the `#burn_in_daylight` tag) — `world/entity/Mob.java`:508, :557.
+17. `world/environment-attributes-and-timelines`:18–20 — the day timeline's *keyframes are not values but modifier arguments* — its sky track's are; the sun, moon and star angle tracks are overrides whose keyframes are values — `data/minecraft/timeline/day.json`.
+18. `world/environment-attributes-and-timelines`:32 (cast) — `EnvironmentAttribute` has *three flags* — four: the fourth, *full-resolution biomes*, is set by `EnvironmentAttributes.NATURAL_MOB_SPAWNS` (new in 26.3) — `world/attribute/EnvironmentAttribute.java`:14–17, :114–117; `world/attribute/EnvironmentAttributes.java`:67.
+19. `world/environment-attributes-and-timelines`:34 (cast) — the system is *built in the level constructor* — also built per generating region, on the worker (as 22) — `server/level/WorldGenRegion.java`:119.
+20. `world/environment-attributes-and-timelines`:63–68 (f1 caption) — *the four rungs every value falls through* — a level's value; a generating region builds only the first two (as 22); the caption cut to two sentences.
+21. `world/environment-attributes-and-timelines`:78 — *absent from the other forty-six* — forty-nine: V1 moved the total to 51 and left this 48 − 2 — *(page-internal against :13)*; `EnvironmentAttributes.java`:20–70.
+22. `world/environment-attributes-and-timelines`:120–124 — `WorldGenRegion.environmentAttributes` *returning `EnvironmentAttributeReader.EMPTY` and answering everything with its default … gets a constant* — in 26.3 a region builds `EnvironmentAttributeSystem.Builder.addStaticLayers` over itself, dimension and biome, and `NaturalSpawner.spawnMobsForChunkGeneration` reads it; generation gets the place and never the hour (a 26.3 change V1 and V2 missed) — `WorldGenRegion.java`:119, :538–539; `world/attribute/EnvironmentAttributeSystem.java`:66–72.
+23. `world/environment-attributes-and-timelines`:94–95 — *eleven attributes across sixty-six biome files, with visual/sky_color in fifty-six* — thirteen, sixty-seven, fifty-seven (26.2's numbers; *dappled_forest* is new) — `data/minecraft/worldgen/biome/*.json`, counted by script (distinct keys of `attributes`; files; files naming the sky colour).
+24. `world/environment-attributes-and-timelines`:108 — the option *Hide Lightning Flashes* — its display name is *Hide Sky Flashes* — `assets/minecraft/lang/en_us.json`:6525 (`options.hideLightningFlashes`).
+25. `world/environment-attributes-and-timelines`:137–139 — an entry written as an object carries a modifier and an argument — except an attribute whose value is itself an object, written whole — `world/attribute/EnvironmentAttributeMap.java`:127–135.
+26. `world/environment-attributes-and-timelines`:155–157 — *fourteen [types], in four families … seven enumerations* — fifteen: two boolean, three numeric, two colour, six set whole, and two that combine (*ambient_particles*, a list that cross-fades, and the new *mob_spawn_settings*, which overlays) — `world/attribute/AttributeTypes.java`:22–46.
+27. `world/environment-attributes-and-timelines`:160–162 — *`AttributeType.toFloat` … decides whether an attribute can be read as a number* — `AttributeType.toInt` too (26.3) — `world/attribute/AttributeType.java`:16, :54–68; the two `EnvironmentAttributeValue` providers, `…/floats/EnvironmentAttributeValue.java`:13–17 and `…/ints/EnvironmentAttributeValue.java`:13–17.
+28. `world/environment-attributes-and-timelines`:164–167 — *four ways to combine two colours*, and *`AttributeType.checkAllowedModifier` throws at build time* for any track or entry — the colour libraries hold five operations (*blend_to_gray* takes no colour); `checkAllowedModifier` runs only in the game's own builders, and a data pack fails in the type's modifier codec — `world/attribute/modifier/AttributeModifier.java`:15–19; `EnvironmentAttributeMap.java`:106; `world/timeline/Timeline.java`:216; `AttributeType.java`:23, :34–44.
+29. `world/environment-attributes-and-timelines`:216–217 — *The subset a player can name is the one flagged `ClockTimeMarker.showInCommands`* — the subset `/time` suggests; any marker on the clock is accepted — `server/commands/TimeCommand.java`:81–84, :104–106; `world/clock/ServerClockManager.java`:90–100.
+30. `world/environment-attributes-and-timelines`:238–239, :458 — *a one-way switch thrown a hundred minutes into a world*, *a hundred minutes of play* — thrown when the overworld clock passes 120000, which sleeping jumps forward — `data/minecraft/timeline/early_game.json`; `server/level/ServerLevel.java`:356.
+31. `world/environment-attributes-and-timelines`:241–242 — *nothing in vanilla is bound to the End's clock* — no timeline is, but the End's dimension type names it as its default clock, the one `/time` sets there and the End's flash reads — `data/minecraft/dimension_type/the_end.json`:38; `client/multiplayer/ClientLevel.java`:322.
+32. `world/environment-attributes-and-timelines`:270–272 — *costs the client nothing, because it would never ask … identical everywhere the client actually looks* — the client asks for the unsynced bed rules through `LivingEntity.stopSleeping` → `AbstractBedBlock.onStopSleeping` → `AbstractBedBlock.getBedRule`, and gets the defaults — `client/multiplayer/ClientPacketListener.java`:1152; `world/entity/player/Player.java`:1309–1310; `world/entity/LivingEntity.java`:4117–4130; `world/level/block/AbstractBedBlock.java`:66–67, :127–133; `EnvironmentAttributes.java`:51–52.
+33. `world/environment-attributes-and-timelines`:314–317 (f2 caption) — *the level's only contribution is the first arrow* — the first two (the second is the invalidation reaching the samplers) — `EnvironmentAttributeSystem.java`:112–114, :168–171.
+34. `world/environment-attributes-and-timelines`:320–322 — *every downstream sampler compares against* the counter — every track sampler; the weather and flash layers ignore it — `world/timeline/AttributeTrackSampler.java`:32; `world/attribute/WeatherAttributes.java`:36.
+35. `world/environment-attributes-and-timelines`:335–338 — `LootContextParams.ORIGIN` *a required parameter* — declared among the parameters read, and the attribute's default answers when a context has none — `world/attribute/EnvironmentAttributeReader.java`:35–43; `EnvironmentAttributeProvider.java`:27–30.
+36. `world/environment-attributes-and-timelines`:349 — `KeyframeTrackSampler.sample` *bakes two extra segments* — the constructor bakes them (`bakeSegments`); `sample` does the floor-mod — `util/KeyframeTrackSampler.java`:18–44, :56.
+37. `world/environment-attributes-and-timelines`:364–365 — *both of them are about time* — one is space, one time — *(page-internal against :397)*.
+38. `world/environment-attributes-and-timelines`:418–419 — *A frame is cheap in proportion to how late in its tick it falls* — the first frame that asks pays; every later one only lerps — `world/attribute/EnvironmentAttributeProbe.java`:70–86.
+39. `world/environment-attributes-and-timelines`:445 — the nether pins three *and eleven more* — twelve more (fifteen; *straw_bed_rule* is new) — `data/minecraft/dimension_type/the_nether.json`.
+40. `world/environment-attributes-and-timelines`:137–139 (the session's own correction 25) — *except for an attribute whose value is itself an object, which is written whole* — the value codec is tried first, so any attribute overrides by writing its value, and an object-valued attribute modifies with a *modifier* and an *argument* like the rest (every one of the 67 biome files writes *gameplay/natural_mob_spawns* so, to overlay) — `world/attribute/EnvironmentAttributeMap.java`:127–135; `data/minecraft/worldgen/biome/swamp.json`; `world/level/biome/MobSpawnSettings.java`:47–55. *(from the record's audit)*
+41. `world/environment-attributes-and-timelines`:238–239 (the session's own correction 30) — *a one-way switch* — `/time set` writes the clock's total ticks, so setting the overworld clock back below 120000 closes it again — `server/commands/TimeCommand.java`:163–169; `world/clock/ServerClockManager.java`:83–88. *(from the record's audit)*
+42. `world/environment-attributes-and-timelines`:80–84 (beside corrections 19 and 22) — *the whole thing is built in the `ServerLevel` and `ClientLevel` constructors* — the level's stack; every generating region builds its own — `server/level/WorldGenRegion.java`:119; `world/level/chunk/status/ChunkStatusTasks.java`:64, :72, :92, :114, :142. *(from the record's audit)*
+43. `world/environment-attributes-and-timelines`:143–146 (beside correction 27) — `AttributeType` *a record of a value codec, an `AttributeType.modifierLibrary` … and four separate `LerpFunction`s* — nine components: a modifier codec and the two converters as well — `world/attribute/AttributeType.java`:16. *(from the record's audit)*
+44. `world/environment-attributes-and-timelines`:335–338 (beside correction 35) — `EnvironmentAttributeValue` written as one class — two number providers share the name, one for floats and one for ints — `world/level/storage/loot/providers/number/floats/EnvironmentAttributeValue.java`; `…/ints/EnvironmentAttributeValue.java`. *(from the record's audit)*
+45. `world/chunk-anatomy`:26 (cast) — `ImposterProtoChunk`'s thread *the server thread* — built there, read by a neighbour's step on the worldgen worker — `world/level/chunk/status/ChunkStatusTasks.java`:177, :187; `world/level/chunk/storage/SerializableChunkData.java`:285; `server/level/ChunkMap.java`:596–606, :715–728.
+46. `world/chunk-anatomy`:28 (cast) — `PalettedContainer`: *a second is detected rather than blocked* — the loser blocks on the permit, then both throw — `util/ThreadingDetector.java`:35–46; *(page-internal against :247–248)*.
+47. `world/chunk-anatomy`:51 (f1 label) — the imposter *reads delegate, writes are dropped* — its sections are the live chunk's, other writes dropped (as 49).
+48. `world/chunk-anatomy`:70 — *The diagram is the hierarchy and nothing else* — and the two links across it — *(page-internal against the caption)*.
+49. `world/chunk-anatomy`:131–137 — *every write to an imposter is dropped … only the single-section `ImposterProtoChunk.getSection` is gated* — `ImposterProtoChunk.getSection` without the flag falls back to `ChunkAccess.getSection`, which reads the overridden `getSections`, the live array: a write through a section lands on the live chunk — `world/level/chunk/ImposterProtoChunk.java`:57–58, :91–93; `world/level/chunk/ChunkAccess.java`:160–162.
+50. `world/chunk-anatomy`:165–166 and f2 caption — *the four counters hang off the middle one*, *Here is the whole of what one holds*, *Everything a chunk holds* — the figure is the block storage; the counters hang off the second of four levels; the caption cut to two sentences — *(page-internal against :76–97)*.
+51. `world/chunk-anatomy`:220–224 — V6: `LevelChunkSection.BIOME_CONTAINER_BITS` *the 2 that matters is the literal in `Strategy.createForBiomes` and no reader of the constant survives* — a compile-time constant (`LevelChunkSection.java`:14) inlined at `Strategy.java`:72; now *the 2 `LevelChunkSection.BIOME_CONTAINER_BITS` names*.
+52. `world/chunk-anatomy`:256–263 — the worker-pool writers are *either* `NoiseBasedChunkGenerator` *or* `BulkSectionAccess` — most generation takes the permit one write at a time (`PalettedContainer.getAndSet`); those two hold it across many — `world/level/chunk/PalettedContainer.java`:104–116; `world/level/chunk/ProtoChunk.java`:126.
+53. `world/chunk-anatomy`:271–276 — the in-place overwrite is *the ordinary case on a client, where `ClientChunkCache` reuses the live `LevelChunk`* — only when the slot still holds a chunk at that position; a chunk entering view is new — `client/multiplayer/ClientChunkCache.java`:114–121.
+54. `world/chunk-anatomy`:295–301 — *Each of them calls `PaletteResize.onResize` when it fills* — the first three; `GlobalPalette` never does — `world/level/chunk/GlobalPalette.java`.
+55. `world/chunk-anatomy`:303–304 — `PalettedContainer.Data.copyFrom` *walks every entry* — from a single value it fills — `PalettedContainer.java`:355–362.
+56. `world/chunk-anatomy`:359–363 — *The client applies the lot through …* — the chunk; its light is queued as a closure for a later frame — `client/multiplayer/ClientPacketListener.java`:903–919.
+57. `world/chunk-anatomy`:388–391 (heightmap table) — *blocks motion*, *not a `LeavesBlock`* — the tests are the block tags `BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP` and `BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES`, or holding fluid (data-driven in 26.3) — `world/level/levelgen/Heightmap.java`:33–35, :176–180.
+58. `world/chunk-anatomy`:399–401 — *a `LevelChunk` saves the four it was built with* — and any asked for since, which `ChunkAccess.getHeight` primes on demand — `ChunkAccess.java`:182–191; *(page-internal against :141–143)*.
+59. `world/chunk-anatomy`:408 — *`LevelChunk.setBlockState` is the one write path into a live chunk* — the ordinary one: `/place feature` with an ore writes live sections through `BulkSectionAccess` — `server/commands/PlaceCommand.java`:97–102; `world/level/chunk/BulkSectionAccess.java`:32–35.
+60. `world/chunk-anatomy`:426 (step 11's skip) — also when step 10 moved the block (the re-read) — `world/level/chunk/LevelChunk.java`:358.
+61. `world/chunk-anatomy`:429–433 — *will not claim a placement it no longer owns* — guards against step 8 only: if step 10 moves the block the call still marks the chunk and returns — `LevelChunk.java`:351–352, :377–378.
+62. `world/chunk-anatomy`:440 — `ProtoChunk.setBlockState`'s heightmaps *primed first if absent* — primed after the write — `ProtoChunk.java`:141–162.
+63. `world/chunk-anatomy`:445–450 — the ticker handle *outlives the block entity … one entry per position stands for the life of the chunk however many times the thing at the position is replaced* — a removed block entity takes its wrapper out of `LevelChunk.tickersInLevel` and rebinds it to the null ticker, which the level's list drops; only a block entity swapped in place or kept through a state change is rebound into the same wrapper — `LevelChunk.java`:71–77, :522–541, :563–569, :821–829; `world/level/Level.java`:432–433.
+64. `world/chunk-anatomy`:454–456 — *The other thing step 11 leaves is a debt … when the chunk goes live* — a debt from generation, paid when the chunk starts ticking (`ChunkMap.prepareTickingChunk`) — `ChunkMap.java`:739–748; `LevelChunk.java`:141–145.
+65. `world/chunk-anatomy`:458–460 — *A chest in a chunk freshly read from disk is not a `BlockEntity` yet* — a full chunk's tags become live block entities as it loads, unless saved still pending (*keepPacked*); the claim holds for a chunk still generating — `world/level/chunk/storage/SerializableChunkData.java`:479–493; `LevelChunk.java`:508, :514.
+66. `world/chunk-anatomy`:464–466 — `LevelChunk.registerAllBlockEntitiesAfterLevelLoad` *promotes the rest in bulk* — it walks the live block entities only; `LevelChunk.postProcessGeneration` promotes — `LevelChunk.java`:787–798.
+67. `world/chunk-anatomy`:359–363 (the session's own correction 56) — *queued for a later frame* — `ClientLevel.pollLightUpdates` applies it later in the same `Minecraft.runTick` unless a backlog is ahead of it — `client/Minecraft.java`:1238, :1396; `client/multiplayer/ClientLevel.java`:288–300, :518–523; *(against `client/the-client-level`:112–116)*. *(from the record's audit)*
+68. `world/chunk-anatomy`:458–460 (the session's own correction 65) — *the claim holds for a chunk still generating* — a feature or template that asks for a block entity makes it live at once (every loot chest is asked, to set its table), and a half-generated chunk read back from disk keeps every one pending — `server/level/WorldGenRegion.java`:240–262, :352–359; `world/RandomizableContainer.java`:46–50; `world/level/chunk/storage/SerializableChunkData.java`:297–302. *(from the record's audit)*
+69. `world/chunk-anatomy`:271–276 (the session's own correction 53) — *which is the case on a client whenever `ClientChunkCache` reuses …* — the in-place path is taken whenever the bit count selects the current configuration, a new chunk's all-air sections included; reuse is where the record overwritten can already be in use — `world/level/chunk/PalettedContainer.java`:84–85, :175–179; `world/level/chunk/ChunkAccess.java`:101–107. *(from the record's audit)*
+70. `world/chunk-anatomy`:426 (step 11, the session's own correction 60) — *or step 10 moved the block* — changed; the page keeps *moved* for the piston bit — `world/level/chunk/LevelChunk.java`:358. *(from the record's audit)*
+71. `world/chunk-anatomy`:51 (f1 label, the session's own correction 47) — *other writes dropped* — most: four pass through (`ImposterProtoChunk.markUnsaved`, `ImposterProtoChunk.setLightCorrect`, `ImposterProtoChunk.initializeLightSources`, `ImposterProtoChunk.getOrCreateHeightmapUnprimed`) — `world/level/chunk/ImposterProtoChunk.java`:102–105, :155–157, :232–235, :245–248. *(from the record's audit)*
+72. `world/chunk-anatomy`:454–456 (the session's own correction 64) — *a debt from generation* — and, for a chunk from an old save, from its upgrade: a generated chunk carries `UpgradeData.EMPTY` — `server/level/ChunkMap.java`:651; `SerializableChunkData.java`:102–104. *(from the record's audit)*
+73. `world/chunk-anatomy`:240–242 (beside correction 52) — *A worker that means to write instead brackets its work* — one that writes many blocks at once (as 52). *(from the record's audit)*
+74. `world/chunk-anatomy`:165–166 (the session's own correction 50) — *four things nested … the counters hang off the second*, read against the opening's four objects — the four named — *(page-internal against :7–10)*. *(from the record's audit)*
+75. `world/chunk-anatomy` — f2 node HM (beside correction 58) — *four Heightmaps* — at least four (as 58). *(from the record's audit)*
+76. `world/chunk-anatomy`:316–317 — `ChunkAccess.findBlocks` *and the points-of-interest scan behind it* — the block-light source scan (`ChunkAccess.findBlockLightSources`) is behind it; the points-of-interest check asks `LevelChunkSection.maybeHas` itself — `world/level/chunk/ChunkAccess.java`:327–346; `world/entity/ai/village/poi/PoiManager.java`:241–243. *(from the record's audit)*
+77. `world/tickets-and-loading`:8–9 (the opening) — *The nearest of them will be generated, lit, sent and alive within a second or two* — in a one-step walk the newly ticketed column sat one ring outside the old ticketed square, at level 32: already generated, lit and ticking its blocks; the step takes it to 31, entity ticking — `server/level/ChunkTracker.java`:70–72; `server/level/ChunkHolder.java`:339–347.
+78. `world/tickets-and-loading`:79–80 — `TicketType.FLAG_CAN_EXPIRE_IF_UNLOADED` *lets its countdown run under a chunk that has no holder yet* — every timed ticket counts down with no holder; the flag lets it count down even while the chunk is still loading — `world/level/TicketStorage.java`:338–347; *(page-internal against :389)*.
+79. `world/tickets-and-loading`:85 (table) — `PLAYER_LOADING`, *one per chunk in view* — per chunk within the server's view distance (the Chebyshev square), not the player's tracking view — `server/level/DistanceManager.java`:176–178, :372–374; *(page-internal against :376–379)*.
+80. `world/tickets-and-loading`:95–100 — an empty dimension skips *its entity loop and its block entities* — and the dragon fight (the linked section says three) — `server/level/ServerLevel.java`:405–410.
+81. `world/tickets-and-loading`:100–107 — the parked tickets are *replayed* at the next start — only the persisting ones are written, and only what the file held is replayed — `TicketStorage.java`:59–86; `server/MinecraftServer.java`:579–584.
+82. `world/tickets-and-loading`:109–116 — the spectator skip *is a remembered answer, not a re-asked one … everything downstream reads the remembered answer* — `ChunkMap.move` asks `ChunkMap.skipPlayer` again on every move and moves the player out of or into the distance manager when the answer changed; sending reads every player — `server/level/ChunkMap.java`:1186–1206. Overturns pass 5, session D's listed claim.
+83. `world/tickets-and-loading`:184 (f2 caption) — *not the twelve of `ChunkStatus`* — ten (V1 changed the list at :129–131 and left this) — `world/level/chunk/status/ChunkStatus.java`:20–29.
+84. `world/tickets-and-loading`:207–208 — *A chunk that never arrives is not an error anyone throws* — `ServerChunkCache.getChunk`, asked to load or generate, throws on a failed result — `server/level/ServerChunkCache.java`:146–152.
+85. `world/tickets-and-loading`:227 — *All of it … in three slots* — also a save, a load with a radius and the start-up counter run the distance updates — `ServerChunkCache.java`:310, :516; `server/level/ChunkLoadCounter.java`:19, :24.
+86. `world/tickets-and-loading`:232–235 — C's handoff: `MinecraftServer.pollTaskInternal` *polls every level's* executor *whenever the server thread would otherwise wait* — only when the server's own queue ran nothing and it is sprinting, blocked or ahead of schedule, and one level after another until one runs something — `MinecraftServer.java`:973–988.
+87. `world/tickets-and-loading`:246–247 — *The server thread never sleeps on a chunk* — `BlockableEventLoop.managedBlock` parks it briefly when there is nothing to run; while it waits it runs the chunk source's own tasks — `util/thread/BlockableEventLoop.java`:143–161; `ServerChunkCache.java`:623–665.
+88. `world/tickets-and-loading`:339–340 — *at most four view chunks are ever loading at once and they are the four nearest* — four player tickets in flight, the four nearest queued; each floods many holders — `server/level/ThrottlingChunkTaskDispatcher.java`:28–31; `DistanceManager.java`:327–329.
+89. `world/tickets-and-loading`:342–344 — the western column *past 44* has its futures complete and its demotion fire — a holder going past 44 was already inaccessible; the demotions are the columns crossing 31, 32 and 33 — `ChunkHolder.java`:305–356.
+90. `world/tickets-and-loading`:367 (table) — *both radii move at once* — one radius per setting, for every player — `server/players/PlayerList.java`:888–910.
+91. `world/tickets-and-loading`:369–371 (bold) — *a chunk becomes sendable at the same threshold that makes its blocks tick, so nothing is ever sent that the server is not also simulating* — sendable at the loading graph's level 32; block ticking asks the simulation graph, so past simulation distance a player is sent chunks that do not tick (the page's own hook) — `ChunkMap.java`:739–763; `ServerLevel.java`:460–461; `DistanceManager.java`:168–170. Overturns pass 5, session D's listed claim.
+92. `world/tickets-and-loading`:402–405 (closer) — *Why does the world load in a square? It does not, quite* — it does; what is sent is the rounded square — `ChunkTracker.java`:18–35; `server/level/ChunkTrackingView.java`:82–90.
+93. `world/tickets-and-loading`:416–419 (closer) — *Do spectators load chunks? Not unless … says so*; *a skipped player is still sent every chunk that already exists* — the rule defaults to on; with it off a spectator places no ticket, is sent only chunks other tickets hold at block ticking, and loads none — `world/level/gamerules/GameRules.java`:78; `ChunkMap.java`:919–925, :936–940, :1146, :1196.
+94. `world/tickets-and-loading`:436–437 — `ServerChunkCache.getChunk` *for everyone else* — for a synchronous ask (portals, pearls, the dragon and `/forceload` add tickets directly) — `world/entity/Entity.java`:3515; `server/level/ServerPlayer.java`:2461; `world/level/dimension/end/EnderDragonFight.java`:180; `world/level/TicketStorage.java`:449–453.
+95. `world/tickets-and-loading`:8–9 (the session's own correction 77) — *already generated, lit and ticking its blocks* — at simulation level 32 a chunk runs its scheduled ticks and no random ticks, which walk the entity-ticking chunks, so the step starts both; now *running its scheduled ticks, and now gets its random ticks and its entities as well* — `server/level/ChunkMap.java`:1032–1044; `server/level/DistanceManager.java`:200–213; `server/level/ServerChunkCache.java`:414–417; *(against `scheduled-ticks`:341–348)*. *(from the record's audit)*
+96. `world/tickets-and-loading` — f3 arrows 7 and 8 (the session's own arrow 8) — *21 in, 21 out, four at a time*; *added … removed … as the throttle releases each* — an add runs when the throttle lets its task through; only the removal runs on release, and at once, outside the four slots — `DistanceManager.java`:316–335; `server/level/ThrottlingChunkTaskDispatcher.java`:28–31; `server/level/ChunkTaskDispatcher.java`:50–61, :93–104. *(from the record's audit)*
+97. `world/tickets-and-loading` — f3 arrow 10 (the session's own) — *each column a level lower* — each eastern column; the western ones go a level higher and demote — `server/level/ChunkHolder.java`:317–356. *(from the record's audit)*
+98. `world/tickets-and-loading` — f3 caption (the session's own) — *the client hears only the new centre and a forget for each chunk that left the view* — of its chunks: `ChunkMap.move` first pairs or removes the tracked entities, and a forget goes only for a delivered chunk, to a living player — `ChunkMap.java`:1171–1182; `server/level/ServerEntity.java`:317–329; `server/network/PlayerChunkSender.java`:49–53. *(from the record's audit)*
+99. `world/tickets-and-loading`:227 (the session's own correction 85) — *the start-up counter* — the load counter runs at start-up and for every joining player, from `PrepareSpawnTask` — `server/network/config/PrepareSpawnTask.java`:163–189; `server/MinecraftServer.java`:572–587. *(from the record's audit)*
+100. `world/tickets-and-loading`:109–116 (the session's own correction 82) — `PlayerMap.ignoredOrUnknown` named as what `ChunkMap.move` compares — it reads `PlayerMap.ignored`; `ignoredOrUnknown` is read only when a player is added or removed — `ChunkMap.java`:1141, :1186; `server/level/PlayerMap.java`:33–39. *(from the record's audit)*
+101. `world/tickets-and-loading`:109–116 (the session's own correction 82) — *So entering or leaving spectator mode takes a player out of the distance manager* — only with `GameRules.SPECTATORS_GENERATE_CHUNKS` off, and it defaults on, as the closer now says — `world/level/gamerules/GameRules.java`:78. *(from the record's audit)*
+102. `world/tickets-and-loading`:416–419 (the session's own correction 93) — *places no ticket at all … and load none, not even from disk* — every joining player's `PrepareSpawnTask` places `TicketType.PLAYER_SPAWN` before the `ServerPlayer` exists, and a player with no save `TicketType.SPAWN_SEARCH`; now *no player ticket* and *once in the world* — `PrepareSpawnTask.java`:184–189, :221–223; `server/level/PlayerSpawnFinder.java`:129. *(from the record's audit)*
+103. `world/tickets-and-loading`:339–340 (the session's own correction 88) — *four player tickets* — four `TicketType.PLAYER_LOADING` tickets; `TicketType.PLAYER_SIMULATION` is not throttled — `DistanceManager.java`:142, :155. *(from the record's audit)*
+104. `world/tickets-and-loading`:389 (table, beside correction 81) — *every type but `TicketType.UNKNOWN` is parked and replayed on the next start* — only the persisting types reach disk, and only they are replayed — `world/level/TicketStorage.java`:59–86; `MinecraftServer.java`:579–584. *(from the record's audit)*
+105. `world/tickets-and-loading`:436–437 (beside correction 94) — *the two ways in from outside* — two of them (as 94) — `world/entity/Entity.java`:3515; `server/level/ServerPlayer.java`:2461; `world/level/dimension/end/EnderDragonFight.java`:180; `TicketStorage.java`:449–453. *(from the record's audit)*
+106. `world/tickets-and-loading`:120 (the session's own sentence) — `ChunkLevel` *runs down: the lower a chunk's level, the more of it is loaded* — between 31 and 33 what changes is ticking; now *the further the server takes it* — `server/level/ChunkLevel.java`:20–39. *(from the record's audit)*
+107. `world/chunk-generation-pipeline`:7 — *Nothing in the request mentions neighbours* — the request names the chunk and the eight around it (`ChunkMap.prepareAccessibleChunk` asks `ChunkMap.getChunkRangeFuture` at radius 1, *INITIALIZE_LIGHT* on the ring), and nothing further out — `server/level/ChunkMap.java`:781–782; the page's own :155–159.
+108. `world/chunk-generation-pipeline`:7–9 — *two of them write — the chunks around* — one: *TERRAIN*'s write radius is 0, its own column; only *FEATURES* writes a neighbour — `world/level/chunk/status/ChunkPyramid.java`:21, :23; `server/level/WorldGenRegion.java`:311–313.
+109. `world/chunk-generation-pipeline`:23 (cast) — `ChunkStatus` holds *the ten names and their order, and nothing else* — each also carries a chunk type and the heightmaps it leaves (and an index and a parent) — `world/level/chunk/status/ChunkStatus.java`:31–34; *(page-internal against :91–94)*.
+110. `world/chunk-generation-pipeline`:27 (cast) — `GenerationChunkHolder`: *every field of it is atomic* — atomic or volatile (`highestAllowedStatus`, `generationSaveSyncFuture` are volatile) — `server/level/GenerationChunkHolder.java`:29–35.
+111. `world/chunk-generation-pipeline`:34–36 — the third column is *whether it may write outside its own chunk* — it is how far from its own chunk the step may write (*TERRAIN*'s 0 is its own chunk) — *(page-internal)*; `ChunkPyramid.java`:21.
+112. `world/chunk-generation-pipeline`:40 (table row 1) — *region file and parse on the pool* — the region read is the IO lane (`IOWorker` over `Util.ioPool`); upgrade and parse are on the pool — `server/level/ChunkMap.java`:995–998, :591; `world/level/chunk/storage/IOWorker.java`:45, :151–166.
+113. `world/chunk-generation-pipeline`:51 — *Five of the ten leave the worldgen executor* — six (rows 1, 4, 5, 7, 8, 10; it was six before 26.3 too); overturns V2's item 5 — *(page-internal: the table)*.
+114. `world/chunk-generation-pipeline`:102–103 — the requirements table lists *STRUCTURE_STARTS* (which declares nothing beyond its parent) and omits *INITIALIZE_LIGHT* and *FULL*, which declare nothing either; the lead-in now says so — `ChunkPyramid.java`:12–32.
+115. `world/chunk-generation-pipeline`:133–134 — V6: `ChunkStatus.MAX_STRUCTURE_DISTANCE` *the pyramid writes the literal each time — no reader of the constant survives the decompile* — a compile-time constant javac inlines at `ChunkPyramid.java`:17, :19, :21, :23; now *the 8 is the distance `ChunkStatus.MAX_STRUCTURE_DISTANCE` names* — `ChunkStatus.java`:17.
+116. `world/chunk-generation-pipeline`:206–212 — *all worldgen for a dimension is a single file … widening the pool widens everything else that shares it instead* — the step bodies are single file; the biome fill and the terrain job fork onto the pool and run many chunks at once, because the dispatcher releases the next chunk as soon as a task's runnable returns, which `runUntilWait` does right after forking; widening the pool widens those forks — `server/level/ChunkTaskDispatcher.java`:93–104; `world/level/chunk/ChunkGenerator.java`:132–136; `world/level/levelgen/NoiseBasedChunkGenerator.java`:523.
+117. `world/chunk-generation-pipeline`:217 — *Overlap comes from yielding, not from threads* — the second half cut (as 116).
+118. `world/chunk-generation-pipeline`:257–258 — the replaceable mark *is what licenses the generator to build over it* — `ChunkMap.chunkTypeCache` is read only by `ChunkMap.isExistingChunkFull` in `ChunkMap.save`: it licenses a half-made chunk's *save* over the position; generation comes from the empty `ProtoChunk` failing `ChunkGenerationTask.canLoadWithoutGeneration` — `ChunkMap.java`:597–604, :649–656, :837–838, :872–876; `server/level/ChunkGenerationTask.java`:96–98. Overturns pass 5, session D's listed claim.
+119. `world/chunk-generation-pipeline`:343 — the write-zone read *is a log warning* — one line at error level (`Util.logAndPauseIfInIde`); the heading's *only warns* is left as the ordinary word — `util/Util.java`:854–859; `WorldGenRegion.java`:281.
+120. `world/chunk-generation-pipeline`:374–375 — `GenerationChunkHolder.replaceProtoChunk`: *the whole step thrown out* — it throws, and `GenerationChunkHolder.applyStep` relays the exception as a crash — `GenerationChunkHolder.java`:68–80, :98–112.
+121. `world/chunk-generation-pipeline`:400–402 — `ChunkLoadCounter` *counts holders that reach FULL … until it is zero* — it holds the holders the restored saved tickets raise to *FULL*, drops each as it arrives, and `MinecraftServer.prepareLevels` loops until none is pending — `server/level/ChunkLoadCounter.java`:15–43; `server/MinecraftServer.java`:573–595.
+122. `world/chunk-generation-pipeline`:452–457 (closer) — *Why does adding cores not speed up world generation?* answered as though nothing parallelises — it speeds up the part that forks (the biome fill and the terrain job run on the pool, many chunks at once); the step bodies stay single file — as 116.
+123. `world/chunk-generation-pipeline`:461–462 — *the light steps need the 3×3 neighbours* — only *LIGHT* has a radius-1 requirement in the loading pyramid — `ChunkPyramid.java`:45–48.
+124. `world/chunk-generation-pipeline`:464–468 — the stuck chunk *sits at STRUCTURE_STARTS or BIOMES* — whatever its level allows, from *STRUCTURE_STARTS* at the edge to *INITIALIZE_LIGHT* (level 34) — `server/level/ChunkLevel.java`:20–27.
+125. `world/chunk-generation-pipeline`:207–213 (the session's own sentences, correction 116) — *every step body for a dimension runs single file … what runs in parallel is what a step forks onto the pool, the biome fill and the terrain job* — the inline steps run single file; beside them run the disk read's upgrade and parse and the forks on the pool, the light work on its executor and *FULL* on the Server thread — `server/level/ChunkMap.java`:185–192, :591, :998; `world/level/chunk/status/ChunkStatusTasks.java`:124–138, :152–188. *(from the record's audit)*
+126. `world/chunk-generation-pipeline`:452–457 (the closer, the session's own correction 122) — *what leaves that executor … runs on the worker pool* — what it forks onto the pool; the light steps and *FULL* leave it for other executors — as above. *(from the record's audit)*
+127. `world/chunk-generation-pipeline`:400–402 (the session's own correction 121) — `ChunkLoadCounter` described as a start-up counter only — `PrepareSpawnTask` builds one for every joining player, over its spawn ticket's chunks — `server/network/config/PrepareSpawnTask.java`:163–198. *(from the record's audit)*
+128. `world/chunk-generation-pipeline`:27 (cast, the session's own correction 110) — *its fields are atomic or volatile* — its mutable fields are (`pos` is final) — `server/level/GenerationChunkHolder.java`:29. *(from the record's audit)*
+129. `world/chunk-generation-pipeline`:441–448 (f2 caption, the session's own) — *handed between five queues*, *the worker pool for the datafix, the parse*, *the Server thread for … the structure starts*, and *the structure … work* among what a chunk on disk skips — the count cut (the dispatcher's own queue is a sixth); in the no-file scenario the upgrade and parse stages run empty; only the posted starts reach the Server thread; a loaded chunk still replays its structure starts (`ChunkStatusTasks.loadStructureStarts`) — `world/level/chunk/status/ChunkPyramid.java`:35–36; `ChunkStatusTasks.java`:57–60; `server/level/ServerLevel.java`:1893–1896. *(from the record's audit)*
+130. `world/lighting`:9–10 — the queue is one *that nothing in the level tick will ever drain* — the level tick never drains it itself, but its unload step kicks a batch (`ChunkMap.scheduleUnload`) — `server/level/ChunkMap.java`:498–501, :552–553.
+131. `world/lighting`:10–16 (the hook) and C's handoff — the flood runs *because the server thread finished early*, and `ServerChunkCache.MainThreadExecutor.pollTask` is *the only routine caller*, reached *only when the tick has budget left* — the poll is reached while the server is ahead of schedule, blocked or sprinting, and from inside a synchronous chunk wait mid-tick, and the unload step is a routine second caller; the bold now reads *the Server thread went looking for something to do*, usually because the tick finished early — `server/MinecraftServer.java`:973–988; `server/level/ServerChunkCache.java`:147, :221, :657–663; `ChunkMap.java`:553.
+132. `world/lighting`:71 — *Every section below walks one stretch of that diagram* — most do (*Lit before you ever see it* does not) — *(page-internal)*.
+133. `world/lighting`:73–74 — `ClientPacketListener` *only wraps the packet in a closure* — on arrival; the closure it runs later is `ClientPacketListener.applyLightData` — *(page-internal against :379–383)*.
+134. `world/lighting`:145 — *Two callers ever start a batch* — two schedule one; `ThreadedLevelLightEngine.addTask` runs one inline at a thousand (:156–161) — `server/level/ThreadedLevelLightEngine.java`:136–137, :208–213.
+135. `world/lighting`:146–149 — *light propagates in the gaps of a tick that finished early* — in the Server thread's spare moments (as 131).
+136. `world/lighting`:158–160 — V6: `ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE` *though the test is written as a literal* — a compile-time constant (`ThreadedLevelLightEngine.java`:28) javac inlines at :136; now *the number `ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE` names*.
+137. `world/lighting`:165 — *The two middle arrows of that trace are one batch* — the light executor's stretch has five arrows — *(page-internal against f1)*.
+138. `world/lighting`:177 (f2 node), :191–196 (f2 caption), :200–201 — `LayerLightSectionStorage.visibleSectionData` *is what every reader, saver and packet builder sees*, and the swap is *the whole of what another thread ever observes* — the saver and the packet builder read a queued layer first; each layer (block, then sky) has its own pair of maps — `world/level/lighting/LayerLightSectionStorage.java`:73–77; `world/level/lighting/LevelLightEngine.java`:50–62; *(page-internal against :345–347)*.
+139. `world/lighting`:223 — the torch is `Blocks.TORCH` — on a wall it is `Blocks.WALL_TORCH`, also 14 — `world/level/block/Blocks.java`:397–406.
+140. `world/lighting`:226–228 — dampening is *derived rather than declared* — by default; leaves and tinted glass declare their own — `world/level/block/LeavesBlock.java`:84–85; `world/level/block/TintedGlassBlock.java`:18–19.
+141. `world/lighting`:229–230 — the flood *stops where a neighbour is already brighter* — as bright — `world/level/lighting/BlockLightEngine.java`:66, :71.
+142. `world/lighting`:234 — *The batch's only exit is `LightChunkGetter.onLightUpdate`* — its only way to the chunk holders (the POST tasks also complete generation futures) — `ThreadedLevelLightEngine.java`:173–179, :200–205.
+143. `world/lighting`:284–286 — a lit chunk from disk skips propagation *because `ThreadedLevelLightEngine.initializeLight` already enabled its column* — because `ChunkStatusTasks.isLighted` hands `ThreadedLevelLightEngine.lightChunk` a flag — `ThreadedLevelLightEngine.java`:186–190; `world/level/chunk/status/ChunkStatusTasks.java`:38–40.
+144. `world/lighting`:288–296 — *nothing waits for light before sending a chunk: what stops a half-lit chunk shipping is the pyramid* — the chunk's own *LIGHT* task must run before it reaches *FULL*; the pyramid is the neighbours' half — `ThreadedLevelLightEngine.java`:200–205; `ChunkStatusTasks.java`:134–137.
+145. `world/lighting`:299–300 — the send dependency grafts light *onto chunks the client already holds* — it holds back the send of chunks not yet sent — `server/level/ChunkHolder.java`:91–93, :99–108.
+146. `world/lighting`:313–326 — `ChunkHolder.sectionLightChanged` sets a bit *only past both* gates and puts the holder in the broadcast set; *a chunk still generating is not even marked dirty* — two more returns (section out of range, bit already set); `ServerChunkCache.onLightUpdate`'s posted task adds the holder; a chunk at *INITIALIZE_LIGHT* or later is marked unsaved — `ChunkHolder.java`:151–176; `ServerChunkCache.java`:490–499.
+147. `world/lighting`:330–332 — the packet goes out *only on a tick where the level ticked chunks* — `ServerChunkCache.broadcastChangedChunks` sits outside the run-normally test, so a frozen tick still broadcasts — `ServerChunkCache.java`:344–358.
+148. `world/lighting`:353–361 — the halo *never [reaches three sections deep] on all three at once — three per axis would be 27* — spans of three on every axis occur; what never happens is filling the 3×3×3 box — the session's reading of `SectionPos.aroundAndAtBlockPos` over the octahedron (the agent's brute force: 1,728 of 4,096 offsets).
+149. `world/lighting`:375–376 — the client runs *a bounded number* of light closures a frame, *so a burst … is spread over frames* — a tenth, at least ten, and all of them once a thousand are queued — `client/multiplayer/ClientLevel.java`:288–301.
+150. `world/lighting`:393–396 and the closer :400–403 — *the packet mostly confirms what the client computed*; the torch lights *a tick after it lands*, *four hand-offs, none of them scheduled* — the player who placed it, in the middle of their view, gets no light packet (`ChunkHolder.broadcastChanges` sends light to border players only) and sees their own client's light; the chain holds for a player at the edge; the fourth hand-off is a fixed phase — `ChunkHolder.java`:192–197; `ChunkMap.java`:220–233; *(page-internal against :338–341)*.
+151. `world/lighting`:405–408 (closer) — *Why is a newly loaded chunk sometimes a black wall? Its column's light is not enabled yet …* — cut: the gate it cites withholds a section's first mesh (it is not drawn, not drawn dark), and a column with no light data reads as full sky light, so the answer's mechanism cannot produce the symptom; the true cause is not established from the decompile — `client/SectionUpdateTracker.java`:41–49; `world/level/lighting/SkyLightSectionStorage.java`:25–47. The question is the second edition's (under *For later sessions*).
+152. `world/lighting`:422–423 (blockquote) — `SectionTracker` *([tickets])* — it serves points of interest (`PoiManager.DistanceTracker`) — `world/entity/ai/village/poi/PoiManager.java`:269.
+153. `world/lighting`:439–441 (*Where to look*) — *where generation turns light on rather than computing it* — `ThreadedLevelLightEngine.lightChunk` computes it — `ThreadedLevelLightEngine.java`:186–190.
+154. `world/lighting`:400–403 (the closer, the session's own correction 150) — *For a player at the edge of the view it does* (the torch lights a tick late) — every watching client lights the torch itself when the block arrives in the same tick's broadcast; what reaches the edge player a tick later is the server's light, which matters only where the flood comes from chunks they do not hold; the question now asks when the server's light reaches them — `server/MinecraftServer.java`:1095–1103; `server/level/ChunkHolder.java`:205, :220; `client/multiplayer/ClientLevel.java`:214–216, :517–524; `world/level/chunk/LevelChunk.java`:313–320; *(page-internal against :349–353)*. *(from the record's audit)*
+155. `world/lighting`:67–68 (f1 caption, the session's own) — *before a wall is drawn lit for a player at the edge of the view* — before the server's light reaches them (as above). *(from the record's audit)*
+156. `world/lighting`:234 (the session's own correction 142) — *reaches the chunk holders only through* `LightChunkGetter.onLightUpdate` — its POST tasks complete the futures holders wait on (the send dependency, the *LIGHT* step); now *tells the chunk holders which sections changed only through* — `server/level/ThreadedLevelLightEngine.java`:200–205, :246–250; `ChunkHolder.java`:99–108; `server/level/GenerationChunkHolder.java`:68–75; *(page-internal against :304–307)*. *(from the record's audit)*
+157. `world/lighting`:191 (f2 caption, the session's own) — *One batch on one layer* — a batch runs its PRE tasks once, the block layer's pass, the sky layer's, then its POST tasks once; now *drawn for one of the two layers it runs in turn between the same PRE and POST tasks* — `ThreadedLevelLightEngine.java`:225–242; `world/level/lighting/LevelLightEngine.java`:50–62. *(from the record's audit)*
+158. `world/lighting`:288–296 (beside correction 144) — the send's wait on its neighbours left to inference — a chunk is sent only from `ChunkMap.prepareTickingChunk`, which waits for all eight neighbours at *FULL*, so each has run its own *LIGHT* step; now said — `server/level/ChunkMap.java`:739–757. *(from the record's audit)*
+159. `world/lighting`:200–201 and the f2 caption (beside correction 138) — *A reader on another thread sees each layer before the batch or after it* — a reader of the visible map: a section initialised from queued data in the same batch is flooded in place, and the saver and the packet builder, which read the queued layer first, can see it mid-flood — `world/level/lighting/LayerLightSectionStorage.java`:73–77, :92–98, :120–124, :162–176, :260–265. *(from the record's audit)*
+160. `world/lighting`:375–376 (the session's own correction 149) — *so a burst of chunk loads is usually spread over frames instead of stalling one* — cut to the arithmetic: the owner page, `client/the-client-level`:107–109, says the opposite (*one long frame*), and is handed to J — `client/multiplayer/ClientLevel.java`:288–291. *(from the record's audit)*
+161. `world/chunk-storage`:11 — *neither of those writes* — none (*several* writes) — *(page-internal)*.
+162. `world/chunk-storage`:18–19 and the closer :408–416 (C's handoff) — the autosave is *five minutes of wall clock whatever `/tick rate` says*, *Because the interval is wall clock*, and a rate change *can never push it back* — the countdown is executed server ticks (skipped when overloaded, frozen while paused), five minutes of the server's scheduled time at any rate; `MinecraftServer.onTickRateChanged` assigns only a smaller count, so a slower rate stretches the ticks left, up to five minutes from the change; the closer's question now asks whether lowering the rate pushes the autosave out — `server/MinecraftServer.java`:1076–1078, :1111, :1128–1150; as session C's correction 13 on `server/server-tick`.
+163. `world/chunk-storage`:52–58 (f1 caption) — *the three threads*; *the foreground call parks the tag … and returns* — three lanes (the IO lane's tasks can run on different *IO-Worker-n* threads); the foreground task first waits for the encode — `world/level/chunk/storage/IOWorker.java`:45, :139–149; `server/level/ChunkMap.java`:852–855; `util/Util.java`:305–310.
+164. `world/chunk-storage`:60–61 — *flushing the position's POI section* — the chunk's POI column — `world/level/chunk/storage/SectionStorage.java`:310–315.
+165. `world/chunk-storage`:96–97 — *one gzipped `<id>.dat`* — *data/\<namespace\>/\<path\>.dat* — `world/level/storage/SavedDataStorage.java`:60–61.
+166. `world/chunk-storage`:98, :104–107 — saved data saves *on the same principle as a chunk*; *Copy while the world is still, encode and write while it moves: the same bargain*; `SavedDataStorage.saveAndJoin` reached *only* by a flush save or shutdown — it is encoded on the caller's thread and only the write moves (half the bargain); the world upgrader reaches `saveAndJoin` too — `SavedDataStorage.java`:202–267, :290–299; `util/worldupdate/WorldUpgrader.java`:129; *(page-internal against :99–101)*.
+167. `world/chunk-storage`:115 (table, the unload row) — *nothing* holds it back — the tick's budget does, except for the oldest tasks past 2,000, which drain regardless — `ChunkMap.java`:494–501.
+168. `world/chunk-storage`:136–138 — shutdown unloads *because `ServerChunkCache.close` never consults* `noSave` — because the shutdown clears `ServerLevel.noSave` on every level before it drains — `MinecraftServer.java`:684–693.
+169. `world/chunk-storage`:157–163 — `tryMarkSaved` and `canBeSerialized` are *flat falses, not the pass-throughs the wrapper's other methods are*; *the reason is the same in both cases* — `ImposterProtoChunk.isUnsaved` is a flat false too, and eight setters are no-ops; the `LevelChunk` reason is the imposter's only (an empty proto chunk has none under it) — `world/level/chunk/ImposterProtoChunk.java`:160–171; `ChunkMap.java`:842.
+170. `world/chunk-storage`:167–169, f2 notes :182 and :186, caption :197–202 — *the longer story is three ticks apart*, *a later tick*, *a later tick again*, *The two note bars each open a later tick* — ordinarily one `ServerChunkCache.tick`: the distance updates fill `ChunkMap.toDrop`, the unload phase moves the holder, `ChunkMap.scheduleUnload` queues the task at once when the save future is complete, and the same drain runs it while the budget lasts — `server/level/ServerChunkCache.java`:323–341; `ChunkMap.java`:462–505, :526–562.
+171. `world/chunk-storage`:187 (f2) — *getSaveSyncFuture again — a different one, and the task rearms* — on a different future the task re-calls `ChunkMap.scheduleUnload` and stops; the steps below run on the same one — `ChunkMap.java`:531–535.
+172. `world/chunk-storage`:193 (f2), :201–202 (caption), :218–220 — the entities go *by a different road and a later step*, `PersistentEntitySectionManager.updateChunkStatus` having *saw the same level change* — it saw the chunk fall below full (level 34), rings before the drop, so in a walk-away the entities leave earlier — `server/level/ChunkHolder.java`:299–301, :355; `world/level/entity/PersistentEntitySectionManager.java`:143–157; `world/level/entity/Visibility.java`:25–27.
+173. `world/chunk-storage`:227–230 — the filter turns away *a `Player`, an `EnderDragonPart`, a passenger, a vehicle carrying exactly one player* and they are *neither written nor removed* — a passenger of a saved root is written inside it and removed with it; a dragon part is never in an entity section — `PersistentEntitySectionManager.java`:202–245; `server/level/ServerLevel.java`:2089–2095.
+174. `world/chunk-storage`:264 — *a chunk unloaded and re-loaded a second later never touches the region file* — only while its write is still pending; on an idle lane the write lands at once — `IOWorker.java`:228, :238, :242–253.
+175. `world/chunk-storage`:271, :280–281 — *Three places make the server thread wait on a disk … None of the three is on the save path* — besides a synchronous chunk load; `ChunkMap.isExistingChunkFull` is called inside `ChunkMap.save`, for a chunk that is not full — `ChunkMap.java`:826–846; `ServerChunkCache.java`:143–147.
+176. `world/chunk-storage`:276 — a POI section *that `SectionStorage.prefetch` never fetched* — or has not finished fetching — `SectionStorage.java`:126–145, :183–203.
+177. `world/chunk-storage`:320–322 — *the only clock the save path consults* is `Util.getMillis` — the copy reads game time as data (*LastUpdate*, the ticks' delays); `Util.getMillis` is the only clock that times the path — `world/level/chunk/storage/SerializableChunkData.java`:366, :374.
+178. `world/chunk-storage`:369–372 — `PoiManager.checkConsistencyWithBlocks` *re-derives each section's points of interest* — only a section whose stored record is not marked valid (or with none stored) — `world/entity/ai/village/poi/PoiManager.java`:222–238; `PoiSection.java`:148–163.
+179. `world/chunk-storage`:386–391 (C's handoff) — the upgrader *datafixes each chunk tag and writes it back — optionally into fresh region files*, from *Optimize World*; the thread *named World Upgrader* — it writes only the tags that changed, or every one with *--recreateRegionFiles*, which the button never passes; the thread is *World Upgrader #n* — `util/worldupdate/RegionStorageUpgrader.java`:256–266; `client/gui/screens/worldselection/OptimizeWorldScreen.java`:96; `server/Main.java`:84, :298; `WorldUpgrader.java`:36.
+180. `world/chunk-storage`:399 (closer) — *Does the game stall when it saves? Only on a flush.* — it waits for the disk only on a flush; an autosave still copies every unsaved chunk and serialises the loaded entities on the Server thread in its tick — `ChunkMap.java`:451–459; `PersistentEntitySectionManager.java`:298–310.
+181. `world/chunk-storage`:405–406 — *the only place where waiting for the disk is the point* — the entity store's flush and the saved data's `saveAndJoin` join too — `world/level/chunk/storage/EntityStorage.java`:170–171; `PersistentEntitySectionManager.java`:312–324.
+182. `world/chunk-storage`:420–421 (closer) — *Why is my entities/ folder full of files with nothing in them? It is not* — nothing deletes a region file once its entries are cleared — `world/level/chunk/storage/RegionFileStorage.java` (no delete); `world/level/chunk/storage/RegionFile.java`:295–306.
+183. `world/chunk-storage`:399 (closer, the session's own correction 180) — *It waits for the disk only on a flush* — every save, autosave included, writes `level.dat` and each player's file synchronously on the Server thread; now *The chunk stores wait …* and the two writes named — `server/MinecraftServer.java`:635, :651–652; `server/players/PlayerList.java`:292–302, :687–690; `world/level/storage/PlayerDataStorage.java`:35–51; `world/level/storage/LevelStorageSource.java`:618–644; *(against `server/how-a-server-dies`:425–427)*. *(from the record's audit)*
+184. `world/chunk-storage`:320–322 (the session's own correction 177) — *the only clock that times the save path* — the autosave counts server ticks; `Util.getMillis` spaces one chunk's writes — `MinecraftServer.java`:1076–1078, :1111, :1128–1141. *(from the record's audit)*
+185. `world/chunk-storage`:271 (the session's own correction 175) — *Three places besides a synchronous chunk load* — and a flush save, which joins the chunk store, the entity store and the saved data — `server/level/ChunkMap.java`:447; `world/level/chunk/storage/EntityStorage.java`:170–171; `world/level/storage/SavedDataStorage.java`:290–291. *(from the record's audit)*
+186. `world/chunk-storage`:369–372 (the session's own correction 178) — the page kept *not marked valid* where the record said *or with none stored* — a section with no stored record is created and scanned when its palette may hold a point of interest — `world/entity/ai/village/poi/PoiManager.java`:230–236. *(from the record's audit)*
+187. `world/chunk-storage` — f2 note and caption (the session's own correction 172) — *the entities left rings earlier* — in a walk-away: a chunk that falls from FULL past the drop level in one update (a teleport, a logout) is demoted in the same `DistanceManager.runAllUpdates`, and its entities go later in the same level tick — `server/level/ChunkHolder.java`:353–355; `ChunkMap.java`:384–386; `server/level/ServerLevel.java`:387, :443. *(from the record's audit)*
+188. `world/chunk-storage`:60–61 and the f1 caption (beside correction 164) — the Server thread's whole share is the copy, *the first box alone* — for a chunk that is not full, the guard's read comes first (as 175) — `ChunkMap.java`:835–840, :870–890. *(from the record's audit)*
+189. `world/chunk-storage`:117 (table, the autosave row) — *an accessible, ready, unsaved `LevelChunk` or `ImposterProtoChunk`* — an imposter passes the type test and is never unsaved (as 169) — `ChunkMap.java`:801–803; `world/level/chunk/ImposterProtoChunk.java`:170–172. *(from the record's audit)*
+190. `world/chunk-storage`:18–19 (the session's own correction 162) — *whatever `/tick rate` says*, against the closer's stretch — at any steady rate — `MinecraftServer.java`:1144–1149. *(from the record's audit)*
+191. `world/chunk-storage`:136–138 (the session's own correction 168) — the flush save credited with the shutdown's unloads — the shutdown clears `ServerLevel.noSave`, which reopens `ChunkMap.tick`'s drain, and ticks until `ChunkMap.hasWork` is false before its flush save; the sentence correction 168 replaced (`ServerChunkCache.close` runs the flush without consulting `noSave`) was true, so 8 gave a better reason, not a fix — `MinecraftServer.java`:687–707; `ChunkMap.java`:463–474; `server/level/ServerChunkCache.java`:309–319. *(from the record's audit)*
+192. `world/scheduled-ticks`:54–56 and the f1 caption :75 — *This is booking, and anything may do it from anywhere*; *Everything that can happen to an appointment* — the figure is booking into a live level (`LevelTicks.schedule` is touched only from the Server thread); generation books into a generating chunk's list through `WorldGenTickAccess`, and the client's and an imposter's queues swallow bookings — `server/level/WorldGenRegion.java`:80–85; `world/ticks/WorldGenTickAccess.java`:19–22; `world/ticks/ProtoChunkTicks.java`:19–31; `client/multiplayer/ClientLevel.java`:810–817; *(page-internal against :126–130)*.
+193. `world/scheduled-ticks`:145–146 — the two containers *are the only place a pending tick ever lives* — a live chunk's; a generating chunk's live in `ProtoChunkTicks` — `ProtoChunkTicks.java`:12.
+194. `world/scheduled-ticks`:156–159 — the callback *fires only when the tick just added is the container's new head* — it is invoked on every add and acts only on a new head — `world/ticks/LevelChunkTicks.java`:72–74; `world/ticks/LevelTicks.java`:55–59.
+195. `world/scheduled-ticks`:209–210 — *Head no longer due … back to the index, and asked again next tick* — a not-due head goes back at its own time and is asked when due; only a budget-spent container is asked next tick — `LevelTicks.java`:128, :158–166, :182–184.
+196. `world/scheduled-ticks`:226–228 — *`LevelChunkTicks.removeIf`, through the two area operations* — through `LevelTicks.clearArea` only; `LevelTicks.copyAreaFrom` removes nothing — `LevelTicks.java`:273–294, :301–326.
+197. `world/scheduled-ticks`:231–232 — *That laziness is the whole difference between the two questions* — the difference is which collection each reads — `LevelChunkTicks.java`:78–81; `LevelTicks.java`:242–252.
+198. `world/scheduled-ticks`:303–308 (f3 caption) — *The two note bars are the two ticks nothing happens in, and the middle one is …* — the first bar is the quiet tick; the second opens the tick in which the appointment runs; *which is what makes the one threading rule enforceable* cut (no thread check on the booking path: `LevelTicks.java`:88–98) — *(page-internal against the figure)*.
+199. `world/scheduled-ticks`:319–321 — *the only removals are the bulk area operations above, for `/clone` and the gametest framework* — the only removal is the gametest framework's `LevelTicks.clearArea` — as 196; overturns pass 5, session E's listed claim.
+200. `world/scheduled-ticks`:326–328 — *the write … fans out through no channel `Level.setBlock` opened* — with flags 2 the shape pass still runs; only the neighbour channel is skipped — `world/level/Level.java`:231–248.
+201. `world/scheduled-ticks`:334 — *one of two ways a block gets a turn* — one of the ways (block events and block-entity tickers are others) — `server/level/ServerLevel.java`:1329–1350; `world/level/Level.java`:419.
+202. `world/scheduled-ticks`:350–352 — eligibility baked *from `BlockBehaviour.Properties.randomTicks`* — from `BlockBehaviour.isRandomlyTicking`, which defaults to the property and which twenty-five block classes override — `world/level/block/state/BlockBehaviour.java`:373–374, :896–898; `world/level/block/Blocks.java`:2055.
+203. `world/scheduled-ticks`:366–367 — the relative delay means *a world closed and reopened a month later still fires its ticks on schedule* — game time pauses while a world is closed, so an absolute time would too; the relative delay matters for a chunk that unloads while the world runs on — `server/level/ServerLevel.java`:464–468, :1889–1891; `world/ticks/SavedTick.java`:43.
+204. `world/scheduled-ticks`:383 — *The queue fills only when …* — the saved ticks enter it only then; fresh bookings enter before — `LevelChunkTicks.java`:62–76.
+205. `world/scheduled-ticks`:417–421 (closer) — the ticks *are all collected in one drain*; *The only appointment actually lost …* — the due ones, within the budget; outside generation and the test framework's area clear — `LevelTicks.java`:153, :191, :209–211; `world/level/chunk/ImposterProtoChunk.java`:204–211.
+206. `world/scheduled-ticks`:425 (blockquote) — `ScheduledTickAccess`'s *whole job is booking* — blocks also ask through it — `world/level/block/ObserverBlock.java`:67.
+207. `world/scheduled-ticks`:433–441 (*Where to look*) — *three phases* listing no clean-up; *the three containers*, `SavedTick` among them — `LevelTicks.cleanupAfterTick` added; `SavedTick` is the disk form, not a container — `SavedTick.java`:13.
+208. `world/scheduled-ticks`:145–146 (the session's own correction 193) — *the only place a live chunk's pending tick lives* — a collected tick waits in `LevelTicks.toRunThisTick` until it runs; now *waits until a drain collects it* — `world/ticks/LevelTicks.java`:45, :154–156, :198–207. *(from the record's audit)*
+209. `world/scheduled-ticks`:366–367 (the session's own correction 203) — *the same number of ticks after it comes back* — after it starts ticking again; a chunk back only as a border chunk holds its ticks unaged — `server/level/ServerLevel.java`:1889–1890; `world/ticks/LevelChunkTicks.java`:128–141. *(from the record's audit)*
+210. `world/scheduled-ticks`:433–441 (the session's own correction 207) — *the two containers that are not a live chunk's*, `BlackholeTickAccess` among them — it is two static no-op accessors, the imposter's and the client's; now *the two stand-ins for a live chunk's containers* — `world/ticks/BlackholeTickAccess.java`:7, :21, :43, :47. *(from the record's audit)*
+211. `world/scheduled-ticks`:53–54 (beside correction 192) — *this page's one threading fact — the drain is server-thread only, and booking is not — so it is two figures* — both figures draw Server-thread work; the seam is booking against the drain — *(page-internal against :126–130 and correction 192)*. *(from the record's audit)*
+212. `world/scheduled-ticks`:41 (cast, beside correction 192) — `BlackholeTickAccess` on *Render, and the Server thread* — an imposter's is reached only from a generating region's `WorldGenTickAccess`, on the worldgen workers — `server/level/WorldGenRegion.java`:80–85; `world/level/chunk/ImposterProtoChunk.java`:204–210. *(from the record's audit)*
+213. `world/scheduled-ticks`:103–105 (f2 caption, the session's own) — *the two ways back to the index … in both cases its ticks are late* — a container whose head is not due waits for it and is not late; one whose chunk is not ticking never leaves the index — `LevelTicks.java`:140–143, :161–165, :182–184. *(from the record's audit)*
+214. `world/scheduled-ticks`:146–148 (the link in correction 193's sentence) — cited `chunk-anatomy`'s *what placing a block actually does*, which says nothing of tick containers — now *the four shapes a chunk takes* — *(the pages)*. *(from the record's audit)*
+215. `world/fluids`:28 (cast) — `Fluid` holds *every per-fluid number as an overridable method* — the slope numbers (`FlowingFluid.getDropOff`, `FlowingFluid.getSlopeFindDistance`) are `FlowingFluid`'s — `world/level/material/FlowingFluid.java`:352, :437; `world/level/material/Fluid.java`:75; *(page-internal against the table)*.
+216. `world/fluids`:29 (cast) — `FluidState` is *what a tick names*, *one interned combination of FALLING and LEVEL* — a tick names the `Fluid`; a state is a combination of its fluid's properties (a source has no LEVEL, the empty state neither) — `server/level/ServerLevel.java`:217, :840; `world/ticks/ScheduledTick.java`:25–33.
+217. `world/fluids`:30–31 (cast) — `FlowingFluid` and `WaterFluid` on *Server* — the flow's direction and the particles are read on the client too — `client/multiplayer/ClientLevel.java`:627; `client/renderer/block/FluidRenderer.java`:135; `world/entity/EntityFluidInteraction.java`:102.
+218. `world/fluids`:144–149 (f1 caption) — the client *hears exactly twice* — twice of the block changes (the placer also gets an acknowledgement, and the source's light change queues a light packet for border players); cut to two sentences — `server/network/ServerGamePacketListenerImpl.java`:309–310; `server/level/ChunkHolder.java`:192–197.
+219. `world/fluids`:140 (f1) and :361–363 — *the shape pass books the source again*, *whose `LiquidBlock.updateShape` books the source* — the neighbour update runs first (`Level.setBlock`'s neighbour channel before its shape pass), so `LiquidBlock.neighborChanged` books the source and the shape pass's booking is a dropped duplicate — `world/level/Level.java`:236–246; `world/level/block/LiquidBlock.java`:154–155, :171–172; `world/ticks/LevelChunkTicks.java`:62–68.
+220. `world/fluids`:179–181 — *Nothing in `FlowingFluid` books its own future except the single line in `FlowingFluid.tick`* — true, and that booking is always a duplicate the queue drops: the write one line earlier runs `LiquidBlock.onPlace`, which books the same position and fluid at `Fluid.getTickDelay` — `FlowingFluid.java`:452–457; `world/level/chunk/LevelChunk.java`:354; `LiquidBlock.java`:127–131; `LevelChunkTicks.java`:52–68.
+221. `world/fluids`:191–193 — *a single `ClientboundSectionBlocksUpdatePacket`* — within one section; a flow across a section edge sends one per section — `ChunkHolder.java`:207–226.
+222. `world/fluids`:220 (f2, node B1) and :230–233 (f2 caption) — *two or more sources, and a floor under them*; *so a falling column can never convert itself* — the floor is under the block being filled and the game rule must allow it; conversion is asked first, so a block with the same fluid overhead still becomes a source — `FlowingFluid.java`:199–213; *(page-internal against :275–284)*.
+223. `world/fluids`:246 (f3, node SET) and :252–255 (f3 caption) — the changed arm books *a tick `FlowingFluid.getSpreadDelay` out*; *even the block that just became air still tries to push its neighbours once* — the booking that holds is `LiquidBlock.onPlace`'s at the tick delay (as 220); `FlowingFluid.spread` returns at once on an empty state — `FlowingFluid.java`:129, :461.
+224. `world/fluids`:257–260 — *a pane of glass between two source blocks is enough to stop them making a third* — a pane is a waterloggable `CrossCollisionBlock` whose post does not close the face, so the test passes and the pane is waterlogged; the example cut — `world/level/block/IronBarsBlock.java`:23; `world/level/block/CrossCollisionBlock.java`:23; `world/level/block/Blocks.java`:759.
+225. `world/fluids`:271 — `FlowingFluid.BlockStatePairKey` *hashes both states by identity* — and the direction — `FlowingFluid.java`:492–512.
+226. `world/fluids`:360 — `FlowingFluid.spreadTo` *schedules nothing at all*; *`LevelWriter.setBlock` with flags 3* — it schedules nothing itself, but a `LiquidBlockContainer.placeLiquid` books its own; the call is `LevelWriter.setBlockAndUpdate` — `world/level/block/SimpleWaterloggedBlock.java`:30; `FlowingFluid.java`:291–298.
+227. `world/fluids`:380–384 — *Only the outermost block of the flow comes back empty; every ring behind it comes back one level lower* — each block that ticks comes back at its highest same-fluid neighbour's amount less the drop-off, empty once nothing beside it holds more — `FlowingFluid.java`:215–217.
+228. `world/fluids`:405–408 — lava *creeps unevenly, and the unevenness is rolled fresh on each tick* (`LavaFluid.getSpreadDelay`) — the ×4 delay feeds the booking `FlowingFluid.tick` makes after its write, which is dropped whenever the write leaves lava (as 220), so lava keeps its steady tick delay; the same in 26.2 — `world/level/material/LavaFluid.java`:184–193; `FlowingFluid.java`:446–457. **A probable upstream bug, written on the page as what the code does.**
+229. `world/fluids`:412–417 — *two of them leave a block behind*; *nothing spreads, whatever the water is in*; *a lavafall onto a waterlogged stair is merely stopped* — lava reaches `LavaFluid.spreadTo` downward only over a `LiquidBlock` (a waterloggable block cannot hold lava), so all three leave a block; over a waterlogged stair lava spreads sideways with no fizz; nothing spreads *down* — `FlowingFluid.java`:128–150; `SimpleWaterloggedBlock.java`:22; `LavaFluid.java`:205–216.
+230. `world/fluids`:439–440 (*Where to look*) — *The two numbers files that make lava lava: `WaterFluid` · `LavaFluid.spreadTo`* — the numbers files are `WaterFluid` and `LavaFluid`; two of the three exceptions live in `LiquidBlock.shouldSpreadLiquid` — *(page-internal against :386–426)*.
+231. `world/fluids`:144–149 (f1 caption, the session's own correction 218) — *of the block changes it hears two* — of the broadcast ones: the use-on click first gets two direct block updates back — `server/network/ServerGamePacketListenerImpl.java`:1621–1622. *(from the record's audit)*
+232. `world/fluids`:191–193 (the session's own correction 221) — *a single `ClientboundSectionBlocksUpdatePacket`* — one a tick; the flow arrives over many ticks — `server/level/ChunkHolder.java`:204–235. *(from the record's audit)*
+233. `world/fluids`:179–181 and :405–408 (the session's own corrections 220 and 228) — the booking is *always* a dropped duplicate — not when the write turns lava to rock, where `LiquidBlock.onPlace` books nothing; *always* cut — `world/level/block/LiquidBlock.java`:130–131, :199–204. *(from the record's audit)*
+234. `world/fluids`:412 (the session's own correction 229) — *All three end in a fizz and in the spread being abandoned* — the lip of a lava lake still spreads sideways; now *All three end in a fizz and leave a block behind* — `world/level/material/FlowingFluid.java`:139–144. *(from the record's audit)*
+235. `world/fluids`:32 (cast, beside correction 217) — `LavaFluid` on *Server* — its particles and sounds run on the client too — `world/level/material/LavaFluid.java`:56–74. *(from the record's audit)*
+236. `world/fluids`:141 (f1, beside correction 221) — *four more block changes, in one section packet* — when they share a section — `ChunkHolder.java`:207–226. *(from the record's audit)*
+237. `world/game-events-and-vibrations`:9–10 — the dispatcher *called every listener inside its own radius inline*; *Nothing about that broadcast is deferred* — the catalyst is queued and told after the walk; nothing waits for a later tick — `world/level/gameevent/GameEventDispatcher.java`:34–38, :56–57; *(page-internal against :109–117)*.
+238. `world/game-events-and-vibrations`:12–15 (the bold hook) — *The sensor always hears you at least one tick late by design … an event delivered inside `Entity.move` cannot be acted on in the tick that made it* — true in game time (a candidate is chosen only when its stamp is below the current game time), but a player's movement packet is handled before the level tick advances the clock, so the sensor's ticker chooses a player's footstep in the same server tick; only a mob, moving inside its own tick after the clock moves, pays a whole tick. The hook now says so — `server/MinecraftServer.java`:1095–1106; `server/level/ServerLevel.java`:367, :413, :438; `world/level/gameevent/vibrations/VibrationSelector.java`:52–54; `world/level/gameevent/vibrations/VibrationSystem.java`:195; `server/network/ServerGamePacketListenerImpl.java`:1322. Overturns pass 6, session D's bold claim. The same in 26.2.
+239. `world/game-events-and-vibrations`:16–18 — *two of them* (the wool box and the crouch) *do not work the way the folklore says* — one: the crouch (as 244) — `VibrationSystem.java`:147, :318–337; `world/level/block/SculkSensorBlock.java`:97–108.
+240. `world/game-events-and-vibrations`:56–58 — `EntityPositionSource` resolves its UUID *the first time it is asked* — each time it is asked until it finds the entity — `world/level/gameevent/EntityPositionSource.java`:47–76.
+241. `world/game-events-and-vibrations`:141–144 (f1 caption) — the catalyst *takes the lower one* — the two ends share the bottom rank; now *the queued one*; cut to two sentences — the render.
+242. `world/game-events-and-vibrations`:168–172 (f2 caption) and :190 — *the arm along the bottom* — the step-on arm runs down the right — the render (`render/world--game-events-and-vibrations--f2.png`).
+243. `world/game-events-and-vibrations`:181 — *Two gates ask the user* — three: the listener's `PositionSource` resolving is the user's too — `VibrationSystem.java`:283–293.
+244. `world/game-events-and-vibrations`:207–210 — *a single block of wool on the straight line is almost never enough, and a wool box is a box because a box is what makes all six fail* — the six rays start a hundred-thousandth of a block apart and run to the same point, so a wool block the line passes through stops all six; only a line grazing an edge slips one past; a box is needed because events come from every side — `VibrationSystem.java`:319–337.
+245. `world/game-events-and-vibrations`:214 — *does not arrive for eight ticks* — of game time (as 238).
+246. `world/game-events-and-vibrations`:227 (f3 note), :246–250 (f3 caption) — *tick T, the entity ticks and moves*; *The three note bars are the wait … Count the arrows above the second bar against the arrows below it — almost all of the machinery runs in the tick the footstep happened* — the figure has six notes; three arrows sat above the second, eight below; a candidate is refused in tick T and chosen in T plus 1; the note now says a mob moves in its tick and a player from its packet (as 238).
+247. `world/game-events-and-vibrations`:236 (f3) — *the VibrationInfo, then startOver clears the slot* on the selector's reply — `VibrationSelector.startOver` is the ticker's call, made after the particle is sent — `VibrationSystem.java`:200–202.
+248. `world/game-events-and-vibrations`:253–254 — the block tickers are `SculkSensorBlock.getTicker` and `SculkShriekerBlock.getTicker` — and `CalibratedSculkSensorBlock.getTicker`, its own override — `world/level/block/CalibratedSculkSensorBlock.java`:36–39.
+249. `world/game-events-and-vibrations`:265 — `VibrationSystem.Data.shouldReloadVibrationParticle` *is set* — it is the getter that answers yes — `VibrationSystem.java`:346, :353, :390.
+250. `world/game-events-and-vibrations`:281–285 — *the earliest it can be selected is the tick after* — in game time; the next server tick for a mob, the same one for a player (as 238).
+251. `world/game-events-and-vibrations`:292–294 — *the distance the vibration actually travelled* — the block-centre distance from the source to the listener's block at arrival — `VibrationSystem.java`:231–237.
+252. `world/game-events-and-vibrations`:321–323 — V6: *never the constant `SculkSensorBlock.ACTIVE_TICKS`, which nothing reads* — a compile-time constant (`SculkSensorBlock.java`:48) javac inlines; now *the number `SculkSensorBlock.ACTIVE_TICKS` names*, in parentheses (the sentence's second dash pair, V4).
+253. `world/game-events-and-vibrations`:329–330 — *Shriekers do not hear you* — not your footsteps; standing on one sets it off directly — `world/level/block/SculkShriekerBlock.java`:54–67.
+254. `world/game-events-and-vibrations`:346 (table) — `SculkShriekerBlockEntity.tryShriek` gives *warning level, darkness, and a warden at level 4* — the shriek raises the warning level; darkness and the warden come when the shriek ends — `world/level/block/entity/SculkShriekerBlockEntity.java`:130, :137–143, :151, :174–182, :201; `SculkShriekerBlock.java`:70–75.
+255. `world/game-events-and-vibrations`:358–359 — the warden is *invisible to every other listener while being the most sensitive one on the list* — to every other vibration listener (a catalyst takes a warden's death); *most sensitive* cut (the calibrated sensor and the allay share its radius) — `world/level/block/entity/SculkCatalystBlockEntity.java`:89–116.
+256. `world/game-events-and-vibrations`:398–403 (*Where to look*) — `VibrationSelector.chosenCandidate` listed before `VibrationSystem.Ticker.tick`, *in the order the cascade asks them* — the ticker calls it; swapped — `VibrationSystem.java`:173–174, :195.
+257. `world/game-events-and-vibrations`:410–411 — *The brain behind a warden or an allay is [entity anatomy]'s* — `entities/ai-goals-and-brains`, as :361 already says — *(page-internal)*.
+258. `world/game-events-and-vibrations` — f3 note 1 and caption (the session's own correction 246) — *tick T, the entity moves — a mob in its tick, a player from its packet*, with the refusal in tick T drawn for both — a player's candidate is never refused: its stamp is below the clock when the sensor next ticks, in the same server tick; note 1 now a mob's, the caption's first clause *a mob's candidate* — `server/MinecraftServer.java`:1101, :1103; `server/level/ServerLevel.java`:367, :413, :438; `world/level/gameevent/vibrations/VibrationSelector.java`:53. *(from the record's audit)*
+259. `world/game-events-and-vibrations`:9–10 (the session's own correction 237) — *called the listeners inside its own radius inline* — the dispatcher's radius by grammar; the test is each listener's own, and all but the catalyst's are called inline — `world/level/gameevent/EuclideanGameEventListenerRegistry.java`:99–103; `world/level/gameevent/GameEventDispatcher.java`:25–36, :56–57. *(from the record's audit)*
+260. `world/game-events-and-vibrations`:292–294 (the session's own correction 251) — *the distance from the source to the listener's block* — from the source's block — `world/level/gameevent/vibrations/VibrationSystem.java`:231–232, :237, :316. *(from the record's audit)*
+261. `world/game-events-and-vibrations`:346 (the session's own correction 254) — *raises the warning level* — only on a shrieker that can summon (`SculkShriekerBlock.CAN_SUMMON`, not peaceful, the rule on); otherwise it shrieks at level 0 and its end brings no darkness — `world/level/block/entity/SculkShriekerBlockEntity.java`:129–131, :157, :175; `world/level/block/SculkShriekerBlock.java`:44, :110–111. *(from the record's audit)*
+262. `world/game-events-and-vibrations`:358–359 (the session's own correction 255) — *invisible to every other vibration listener* — to every one, wardens included: no user overrides `VibrationSystem.User.isValidVibration` — `VibrationSystem.java`:136–160; `world/entity/monster/warden/Warden.java`:184–185. *(from the record's audit)*
+263. `world/points-of-interest`:55 (f1 edge), :63–67 (f1 caption), :72–78 — releases come *from one of four villager behaviours*; *No transition here is driven by the holder*; *three of the four call sites … Those four are …* — five release a ticket: `ValidateNearbyPoi`, `Villager.releaseAllPois` (death and the lightning conversion, not a behaviour), `SetWalkTargetFromBlockMemory`, `GoToPotentialJobSite` and `VillagerMakeLove`; four check first; the release is the holder's own brain or its end — `world/entity/ai/behavior/GoToPotentialJobSite.java`:44–53; `world/entity/npc/villager/Villager.java`:633, :806; *(page-internal against :88–90)*.
+264. `world/points-of-interest`:85–86 — `YieldJobSite` *hands a `MemoryModuleType.POTENTIAL_JOB_SITE` over to an unemployed neighbour* — the unemployed villager hands its site to a neighbour whose profession the site belongs to — `world/entity/ai/behavior/YieldJobSite.java`:20–40, :64–74.
+265. `world/points-of-interest`:110–111 — the unclaimable types are *indexed purely so something can find the nearest one fast* — so something can find one fast (the lodestone check asks one position) — `world/item/component/LodestoneTracker.java`:28.
+266. `world/points-of-interest`:127–128 — `ChunkMap` builds the store *with `DataFixTypes.POI_CHUNK`* — `PoiManager`'s own constructor names it — `world/entity/ai/village/poi/PoiManager.java`:52.
+267. `world/points-of-interest`:181–183, :215–221 (f2 caption) — *The index is asked twice*; *the index consulted once at each end and not in between*; *both `MemoryModuleType.HOME`*; *the ticket … is still the only record that a villager has any claim at all* — the index is written at the placement, asked at the claim (between the ends), and asked at night by `ValidateNearbyPoi` whether the record exists; the type compared is `PoiTypes.HOME`; the villager's memory is the other record of the claim; the caption cut to two sentences — `world/entity/ai/behavior/ValidateNearbyPoi.java`:32–35; `world/entity/ai/behavior/AcquirePoi.java`:81–96; `server/level/ServerLevel.java`:1571–1574; *(page-internal against :12–13 and :211)*.
+268. `world/points-of-interest`:205 (f2) — *entity event 14* drawn on the Brain arrow — `ServerLevel.broadcastEntityEvent`, now its own arrow to the `ServerLevel` lane — `AcquirePoi.java`:94–96.
+269. `world/points-of-interest`:212 (f2 note) and :301–303 — *WakeUp clears the flag*; *`WakeUp` … calls `LivingEntity.stopSleeping` the instant `Activity.REST` goes inactive, and `SleepInBed.stop` does the same* — `SleepInBed.stop` wakes the villager as the behaviour ends, and `WakeUp` catches any villager still asleep outside the rest activity — `world/entity/ai/behavior/WakeUp.java`:14–20; `world/entity/ai/behavior/SleepInBed.java`:66, :104–110.
+270. `world/points-of-interest`:237–241 — the retry is *never as rarely as once every twenty seconds* — the gap reaches the 400-tick cap and then the untouched marker is dropped and the saw restarts — `AcquirePoi.java`:66–68, :145–175.
+271. `world/points-of-interest`:276–282 — `SetWalkTargetFromBlockMemory` releases only *once CANT_REACH_WALK_TARGET_SINCE has stood for more than 1200 ticks* — also when the memory points into another dimension, or the bed is too far to find a way toward — `world/entity/ai/behavior/SetWalkTargetFromBlockMemory.java`:24–48.
+272. `world/points-of-interest`:290–291 — *a villager killed in its sleep can leave it set* — dying wakes it first (`LivingEntity.die` calls `LivingEntity.stopSleeping`); the villager example cut — `world/entity/LivingEntity.java`:1590–1592.
+273. `world/points-of-interest`:322–323 — the village graph *is a picture of what is loaded right now, and it shrinks as chunks unload* — of what has been read into memory this run: `SectionStorage` never evicts a section — `world/level/chunk/storage/SectionStorage.java`:49, :165, :230, :243 (the section map is only ever put to).
+274. `world/points-of-interest`:339–340 — `PatrolSpawner` *refuses to spawn a patrol within two sections of one* — it tests its chosen player's position; the patrol spawns 24 to 47 blocks off — `world/level/levelgen/PatrolSpawner.java`:40–43.
+275. `world/points-of-interest`:344 (heading) — *Everyone else who reads the index* — the table is not everyone (`SetClosestHomeAsWalkTarget`, `LocateHidingPlace`, `MoveThroughVillageGoal` and others read it too); now *Other readers of the index*; no link lands on it (`check_links.py --inbound`).
+276. `world/points-of-interest`:358–359 — `PoiManager.ensureLoadedAndValid` *forces loading rather than tolerating what is in memory* — every query loads POI sections from the file; it alone forces the chunks themselves to load — `PoiManager.java`:98, :172, :178, :255–266.
+277. `world/points-of-interest`:389–390 (closer) — *claimable by anyone — including the villager that thought it already had one* — `AcquirePoi` needs the memory absent; the villager already pointing there keeps pointing, so two villagers hold one bed — `AcquirePoi.java`:50; `ValidateNearbyPoi.java`:35–36.
+278. `world/points-of-interest`:63–67 (f1 caption, the session's own) — *or its death* — or its end: `Villager.releaseAllPois` also runs on the lightning conversion — `world/entity/npc/villager/Villager.java`:633, :800–806. *(from the record's audit)*
+279. `world/points-of-interest`:276–282 (the session's own correction 271) — *or the bed is too far to find a way toward* — with the bed more than 150 blocks off, a thousand tries find no step toward it — `world/entity/ai/behavior/SetWalkTargetFromBlockMemory.java`:25–38; `VillagerGoalPackages.java`:68. *(from the record's audit)*
+280. `world/points-of-interest`:127–128 (the session's own correction 266) — *its own constructor* read as `ChunkMap`'s — `PoiManager`'s — `PoiManager.java`:52; `server/level/ChunkMap.java`:195. *(from the record's audit)*
+281. `world/points-of-interest`:181–183 and the f2 caption (the session's own correction 267) — the index *asked* at the claim — asked, and a ticket taken (`PoiManager.take` writes) — `PoiManager.java`:146–151. *(from the record's audit)*
+282. `world/points-of-interest`:318 (bold, beside correction 273) — *A village is made of loaded sections only* — of the sections in memory — `world/level/chunk/storage/SectionStorage.java`:49, :165, :230, :243. *(from the record's audit)*
+283. `world/points-of-interest`:348 (table, beside correction 276) — `PortalForcer`'s cell, *drags the sections in* — drags the chunks in — `PoiManager.java`:255–266. *(from the record's audit)*
+284. `world/points-of-interest`:386–388 (the closer, beside correction 271) — *keeps its GlobalPos until `ValidateNearbyPoi` next runs* — or until `SetWalkTargetFromBlockMemory` gives it up — `SetWalkTargetFromBlockMemory.java`:24, :45–48. *(from the record's audit)*
+
+### Figures changed
+
+- `world/README` f1 — label GP→LI *two of its ten statuses* (correction 2).
+- `world/chunk-anatomy` f1 — two member labels: `ImposterProtoChunk` *sections shared, most other writes dropped* (corrections 47 and 71); `LevelChunk` *owned by the Server thread* (the key's name). No relation changed.
+- `world/tickets-and-loading` f3 (the walk east) — arrow 7 `DM->>DM` *21 in, four at a time, 21 out at once* (the removals are not throttled: `ChunkTaskDispatcher.java`:50–61); arrow 8 `DM->>TS` *PLAYER_LOADING added at 31 east as the throttle lets each through, removed west as each is released* (the add and remove run in later main-thread tasks: `DistanceManager.java`:316–335); arrow 10 `DM->>CH` *updateFutures: each eastern column a level lower, the new one 32 to 31* (was *45 to 31 arms all three*: correction 77). Orderings unchanged.
+- `world/chunk-generation-pipeline` f2 (the whole walk) — arrow 8 `CM->>Worker` relabelled *the pool's upgradeChunk and parseChunk, after the region read on the IO lane* (the read is `IOWorker.loadAsync` on `Util.ioPool`, not the pool: `ChunkMap.java`:995–998); arrow 9 `Worker->>CM` *back on the Server thread, no file, so createEmptyChunk* (the figure's scenario has no file, so `SerializableChunkData.read` never runs: `ChunkMap.java`:597–604); arrow 17 `CGT->>SL` *SPAWN inline, then FULL* split into `CGT->>CM` *SPAWN at 0, inline* and `CGT->>SL` *FULL, on the main-thread executor* (*SPAWN* runs through a `WorldGenRegion` on the worldgen executor and never touches `ServerLevel`: `ChunkStatusTasks.java`:140–146), after the light arrow; arrow 18 `SL->>CM` *the LevelChunk is built, wrapped …* becomes the reply `SL-->>CGT` *the LevelChunk, built, wrapped, loaded and registered* (it is built inside `ChunkStatusTasks.full` and returns through `ChunkMap.applyStep`'s future: `ChunkStatusTasks.java`:157–188; `GenerationChunkHolder.java`:68–80). Orderings: the light steps, then *SPAWN*, then *FULL*, then the reply, then the release; no other arrow changed.
+- `world/lighting` f1 — arrow 2 `LC->>LC` *so the column's sky-light source is repaired* (was *rebuilt*: `ChunkSkyLightSources.update` rewrites one entry); arrow 7 `TLE->>BLE` *the window's PRE tasks reach checkBlock, then runLightUpdates on this layer* (was the caller's own `LevelLightEngine.runLightUpdates` drawn at the callee); arrow 10 `LLSS->>LLSS` *a fresh copy of the updating map is published* (was *the changed sections are spliced in*: the splice is queued sections only, `LayerLightSectionStorage.java`:130–181, :276–283); arrow 16 `CH->>CL` *…, to a player at the edge of the view* (correction 150); two notes *Server thread*. Orderings unchanged.
+- `world/lighting` f2 — node VIS *volatile, what every reader sees* (correction 138). Unchanged edges.
+- `world/chunk-storage` f2 — note 1 *the unload phase of the same ServerChunkCache.tick*; `CH-->>CM` *the future is complete, or completes later, and the task joins unloadQueue*; note 2 *the same drain while the budget says yes, or a later one, or among the oldest past 2,000*; `CM->>CH` *getSaveSyncFuture again — the same one, or the task rearms and stops*; the arrow `SL->>PESM` replaced by a note over the two lanes, *the entities left rings earlier, when the chunk fell below FULL*. Orderings otherwise unchanged.
+- `world/fluids` f1 — arrow 18 `SL->>LB` *neighborChanged on the source, which books it again* (correction 219). Unchanged orderings.
+- `world/fluids` f2 — node B1 *two or more sources, conversion allowed, and a floor under this block* (correction 222).
+- `world/fluids` f3 — node SET *the new state, the same two flags, and LiquidBlock.onPlace books the next tick* (correction 223).
+- `world/game-events-and-vibrations` f3 — note 1 *tick T, a mob moves in its own tick*; the reply `VSel-->>VST` *the VibrationInfo*; a new message `VST->>VSel` *startOver clears the slot* after `sendParticles` (correction 247). Orderings: choose, reply, particle, clear, then the countdown.
+- `world/points-of-interest` f1 — edge `Held --> Free` *PoiManager.release, from one of four behaviours or the villager's end* (correction 263).
+- `world/points-of-interest` f2 — `AP->>Brain` *MemoryModuleType.HOME set to a GlobalPos*, then a new `AP->>SL` *broadcastEntityEvent 14* (correction 268); the last note *…, SleepInBed.stop or WakeUp clears the flag, the ticket stays* (correction 269). Orderings otherwise unchanged.
+
+### Captions written
+
+- `world/README` f1: *The part numbered to the watch order: four pages and the live chunk make the ring, and five arrows run round it, the one into lighting an inclusion rather than a hand-off — two of the pipeline's own ten statuses, run on a different executor. Chunk anatomy hands the ring its vocabulary, lecture one hands the live chunk its values, and the last four act on the live chunk, one of them through another page.*
+- `world/environment-attributes-and-timelines` f1: *The four rungs a level's value falls through, and the one branch that is not on every value's path: weather is the last word on the server, and the client stacks two more layers above it, each bolted to one attribute — one lerps the sky colour toward the lightning flash, the other pins the sky light factor to 1. A client asking for anything else falls the same four rungs a server does, and a region being generated builds only the first two.*
+- `world/environment-attributes-and-timelines` f2: *One attribute resolved once, on the server, inside one tick: the level's only contribution is the first two arrows, which throw last tick's answer away, and every arrow after them is the stack being walked because a mob asked. Nothing here is pushed — a value exists because something wanted it.*
+- `world/chunk-anatomy` f2: *A chunk's block storage, down to the bit storage: the two containers of a section have a `PalettedContainer.Data` each and never share one, and the four counters hang off the section rather than the containers, which is why they can answer without touching either. Nothing in this picture is light — the two 4-bit fields live in the light engine's own storage, not on the section ([lighting](lighting.md#one-batch-and-what-it-publishes)).*
+- `world/tickets-and-loading` f2: *not the ten of `ChunkStatus`*; *going down the page* (the wording).
+- `world/tickets-and-loading` f3: *One step east, from the packet to a chunk on the wire: everything above the note bar happens inside handling one packet, where, of its chunks, the client hears only the new centre and a forget for each delivered chunk that left the view, and everything below it waits for the distance manager to be asked to run its updates. The two dotted arrows are the only two things that come back, and both come back late.* — was *to the first chunk on the wire* and *the centre packet is the only thing the client hears* (the forget packets go inside the move, and an entering chunk already ticking is marked pending there: `ChunkMap.java`:1227–1253; `server/network/PlayerChunkSender.java`:49–53); four sentences made two.
+- `world/tickets-and-loading` f1: *One ticket, two graphs, and a chunk that is only alive where both arms agree: the left arm decides what a chunk may become and the right one whether it does anything, and neither consults the other. A chunk the left arm carries to block-ticking level and the right one does not exists, is lit and is sent, and is inert.* — was *reaches the left arm's last box* and *Look at the join at the bottom*: the left arm carries a chunk to block-ticking level, where it is sent (`ChunkMap.java`:739–763, :936–940; `ServerLevel.java`:460–461).
+- `world/chunk-generation-pipeline` f2: *One chunk from a level change to a live `LevelChunk`, handed between the worldgen executor the task runs on, the IO lane for the region read, the worker pool for its upgrade and parse stages and the two forks, the light executor, and the Server thread for the read's result, the posted structure starts and `ChunkStatus.FULL`. The self-message in the middle is the load-or-generate decision: below it, the sweep to radius 11 and the structure, biome, terrain, feature and spawn generation are what a chunk already on disk would skip, and the structure-start replay, the light steps and FULL are what it would still run.* — was *four executors* (five with the IO lane: `IOWorker.java`:45) and *everything below it is work that the other answer would have skipped* (a loaded chunk still runs `ChunkStatusTasks.loadStructureStarts`, both light steps and *FULL*: `ChunkPyramid.java`:33–53), and three sentences.
+- `world/lighting` f1: *A torch placed, and the four boundaries the server's light crosses before it reaches a player at the edge of the view: the placement and the lighting are in the same tick but not on the same thread, the packet waits for the end of the chunk tick, and the client applies it on a frame rather than a tick. Nothing on this page blocks the Server thread on a light result.*
+- `world/lighting` f2: *One batch, drawn for one of the two layers it runs in turn between the same PRE and POST tasks, and the two maps that layer is written between: the three stages down the left all write the same scratch map, and none of them writes the one another thread reads. That is why the picture has two cylinders and not one — and why a reader of the visible map gets that layer before the batch or after it, never a half-propagated flood.*
+- `world/chunk-storage` f1: *One chunk saved, across the three lanes that touch it, coloured by which one: the server's share for a full chunk is the first box alone, and it ends at a snapshot, so everything to the right of it happens after the tick that decided to save has moved on. The two middle boxes are the same lane at two priorities — the foreground task waits for the encode and parks the tag in `IOWorker.pendingWrites`, and the background one runs only when nothing is queued in front of it, which is why a write can sit there for a long time and cost the Server thread nothing.* — was *the three threads*, *the foreground call parks the tag … and returns* and *cost nobody anything* (correction 163); the foreground task's wait on the encode ties up the IO lane, so it now costs the Server thread nothing.
+- `world/chunk-storage` f2: *A chunk nobody needs, from the level that stopped needing it to the write that records it, ordinarily inside one tick: the two note bars mark where the budget or a pending save can push the rest to a later one, and the two dotted arrows are completions the Server thread does not wait for. The entities are not in it — in a walk-away they left by a different road, earlier, when the chunk fell below full.* — was *three ticks apart* and *the two arrows that come back are the only two waits in the picture*: the dotted arrows are completions nobody joins (`ChunkMap.java`:562, :855–861; corrections 170 and 172).
+- `world/chunk-storage` f3: *Two ways to write one chunk, putting the content and the pointer to it in opposite orders: on the left the bytes are on disk before the header that names them, and on the right the header is written first, pointing at a stub, and the real payload only lands when the temp file is moved. Both arms meet at the last box, which is the rule that makes either safe: the old sectors are not freed until the new ones can be found.* — reworded; the meaning unchanged (`world/level/chunk/storage/RegionFile.java`:307–342, :378–380).
+- `world/scheduled-ticks` f1: *Everything that can happen to an appointment booked into a live level before it is a queued tick — and two of the three outcomes are that it is not one. The right-hand refusal is the page's subject: the dedup slot is checked against the type and position alone, so the second booking is thrown away whether or not it is due sooner than the one already there.* (correction 192).
+- `world/scheduled-ticks` f2: *The three phases of one drain, and the ways back to the index, none of them a failure: a container whose next tick is not yet due waits for it, and one whose chunk is not ticking or whose budget ran out is late, never lost. The bottom-right box is the loop this page's repeater lives in — the run books the next appointment, which re-enters the figure above.* (three sentences cut to two)
+- `world/scheduled-ticks` f3: *One repeater, from the wire behind it changing to the appointment for turning itself off again. The first note bar is the tick the page is built on — the wire went back to zero and the booking already made was neither cancelled nor noticed — and the second opens the tick in which the appointment runs.*
+- `world/fluids` f1: *A bucket emptied, and the five ticks before anything moves: the box on the right is the only lane on the other machine, and of the broadcast block changes it hears two, the source and then the four blocks the water reached — nothing about the appointment, the scan or the scoring crosses. The note bar is the whole delay, and the two self-messages under it are the search this page is really about.*
+- `world/fluids` f2: *Three ways for one fluid block to decide what it should now be, in the order they are asked. The order is the character: source conversion is asked first, so even a block with the same fluid overhead becomes a source when two sources and a floor allow it, and only a block that fails the first question can be made to fall.*
+- `world/fluids` f3: *What a tick does about the answer: only one of the three arms books another tick, which is how a flow stops on its own. All three arrive at `FlowingFluid.spread`, which returns at once for the block that just became air.*
+- `world/game-events-and-vibrations` f1: *From a footstep to a listener that has been handed it: every exit on the left is silent — nothing is loaded, nothing is retried, nothing is told. The two right-hand ends are the only two ways the walk finishes, and the sculk catalyst is the only listener in the game that takes the queued one.*
+- `world/game-events-and-vibrations` f2: *… and the arm down the right is a player standing on the block.* (correction 242)
+- `world/game-events-and-vibrations` f3: *One footstep, and the eight ticks of game time it takes to be heard eight blocks away: a mob's candidate stamped in tick T is refused in tick T and chosen in tick T plus 1, then travels a block a tick. That first wait is a whole server tick for a mob, which moves inside its tick, and none for a player, whose move is handled from its packet before the level tick moves the clock on.*
+- `world/points-of-interest` f1: *The whole life of one ticket, and the thing to look for is what is missing. The only way back to **Free** is a villager letting go, through a behaviour in its brain or its end, and the two arrows into **Gone** bypass the claim entirely — the block changed, the record went, and the note says what nobody hears about it.*
+- `world/points-of-interest` f2: *A bed placed and a bed slept in: the index is written at the top, asked, and a ticket taken, at the claim in the middle, and at night asked only whether the record still exists. The last self-message is the page's hook drawn as a non-event — sleeping wrote `AbstractBedBlock.OCCUPIED` straight to the block, and because the before and after are both `PoiTypes.HOME` the manager was never asked about it.*
+
+### Polished
+
+- `world/README`: the possessive on a link (:66).
+- `world/environment-attributes-and-timelines`: *actually* cut with correction 32's sentence.
+- `world/environment-attributes-and-timelines`: the weather sentence split in two, *Rain is weighted at* (`world/attribute/WeatherAttributes.java`:37–43); *20* → *twenty*.
+- `world/chunk-anatomy`: the key's thread names (*Server thread*, *Render thread*) in the cast and f1; the possessive on a link ×3 (:367, :436, :451).
+- `world/chunk-anatomy`: *server thread* → *Server thread* in the prose too (:237, :262).
+- `world/tickets-and-loading`: number device (V9): **Thirteen chunks** past a level-31 ticket get a holder.
+- `world/tickets-and-loading`: *main thread* → *Server thread* ×3, *server thread* → *Server thread*.
+- `world/chunk-generation-pipeline`: number device (V9): **One worldgen runnable** executes at a time per dimension; the possessive on a link ×2 (:151, :361); *actually* cut ×2; the f1 caption's three sentences made two; *main thread* → *Server thread*; *completed* → *returned* (the dispatcher polls when the runnables return: `ChunkTaskDispatcher.java`:93–104).
+- `world/lighting`: number device (V9): **Up to fourteen sections** can be dirtied by one torch; *render thread* → *Render thread*; *server thread* → *Server thread* ×6 (the heading *Off the server thread and onto the wire* left: an anchor).
+- `world/lighting`: *the upward walk it is known for* → *its upward walk* (queue unit).
+- `world/chunk-storage`: the em-dash chain (V4) in the autosave closer; the possessive on a link (:108); *server thread* → *Server thread*.
+- `world/chunk-storage`: *actually* cut ×2; *(100 — the typo is Mojang's)* → *(100, and the typo is Mojang's)* (V4).
+- `world/scheduled-ticks`: the possessive on a link (:345); *server thread* → *Server thread*.
+- `world/scheduled-ticks`: precision: *which `RepeaterBlock` inherits* beside `DiodeBlock.neighborChanged` (`world/level/block/DiodeBlock.java`:70); `LevelTicks.hasScheduledTick` → `TickAccess.hasScheduledTick`, the interface that declares it (`world/ticks/TickAccess.java`:6).
+- `world/fluids`: number device (V9): **Thirty-seven fluid states** make up the game.
+- `world/fluids`: *actually* cut ×2; the em-dash chain (V4) in `FlowingFluid.spreadTo`'s paragraph made a parenthesis; f1's *with no UPDATE_SKIP_ON_PLACE* and *the drain* relabelled *which these flags do not skip* and *the fluid queue* (queue unit :7185, terms the figure spent before the prose defined them).
+- `world/game-events-and-vibrations`: the possessive on a link (:410); the em-dash chain (:319, as 252).
+- `world/game-events-and-vibrations`: *actually visited* → *visited*.
+- `world/points-of-interest`: the villager's pronouns made *it* in the opening (it is *it* everywhere else on the page).
+- `world/points-of-interest`: the catalogue's blocks put in the types' order, *in the same order* (`PoiTypes.java`:95–107); `EntityEvent.VILLAGER_HAPPY` and `EntityEvent.VILLAGER_ANGRY` beside the event numbers (`world/entity/EntityEvent.java`:22–23) — queue units.
+
+### Elsewhere
+
+- `reference/glossary`:759–761, *Timeline* keyframed *over modifier arguments, not over values* — an override's arguments are its values (as correction 17).
+- `rendering/lightmap-fog-and-sky`:266, `EndFlashState` *a free-running flash* — it reads the dimension's clock, which `/time` sets (as correction 31) — `client/multiplayer/ClientLevel.java`:322; `client/renderer/EndFlashState.java`:22–26.
+- `server/starting-a-server`:332–333, *the tickets it replays are the ones the last shutdown parked* — the persisting ones (as correction 81).
+- `server/server-tick`:300–301, *whatever `/tick rate` is set to* — at any steady rate (as correction 190).
+- `reference/glossary`:354–355, *Heightmap*, *a live chunk keeps the four that survive worldgen* — and any asked for since (as correction 58).
+- `world/points-of-interest`:148, *a section that was never prefetched* — one whose prefetch has not finished (as correction 176) — `world/level/chunk/storage/SectionStorage.java`:190–198.
+
+### The ledger and the queue
+
+- The 114 pass 5–7 entries on these pages struck, each with its verdict: 83 checked, 24 checked except a part, 3 wrong, 1 overtaken (pass 6 session D's loading pyramid, *seven of the twelve*, which V2 made five of ten), 3 no claim. The V1 and V2 entries on these pages were checked in their agents' prompts and are session P's to strike: V2's 21 on `chunk-generation-pipeline` (all but item 5, correction 113), V2's 1–9 on `chunk-storage` (all but 6, correction 170), V2's item 3 and V1's 27–29 on `environment-attributes-and-timelines` (V1's 48 → 51 left :78, correction 21), V1's 39–44 on `chunk-anatomy` (44 wrong in part, correction 58), V1's 45 on `tickets-and-loading` (the caption beside it, correction 83), and V1's 25–26 on `points-of-interest`. Session C's four handoffs are corrections 86 and 131 (the poll) and 162 and 179 (the autosave's clock and the upgrader).
+- `docs/pass5.md`: 47 units struck — 12 done, 8 ruled, 2 overtaken, 3 second edition, 22 record. Four multi-part units noted and left open for their other parts (the *more than twenty* wording, :1391, and its twin, :4034, whose `ai-goals-and-brains` half is F's; the named steps, :1412, whose Part IV share V2 overtook; and the shared skeleton, :3301, whose Part IV three are second edition).
+- `docs/pass3.md` §7: Part IV's unnamed code, `world/level/blockscan` (436 lines, the palette-first block search) and the attribute modifier classes (305) the largest.
+
+### For later sessions
+
+- **E** — `blocks/blocks-and-states`:328 (the figure's `GUARD -- yes --> ONP --> BE`) and :419–421: the block-entity step is skipped when `onPlace` changed the block (`world/level/chunk/LevelChunk.java`:358; corrections 60 and 70), and the guard tests the block, not the state (`LevelChunk.java`:351).
+- **F** — `entities/ai-goals-and-brains`:437–438, `SleepInBed` *never times out, because it overrides `Behavior.canStillUse`*: it never times out because it overrides `Behavior.timedOut` (`world/entity/ai/behavior/SleepInBed.java`:98–101; `Behavior.java`:64, :86–87); overriding `canStillUse` is why it keeps running. `entities/ai-goals-and-brains`:392, *fewer than 21 ticks*: Part IV now says *more than twenty* (pass5.md:4034).
+- **I** — `networking/what-the-client-is-told`:355–357, `ChunkHolder.broadcastChanges` *only on a tick that ticks chunks at all*: a frozen tick still broadcasts (`server/level/ServerLevel.java`:387; `server/level/ServerChunkCache.java`:344–358; correction 147).
+- **J** — `client/the-client-level`:107–109, *a chunk-load burst therefore produces one long frame*: below a thousand queued closures `ClientLevel.pollLightUpdates` spreads them over frames (`client/multiplayer/ClientLevel.java`:288–291); `lighting` now states only the arithmetic and cites this page as the owner (correction 160).
+- **L** — `rendering/lightmap-fog-and-sky`:105, the figure's *the keyframe tracks for this world time* drawn arriving once a client tick: the tracks are sampled when asked (`world/timeline/AttributeTrackSampler.java`:31–37), as `environment-attributes-and-timelines`' f2 caption says.
+- **M** — `worldgen/creating-a-world`:166–168, the heightmap test *blocks motion or holds a fluid*: in 26.3 it is `BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP` or a fluid (correction 57); the page's conclusion holds. `worldgen/features-and-placement`:235, a read outside the write zone *is a warning*: one line at error level (`util/Util.java`:854–859; correction 119).
+- **O** — `reference/level-data-and-rules`:183–187: saved data is written as *data/\<namespace\>/\<path\>.dat*, not *\<id\>.dat*, and its bargain is half a chunk's (no copy, the encode on the caller's thread, joined by a flush save, shutdown or the world upgrader: corrections 165 and 166). `reference/level-data-and-rules`:251–253, the border *the one mechanism in Part IV's packages whose home is this page rather than a page of the part*: `world/level/blockscan` has no page either (correction 10). `reference/threads`:146, *World Upgrader*: *World Upgrader #n* (`util/worldupdate/WorldUpgrader.java`:36; correction 179).
+- **Second edition** — `lighting`'s cut closer, *Why is a newly loaded chunk sometimes a black wall?* (correction 151): the mechanism it gave cannot produce the symptom, and the true cause is not established from the decompile.
+- **A probable upstream bug, written on its page as mechanism.** `world/fluids`: `LavaFluid.getSpreadDelay`'s ×4 is fed to the booking `FlowingFluid.tick` makes after its write, which the queue drops as a duplicate whenever the write leaves lava, because `LiquidBlock.onPlace` has already booked the plain delay; so lava's spread keeps its steady delay (correction 228; the same in 26.2).
+
 ## Pass 8, session C — Part III · The server *(2026-09-26)*
 
 Six pages, each checked under Part 2 by its own agent while the session read the part whole: the landing
@@ -2842,11 +3248,11 @@ The gaps pass 9 has to work around:
   terrain, `executeTranslucentAfterTerrain`, each drain now qualified
   `FeatureRenderDispatcher.PreparedFrame` (`client/renderer/LevelRenderer.java`:399–420).
   The split of one node into two asserts the translucent-then-outline order.
-- `world/chunk-generation-pipeline` f2: the parsed data returns from the
+- ~~`world/chunk-generation-pipeline` f2: the parsed data returns from the
   worker to `ChunkMap`, where `SerializableChunkData.read` builds the chunk on
   the server thread. **Correction** — it had been drawn arriving at
   `ServerLevel`; the read runs in `ChunkMap`'s continuation on
-  `mainThreadExecutor` (`server/level/ChunkMap.java`:597–609).
+  `mainThreadExecutor` (`server/level/ChunkMap.java`:597–609).~~ *(checked on the lane (`server/level/ChunkMap.java`:594–606); the label named `SerializableChunkData.read` in a no-file scenario — see *Pass 8, session D* — pass 8, session D)*
 - `items/using-an-item` f1: the tick-32 arrow into `Consumable` is now headed
   by `Consumable.onConsume`, reached from `ItemStack.finishUsingItem`, with
   `FoodData.eat` *inside* it rather than after it (`world/item/Item.java`:240–243;
@@ -2856,9 +3262,9 @@ The gaps pass 9 has to work around:
 - ~~`server/server-tick` f1: the arrow into `Connection` is headed
   `Connection.tick`, called on each connection from
   `ServerConnectionListener.tick` (`server/network/ServerConnectionListener.java`:199).~~ *(checked: `server/network/ServerConnectionListener.java`:181 — pass 8, session C)*
-- `world/fluids` f1: the arrow into `FlowingFluid` is headed
+- ~~`world/fluids` f1: the arrow into `FlowingFluid` is headed
   `FlowingFluid.tick`, through `FluidState.tick` (`world/level/material/FluidState.java`:81,
-  `FlowingFluid.java`:445).
+  `FlowingFluid.java`:445).~~ *(checked (`world/level/material/FluidState.java`:93) — pass 8, session D)*
 - ~~`anatomy/anatomy` f2: the node labels qualified (`RenderSystem.pollEvents`,
   `Minecraft.runTick`, `MinecraftServer.waitUntilNextTick`) —
   `client/Minecraft.java`:919–920; the server's inner box is titled *one server
@@ -2915,13 +3321,13 @@ The gaps pass 9 has to work around:
   to read the field, through the `NoiseChunk` built there (per
   `worldgen/terrain`'s cast and its figure). The arrow key moved into the
   caption. The argument's symptom paragraph moved to the front.
-- `world/README` f1 caption: *four pages and the live chunk make the ring, and
+- ~~`world/README` f1 caption: *four pages and the live chunk make the ring, and
   five arrows carry a chunk round it; chunk anatomy hands the ring its
   vocabulary, lecture one hands the live chunk its values, and the last four act
   on the live chunk, one of them through another page* — **correction**
   (page-internal): it had said five boxes and a sixth arrow; the ring has five
   arrows and one of its boxes is not a page. The sentence under it no longer
-  says lecture one is the only box off the line.
+  says lecture one is the only box off the line.~~ *(checked on the count (five ring arrows); the caption now says ten statuses and *run round it* — see *Pass 8, session D* — pass 8, session D)*
 - ~~`foundations/README` f1 caption: the pattern page is no longer *the only page
   no arrow leaves* — text components has none either (page-internal).~~ *(checked except *beside it*: text components sits on the second row beside registries, not at the foot beside the pattern, and no arrow leaves either — see *Pass 8, session B*, correction 113 — pass 8, session B)*
 - ~~`server/README`: the seven later parts assume *the loop pair*, 1 and 2, not
@@ -4830,42 +5236,42 @@ mechanical: the gate finds it because a message's head is checked against the
 lane it is sent to, and the caller's method is by construction not a member of
 that lane. Each was re-derived and fixed by naming what actually arrives.
 
-1. `fluids` — `BucketItem.emptyContents` on an arrow into `ServerLevel`. What
-   arrives is `Level.setBlock` (`BucketItem.java:123`).
-2. `fluids` — `FlowingFluid.spreadTo` into `ServerLevel`; the message is the
-   `setBlock` inside it.
-3. `lighting` — `ServerChunkCache.pollTask` into `ThreadedLevelLightEngine`; the
-   call is `ThreadedLevelLightEngine.tryScheduleUpdate` (`:208`).
-4. `lighting` — `LightEngine.propagateDecreases` and `propagateIncreases` into
+1. ~~`fluids` — `BucketItem.emptyContents` on an arrow into `ServerLevel`. What
+   arrives is `Level.setBlock` (`BucketItem.java:123`).~~ *(checked (`world/item/BucketItem.java`:194) — pass 8, session D)*
+2. ~~`fluids` — `FlowingFluid.spreadTo` into `ServerLevel`; the message is the
+   `setBlock` inside it.~~ *(checked (`world/level/material/FlowingFluid.java`:298) — pass 8, session D)*
+3. ~~`lighting` — `ServerChunkCache.pollTask` into `ThreadedLevelLightEngine`; the
+   call is `ThreadedLevelLightEngine.tryScheduleUpdate` (`:208`).~~ *(checked (`server/level/ThreadedLevelLightEngine.java`:208; `server/level/ServerChunkCache.java`:661) — pass 8, session D)*
+4. ~~`lighting` — `LightEngine.propagateDecreases` and `propagateIncreases` into
    `LayerLightSectionStorage`; what that lane receives is
-   `LayerLightSectionStorage.setStoredLevel` (`:88`).
-5. `lighting` — `ServerChunkCache.broadcastChangedChunks` into `ChunkHolder`;
-   the call is `ChunkHolder.broadcastChanges` (`:187`).
-6. `chunk-generation-pipeline` — three `ChunkMap` methods
+   `LayerLightSectionStorage.setStoredLevel` (`:88`).~~ *(checked (`world/level/lighting/LayerLightSectionStorage.java`:88; `LightEngine.java`:166) — pass 8, session D)*
+5. ~~`lighting` — `ServerChunkCache.broadcastChangedChunks` into `ChunkHolder`;
+   the call is `ChunkHolder.broadcastChanges` (`:187`).~~ *(checked (`server/level/ChunkHolder.java`:187; `server/level/ServerChunkCache.java`:369) — pass 8, session D)*
+6. ~~`chunk-generation-pipeline` — three `ChunkMap` methods
    (`ChunkMap.prepareAccessibleChunk` at `:783`, `ChunkMap.getChunkRangeFuture`,
    `ChunkMap.scheduleGenerationTask`) on an arrow into `ChunkGenerationTask`;
-   what happens there is `ChunkGenerationTask.create` (`:35`).
-7. `chunk-generation-pipeline` — `ChunkMap.runGenerationTasks` (`:736`) into
-   `ChunkTaskDispatcher`.
-8. `chunk-generation-pipeline` — `ChunkTaskDispatcher.scheduleForExecution`
-   (`:93`) into `ChunkGenerationTask`.
-9. `chunk-generation-pipeline` — `ChunkGenerationTask.releaseClaim` (`:81`)
+   what happens there is `ChunkGenerationTask.create` (`:35`).~~ *(checked (`server/level/ChunkMap.java`:708–712, :781; `ChunkGenerationTask.java`:35–42) — pass 8, session D)*
+7. ~~`chunk-generation-pipeline` — `ChunkMap.runGenerationTasks` (`:736`) into
+   `ChunkTaskDispatcher`.~~ *(checked (`server/level/ChunkMap.java`:715–736; `ChunkTaskDispatcher.java`:63) — pass 8, session D)*
+8. ~~`chunk-generation-pipeline` — `ChunkTaskDispatcher.scheduleForExecution`
+   (`:93`) into `ChunkGenerationTask`.~~ *(checked (`server/level/ChunkTaskDispatcher.java`:93–104; `ChunkMap.java`:718–725) — pass 8, session D)*
+9. ~~`chunk-generation-pipeline` — `ChunkGenerationTask.releaseClaim` (`:81`)
    into `ChunkMap`; what `ChunkMap` is asked for is `ChunkMap.releaseGeneration`
-   (`:673`).
-10. `chunk-storage` — `ChunkMap.scheduleUnload` into `ChunkHolder`; the call is
-    `ChunkHolder.getSaveSyncFuture`.
-11. `scheduled-ticks` — `DiodeBlock.updateNeighborsInFront` (`:193`) into
+   (`:673`).~~ *(checked (`server/level/ChunkGenerationTask.java`:81–90; `ChunkMap.java`:671–673) — pass 8, session D)*
+10. ~~`chunk-storage` — `ChunkMap.scheduleUnload` into `ChunkHolder`; the call is
+    `ChunkHolder.getSaveSyncFuture`.~~ *(checked (`server/level/ChunkMap.java`:528–529; `server/level/ChunkHolder.java`:110–112) — pass 8, session D)*
+11. ~~`scheduled-ticks` — `DiodeBlock.updateNeighborsInFront` (`:193`) into
     `ServerLevel`; that method calls `Level.neighborChanged` and
-    `Level.updateNeighborsAtExceptFromFacing`, which is what the arrow carries.
-12. `scheduled-ticks` — `DiodeBlock.shouldTurnOn` into `LevelTicks`; the booking
+    `Level.updateNeighborsAtExceptFromFacing`, which is what the arrow carries.~~ *(checked (`world/level/block/DiodeBlock.java`:189–196) — pass 8, session D)*
+12. ~~`scheduled-ticks` — `DiodeBlock.shouldTurnOn` into `LevelTicks`; the booking
     is `ServerLevel.scheduleTick`, and the arrow now goes through `ServerLevel`
-    like the page's other booking.
-13. `points-of-interest` — `Player.startSleeping` into `ServerLevel`; the
-    message is the `setBlock` that sets `BedBlock.OCCUPIED`.
-14. `tickets-and-loading` — `PlayerChunkSender.sendNextChunks` (`:56`) into
+    like the page's other booking.~~ *(checked (`world/level/ScheduledTickAccess.java`:18–20) — pass 8, session D)*
+13. ~~`points-of-interest` — `Player.startSleeping` into `ServerLevel`; the
+    message is the `setBlock` that sets `BedBlock.OCCUPIED`.~~ *(checked (`world/entity/LivingEntity.java`:4063) — pass 8, session D)*
+14. ~~`tickets-and-loading` — `PlayerChunkSender.sendNextChunks` (`:56`) into
     `ServerGamePacketListenerImpl`; that method sends
     `ClientboundChunkBatchStartPacket`, the chunk packets and
-    `ClientboundChunkBatchFinishedPacket` (`PlayerChunkSender.java:71-81`).
+    `ClientboundChunkBatchFinishedPacket` (`PlayerChunkSender.java:71-81`).~~ *(checked (`server/network/PlayerChunkSender.java`:56–86) — pass 8, session D)*
 
 Four more were a member named on the wrong owner:
 `environment-attributes-and-timelines`'s `EnvironmentAttribute.sanitizeValue`
@@ -4884,7 +5290,7 @@ sender's.
 
 ### Corrections
 
-- **`environment-attributes-and-timelines`, the stack figure.** It drew the two
+- ~~**`environment-attributes-and-timelines`, the stack figure.** It drew the two
   lightning-flash layers as two more rungs, so every value passed through them
   before the clamp. They are neither general rungs nor merely client-only:
   `ClientLevel` adds each with
@@ -4892,111 +5298,111 @@ sender's.
   attribute** — `EnvironmentAttributes.SKY_COLOR` and
   `EnvironmentAttributes.SKY_LIGHT_FACTOR` — so they are two entries in two
   attributes' stacks and absent from the other forty-six
-  (`ClientLevel.java:269-279`). The figure is a branch now and the prose says it.
-- **`environment-attributes-and-timelines`, the client trace.** Everything under
+  (`ClientLevel.java:269-279`). The figure is a branch now and the prose says it.~~ *(checked (`client/multiplayer/ClientLevel.java`:271–281) except *the other forty-six*, forty-nine since V1's 51 — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`environment-attributes-and-timelines`, the client trace.** Everything under
   *between ticks, once per frame* asserted that the whole stack re-resolves each
   frame. `EnvironmentAttributeProbe.ValueProbe.get` resolves only when its
   `newValue` is null and `ValueProbe.tick` nulls it once a tick, so **the first
   frame of a tick that asks pays for the whole tick and every later frame only
   lerps** (`EnvironmentAttributeProbe.java:68-86`). Drawn as an `opt` block, with
-  a sentence added to the prose.
-- **`game-events-and-vibrations`, the trace.** The *tick T plus 1* band never
+  a sentence added to the prose.~~ *(checked (`world/attribute/EnvironmentAttributeProbe.java`:70–86) — pass 8, session D)*
+- ~~**`game-events-and-vibrations`, the trace.** The *tick T plus 1* band never
   ended, so arrival was drawn inside T+1 while the figure's own note and the
   prose put it eight blocks and seven further ticks away. A third band, *tick T
-  plus 8*.
-- **`game-events-and-vibrations`, the trace's lane.** One `SculkSensorBlock` lane
+  plus 8*.~~ *(checked in game time (`world/level/gameevent/vibrations/VibrationSystem.java`:132–134, :181–183) — pass 8, session D)*
+- ~~**`game-events-and-vibrations`, the trace's lane.** One `SculkSensorBlock` lane
   stood for the block *and* the block entity, and its own message text said so.
   `VibrationSystem.Ticker` calls
   `SculkSensorBlockEntity.VibrationUser.onReceiveVibration` (`:115`), which calls
   `SculkSensorBlock.activate` (`:209`), which does the `setBlock`. Two lanes now,
-  and `SSVU` is a new lane-key row.
-- **`scheduled-ticks`, the pipeline figure.** `LevelTicks.cleanupAfterTick` was
+  and `SSVU` is a new lane-key row.~~ *(checked (`world/level/block/entity/SculkSensorBlockEntity.java`:115, :128; `world/level/block/SculkSensorBlock.java`:202–204) — pass 8, session D)*
+- ~~**`scheduled-ticks`, the pipeline figure.** `LevelTicks.cleanupAfterTick` was
   drawn emptying three collections where the prose a hundred lines below names
-  **four**, `LevelTicks.toRunThisTickSet` included. The figure says four.
-- **`points-of-interest`, the state figure.** Three `Held` to `Free` edges
+  **four**, `LevelTicks.toRunThisTickSet` included. The figure says four.~~ *(checked (`world/ticks/LevelTicks.java`:227–232) — pass 8, session D)*
+- ~~**`points-of-interest`, the state figure.** Three `Held` to `Free` edges
   against the four release call sites the prose names (`ValidateNearbyPoi`,
   `Villager.releaseAllPois`, `SetWalkTargetFromBlockMemory`, `VillagerMakeLove`).
-  One edge now, and the prose keeps the four.
-- **`points-of-interest`, the trace.** `VillagerGoalPackages.validateBedPoi` was
+  One edge now, and the prose keeps the four.~~ *(checked on the edge; *four* is five — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`points-of-interest`, the trace.** `VillagerGoalPackages.validateBedPoi` was
   on `PoiManager`'s return arrow; the prose has `AcquirePoi` running it after the
-  five come back. A self-message on `AcquirePoi`.
-- **`chunk-generation-pipeline`, the pyramid figure.** The prose says *the six
+  five come back. A self-message on `AcquirePoi`.~~ *(checked (`world/entity/ai/behavior/AcquirePoi.java`:81–83) — pass 8, session D)*
+- ~~**`chunk-generation-pipeline`, the pyramid figure.** The prose says *the six
   plain boxes run inline* and the figure drew **seven** square boxes, the seventh
   being the accumulation annotation wearing a step's shape. The twelve steps are
-  a table now and the arithmetic is prose.
-- **`fluids`, the trace.** A fluid tick was booked two ways inside one figure —
+  a table now and the arithmetic is prose.~~ *(checked: the steps are a table, ten rows since V2 — pass 8, session D)*
+- ~~**`fluids`, the trace.** A fluid tick was booked two ways inside one figure —
   through `ServerLevel` for the source and straight into `LevelTicks` for the
   four new blocks. `LiquidBlock.onPlace` calls `ServerLevel.scheduleTick` in both
-  cases; both arrows go through the level now.
+  cases; both arrows go through the level now.~~ *(checked on the level's bookings; the source's rebooking is `LiquidBlock.neighborChanged`'s, before the shape pass — see *Pass 8, session D* — pass 8, session D)*
 
 ### New claims — the figures redrawn, and the orderings they assert
 
-- **`world/README`** — the part figure is numbered to the watch order, and its
+- ~~**`world/README`** — the part figure is numbered to the watch order, and its
   caption asserts three things: that the five ring boxes hand a chunk along and
   the sixth arrow closes the ring; that the pipeline-to-lighting edge is an
   *inclusion* (lighting is two of the pipeline's twelve statuses,
   `ChunkStatus.INITIALIZE_LIGHT` and `ChunkStatus.LIGHT`, run on a different
   executor) and not a hand-off like the others; and that lecture one is off the
   ring. The environment-attributes edge no longer carries a label naming three
-  readers, two of which are other boxes in the same figure.
-- **`chunk-anatomy` figure 1** — a `classDiagram`, the book's third. It asserts
+  readers, two of which are other boxes in the same figure.~~ *(checked except *twelve statuses*: ten (`world/level/chunk/status/ChunkStatus.java`:20–29) — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`chunk-anatomy` figure 1** — a `classDiagram`, the book's third. It asserts
   the hierarchy (`ChunkAccess` abstract with two direct concrete lines,
   `ImposterProtoChunk` extending `ProtoChunk`, `EmptyLevelChunk` extending
   `LevelChunk`, all four verified), one dashed dependency for the promotion by
   `ChunkStatusTasks.full`, and one association for the wrap. The origin branch
-  was cut and logged in [pass5.md](pass5.md).
-- **`chunk-anatomy` figure 2** — asserts that each `PalettedContainer` has its
+  was cut and logged in [pass5.md](pass5.md).~~ *(checked (`world/level/chunk/ProtoChunk.java`:44; `LevelChunk.java`:68; `ImposterProtoChunk.java`:30–32; `EmptyLevelChunk.java`:17) — pass 8, session D)*
+- ~~**`chunk-anatomy` figure 2** — asserts that each `PalettedContainer` has its
   **own** `PalettedContainer.Data` and the two never share one, where the figure
   before drew both containers into one box; and its caption asserts that a
-  section's light is not on the section.
-- **`chunk-generation-pipeline` figure 1** — a new figure of four nested rings,
+  section's light is not on the section.~~ *(checked (`world/level/chunk/PalettedContainer.java`:27, :70–73) — pass 8, session D)*
+- ~~**`chunk-generation-pipeline` figure 1** — a new figure of four nested rings,
   asserting `ChunkStep.accumulatedDependencies` for FULL as `ChunkStatus.SPAWN`
   at distance 0, `ChunkStatus.INITIALIZE_LIGHT` at 1, `ChunkStatus.CARVERS` at 2,
   `ChunkStatus.BIOMES` at 3 and `ChunkStatus.STRUCTURE_STARTS` from 4 out to 11
   — so radius 11, and 529 chunks. The twelve steps with their radius, executor
   and write radius are the table beside it, carried over unchanged from the
-  figure it replaced.
-- **`tickets-and-loading` figure 1** — redrawn to the page's hook: the two graphs
+  figure it replaced.~~ *(checked (the FULL step's accumulated list: `world/level/chunk/status/ChunkPyramid.java`:12–32; `ChunkStep.java`:135–158) — pass 8, session D)*
+- ~~**`tickets-and-loading` figure 1** — redrawn to the page's hook: the two graphs
   are two arms that **join**, and a chunk is alive only where both agree. The
   arms are `ChunkMap.updateChunkScheduling` into `ChunkHolder.updateFutures`, and
   `DistanceManager.inBlockTickingRange` with `inEntityTickingRange`
   (`DistanceManager.java:164,168`). The three thresholds it used to draw are
-  figure 2's alone now.
-- **`game-events-and-vibrations` figures 1 and 2** — the 24-node cascade split at
+  figure 2's alone now.~~ *(checked (`server/level/LoadingChunkTracker.java`:19–21; `server/level/SimulationChunkTracker.java`:22–24) — pass 8, session D)*
+- ~~**`game-events-and-vibrations` figures 1 and 2** — the 24-node cascade split at
   the joint the prose names: the dispatcher's walk, then one listener's five
   refusals in the order they run, with one shared sink and the step-on arm drawn
   as the short path it is. That arm asserts that `SculkSensorBlock.stepOn`
   reaches `VibrationSelector.addCandidate` through
   `VibrationSystem.Listener.forceScheduleVibration` (`VibrationSystem.java:305`)
   having asked only *not a warden*, `SculkSensorBlock.canActivate` and
-  `VibrationSystem.User.canReceiveVibration` (`SculkSensorBlock.java:104-121`).
-- **`lighting` figure 2** — redrawn around the two maps: all three stages
+  `VibrationSystem.User.canReceiveVibration` (`SculkSensorBlock.java:104-121`).~~ *(checked (`world/level/block/SculkSensorBlock.java`:97–108; `VibrationSystem.java`:305–309) — pass 8, session D)*
+- ~~**`lighting` figure 2** — redrawn around the two maps: all three stages
   (`LightEngine.checkNode`, `LightEngine.propagateDecreases`,
   `LightEngine.propagateIncreases`) write
   `LayerLightSectionStorage.updatingSectionData`, and the single arrow out of it
   is the publish. The `checkNode` edge is the one the queue said was missing.
   Also checked and left: *a window of up to 1,000* is `runUpdate`'s own
-  `Math.min` against 1000 (`ThreadedLevelLightEngine.java:219`).
-- **`fluids` figures 2 and 3** — split at `FlowingFluid.tick`'s own two halves.
+  `Math.min` against 1000 (`ThreadedLevelLightEngine.java:219`).~~ *(checked on the stages; the node's *every reader, saver and packet builder* wrong, a queued layer being read first — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`fluids` figures 2 and 3** — split at `FlowingFluid.tick`'s own two halves.
   Figure 3 asserts that an **empty** answer never reaches the same-state
   comparison the other two must pass, which is the structure of the if/else-if at
   `FlowingFluid.java:450-459`, and that only the changed-state arm books another
-  tick.
-- **`scheduled-ticks` figures 1 and 2** — split at the page's own bold claim,
+  tick.~~ *(checked as code; the changed arm's own booking never lands, and the new air pushes nothing (`world/level/material/FlowingFluid.java`:129, :452–461) — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`scheduled-ticks` figures 1 and 2** — split at the page's own bold claim,
   *the drain is server-thread only and booking is not*. Figure 1 draws the dedup
   refusal as an arrow of its own; figure 2 asserts that the two ways back to the
   index — the chunk not ticking, and the budget spent — are both *late, never
-  lost*.
-- **`chunk-storage` figure 1** — the three threads are the three semantic colour
+  lost*.~~ *(checked on the drawing; the booking seam's prose — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`chunk-storage` figure 1** — the three threads are the three semantic colour
   words (`server`, `worker`, `disk`), and the caption asserts that the server's
-  share ends at the snapshot.
-- **`chunk-storage` figure 3** — its caption asserts the content-and-pointer
+  share ends at the snapshot.~~ *(checked on the colours; *three threads* is three lanes — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`chunk-storage` figure 3** — its caption asserts the content-and-pointer
   asymmetry: the under-256-sector arm writes the bytes before the header that
   names them, the 256-or-more arm writes the header first at a stub and lands the
   payload when the temp file is moved, and both meet at *the old sectors are
-  freed last*.
-- **Twenty-seven captions and nine lead-ins**, each a claim about what its figure
-  shows.
+  freed last*.~~ *(checked (`world/level/chunk/storage/RegionFile.java`:318–342, :379) — pass 8, session D)*
+- ~~**Twenty-seven captions and nine lead-ins**, each a claim about what its figure
+  shows.~~ *(checked: every caption in the part read against its figure; the wrong ones are corrected under *Pass 8, session D* — pass 8, session D)*
 
 ## Pass 7, session C — Part III · The server: the figures *(2026-09-15)*
 
@@ -7819,7 +8225,7 @@ before it was written.
 
 ### Corrections — what the page said, what the decompile says
 
-- `src/systems/world/chunk-generation-pipeline.md`:230-233 — "`ChunkPyramid.LOADING_PYRAMID`
+- ~~`src/systems/world/chunk-generation-pipeline.md`:230-233 — "`ChunkPyramid.LOADING_PYRAMID`
   passes seven of the twelve steps straight through and only four do anything".
   Seven plus four is eleven. `ChunkPyramid.java`:37-60: of the twelve loading
   steps, seven call no `setTask` (*STRUCTURE_REFERENCES*, *BIOMES*, *NOISE*,
@@ -7828,66 +8234,66 @@ before it was written.
   and the twelfth is *EMPTY*, which `ChunkMap.applyStep` special-cases into the
   disk read. The page's own closer had it right at five; the body was the
   telling that did not close. Now stated as seven, four and the disk read, with
-  the seven named. Found by a reader doing the arithmetic.
-- `src/systems/world/chunk-anatomy.md`:300 — "Four of the twelve steps are
+  the seven named. Found by a reader doing the arithmetic.~~ *(overtaken: 26.3's loading pyramid gives five of ten steps no body (V2; `world/level/chunk/status/ChunkPyramid.java`:33–53) — pass 8, session D)*
+- ~~`src/systems/world/chunk-anatomy.md`:300 — "Four of the twelve steps are
   skipped by a bit of the caller's flag word". `LevelChunk.java`:285-380 reads
   the flag word four times but in **three** steps: `flags & 256` inside step 7
   (and there it skips only `BlockEntity.preRemoveSideEffects`, not the
   removal), `flags & 1` with `flags & 64` in step 8, and `flags & 512` with
-  `flags & 64` in step 10. Now three, with the partial one called out.
-- `src/systems/world/lighting.md`:203 — the block flood stops "when the next
+  `flags & 64` in step 10. Now three, with the partial one called out.~~ *(checked (`world/level/chunk/LevelChunk.java`:324–355) — pass 8, session D)*
+- ~~`src/systems/world/lighting.md`:203 — the block flood stops "when the next
   level would be 1". `BlockLightEngine.java`:77-80: `setStoredLevel` runs
   unconditionally in that branch and only the **re-enqueue** is gated on
   `newToLevel > 1`. A level of 1 is written; it just does not propagate — which
   is what makes the page's own "thirteen blocks" (L322, L379) true from an
-  emission of 14. Found by a reader who could not reconcile the two.
-- `src/systems/world/lighting.md`:286-288 — `ChunkHolder.sectionLightChanged`
+  emission of 14. Found by a reader who could not reconcile the two.~~ *(checked (`world/level/lighting/BlockLightEngine.java`:76–80) — pass 8, session D)*
+- ~~`src/systems/world/lighting.md`:286-288 — `ChunkHolder.sectionLightChanged`
   described as marking the chunk unsaved, then giving up with no ticking chunk.
   `ChunkHolder.java`:151-171 has **two** gates with the bookkeeping between
   them: it returns at once if `getChunkIfPresent(ChunkStatus.INITIALIZE_LIGHT)`
   is null, *then* marks unsaved, *then* returns if `getTickingChunk()` is null.
   So a chunk still generating is not marked dirty at all. The page's own figure
   had the first gate and not the second; the prose had the second and not the
-  first. Both now say both.
-- `src/systems/world/lighting.md`:385-386 (in the closer, since cut) —
+  first. Both now say both.~~ *(checked except two further returns and who adds the holder — see *Pass 8, session D* — pass 8, session D)*
+- ~~`src/systems/world/lighting.md`:385-386 (in the closer, since cut) —
   "Sections above the sky column's top have no `DataLayer` at all and answer 15
   by walking upward". `SkyLightSectionStorage.java`:23-46: at or above
   `topSection` the method returns 15 from the `else` branch **without
   looking**; the upward walk is the case *below* the top with no layer. The
-  page's body (L98-101) was right and the closer contradicted it.
-- `src/systems/world/scheduled-ticks.md`:176-179 — "A container that is
+  page's body (L98-101) was right and the closer contradicted it.~~ *(checked (`world/level/lighting/SkyLightSectionStorage.java`:29–45) — pass 8, session D)*
+- ~~`src/systems/world/scheduled-ticks.md`:176-179 — "A container that is
   overtaken, or that still has something due when the budget is spent, goes
   back into the container queue". `LevelTicks.java`:158-166: a container with a
   still-due head goes back into `containersToTick` **only if
   `canScheduleMoreTicks`**; with the budget spent it takes the `else` branch
   into `updateContainerScheduling`, the index. Now three fates keyed on the
   budget as well as the head, and `rescheduleLeftoverContainers` described as
-  emptying what the drain left in the queue.
-- `src/systems/world/points-of-interest.md`:14-16 — the hook's "the single
+  emptying what the drain left in the queue.~~ *(checked in the page's current form except the not-due head, which waits for its own time — see *Pass 8, session D* — pass 8, session D)*
+- ~~`src/systems/world/points-of-interest.md`:14-16 — the hook's "the single
   behaviour that reads the flag back can only take a claim away". **Three**
   read `BedBlock.OCCUPIED`: `SleepInBed.java`:52 (an entry condition),
   `ValidateNearbyPoi.java`:59 and `VillagerGoalPackages.java`:48 (the
   `AcquirePoi` filter). Only `ValidateNearbyPoi` turns the flag into a change
-  in the record. The hook now says that.
-- `src/systems/world/points-of-interest.md`:262-264 — the release rule stated
+  in the record. The hook now says that.~~ *(checked (`world/entity/ai/behavior/SleepInBed.java`:52; `ValidateNearbyPoi.java`:59; `VillagerGoalPackages.java`:48) — pass 8, session D)*
+- ~~`src/systems/world/points-of-interest.md`:262-264 — the release rule stated
   as "this villager is not itself the sleeper". `ValidateNearbyPoi.java`:59 is
   `!body.isSleeping()` — asleep anywhere, not asleep *here*. And the exception
   is a second question asked of the world (`bedIsOccupiedByVillager`, an AABB
   search for a sleeping `Villager`), not of the block, which is why it does not
   swallow the rule: the flag and a sleeping villager can disagree. Both now
-  said.
-- `src/systems/world/environment-attributes-and-timelines.md`:9 — mobs stop
+  said.~~ *(checked (`world/entity/ai/behavior/ValidateNearbyPoi.java`:59–66) except the villager example beside it — see *Pass 8, session D* — pass 8, session D)*
+- ~~`src/systems/world/environment-attributes-and-timelines.md`:9 — mobs stop
   burning "until dawn", against the page's own "true again at 23460" (L288) and
   "tick 0 … is dawn" (L325). `data/minecraft/timeline/day.json`:
   *gameplay/monsters_burn* is false at 12542 and true at 23460, and tick 0 is
   where the 24000-tick period closes and `ClockTimeMarkers.WAKE_UP_FROM_SLEEP`
   sits — no marker in the file is called dawn. The opening now gives the tick
   and the wrap sentence names the marker. A correction on session A's own
-  exemplar, found by a reader with no source.
+  exemplar, found by a reader with no source.~~ *(checked (`data/minecraft/timeline/day.json`) — pass 8, session D)*
 
 ### Claims introduced
 
-- **`chunk-anatomy` loses its closer entirely** (A2). All six answers were the
+- ~~**`chunk-anatomy` loses its closer entirely** (A2). All six answers were the
   page's own mechanism, and each is now a claim in the section that owns it:
   the write permit and `ThreadingDetector` as an H3 under *Sections and their
   four counters*; the client's two dead counters in the same section; the
@@ -7897,14 +8303,14 @@ before it was written.
   prose never mentioned it); the wire form as a new H3, *The third form, and
   what the client is handed*; and `ChunkAccess.pendingBlockEntities` under
   *What step 11 leaves behind*. The cast row for `PalettedContainer` now says a
-  second writer is detected rather than blocked.
-- **`fluids` loses its closer entirely** (A2). `LiquidBlock.tick` and bubble
+  second writer is detected rather than blocked.~~ *(checked except two moved claims, the cast's *detected rather than blocked* and the pending chest — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`fluids` loses its closer entirely** (A2). `LiquidBlock.tick` and bubble
   columns moved into *The block underneath the water*; the occlusion cache
   became *Why the wall test is affordable*, an H3 beside the test it explains,
   and the glossary's *Occlusion* entry now lands there instead of on
   `#questions-players-ask`. The two remaining answers were second tellings of
-  bold body sentences and are logged as cuts in [pass5.md](pass5.md).
-- Six closers trimmed: `chunk-generation-pipeline` 4→3 (the world's edge, told
+  bold body sentences and are logged as cuts in [pass5.md](pass5.md).~~ *(checked (`world/level/block/LiquidBlock.java`:143–150; `world/level/material/FlowingFluid.java`:237–263) — pass 8, session D)*
+- ~~Six closers trimmed: `chunk-generation-pipeline` 4→3 (the world's edge, told
   twice), `chunk-storage` 5→3 (the proto-over-full guard promoted to a section
   of its own, the timestamps answer moved into *Inside a region file*),
   `lighting` 5→3, `scheduled-ticks` 5→3 (the `hasScheduledTick` /
@@ -7912,15 +8318,15 @@ before it was written.
   `tickets-and-loading` 6→5 (the `PlayerMap` remembered-gate mechanism moved
   into *What a ticket asks for*), `game-events-and-vibrations` 4→3 (the
   `SculkSensorBlock.stepOn` shortcut given prose where its own figure draws it
-  as two orphan nodes).
-- **Two headings renamed under A4**, both literal trace headings, with three
+  as two orphan nodes).~~ *(checked: the closers stand as trimmed, the pipeline's three questions and the world's edge told once — pass 8, session D)*
+- ~~**Two headings renamed under A4**, both literal trace headings, with three
   inbound links repointed in the same commit: `game-events-and-vibrations`
   *The trace: one footstep, several ticks* → *One footstep, and the ticks it
   takes to arrive* (glossary:669); `points-of-interest` *The trace: a villager
   claims a bed* → *Noon, and a bed forty-eight blocks away*
   (`ai-goals-and-brains`:378, `pathfinding`:109), which also stopped the
-  heading being a verbatim copy of the verified line.
-- **Four headings renamed under A8**, each because its own section contradicted
+  heading being a verbatim copy of the verified line.~~ *(checked: both headings stand and their links resolve — pass 8, session D)*
+- ~~**Four headings renamed under A8**, each because its own section contradicted
   or under-described it: `chunk-storage` *Three folders…* → *Four folders,
   three of them the same shape* (its own list has four and calls *data/* the
   fourth); *Why the server thread never waits, and the three times it does* →
@@ -7930,38 +8336,38 @@ before it was written.
   is the exception* (`block-breaking`:257 and `block-interaction`:162
   repointed — the section's own last paragraph is
   `GameEventDispatcher.handleGameEventMessagesInQueue`), and *One tick,
-  structurally* → *One slot, one tick late, and one refusal that waits*.
-- **Three 1.21 blockquotes moved to the foot** (A3): `lighting` (also trimmed
+  structurally* → *One slot, one tick late, and one refusal that waits*.~~ *(checked — pass 8, session D)*
+- ~~**Three 1.21 blockquotes moved to the foot** (A3): `lighting` (also trimmed
   from ten lines to eight), `scheduled-ticks` (which gained a clause about
   every waterloggable block booking through `updateShape`, a fact the body
-  never states), `tickets-and-loading`. Part IV now has four, all at the foot.
-- **`game-events-and-vibrations`' opening re-argued under A5**: three bold
+  never states), `tickets-and-loading`. Part IV now has four, all at the foot.~~ *(checked except `SectionTracker` in the blockquote, points of interest's — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`game-events-and-vibrations`' opening re-argued under A5**: three bold
   claims became one — the tick of latency, which *One slot, one tick late* pays
   off. The wool box and the crouch are now named as gates the body reaches
-  rather than promised in the hook.
-- **`chunk-generation-pipeline`'s radius-11 derivation rewritten**: the rule is
+  rather than promised in the hook.~~ *(checked in structure; the bold claim holds in game time only (a player's step is chosen in the same server tick) and *two of them* is one — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`chunk-generation-pipeline`'s radius-11 derivation rewritten**: the rule is
   now stated as *how far out this step still demands its own immediate
   predecessor*, with *SURFACE* worked as the negative case, and the 529 is
   derived where the 11 is (a radius of 11 is a list of twelve and a square 23
   on a side). The claim is that `ChunkStep.Builder.getRadiusOfParent` walks
   `directDependenciesByRadius` from the outside in for the first ring at or
   after the parent status (`ChunkStep.java`:135-143), which gives 1 for *NOISE*,
-  *FEATURES* and *LIGHT* and 0 for *SURFACE* and *SPAWN*.
-- **`chunk-generation-pipeline`'s `canLoadWithoutGeneration` split into its two
+  *FEATURES* and *LIGHT* and 0 for *SURFACE* and *SPAWN*.~~ *(checked, re-derived for 26.3 (`world/level/chunk/status/ChunkStep.java`:135–169) — pass 8, session D)*
+- ~~**`chunk-generation-pipeline`'s `canLoadWithoutGeneration` split into its two
   gates**: the centre against the target, then the square against
   `LOADING_PYRAMID`'s FULL accumulated dependencies, which this session
   computed to be `[SPAWN, INITIALIZE_LIGHT]` — a 3×3 in which the centre is
   checked a second time and more weakly. Its figure's last inline line no
   longer says *the steps that may write* over three of the four (*NOISE*, on
-  the line above, is the fourth).
-- **`chunk-storage`**: the autosave row's chain now names
+  the line above, is the fourth).~~ *(checked (`server/level/ChunkGenerationTask.java`:96–112) — pass 8, session D)*
+- ~~**`chunk-storage`**: the autosave row's chain now names
   `ChunkMap.saveAllChunks`, which its holdback column already cited; the unload
   row and the figure note now agree that past 2,000 queued tasks the drain
   ignores the tick budget (`ChunkMap.java`:496-500); and the entity filter says
   why a vehicle with exactly one player rider is skipped —
   `ServerPlayer.java`:486-493 writes it into the player file under
-  *RootVehicle* under exactly that condition.
-- **`fluids`**: the opening's "doing nothing for the rest of the session" now
+  *RootVehicle* under exactly that condition.~~ *(checked (`server/level/ChunkMap.java`:425, :451–459, :494; `server/level/ServerPlayer.java`:497–507) — pass 8, session D)*
+- ~~**`fluids`**: the opening's "doing nothing for the rest of the session" now
   says *never spread it a single block*, because the page's own client
   paragraph gives the client `FluidState.animateTick` and `FluidState.getFlow`;
   the basalt case states its outcome (`LiquidBlock.java`:237-241) instead of
@@ -7969,13 +8375,13 @@ before it was written.
   of the three leave a block behind, because `LavaFluid.spreadTo`
   (`LavaFluid.java`:204-215) places `Blocks.STONE` only when the target was a
   `LiquidBlock`; and the trace's packet line says *four block changes, in one
-  section packet*, which is what the prose beneath it already claimed.
-- **`points-of-interest`**: the four releasers are named rather than counted;
+  section packet*, which is what the prose beneath it already claimed.~~ *(checked except *two of the three leave a block behind*: all three do, since lava pours down onto water only in a `LiquidBlock` — see *Pass 8, session D* — pass 8, session D)*
+- ~~**`points-of-interest`**: the four releasers are named rather than counted;
   the `CatSpawner` row says its condition follows `ServerLevel.isCloseToVillage`
   at two sections (`CatSpawner.java`:42-59); and *After the claim: the night
   shift* now separates what each behaviour does to the *record* from where it
-  sends the villager, which is `ai-goals-and-brains`'.
-- **The landing page** gained *Where the part stops* in the template's place
+  sends the villager, which is `ai-goals-and-brains`'.~~ *(wrong in part: five releasers (`world/entity/ai/behavior/GoToPotentialJobSite.java`:48–51); the `CatSpawner` row checked — see *Pass 8, session D* — pass 8, session D)*
+- ~~**The landing page** gained *Where the part stops* in the template's place
   with `{{#include ../../generated/coverage-world.md}}`, which is where the
   world border's absence is now explained — giving the *Reference this part
   uses* sentence's "for the reason just given" an antecedent it had lost. Its
@@ -7984,23 +8390,23 @@ before it was written.
   says which box in its figure is not a page; the watch order no longer says
   the last four are free of each other, because `fluids` assumes
   `scheduled-ticks` and `lectures.md` already said so; and the tenth blurb no
-  longer names a flag the reader has not met.
-- **Eight *Where to look* lists rewritten to A12**, each in the page's own
+  longer names a flag the reader has not met.~~ *(checked except what *Where the part stops* now argues: the coverage phrase is not the lowest in the book, what it leaves over is mostly `world/level/blockscan`, and the border has a step of the level tick — see *Pass 8, session D* — pass 8, session D)*
+- ~~**Eight *Where to look* lists rewritten to A12**, each in the page's own
   reading order with a phrase saying what each run is for: 21→13
   (`chunk-anatomy`), 24→13 (`chunk-generation-pipeline`), 26→17 (`lighting`),
   27→16 (`scheduled-ticks`), 23→13 (`tickets-and-loading`), 18→13 (`fluids`),
   17→12 (`points-of-interest`), 23→16 (`game-events-and-vibrations`). No name
   left the book; `scheduled-ticks` dropped three that appear nowhere on the
-  page and belong to the random-tick tangent rather than to its own trace.
-- **Six H3s added inside existing H2 anchors** to clear the forty-line budget
+  page and belong to the random-tick tangent rather than to its own trace.~~ *(no claim — pass 8, session D)*
+- ~~**Six H3s added inside existing H2 anchors** to clear the forty-line budget
   without moving an anchor: two on `lighting`, two on
   `chunk-generation-pipeline`, one on `fluids`, one on `chunk-storage`. Part IV
-  went from ten long sections to none.
-- **`tools/pass6_shape.py` fixed**: `QLEAD` and `QMARK` used `[^*]`, so a bold
+  went from ten long sections to none.~~ *(no claim — pass 8, session D)*
+- ~~**`tools/pass6_shape.py` fixed**: `QLEAD` and `QMARK` used `[^*]`, so a bold
   lead-in containing italics — `**Why is my *entities/* folder…?**` — counted
   as neither a lead-in nor a question. Now non-greedy, with a probe case. Every
   closer count this pass has published was measured with the old regex and may
-  be low by one wherever a question names a file or a field in italics.
+  be low by one wherever a question names a file or a field in italics.~~ *(no claim: a tool — pass 8, session D)*
 
 ## Pass 6, session C — Part III · The server *(2026-09-10)*
 
@@ -8371,7 +8777,7 @@ and `docs/pass6-brief.md` Part 3 changed too and are not pages.*
 
 ### Corrections — every one re-derived against the decompile
 
-- `world/environment-attributes-and-timelines` — the opening said *"At tick
+- ~~`world/environment-attributes-and-timelines` — the opening said *"At tick
   12542 on the overworld clock the sun goes under, and three things a player
   would never connect happen at once"*, and only one of the three is at 12542.
   `data/minecraft/timeline/day.json`: the *visual/sky_color* track is a
@@ -8381,72 +8787,72 @@ and `docs/pass6-brief.md` Part 3 changed too and are not pages.*
   sun crosses the horizon at ≈12782 by the page's own sun-angle Bézier (see
   the next item). Now: *"Dusk on the overworld clock is a stretch and not an
   instant. Between tick 11867 and tick 13670 … part-way through, at tick
-  12542 …"*.
-- `world/environment-attributes-and-timelines` — the same sentence said mobs
+  12542 …"*.~~ *(checked (`data/minecraft/timeline/day.json`: 11867, 13670, 12542) — pass 8, session D)*
+- ~~`world/environment-attributes-and-timelines` — the same sentence said mobs
   *"stop being in danger of burning at dawn"*, which reads as the danger
   ending at dawn. `day.json`'s *gameplay/monsters_burn* keyframes are
   `{12542: false}`, `{23460: true}`, modifier *or* — burning resumes at dawn.
-  Now *"until dawn"*.
-- `world/environment-attributes-and-timelines` — *"the same four numbers
+  Now *"until dawn"*.~~ *(checked (`data/minecraft/timeline/day.json`: true again at 23460) — pass 8, session D)*
+- ~~`world/environment-attributes-and-timelines` — *"the same four numbers
   exist twice more as records"*. `ClockState.java:7` is
   `record ClockState(long totalTicks, float partialTick, float rate, boolean
   paused)`; `ClockNetworkState.java:7` is `record ClockNetworkState(long
   totalTicks, float partialTick, float rate)` — three, not four. The page now
   says `ClockState` carries all four and `ClockNetworkState` three, with the
   paused flag as the whole of what the client does not get (which the page
-  already said in the next sentence, contradicting itself).
-- `world/environment-attributes-and-timelines` — *"a 1-4-6-4-1 kernel lerped
+  already said in the next sentence, contradicting itself).~~ *(checked (`world/clock/ClockState.java`:7; `ClockNetworkState.java`:7) — pass 8, session D)*
+- ~~`world/environment-attributes-and-timelines` — *"a 1-4-6-4-1 kernel lerped
   by the sub-cell offset on each axis"*. `GaussianSampler.java:10` is a
   **seven**-entry array `{0, 1, 4, 6, 4, 1, 0}`, and `:23` lerps between
   entries *i+1* and *i* by the sub-cell offset for each of the six taps on an
   axis (`GAUSSIAN_SAMPLE_BREADTH = 6`, `GAUSSIAN_SAMPLE_RADIUS = 2`). Five
-  weights over six cells does not close, which is what the reader caught.
-- `world/environment-attributes-and-timelines` — *"both read the flash
+  weights over six cells does not close, which is what the reader caught.~~ *(checked (`world/attribute/GaussianSampler.java`:10, :23–32) — pass 8, session D)*
+- ~~`world/environment-attributes-and-timelines` — *"both read the flash
   through the accessibility option Hide Lightning Flashes, which reports a
   flash time of zero"* — as written the option always reports zero.
   `ClientLevel.java:976`: `getSkyFlashTime` returns 0 **when the option is
   on** and `skyFlashTime` otherwise. Now *"reports a flash time of zero while
   it is switched on — so the two layers are still there and simply never
-  fire"*.
+  fire"*.~~ *(checked (`client/multiplayer/ClientLevel.java`:982–983) except the option's name, *Hide Sky Flashes* — see *Pass 8, session D* — pass 8, session D)*
 
 ### Claims introduced — `world/environment-attributes-and-timelines`
 
-- The verified line is new: *"dusk falls over a taiga, and one value is
+- ~~The verified line is new: *"dusk falls over a taiga, and one value is
   resolved through a stack of layers — on the server for a mob, and again on
-  the client for the sky"* (it said *"The trace: dusk falls — …"*).
-- *The cast* gains a lead: *"Eight classes carry a value from the data pack
+  the client for the sky"* (it said *"The trace: dusk falls — …"*).~~ *(checked (`world/entity/Mob.java`:557; `client/renderer/SkyRenderer.java`:179) — pass 8, session D)*
+- ~~*The cast* gains a lead: *"Eight classes carry a value from the data pack
   to the sky. The first two thirds of this page is the machinery, object by
   object; the last third runs dusk through it twice, once on each side."* A
-  claim about the page, not the game — check it still describes the page.
-- The `EnvironmentAttribute` cast row now names the three flags —
+  claim about the page, not the game — check it still describes the page.~~ *(checked: eight rows — pass 8, session D)*
+- ~~The `EnvironmentAttribute` cast row now names the three flags —
   *positional*, *spatially interpolated*, *syncable*
-  (`EnvironmentAttribute.java:14-16`, and the row already claimed *three*).
-- *positional* is now defined at first use: *"an attribute is positional
+  (`EnvironmentAttribute.java:14-16`, and the row already claimed *three*).~~ *(wrong: four flags in 26.3 (`world/attribute/EnvironmentAttribute.java`:14–17) — see *Pass 8, session D* — pass 8, session D)*
+- ~~*positional* is now defined at first use: *"an attribute is positional
   unless its builder says otherwise — positional meaning its answer is
   allowed to differ from block to block"*
   (`EnvironmentAttribute.Builder`'s default `isPositional = true`,
-  `EnvironmentAttribute.java:71`).
-- *"`AttributeTypes` registers fourteen of them, in four families: two
+  `EnvironmentAttribute.java:71`).~~ *(checked (`world/attribute/EnvironmentAttribute.java`:79, :102–105) — pass 8, session D)*
+- ~~*"`AttributeTypes` registers fourteen of them, in four families: two
   boolean kinds, three numeric, two colour, and seven enumerations a data
   pack picks a name from"* — the grouping is new (`AttributeTypes.java`:
   boolean, tri_state · float, angle_degrees, integer · rgb_color, argb_color
   · moon_phase, activity, bed_rule, particle, ambient_particles,
-  background_music, ambient_sounds).
-- *"six logic gates for a boolean, six arithmetic ones for a float, four ways
+  background_music, ambient_sounds).~~ *(wrong: fifteen types in 26.3 (`world/attribute/AttributeTypes.java`:22–46) — see *Pass 8, session D* — pass 8, session D)*
+- ~~*"six logic gates for a boolean, six arithmetic ones for a float, four ways
   to combine two colours"* — the same counts the page gave per modifier
-  class, now stated per type family.
-- The `Timelines.MOON` period cell says **192000 — eight days** where it said
+  class, now stated per type family.~~ *(wrong in part: five colour operations, four of them combining two colours (`world/attribute/modifier/AttributeModifier.java`:15–19) — see *Pass 8, session D* — pass 8, session D)*
+- ~~The `Timelines.MOON` period cell says **192000 — eight days** where it said
   `24000 × MoonPhase.COUNT` (`data/minecraft/timeline/moon.json`:
-  `period_ticks: 192000`).
-- New paragraph in *The four timelines*: *"a timeline with no period is not a
+  `period_ticks: 192000`).~~ *(checked (`data/minecraft/timeline/moon.json`) — pass 8, session D)*
+- ~~New paragraph in *The four timelines*: *"a timeline with no period is not a
   cycle at all — its track runs once against the clock's total ticks and then
   holds its last value forever"* — moved up out of the closer's pillager
-  answer, which now states only the consequence.
-- The villager-schedule paragraph (`Brain.setSchedule`, the two tracks,
+  answer, which now states only the consequence.~~ *(checked (`util/KeyframeTrackSampler.java`:39, :60–63, :88–90) — pass 8, session D)*
+- ~~The villager-schedule paragraph (`Brain.setSchedule`, the two tracks,
   `Brain.updateActivityFromSchedule`'s 20-game-tick throttle, the link to
   points of interest) moved from the closer into *The four timelines*
-  unchanged in substance.
-- New paragraph in *What crosses the wire*, all of it new: **syncable** is
+  unchanged in substance.~~ *(checked (`world/entity/ai/Brain.java`:284, :388–391; `world/entity/npc/villager/Villager.java`:193, :195) — pass 8, session D)*
+- ~~New paragraph in *What crosses the wire*, all of it new: **syncable** is
   the third flag; *"Thirty-three of the 48 carry it: every one of the 24
   visual/ attributes and all four audio/ ones, and five of the gameplay flags
   — sky_light_level, fast_lava, water_evaporates, piglins_zombify,
@@ -8454,45 +8860,45 @@ and `docs/pass6-brief.md` Part 3 changed too and are not pages.*
   makes alone"*, and *"the client's stack is shorter than the server's, and
   identical everywhere the client actually looks"*
   (`EnvironmentAttributes.java`, counted by `.syncable()` on each
-  `register(…)`: 33 of 48, the 15 without it all `gameplay/`).
-- The trace heading is now *"Dusk, and the same question asked twice"* (was
+  `register(…)`: 33 of 48, the 15 without it all `gameplay/`).~~ *(checked in V2's form (33 of 51: `world/attribute/EnvironmentAttributes.java`:20–70) except *costs the client nothing* beside it — see *Pass 8, session D* — pass 8, session D)*
+- ~~The trace heading is now *"Dusk, and the same question asked twice"* (was
   *"The trace: dusk falls"*), and its lead sentence changed to *"Both go
   through the stack above, and this is the machinery running."* No inbound
-  link landed on the old anchor.
-- *"The step that reads oddly is the fifth"* is now named rather than
+  link landed on the old anchor.~~ *(checked — pass 8, session D)*
+- ~~*"The step that reads oddly is the fifth"* is now named rather than
   numbered — *"the one where the sampler asks whether any layer of the
-  attribute is positional and finds that none is"*.
-- Re-scoped appositive: *"`LavaFluid.isFastLava` and `Entity` …, the two
+  attribute is positional and finds that none is"*.~~ *(checked: figure 2's named step — pass 8, session D)*
+- ~~Re-scoped appositive: *"`LavaFluid.isFastLava` and `Entity` …, the two
   sites that between them decide how fast lava flows and how hard it
   shoves"* — `LavaFluid.java:237` reads `FAST_LAVA` for the fluid's own
   spread, `Entity.java:1756` for the push scale (0.007 against
   0.0023333333333333335). The old sentence's *"the pair"* read as the two
-  attributes.
-- The six probe consumers are now a clause — *"everything that draws the sky
+  attributes.~~ *(checked (`world/level/material/LavaFluid.java`:237–238; `world/entity/Entity.java`:1791) — pass 8, session D)*
+- ~~The six probe consumers are now a clause — *"everything that draws the sky
   goes through it — the sky, the lightmap, the two fog environments, the
   clouds and the music"* — so `LightmapRenderStateExtractor`,
   `AtmosphericFogEnvironment`, `WaterFogEnvironment` and `LevelExtractor` are
-  no longer named on the page (logged in [pass5.md](pass5.md)).
-- The server/client one-tick disagreement moved from the closer into *The
+  no longer named on the page (logged in [pass5.md](pass5.md)).~~ *(checked (the six consumers' probe reads) — pass 8, session D)*
+- ~~The server/client one-tick disagreement moved from the closer into *The
   same value on the client*, with a new framing sentence: *"The last
   difference is a tick wide, and it is the reason the two sides can disagree
-  about the sky for one tick at dusk."* The mechanism is unchanged.
-- `TimeCommand`'s two registrations are now *"Everything `TimeCommand` offers
+  about the sky for one tick at dusk."* The mechanism is unchanged.~~ *(checked (`server/level/ServerLevel.java`:338, :365; `client/multiplayer/ClientLevel.java`:309, :350) — pass 8, session D)*
+- ~~`TimeCommand`'s two registrations are now *"Everything `TimeCommand` offers
   is offered twice, once against the source level's
   `DimensionType.defaultClock` and once under `/time of` against a clock the
   player names"*; the six subcommand names and the `/time query gametime`
-  exception are cut (logged).
-- The 1.21 blockquote moved to the foot, 11 lines to 8, and asserts something
+  exception are cut (logged).~~ *(checked (`server/commands/TimeCommand.java`:68–75) except the sentence beside it, *the subset a player can name* — see *Pass 8, session D* — pass 8, session D)*
+- ~~The 1.21 blockquote moved to the foot, 11 lines to 8, and asserts something
   the old one only implied: *"ultrawarm has become two of them,
   `EnvironmentAttributes.FAST_LAVA` and
   `EnvironmentAttributes.WATER_EVAPORATES`"* — by elimination against
   `DimensionTypes.java:39`, where the nether sets `BED_RULE`,
   `RESPAWN_ANCHOR_WORKS`, `WATER_EVAPORATES`, `FAST_LAVA` and
   `PIGLINS_ZOMBIFY` for the four old booleans. `DimensionType.hasFixedTime`
-  and `DimensionType.ambientLight` "stayed put" is cut from the blockquote.
-- The closer keeps three questions (the nether's night, `/time` and the End,
+  and `DimensionType.ambientLight` "stayed put" is cut from the blockquote.~~ *(checked on the 26.3 side (`world/level/dimension/DimensionType.java`:28; `data/worldgen/DimensionTypes.java`:39) — pass 8, session D)*
+- ~~The closer keeps three questions (the nether's night, `/time` and the End,
   the pillager patrols) and loses two to the body. Every answer left is a
-  consequence a player meets — the A2 test, applied.
+  consequence a player meets — the A2 test, applied.~~ *(checked: three questions — pass 8, session D)*
 
 ### Claims introduced — `commands/README`
 
@@ -9360,13 +9766,13 @@ every fact below was changed with the decompile open.*
   world generation. The surface rules read the biome through
   `BiomeManager.getBiome`, the jittered entry point (`SurfaceSystem.java`:103).
   The row gains the surface pass, and `terrain` now states which read it is.
-- `world/scheduled-ticks`:13 offered "a sapling sprouting after bonemeal" as an
+- ~~`world/scheduled-ticks`:13 offered "a sapling sprouting after bonemeal" as an
   example of a scheduled tick. `SaplingBlock.performBonemeal` calls
   `SaplingBlock.advanceTree` in the same call (`SaplingBlock.java`:81–82) and
   the un-bonemealed path is a *random* tick (:48) — the page's own contrast.
   The same list's "a piece of amethyst budding" is also a random tick
   (`BuddingAmethystBlock.java`:28). Replaced with a dispenser firing
-  (`DispenserBlock.java`:138) and a redstone torch burning out.
+  (`DispenserBlock.java`:138) and a redstone torch burning out.~~ *(checked (`world/level/block/DispenserBlock.java`:131; `RedstoneTorchBlock.java`:82, :94) — pass 8, session D)*
 - `worldgen/README`:170 said the level-data Reference page is "which lecture
   nine links to"; the page that links it is lecture **ten**,
   `creating-a-world`.
@@ -9628,10 +10034,10 @@ itself. Corrections first, then the claims the session introduced, which pass
     (`Minecraft.renderFrame`), and the glossary already retired *immutable*
     for the top-level states. Reworded to "copies the live game into render
     state and then draws from that copy, both halves on the Render thread".
-12. **`world/lighting`:354** cited `section-meshing#a-click-and-the-flag-it-leaves-behind`
+12. ~~**`world/lighting`:354** cited `section-meshing#a-click-and-the-flag-it-leaves-behind`
     for the `hasAllNeighbors` light gate, which is two sections later under
     *The sweep that only looks at what you can see*. The anchor existed, so
-    `check_links.py` passed it; repointed.
+    `check_links.py` passed it; repointed.~~ *(checked (`src/systems/rendering/section-meshing.md`:116) — pass 8, session D)*
 13. **`rendering/section-meshing`:282** said *BlockRenderDispatcher* is
     "gone", while `reference/naming-drift`:302 gives `ModelBlockRenderer` as
     its successor. Both are true of different things; the drift box now says
@@ -9906,11 +10312,11 @@ claims the session introduced, which pass 9 checks before anything else.*
     swallow a release, which is the asymmetry `input-and-keybinds`:117-120 is
     built on. Corrected to: a release is recorded whether or not a screen is
     open, but a screen that consumes one swallows it.
-12. **`world/fluids`:167-171** said the client ran `BucketItem.use` inside
+12. ~~**`world/fluids`:167-171** said the client ran `BucketItem.use` inside
     the prediction window, "holding the write until the server's
     acknowledgement arrives", and then said in its own next clause that the
     source appears with no round trip. The window holds the *old* state, not
-    the write. Corrected.
+    the write. Corrected.~~ *(checked (`client/multiplayer/ClientLevel.java`:240–247; `client/multiplayer/prediction/BlockStatePredictionHandler.java`:21–24) — pass 8, session D)*
 13. **`reference/hud-elements`** — three defects in the table, all found by
     reading `Hud.extractRenderState` and `Gui.extractRenderState` against it.
     (a) `SpectatorGui.extractAction` (`Hud.java`:615) is a recorded element
@@ -11156,7 +11562,7 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   the chunk status, never bit 4, so a *server* write carrying bit 4 still
   broadcasts. The row now says so. `blocks-and-states`:291-295 already had it
   right, so this was a Reference page contradicting its own lecture.
-- **`world/scheduled-ticks`, `DiodeBlock.shouldPrioritize`.** The deleted
+- ~~**`world/scheduled-ticks`, `DiodeBlock.shouldPrioritize`.** The deleted
   paragraph said `TickPriority.EXTREMELY_HIGH` is picked "when the block it
   powers is itself a diode **that is not pointing straight back at it**".
   `DiodeBlock.java`:214-219 returns `isDiode(oppositeState) &&
@@ -11166,7 +11572,7 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   `direction.getOpposite()`, so it satisfies the test — the condition was
   inverted, and the excluded case is the diode aimed the *same* way. The
   surviving copy, `diodes-and-observers`:123-126 ("a diode whose own input is
-  not on the far side of it"), is right and stands.
+  not on the far side of it"), is right and stands.~~ *(wrong: the deleted wording was right, the excluded case being a diode that points back at it (`world/level/block/DiodeBlock.java`:210–215); nothing on this page rests on it — pass 8, session D)*
 - **`blocks/diodes-and-observers`:177-179 was self-contradicting.** It said
   `RepeaterBlock.LOCKED` "is the only diode property computed from a redstone
   reading *outside* tick time — `DiodeBlock.POWERED` is the only one computed
@@ -11313,12 +11719,12 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   packet", so the set holds positions and not values and a whole cascade is
   broadcast as one state per position — moved from `signal-and-dust`, which
   stated it twice and now cites it once.
-- **`world/scheduled-ticks`** now claims "a booking cannot be called off:
+- ~~**`world/scheduled-ticks`** now claims "a booking cannot be called off:
   nothing in the game cancels a single scheduled tick, the only removals being
   the bulk area operations" — `LevelTicks.clearArea`/`copyAreaFrom`, which the
   page describes thirty lines above. It also says a block *chooses* its
   priority from seven (`TickPriority.java`:7 declares seven values), where the
-  page previously implied five.
+  page previously implied five.~~ *(checked on *cannot be called off*; the only removal is `LevelTicks.clearArea` (`world/ticks/LevelTicks.java`:273–294, :301–326) — see *Pass 8, session D* — pass 8, session D)*
 - ~~**`server/server-level-tick`**'s block-event section is cut to the phase
   claim plus a citation; it no longer states the queue's four rules.~~ *(checked for the phase (`server/level/ServerLevel.java`:390) except *raised anywhere in this tick — completely*: events outside the block-ticking range are put back (:1339–1344) — see *Pass 8, session C* — pass 8, session C)*
 
@@ -11348,7 +11754,7 @@ tool bug, and it had been hiding broken links.
 
 ### Corrections — every one re-derived against the decompile
 
-- `world/chunk-anatomy`:247 said "Packing therefore buys a smaller palette,
+- ~~`world/chunk-anatomy`:247 said "Packing therefore buys a smaller palette,
   **not narrower entries**: unreferenced entries are dropped, which can demote
   a container a whole rung, and a `Configuration.Global` container shrinks from
   `Configuration.bitsInMemory` to `Configuration.bitsInStorage`." The head
@@ -11361,8 +11767,8 @@ tool bug, and it had been hiding broken links.
   narrows entries in exactly two cases: a smaller palette landing a rung lower,
   and a global container's storage width. **Now:** what packing recomputes is
   the palette, and narrower entries are the consequence in those two cases,
-  each named.
-- `world/chunk-storage`:334 said `ImposterProtoChunk` "does not defer to the
+  each named.~~ *(checked (`world/level/chunk/PalettedContainer.java`:228–239, :260–264) — pass 8, session D)*
+- ~~`world/chunk-storage`:334 said `ImposterProtoChunk` "does not defer to the
   `LevelChunk` it wraps, which **only** `ImposterProtoChunk.markUnsaved` does".
   `ImposterProtoChunk.java:157-158, 248-254`: `markUnsaved`, `isLightCorrect`
   **and** `setLightCorrect` all delegate unconditionally, which
@@ -11370,8 +11776,8 @@ tool bug, and it had been hiding broken links.
   falses are `canBeSerialized` and `tryMarkSaved`
   (`ImposterProtoChunk.java:162-169`). **Now:** all three delegating members are
   named, both pages say the same thing, and `chunk-storage` cites
-  `chunk-anatomy`'s anchor.
-- `world/chunk-storage`:281 said loading "changes hands **four** times" and
+  `chunk-anatomy`'s anchor.~~ *(checked on the delegation; the flat falses are three with `ImposterProtoChunk.isUnsaved` (`world/level/chunk/ImposterProtoChunk.java`:160–171) — see *Pass 8, session D* — pass 8, session D)*
+- ~~`world/chunk-storage`:281 said loading "changes hands **four** times" and
   then named four stages. `ChunkMap.java:582-610` and `997-1001`: the stages are
   the IO lane, *upgradeChunk* and *parseChunk* on `Util.backgroundExecutor`, and
   `SerializableChunkData.read` on the main-thread executor — four stages across
@@ -11379,25 +11785,25 @@ tool bug, and it had been hiding broken links.
   lanes", with the shared lane said out loud. The same sentence's
   `SimpleRegionStorage.upgradeChunkTag` is now `ChunkMap.upgradeChunkTag`, which
   is the call `ChunkMap.readChunk` actually makes (`ChunkMap.java:999`), so the
-  two Part IV pages name one member for one hop.
-- `world/scheduled-ticks`:81 said "**Two type parameters**, two parallel
+  two Part IV pages name one member for one hop.~~ *(checked (`world/level/chunk/storage/IOWorker.java`:151–168; `server/level/ChunkMap.java`:581–606, :995–998) — pass 8, session D)*
+- ~~`world/scheduled-ticks`:81 said "**Two type parameters**, two parallel
   worlds". `LevelTicks.java:34`, `LevelChunkTicks.java:17`,
   `LevelTickAccess.java:5` and `ScheduledTick.java:8` each declare exactly one
   parameter. **Now:** "Two type *arguments*", with the one-parameter fact stated
-  and `Block` and `Fluid` named as what fills it.
-- `world/lighting`:184 said `LightEngine.checkNode` "only decides what to
+  and `Block` and `Fluid` named as what fills it.~~ *(checked (`world/ticks/LevelTicks.java`:34; `server/level/ServerLevel.java`:216–217) — pass 8, session D)*
+- ~~`world/lighting`:184 said `LightEngine.checkNode` "only decides what to
   enqueue", two paragraphs before describing the sky engine writing stored
   levels. Both engines' `checkNode` writes: `BlockLightEngine.java:36`
   (`setStoredLevel(blockNode, 0)` when emission dropped below the stored level)
   and `SkyLightEngine.java:73`, plus `updateSourcesInColumn` →
   `removeSourcesBelow`/`addSourcesAbove` at `SkyLightEngine.java:108, 135`.
   **Now:** "zeroes the stored level where the light that is there must go and
-  enqueues the rest as work".
-- `world/fluids`:275 attributed lava's slope numbers through
+  enqueues the rest as work".~~ *(checked (`world/level/lighting/BlockLightEngine.java`:36–38; `SkyLightEngine.java`:72–74) — pass 8, session D)*
+- ~~`world/fluids`:275 attributed lava's slope numbers through
   `WaterFluid.getSlopeFindDistance` while its own table at :338 used
   `FlowingFluid.getSlopeFindDistance`. `FlowingFluid.java:353` declares it
   abstract; `WaterFluid.java:86` and `LavaFluid.java:154` override.
-  **Now:** `FlowingFluid.getSlopeFindDistance` in both places.
+  **Now:** `FlowingFluid.getSlopeFindDistance` in both places.~~ *(checked (`world/level/material/FlowingFluid.java`:352; `WaterFluid.java`:86; `LavaFluid.java`:155) — pass 8, session D)*
 - `rendering/lightmap-fog-and-sky`:61 said the lightning layer lerps
   `EnvironmentAttributes.SKY_COLOR` "**a fifth** of the way";
   `environment-attributes-and-timelines`:92 says 22%. `ClientLevel.java:274` is
@@ -11418,33 +11824,33 @@ tool bug, and it had been hiding broken links.
 
 ### Suspicions re-derived and found sound — a strike is a claim
 
-- `chunk-generation-pipeline`:190's "the dispatcher's own **four-slot** queue"
+- ~~`chunk-generation-pipeline`:190's "the dispatcher's own **four-slot** queue"
   is real: `ChunkTaskDispatcher.DISPATCHER_PRIORITY_COUNT` is 4 and the four
   users are resort 0, release 1, submit 2, poll 3
   (`ChunkTaskDispatcher.java:18, 38, 51, 63, 80`), so a re-sort really does
   outrank a new submission. Unchanged, and it is a *different* four from the
-  ticket throttle's.
-- `chunk-generation-pipeline`:211's two requirements on the centre chunk are
+  ticket throttle's.~~ *(checked (`server/level/ChunkTaskDispatcher.java`:18, :28) — pass 8, session D)*
+- ~~`chunk-generation-pipeline`:211's two requirements on the centre chunk are
   both real and not in conflict: `ChunkGenerationTask.java:92-118` wants the
   persisted status at or past the target **and** every chunk of the loading
-  pyramid's square at or past what its distance requires. Unchanged.
-- `tickets-and-loading`:346's purge gate — "unless the level is frozen and
+  pyramid's square at or past what its distance requires. Unchanged.~~ *(checked (`server/level/ChunkGenerationTask.java`:92–119) — pass 8, session D)*
+- ~~`tickets-and-loading`:346's purge gate — "unless the level is frozen and
   chunk ticking is on" — is exactly `ServerChunkCache.java:328`
   (`runsNormally() || !tickChunks`). Unchanged; `server-level-tick`'s shorter
-  "running" is a table compressing it.
-- `scheduled-ticks`:364's "only `/clone` and the gametest framework do, in bulk"
+  "running" is a table compressing it.~~ *(checked (`server/level/ServerChunkCache.java`:327) — pass 8, session D)*
+- ~~`scheduled-ticks`:364's "only `/clone` and the gametest framework do, in bulk"
   distributes correctly: `CloneCommands.java:248` calls `copyAreaFrom`, which
   only reads (`LevelTicks.java:301-326`), and `GameTestInfo.java:81` /
-  `StructureUtils.java:107` call `clearArea`, which removes. Unchanged.
-- `chunk-anatomy`:126's double-buffered added and removed sets really are
+  `StructureUtils.java:107` call `clearArea`, which removes. Unchanged.~~ *(checked (`server/commands/CloneCommands.java`:248; `world/ticks/LevelTicks.java`:281) — pass 8, session D)*
+- ~~`chunk-anatomy`:126's double-buffered added and removed sets really are
   `ClientChunkCache.Storage`'s fields (`ClientChunkCache.java:220-221`), with
-  the accessors and `flipUpdateTrackingSets` on the cache. Unchanged.
-- `points-of-interest`:316's "`PoiManager.loadedChunks` never forgets" holds:
-  `PoiManager.java:49, 263` is a `LongSet` only ever added to. Unchanged.
+  the accessors and `flipUpdateTrackingSets` on the cache. Unchanged.~~ *(checked (`client/multiplayer/ClientChunkCache.java`:184–206, :217–220) — pass 8, session D)*
+- ~~`points-of-interest`:316's "`PoiManager.loadedChunks` never forgets" holds:
+  `PoiManager.java:49, 263` is a `LongSet` only ever added to. Unchanged.~~ *(checked (`world/entity/ai/village/poi/PoiManager.java`:49, :263) — pass 8, session D)*
 
 ### Claims introduced
 
-- `world/README` — the header now says "the five pages off that line — what the
+- ~~`world/README` — the header now says "the five pages off that line — what the
   place and the hour decide, and the four systems that make the world the line
   delivers feel alive", which is a claim that the environment page is neither
   conveyor nor side-system. A new ***Where the part stops*** section claims that
@@ -11458,20 +11864,20 @@ tool bug, and it had been hiding broken links.
   "almost every write", the sensor's "at least one tick", the tickets page's
   "nothing asks for a chunk *because* it is loaded", chunk anatomy's *distinct*).
   The Reference list gains `reference/registries.md` with the claim that three
-  of the part's mechanisms are registry-backed.
+  of the part's mechanisms are registry-backed.~~ *(checked except: the *about 2,900 lines … in six other parts* sentence is overtaken (the section now opens on the generated coverage phrase); the border's reason (`server/level/ServerLevel.java`:343–344 is its tick step); the sensor's *at least one tick* (not for a player); and *three* registry-backed mechanisms (eight) — see *Pass 8, session D* — pass 8, session D)*
 - `src/lectures.md` — Part IV's shape paragraph now counts the conveyor the way
   the landing page does (four pages plus a vocabulary page, not five), and
   lighting's blurb no longer says *self-contained*: it says nothing later in the
   part assumes it and Part XI does.
-- `world/tickets-and-loading` — a new paragraph claims `ChunkResult` is the
+- ~~`world/tickets-and-loading` — a new paragraph claims `ChunkResult` is the
   two-case type all three holder futures carry and that
   `ChunkHolder.UNLOADED_LEVEL_CHUNK` is simply its shared failure, whose message
   is *Unloaded level chunk*. The spectator answer gains a claim that the skip is
   **remembered** in a `PlayerMap` at join rather than re-asked. The renamed
   section *Which chunks a player is owed, and what makes one eligible* claims
   that the BLOCK_TICKING row is the join between the two systems — nothing is
-  sent that the server is not also simulating.
-- `world/chunk-generation-pipeline` — a new paragraph on the *EMPTY* step
+  sent that the server is not also simulating.~~ *(wrong in part: `ChunkResult` checked (`server/level/ChunkResult.java`:8, :44, :78); the spectator skip is asked again every move (`server/level/ChunkMap.java`:1186–1206); sending and simulating are two graphs — see *Pass 8, session D* — pass 8, session D)*
+- ~~`world/chunk-generation-pipeline` — a new paragraph on the *EMPTY* step
   claims that a null parse and a thrown load both end at
   `ChunkMap.createEmptyChunk`, that the position is marked replaceable in
   `ChunkMap.chunkTypeCache`, and therefore that **an unreadable chunk is
@@ -11479,8 +11885,8 @@ tool bug, and it had been hiding broken links.
   owners: the level→status line to `tickets-and-loading#the-number-line`, the
   synchronous ask to `#when-the-graphs-run`, the pool sizing to
   `anatomy#four-threads-worth-memorising` with the new claim that "the only knob
-  is the pool's, and widening the pool widens everything else that shares it".
-- `world/chunk-storage` — a new section *The other store under* data/ claims
+  is the pool's, and widening the pool widens everything else that shares it".~~ *(wrong in part: the replaceable mark licenses a save, not the generator (`server/level/ChunkMap.java`:649–656, :836, :870–875), and the pool knob also widens the forks — see *Pass 8, session D* — pass 8, session D)*
+- ~~`world/chunk-storage` — a new section *The other store under* data/ claims
   `SavedDataStorage` encodes on the caller's thread and writes on the IO pool,
   at most `Util.maxAllowedExecutorThreads` at a time, chained through
   `SavedDataStorage.pendingWriteFuture`, with `SavedDataStorage.saveAndJoin` the
@@ -11490,37 +11896,37 @@ tool bug, and it had been hiding broken links.
   the three stores to a `RegionStorageUpgrader`, optionally recreates region
   files (which compacts a fragmented save), and reports through
   `UpgradeProgress` — and that nothing there loads, generates or consults a
-  status.
-- `world/environment-attributes-and-timelines` — a new paragraph claims
+  status.~~ *(wrong in part: saved data is encoded on the caller's thread with no copy, `SavedDataStorage.saveAndJoin` is the upgrader's too, and the upgrader writes only changed tags, recreates files only with *--recreateRegionFiles* and names its thread *World Upgrader #n* — see *Pass 8, session D* — pass 8, session D)*
+- ~~`world/environment-attributes-and-timelines` — a new paragraph claims
   `ClockState` is the saved form and `PackedClockStates` the saved map,
   `ClockNetworkState` the wire form, that **the difference between the two is
   the paused flag**, and that `ClockManager` is a one-method interface which is
-  why `AttributeTrackSampler` is the same class on both sides.
-- `world/points-of-interest` — a new callout, ***A village is made of loaded
+  why `AttributeTrackSampler` is the same class on both sides.~~ *(checked (`world/clock/ClockState.java`:7; `ClockNetworkState.java`:7; `ClockManager.java`:7; `world/timeline/AttributeTrackSampler.java`:19, :34) — pass 8, session D)*
+- ~~`world/points-of-interest` — a new callout, ***A village is made of loaded
   sections only***, claims `PoiManager.isVillageCenter` alone in the query
   family reads through the non-loading `SectionStorage.get`, treats its null as
   *not a centre*, and that this is deliberate because the flood settles every
-  tick and must not touch the disk.
-- `world/scheduled-ticks` — the random-tick section is cut to the contrast and
+  tick and must not touch the disk.~~ *(checked on the mechanism (`world/entity/ai/village/poi/PoiManager.java`:195–203) except *it shrinks as chunks unload*: nothing evicts — see *Pass 8, session D* — pass 8, session D)*
+- ~~`world/scheduled-ticks` — the random-tick section is cut to the contrast and
   now claims two things as its own: that at the edge of simulation distance
   there is **a ring of chunks where appointments come due and nothing is chosen
   at random**, and that a random tick's eligibility is baked in at
   `BlockBehaviour.BlockStateBase.initCache` **before the world exists**, unlike
-  an appointment, which is checked against the world when it comes due.
-- `world/chunk-anatomy` — the ticker section, renamed *What step 11 leaves
+  an appointment, which is checked against the world when it comes due.~~ *(checked (`server/level/ChunkMap.java`:1032–1044; `world/level/block/state/BlockBehaviour.java`:894–896) — pass 8, session D)*
+- ~~`world/chunk-anatomy` — the ticker section, renamed *What step 11 leaves
   behind, and what the chunk goes on holding*, claims the handle belongs to the
   chunk and outlives the block entity in it. The step-8/9 paragraph now claims
   step 9 is "the only step whose whole job is to notice that the world moved
-  underneath it".
-- `world/fluids` — claims `LiquidBlockContainer` is the interface
+  underneath it".~~ *(wrong in part: the handle does not outlive a removed block entity (`world/level/chunk/LevelChunk.java`:522–541, :563–569); step 9 checked — see *Pass 8, session D* — pass 8, session D)*
+- ~~`world/fluids` — claims `LiquidBlockContainer` is the interface
   `SimpleWaterloggedBlock` narrows to water, and that the client holds the
   predicted bucket write until the acknowledgement arrives (a citation of
   `prediction-and-acks#the-six-windows`, added where the page previously said
-  only "with no round trip").
-- `world/lighting` — claims a section is not meshed at all until
+  only "with no round trip").~~ *(checked (`world/level/block/SimpleWaterloggedBlock.java`:18–23) — pass 8, session D)*
+- ~~`world/lighting` — claims a section is not meshed at all until
   `LevelLightEngine.lightOnInColumn` is true for each of its eight surrounding
   columns, so a light flag decides whether a section may have a mesh (the same
-  claim as before, now stated once and cited rather than told twice).
+  claim as before, now stated once and cited rather than told twice).~~ *(checked (`client/SectionUpdateTracker.java`:41–49); the sentence beside it wrong, the placer gets no light packet — see *Pass 8, session D* — pass 8, session D)*
 - ~~`server/server-level-tick` — now claims `ServerChunkCache.tickChunks` reads
   `GameRules.RANDOM_TICK_SPEED` once per level tick and hands it down (the page
   previously attributed the read to `ServerLevel.tickChunk`); and its
@@ -11531,10 +11937,10 @@ tool bug, and it had been hiding broken links.
   VIII, XII) where it previously named only Part IV and the level tick; claims
   *the border has no lecture* and says why. Its game-rule ids no longer carry
   hand-copied defaults, because `gamerules.md` generates them.
-- **Eighteen cross-part and nineteen within-part citations gained the owner's
+- ~~**Eighteen cross-part and nineteen within-part citations gained the owner's
   anchor.** Part IV carried **none** before this session. Each anchor is a claim
   that the named section is the answer; pass 9 should spot-check that the
-  section under each anchor says what the citing sentence says it says.
+  section under each anchor says what the citing sentence says it says.~~ *(checked: the anchors resolve (`check_links.py`), and the sections under them say what the citing sentences say — pass 8, session D)*
 
 ### The tool bug — the seventeenth of the project, and the first that was hiding failures
 

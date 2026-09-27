@@ -1461,6 +1461,20 @@ writes one strikes it through; a session that rules one out says why, here.*
   second edition's, and `ServerEntityGetter` belongs on `entities/entity-lifecycle`
   if anywhere.
 
+- **26.3's block search, `world/level/blockscan`, and the attribute modifier
+  classes.** *(pass 8, session D, 2026-09-27, which found Part IV's landing page
+  calling its leftover "the modifier classes … and the rest are look-up
+  tables".)* `pass5_coverage.py --part world` puts 1,378 of Part IV's lines on no
+  page, and the largest share is a package new in 26.3: `BlockScanUtils`,
+  `BoxBlockMatcher`, `OrderedBlockMatcher`, `FilteredSectionCache`,
+  `BlockMatcher` and `BlockStateConsumer` (436 lines), the search behind
+  `LevelReader.findBlocksIn` and `ChunkAccess.findBlocks` that asks each
+  section's palette before it reads a block — the trick `world/chunk-anatomy`
+  teaches — and that twenty-one files across entities, blocks, projectiles and the server's packet listener call. Beside it, six
+  of `world/attribute/modifier`'s eight classes (305). The landing page's
+  *Where the part stops* now names both; no lecture explains either. Declared,
+  not taught; a second edition's.
+
 - **`net/minecraft/core/dispenser` has no owner, and Part II's landing page
   now says so.** *(pass 6, session B.)* Thirteen classes and 1,090 lines —
   `DispenseItemBehavior` and twelve implementations — sit inside Part II's

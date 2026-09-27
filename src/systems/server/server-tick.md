@@ -297,8 +297,7 @@ down to `MinecraftServer.autoSave`, and it counts *ticks* while promising
 *minutes*: it starts at `MinecraftServer.AUTOSAVE_INTERVAL` (6000) and is
 thereafter `MinecraftServer.computeNextAutosaveInterval`, the tick rate times
 300, floored at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS` (100 — the typo is
-Mojang's). So an autosave is five minutes of the server's scheduled time
-whatever `/tick rate` is set to, and at any set rate the floor never binds,
+Mojang's). So an autosave is five minutes of the server's scheduled time at any steady `/tick rate`, and at any set rate the floor never binds,
 since the rate cannot go below 1; `MinecraftServer.onTickRateChanged` re-derives the figure
 whenever that changes, but only ever *shortens* the pending countdown, and a sprint
 uses the measured rate from `MinecraftServer.getAverageTickTimeNanos` so that

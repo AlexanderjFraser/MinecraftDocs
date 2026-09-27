@@ -5,8 +5,8 @@
 Dusk on the overworld clock is a stretch and not an instant. Between tick
 11867 and tick 13670 the sky over a taiga slides from its pale blue towards
 black, and the sky over a pale garden slides from its grey towards black by
-the same proportion; part-way through, at tick 12542, every mob standing in
-the open stops being in danger of burning, and is not in danger again until
+the same proportion; part-way through, at tick 12542, every mob that burns in
+daylight stops being in danger of burning, and is not in danger again until
 tick 23460. A player would never
 connect the three, and in 26.3 they are one mechanism. An **environment
 attribute** is a named, typed, registered property of the world —
@@ -15,9 +15,9 @@ attribute** is a named, typed, registered property of the world —
 position and an instant by running a short stack of **layers** over the
 attribute's default value: the dimension, the biome, the **timelines**, the
 weather. The surprise is in what a timeline holds. The day timeline does not
-know what colour a taiga sky is and never learns: its keyframes are not
-values but *modifier arguments*, and the night segment of the sky track is a
-multiply. **Night does not set the sky's colour — it multiplies whatever the
+know what colour a taiga sky is and never learns: its sky track's keyframes
+are not values but *modifier arguments*, and the night segment is a multiply.
+**Night does not set the sky's colour — it multiplies whatever the
 biome produced**, which is how one data-driven curve darkens every overworld
 biome correctly without being told about any of them.
 
@@ -29,9 +29,9 @@ dusk through it twice, once on each side.
 
 | class | what it decides | thread |
 |---|---|---|
-| `EnvironmentAttribute` | the key: a type, a default, an `AttributeRange`, and three flags — *positional*, *spatially interpolated*, *syncable*. It holds no value and no state | — (registry constant) |
+| `EnvironmentAttribute` | the key: a type, a default, an `AttributeRange`, and four flags — *positional*, *spatially interpolated*, *syncable*, and the *full-resolution biomes* that `EnvironmentAttributes.NATURAL_MOB_SPAWNS` sets. It holds no value and no state | — (registry constant) |
 | `EnvironmentAttributeMap` | what one dimension or one biome contributes — a modifier and an argument per attribute, never a bare value | — (loaded from data) |
-| `EnvironmentAttributeSystem` | the baked per-level resolver: one `EnvironmentAttributeSystem.ValueSampler` for each attribute some layer mentions | built in the level constructor, read on that level's thread |
+| `EnvironmentAttributeSystem` | the baked per-level resolver: one `EnvironmentAttributeSystem.ValueSampler` for each attribute some layer mentions | built in the level constructor, read on that level's thread; a generating region builds its own, on the worker |
 | `Timeline` | a clock, an optional period, one `AttributeTrack` per attribute, and the named instants on that clock | — (loaded from data) |
 | `AttributeTrackSampler` | one track baked against a clock, with a one-tick cache of the sampled argument | Server or Render |
 | `ServerClockManager` | **the owner of day time** — one `ServerClockManager.ServerClockInstance` per registered `WorldClock`, saved as *world_clocks* | Server |
@@ -60,12 +60,12 @@ flowchart TD
     FLASH --> SAN
 ```
 
-*The four rungs every value falls through, and the one branch that is not on
-every value's path. Weather is the last word on the server; the client stacks
-two more layers above it, and they are not general rungs — one lerps the sky
-colour toward the lightning flash and the other pins the sky light factor to 1,
-each bolted to that single attribute. A client asking for anything else falls
-the same four rungs a server does.*
+*The four rungs a level's value falls through, and the one branch that is not
+on every value's path: weather is the last word on the server, and the client
+stacks two more layers above it, each bolted to one attribute — one lerps the
+sky colour toward the lightning flash, the other pins the sky light factor
+to 1. A client asking for anything else falls the same four rungs a server
+does, and a region being generated builds only the first two.*
 
 `EnvironmentAttributeSystem.Builder.addDefaultLayers` stacks those four in
 that order and only that order. There is no priority number anywhere and no
@@ -75,11 +75,12 @@ last word on the server. The client's two extra layers are not a fifth rung:
 `EnvironmentAttributeSystem.Builder.addTimeBasedLayer` against **one named
 attribute** — `EnvironmentAttributes.SKY_COLOR` and
 `EnvironmentAttributes.SKY_LIGHT_FACTOR` — so they are two entries in two
-attributes' stacks and are absent from the other forty-six. Each is a no-op
-unless `ClientLevel.getSkyFlashTime` is above zero. The stack is *per attribute*, too — an attribute nothing
+attributes' stacks and are absent from the other forty-nine. Each is a no-op
+unless `ClientLevel.getSkyFlashTime` is above zero. The stack is *per
+attribute*, too — an attribute nothing
 in the level mentions has no `EnvironmentAttributeSystem.ValueSampler` at
 all, and `EnvironmentAttributeSystem.getValue` hands back its default. And it
-is baked once: the whole thing is built in the `ServerLevel` and
+is baked once: the level's whole stack is built in the `ServerLevel` and
 `ClientLevel` constructors and never rebuilt, the only writer being
 `ServerLevel.setEnvironmentAttributes`, which is deprecated, marked for
 testing and called only from `TestEnvironmentDefinition`. A data-pack reload
@@ -91,13 +92,15 @@ Each rung earns its shape. The dimension's is an
 folding every *leading* constant into one baked base value, so a dimension
 costs nothing at read time. The biome's is an
 `EnvironmentAttributeLayer.Positional`, added once per attribute that any
-biome in the whole registry mentions — in vanilla, eleven attributes across
-sixty-six biome files, with *visual/sky_color* in fifty-six of them. Timeline
+biome in the whole registry mentions — in vanilla, thirteen attributes across
+sixty-seven biome files, with *visual/sky_color* in fifty-seven of them.
+Timeline
 layers are `EnvironmentAttributeLayer.TimeBased`, one per track, and so is
 weather: one for each of the nine attributes named by
 `WeatherAttributes.RAIN` or `WeatherAttributes.THUNDER`, blending rain in
-first and thunder second — rain at `Level.getRainLevel` *minus* the thunder
-level, so a thunderstorm never counts twice. `Level.canHaveWeather` wants sky
+first and thunder second. Rain is weighted at `Level.getRainLevel` *minus* the
+thunder level, so a thunderstorm never counts twice. `Level.canHaveWeather`
+wants sky
 light, no ceiling and not the End, so a rain-free dimension does not carry a
 weather layer that does nothing: it carries none.
 
@@ -105,7 +108,7 @@ weather layer that does nothing: it carries none.
 flash that `LightningBolt` sets through `Level.setSkyFlashTime`. One lerps
 `EnvironmentAttributes.SKY_COLOR` a fixed 22% toward a pale blue-white, the
 other pins `EnvironmentAttributes.SKY_LIGHT_FACTOR` to 1 outright, and both
-read the flash through the accessibility option *Hide Lightning Flashes*,
+read the flash through the accessibility option *Hide Sky Flashes*,
 which reports a flash time of zero while it is switched on — so the two
 layers are still there and simply never fire. (The End's sky flash is a
 different thing
@@ -118,10 +121,10 @@ is what polices who may write it. `Biome.getAttributes` is read through
 `EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL`, so naming a non-positional
 attribute in a biome file is a load error, and no biome can locally change
 sky light level or lava speed. `WorldGenRegion.environmentAttributes` shuts
-the door from the other side, returning `EnvironmentAttributeReader.EMPTY`
-and answering everything with its default: a feature that asks about the
-environment during generation gets a constant, deliberately, because
-generation must not depend on the hour.
+the door from the other side: a region being generated builds a stack of the
+two static rungs alone, dimension and biome, so a feature or a spawn that asks
+about the environment during generation gets the place and never the hour,
+because generation must not depend on the hour.
 
 ## Arguments, not values
 
@@ -135,15 +138,16 @@ layer below produced. `AttributeTrack` is the same shape — a modifier plus a
 only the override case and `Timeline.Builder.addModifierTrack` is the general
 one, and why the day timeline can say *multiply sky light by 0.267 at night*
 rather than *sky light is 4 at night*. In a data pack the shorthand shows: an
-entry written as a bare value means override, one written as an object
-carries a *modifier* and an *argument*.
+entry written as the value itself means override, even for an attribute whose
+value is an object, and any other entry is an object carrying a *modifier* and
+an *argument*.
 
 ### What a type allows
 
 `AttributeType` is a record of a
 value codec, an `AttributeType.modifierLibrary` of the operations legal on
-that type, and **four** separate `LerpFunction`s, one for each way two values
-of it can meet.
+that type and a codec for them, **four** separate `LerpFunction`s, one for
+each way two values of it can meet, and two converters.
 
 | lerp slot | used when |
 |---|---|
@@ -152,19 +156,24 @@ of it can meet.
 | `AttributeType.spatialLerp` | across a biome boundary |
 | `AttributeType.partialTickLerp` | between two client ticks, inside a frame |
 
-`AttributeTypes` registers fourteen of them, in four families: two boolean
-kinds, three numeric, two colour, and seven enumerations a data pack picks a
-name from — a moon phase, a villager activity, a bed rule, a particle, a
-piece of background music. One built by `AttributeType.ofNotInterpolated`
+`AttributeTypes` registers fifteen of them: two boolean kinds, three numeric,
+two colour, six a data pack sets whole — a moon phase, a villager activity, a
+bed rule, a particle, a piece of background music, the ambient sounds — and
+two that combine, the ambient particles, a list that cross-fades, and the
+mob-spawn settings, which overlay. One built by
+`AttributeType.ofNotInterpolated`
 gets a step function in all four slots, each with its own threshold, which is
-how a `MoonPhase` snaps while a colour slides; `AttributeType.toFloat` is
-nullable, and its presence decides whether an attribute can be read as a
-number by a loot table, which the trace below reaches. Each type publishes a
+how a `MoonPhase` snaps while a colour slides; `AttributeType.toFloat` and
+`AttributeType.toInt` are nullable, and their presence decides whether a loot
+table can read an attribute as a number, which the trace below reaches. Each
+type publishes a
 small, closed library of operations —
-six logic gates for a boolean, six arithmetic ones for a float, four ways to
-combine two colours — and `AttributeType.checkAllowedModifier` throws at
-build time when a track or an entry asks for one the type does not publish,
-so an illegal combination is a load error rather than a runtime surprise.
+six logic gates for a boolean, six arithmetic ones for a float, five for a
+colour, four of them ways to combine two colours — and a track or an entry
+that asks for one the type does not publish fails where it is built,
+`AttributeType.checkAllowedModifier` in the game's own builders and the type's
+modifier codec for a data pack, so an illegal combination is a load error
+rather than a runtime surprise.
 Three codecs then decide who may write what:
 
 | codec | used by | effect |
@@ -214,7 +223,8 @@ A `ClockTimeMarker` is a named instant on a clock: `ClockTimeMarkers.DAY`,
 Markers are declared *inside* timelines and collected onto the clock by
 `ServerClockManager.init`, and `Timeline.validateRegistry` fails the whole
 registry load if two timelines on one clock declare the same one. The subset
-a player can name is the one flagged `ClockTimeMarker.showInCommands`;
+`/time` suggests is the one flagged `ClockTimeMarker.showInCommands`, though
+it accepts any marker on the clock;
 `ServerClockManager.isAtTimeMarker` is how `VillageSiege` asks whether the
 siege roll is due, and `ServerLevel.tick` calls
 `ServerClockManager.moveToTimeMarker` to jump the clock when enough players
@@ -235,11 +245,14 @@ has to be told whose time it means.
 Three of the four have a period and are cycles. The fourth is the interesting
 one: a timeline with no period is not a cycle at all — its track runs once
 against the clock's total ticks and then holds its last value forever, which
-is what makes `Timelines.EARLY_GAME` a one-way switch thrown a hundred
-minutes into a world rather than something that comes round again.
+is what makes `Timelines.EARLY_GAME` a switch, thrown when the overworld clock
+passes 120000 ticks and closed again only if `/time` sets the clock back below
+it, rather than something that comes round again.
 
-All four run on `WorldClocks.OVERWORLD`; nothing in vanilla is bound to the
-End's clock. Which of them a dimension runs is a tag on
+All four run on `WorldClocks.OVERWORLD`; no timeline is bound to the End's
+clock, which the End's dimension type names as its default only, the clock
+`/time` sets there and the End's flash reads. Which of them a dimension runs
+is a tag on
 `DimensionType.timelines`: `TimelineTags.IN_OVERWORLD` names the day, moon
 and early-game timelines on top of `TimelineTags.UNIVERSAL`, while
 `TimelineTags.IN_NETHER` and `TimelineTags.IN_END` name only the universal
@@ -249,7 +262,7 @@ an `EnvironmentAttribute` of `Activity`, `Villager` is the only caller —
 adults read `EnvironmentAttributes.VILLAGER_ACTIVITY` and babies
 `EnvironmentAttributes.BABY_VILLAGER_ACTIVITY`, two tracks on the one
 timeline — and `Brain.updateActivityFromSchedule` samples it at the
-villager's own position, but only when more than 20 game ticks have passed
+villager's own position, but only when more than twenty game ticks have passed
 since it last looked. Where the activity it reads then sends a villager is in
 [points of interest](points-of-interest.md).
 
@@ -267,9 +280,11 @@ all four *audio/* ones, and five of the gameplay flags — *sky_light_level*,
 *fast_lava*, *water_evaporates*, *piglins_zombify*, *creaking_active*. The
 eighteen left behind are gameplay decisions the server makes alone: whether
 monsters burn, whether a raid can start, what a villager should be doing now.
-Dropping their entries and tracks before the wire costs the client nothing,
-because it would never ask. So the client's stack is shorter than the
-server's, and identical everywhere the client actually looks.
+Dropping their entries and tracks before the wire costs the client almost
+nothing: the one place it asks for them is the bed rules, read through the
+sleeping code it shares with the server, and there it gets the defaults. So
+the client's stack is shorter than the server's, and identical everywhere else
+the client looks.
 
 Clock *state* rides
 `ClientboundSetTimePacket`: a game time plus a `ClockNetworkState` — total
@@ -311,15 +326,14 @@ sequenceDiagram
     EVS-->>Mob: false, clamped and cached for the tick
 ```
 
-*One attribute resolved once, on the server, inside one tick. The thing to look
-at is where the tick's work goes: the level's only contribution is the first
-arrow, which throws last tick's answer away, and every arrow after it is the
-stack being walked because a mob asked. Nothing here is pushed — a value exists
-because something wanted it.*
+*One attribute resolved once, on the server, inside one tick: the level's only
+contribution is the first two arrows, which throw last tick's answer away, and
+every arrow after them is the stack being walked because a mob asked. Nothing
+here is pushed — a value exists because something wanted it.*
 
 Read the arrows as decisions. `EnvironmentAttributeSystem.invalidateTickCache`
 computes nothing: it drops each sampler's cached value and bumps a counter,
-and that counter is the identity every downstream sampler compares against.
+and that counter is the identity every track sampler compares against.
 `AttributeTrackSampler.applyTimeBased` keeps a one-entry cache of the sampled
 *argument* and reuses it for every reader arriving with the same tick id, so
 a thousand mobs asking `EnvironmentAttributes.MONSTERS_BURN` cost one
@@ -334,8 +348,9 @@ mentions it: no dimension type, no biome.
 flag, so with no positional layer present the position is ignored and the
 whole answer is memoised for the tick. The flag still governs where the
 attribute may be read: it makes `EnvironmentAttributeCheck` and
-`EnvironmentAttributeValue` declare `LootContextParams.ORIGIN` a required
-parameter, and it makes `EnvironmentAttributeSystem.getDimensionValue` throw
+the two `EnvironmentAttributeValue` number providers declare `LootContextParams.ORIGIN` among the
+parameters they read, and the default answers when a context has none, and it
+makes `EnvironmentAttributeSystem.getDimensionValue` throw
 in a development build if asked for a positional attribute at all. Only two
 attributes are built `EnvironmentAttribute.Builder.notPositional` — sky light
 level and lava speed — and three call sites read them that positionless way:
@@ -346,12 +361,13 @@ how hard it shoves. A fourth site names no attribute at all:
 `EnvironmentAttributeReader` sends any non-positional attribute down this road
 when a loot context asks for one.
 
-`KeyframeTrackSampler.sample` is where the period matters: for a periodic
+The period matters when a `KeyframeTrackSampler` is built: for a periodic
 track it bakes two extra segments, last keyframe to first on either side of
 the loop, so a value interpolates *across the wrap* — tick 0, where the day
 timeline's period closes and `ClockTimeMarkers.WAKE_UP_FROM_SLEEP` sits —
-instead of snapping, and it reduces the clock's total ticks
-with a floor-mod before choosing one. `EasingType` supplies the curve, and
+instead of snapping, and `KeyframeTrackSampler.sample` reduces the clock's
+total ticks with a floor-mod before choosing one. `EasingType` supplies the
+curve, and
 the day timeline's sun, moon and star angles share one symmetric cubic
 Bézier whose two keyframes both sit at tick 6000, so the baked segment runs
 noon to noon. The sun therefore turns slowest at its zenith — two thirds of
@@ -362,7 +378,8 @@ ticks above the horizon against 10,440 below.
 ### The same value on the client
 
 The client resolves the same stack and then does two things to it the server
-never does. Both of them are in the picture, and both of them are about time.
+never does. Both of them are in the picture: one is about space, the other
+about time.
 
 ```mermaid
 sequenceDiagram
@@ -415,8 +432,8 @@ them — and prunes itself, dropping any value nobody read during a tick. The
 resolve itself is **once a tick, not once a frame**:
 `EnvironmentAttributeProbe.ValueProbe.tick` nulls this tick's answer, the first
 frame that asks for the attribute fills it in by walking the whole stack, and
-every frame after that in the same tick does nothing but the lerp. A frame is
-cheap in proportion to how late in its tick it falls.
+every frame after that in the same tick does nothing but the lerp. Only the
+first frame in a tick that asks pays for the walk.
 
 The probe lives on `Camera`, ticked from `Camera.tick` and emptied by
 `Camera.reset`, and everything that draws the sky goes through it — the sky,
@@ -442,7 +459,7 @@ sky-darken value comes from the previous tick's clock.
 and the End's `DimensionType.timelines` both resolve to
 `TimelineTags.UNIVERSAL` alone. Its environment is constants instead — the
 dimension type pins *gameplay/sky_light_level*, *gameplay/fast_lava*,
-*gameplay/water_evaporates* and eleven more, which
+*gameplay/water_evaporates* and twelve more, which
 `EnvironmentAttributeSystem.bakeLayerSampler` folds into a base value that
 never changes again.
 
@@ -455,7 +472,8 @@ leave half a tick of stale sky behind.
 **Why do pillager patrols not show up on day one?** Because
 `Timelines.EARLY_GAME` is the timeline with no period, and its single
 modifier track *and*s `EnvironmentAttributes.CAN_PILLAGER_PATROL_SPAWN` with
-false until tick 120000 — a hundred minutes of play — and with true after.
+false until tick 120000 — a hundred minutes of play at the normal rate, sooner
+for every night slept through — and with true after.
 Nothing counts your days; the switch is one keyframe on a track that never
 comes round again.
 
