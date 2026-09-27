@@ -17,8 +17,9 @@ overworld first. The order inside it is the whole lecture, because one of the st
 in a place nobody expects: **the block-change broadcast runs before the
 entities tick**. `ServerChunkCache.broadcastChangedChunks` comes before
 `ChunkMap.tick` and long before `EntityTickList.forEach`, so a block a
-command changed reaches your screen this tick and a block a piston changed
-reaches it on the next one.
+command changed between two ticks reaches your screen in the tick that
+follows, and a block a piston changed during that tick reaches it a tick
+later.
 
 ## Three ranges, before we need them
 
@@ -35,13 +36,14 @@ those last two answers come from the simulation graph, through
 tickets put it there and which graph they feed — is Part IV's
 [tickets and loading](../world/tickets-and-loading.md#the-number-line); for this page it is
 enough that block-ticking reaches one chunk further out than entity-ticking,
-and that both are decided fresh, inside this tick, before anything ticks.
+and that both are brought up to date inside this tick, before anything but the
+scheduled ticks and the raids reads them.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
-| `ServerLevel` | the order of the tick, and every gate in it — one instance per dimension | Server |
+| `ServerLevel` | the order of the tick, and the gates on its own steps — one instance per dimension | Server |
 | `ServerChunkCache` | the chunk half of the tick: ticket purging, distance updates, spawning, random ticks, the broadcast | Server |
 | `ChunkMap` | which chunks are candidates for spawning, which are entity-ticking, and every player's view of every entity | Server |
 | `ChunkHolder` | one chunk's pending block and light changes, and which packet shape they become | Server |
@@ -64,12 +66,12 @@ of the ones it has hollowed out.
 
 ## The whole tick, and its three gates
 
-The tick is one method calling its own private methods, so its shape is not
-a conversation — it is a column with guards down the side. There are three
+The tick is one method calling its steps one after another, so its shape is
+not a conversation — it is a column with guards down the side. There are three
 guards, and every step is behind one of them, a combination of them, or
 nothing: *running* (`TickRateManager.runsNormally`, false while
-`/tick freeze` holds and no step is pending), *not a debug world*
-(`Level.isDebug`), and *the dimension is not empty* (`ServerLevel.emptyTime`
+`/tick freeze` holds and no step is pending), *not a debug world* (`Level.isDebug`,
+true only in the *Debug Mode* world type), and *the dimension is not empty* (`ServerLevel.emptyTime`
 below `ServerLevel.EMPTY_TIME_NO_TICK`, 300).
 
 ```mermaid
@@ -99,13 +101,14 @@ flowchart TD
     BE["Level.tickBlockEntities"]
     EM["PersistentEntitySectionManager.tick: the inbox, then the unload set"]
     DBG["LevelDebugSynchronizers.tick"]
+    GC["RandomState.garbageCollect"]
     START --> ENV --> WB --> SLEEP --> SKY --> TIME --> SCHED --> RAID --> PURGE
-    UNLOAD --> EVENTS --> EMPTY --> DRAGON --> ENT --> BE --> EM --> DBG
+    UNLOAD --> EVENTS --> EMPTY --> DRAGON --> ENT --> BE --> EM --> DBG --> GC
 ```
 
 *The order, and the one containment in it: the six steps in the box are not
 siblings of the steps around them, they are the insides of a single call, and
-the next section counts them as five things.*
+a later section counts them as five things.*
 
 The gates are the other half of the tick and they do not fit in the boxes. Read
 this table down the middle instead: a step with three blank cells runs on a
@@ -134,8 +137,10 @@ frozen, empty, debug world.
 | `Level.tickBlockEntities` | per ticker | | • |
 | `PersistentEntitySectionManager.tick` | | | |
 | `LevelDebugSynchronizers.tick` | | | |
+| `RandomState.garbageCollect` | | | |
 
-Those steps have names, and they are the names a profiler reports: *world
+All but the last of those steps have names, and they are the names a
+profiler reports: *world
 border* and *weather*, *tickPending* (holding *blockTicks* and *fluidTicks*),
 *raid*, *chunkSource*, *blockEvents*, *entities* (holding *dragonFight*,
 *checkDespawn* and the per-entity *tick*), *blockEntities*,
@@ -147,8 +152,8 @@ report.
 Read the gate columns and most of the page's surprises fall out of the table.
 Sleeping through the night works with the game frozen. A frozen world still
 loads, sends and unloads chunks — and stops expiring its tickets. A debug
-world keeps its entities and drops its block updates. And the last two steps
-run on a dimension with nobody in it.
+world keeps its entities and drops its block updates. And the last three
+steps run on a dimension with nobody in it.
 
 ## What the tick does before anything can move
 
@@ -162,16 +167,17 @@ is where the old per-dimension and per-biome constants went, and
 `Level.updateSkyBrightness` later in this same tick reads
 `EnvironmentAttributes.SKY_LIGHT_LEVEL` out of it rather than deriving sky
 light from the time of day. `ServerClockManager` invalidates the same cache
-on every level whenever a clock moves, so the level is not its only owner —
+on every level whenever a clock is set, moved, paused or given a new rate, so
+the level is not its only owner —
 it is the first reader of the tick, and it starts clean.
 
 ### The weather is the server's; only the fade is the level's
 
 Then `WorldBorder.tick` advances the interpolated extent, and
 `ServerLevel.advanceWeatherCycle` counts the clear, rain and thunder timers
-down under `GameRules.ADVANCE_WEATHER`, resampling each from
-`ServerLevel.RAIN_DELAY`, `ServerLevel.RAIN_DURATION`,
-`ServerLevel.THUNDER_DELAY` and `ServerLevel.THUNDER_DURATION` as it
+down under `GameRules.ADVANCE_WEATHER`, resampling the rain and thunder
+timers from `ServerLevel.RAIN_DELAY`, `ServerLevel.RAIN_DURATION`,
+`ServerLevel.THUNDER_DELAY` and `ServerLevel.THUNDER_DURATION` as each
 expires, and fading `Level.rainLevel` and `Level.thunderLevel` by 0.01 a
 tick, which is why a downpour arrives as a five-second ramp. The countdowns
 belong to the *server*: `ServerLevel.getWeatherData` delegates to
@@ -181,7 +187,8 @@ dimension, and the only per-level parts are those two floats and the
 of it. Every move of a float is a `ClientboundGameEventPacket`
 (`ClientboundGameEventPacket.RAIN_LEVEL_CHANGE`,
 `ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE`) to this dimension's
-players, and a start or a stop goes to every player in every dimension.
+players, and a start or a stop goes, with both levels, to every player in
+every dimension.
 
 ## A freeze stops the clock and not the sleep check
 
@@ -191,9 +198,10 @@ they are checked outside every gate. If the dimension type has a default
 clock and `GameRules.ADVANCE_TIME` is on,
 `ServerClockManager.moveToTimeMarker` jumps that clock to
 `ClockTimeMarkers.WAKE_UP_FROM_SLEEP`; `ServerLevel.wakeUpAllPlayers` gets
-everyone out of bed, and `ServerLevel.resetWeatherCycle` clears the storm.
+everyone out of bed, and, if it is raining and `GameRules.ADVANCE_WEATHER` is
+on, `ServerLevel.resetWeatherCycle` clears the storm.
 The `ClientboundSetTimePacket` that follows is sent by the clock manager,
-not by the level — day time is not the level's state in 26.3 at all.
+not by the level — day time is not the level's state at all.
 
 What the level does own is *gameTime*, and only in the overworld:
 `ServerLevel.tickTime` advances it when the level was built with its
@@ -215,21 +223,21 @@ allows, and hands each drained tick to `ServerLevel.tickBlock` or
 `ServerLevel.tickFluid` — both of which check that what is at the position is
 *still* what the tick named before running it. The order the drain uses, the
 dedup rule that decides what was ever queued, and why that re-check is the
-whole of cancellation are [scheduled
-ticks](../world/scheduled-ticks.md#what-one-drain-actually-does)'; what
+whole of cancellation belong to [scheduled
+ticks](../world/scheduled-ticks.md#what-one-drain-actually-does); what
 belongs to this page is that the two calls happen here, in this order, under
 this budget.
 
 ## The chunk source does five things in one call
 
 `ServerChunkCache.tick` receives the server's `MinecraftServer.haveTime`
-supplier — the level never looks at it, it only passes it on — and does five
+supplier (or, while sprinting, a constant *false* in its place) — the level never looks at it, it only passes it on — and does five
 things in order.
 
 1. **Purge stale tickets** — while running only, so a frozen world holds on
    to expired portal and pearl tickets indefinitely.
 2. **Run `ServerChunkCache.runDistanceManagerUpdates`** — ungated, and the
-   place chunks change ticking state. The reason an entity starts or stops
+   tick's own run of the updates that change a chunk's ticking state. The reason an entity starts or stops
    ticking this tick is decided here, several steps before the entity loop
    reads it.
 3. **Tick the chunks, then broadcast** — one call holding two halves, both
@@ -248,29 +256,32 @@ says.
 ### Two chunk sets, and two different mob caps
 
 `NaturalSpawner.createState` walks `ServerLevel.getAllEntities` — every
-entity in the dimension except the ones in `MobCategory.MISC`, which is items,
-projectiles and armour stands, and except mobs that require persistence — and
+entity in the dimension except the ones in `MobCategory.MISC` (items,
+projectiles and armour stands, but villagers, golems and minecarts too), and
+except mobs that require persistence — and
 counts the rest per `MobCategory`, using the chunk each one stands in to charge a
 spawn-potential field and to feed a `LocalMobCapCalculator`. Walking every
 entity in the dimension is what this step costs, once a tick, before any
 spawn is attempted; the two caps that census feeds — a server-wide one
-scaled by the spawnable-chunk count and a per-player one that is not — are
-[entity lifecycle](../entities/entity-lifecycle.md#the-two-caps-and-where-289-comes-from)'s.
-Persistent categories — the animals — are
-considered only on a tick where *gameTime* divides by 400, and the whole
-spawning half is behind `GameRules.SPAWN_MOBS`.
+scaled by the spawnable-chunk count and a per-player one that is not — belong to
+[entity lifecycle](../entities/entity-lifecycle.md#the-two-caps-and-where-289-comes-from).
+The categories marked persistent — the animals — are
+considered only on a tick where *gameTime* divides by 400, and
+`GameRules.SPAWN_MOBS` stops the spawns themselves, not the census before them
+or the thunder beside them.
 
 Two chunk sets are then walked, and they are not the same set.
-`ChunkMap.collectSpawningChunks` gathers the **spawning chunks**: the
-radius-8 tracker's candidates that have a ticking chunk and at least one
+`ChunkMap.collectSpawningChunks` gathers the **spawning chunks**: the chunks within eight of a player (the radius
+`DistanceManager.naturalSpawnChunkCounter` counts) that have a ticking chunk and at least one
 non-spectating player within 128 blocks
 (`ChunkMap.playerIsCloseEnoughForSpawning`). They are shuffled, and each
 then gets `ChunkAccess.incrementInhabitedTime`, then `ServerLevel.tickThunder`
-*if it is also entity-ticking* — a 1-in-100000 roll per chunk per tick while
-raining and thundering, whose bolt prefers a lightning rod, then a mob that
-can see the sky, then the heightmap, and which brings a trap skeleton horse
-along at effective difficulty × 1 % — and then
-`NaturalSpawner.spawnForChunk` if `ServerLevel.canSpawnEntitiesInChunk`.
+*if it is also entity-ticking*, and then `NaturalSpawner.spawnForChunk` if
+`ServerLevel.canSpawnEntitiesInChunk`. The thunder is a 1-in-100000 roll per
+chunk per tick while raining and thundering, whose bolt prefers a lightning
+rod, then a mob that can see the sky, then the heightmap, and which brings a
+trap skeleton horse along at effective difficulty × 1 % when
+`GameRules.SPAWN_MOBS` is on and no lightning rod is under the strike.
 
 The second set is `ChunkMap.forEachBlockTickingChunk`, which despite its
 name walks `DistanceManager.forEachEntityTickingChunk` — the entity-ticking
@@ -350,8 +361,8 @@ sequenceDiagram
     end
 ```
 
-*Three bands of one tick: the write, the send, and a write that arrives too
-late for the send. The dotted arrow in the first band is the hook — a block
+*Three bands: the write before the tick, the send inside it, and a write that
+arrives too late for the send. The dotted arrow in the first band is the hook — a block
 change leaves nothing on the wire at the moment it happens.*
 
 `ChunkHolder.broadcastChanges` asks two different questions of two
@@ -371,18 +382,21 @@ Then `ChunkMap.tick` runs — chunk tracking for each player, and
 `ChunkMap.TrackedEntity` for each entity, which is where
 `ServerEntity.sendChanges` turns last tick's movement into packets. Blocks
 first, entities second, and the entity loop only after both. The ordering is
-visible from a client: a player's `/setblock` lands in the tick the command
-was typed in, because a command packet is handled before
-`MinecraftServer.tickChildren` even starts, while a piston head lands in the
-tick after the one that moved it. A command typed at the *console* is as late
-as the piston, and for the same reason: it is drained in the connection phase,
+visible from a client: a player's `/setblock` lands in the tick right after it
+runs, because a player's command runs as a task between two ticks, before
+`MinecraftServer.tickChildren` starts, while a piston head, moved inside a tick
+after that tick's broadcast, lands in the tick after the one that moved it. A command typed at the *console* is as late
+as the piston, because it too changes blocks after the broadcast: it is
+drained in the connection phase,
 which `MinecraftServer.tickChildren` runs after every level has already
 broadcast.
 
 Falling sand is the exception that proves the rule, and it is deliberate.
-`FallingBlockEntity` calls `Level.setBlock` and then, on the very next line,
-`ChunkMap.sendToTrackingPlayers` with a `ClientboundBlockUpdatePacket` of its
-own — so the block the client sees appear is sent in the same tick the entity
+`FallingBlockEntity` calls `LevelWriter.setBlockAndUpdate` and then, straight
+after, `ChunkMap.sendToTrackingPlayers` twice: a
+`ClientboundBlockUpdatePacket` of its own, and a
+`ClientboundAddTransientBlockPacket` the client hands its renderer as a
+`TransientBlock` — so the block the client sees appear is sent in the same tick the entity
 that placed it vanished, rather than a tick behind it. A handful of other
 places do the same thing to one player rather than to everyone tracking the
 chunk. What the client does with all of this is
@@ -391,8 +405,9 @@ chunk. What the client does with all of this is
 ## Block events close the handlingTick window
 
 `ServerLevel.runBlockEvents` drains `ServerLevel.blockEvents` — the
-note-block plays, piston pushes and chest-lid counts raised anywhere in this
-tick — completely, and this is the only point in the tick at which it happens.
+note-block plays, piston pushes and chest-lid counts queued since the last
+drain, and any the drain itself raises — running every event inside the
+block-ticking range and putting the rest back for the next one, and this is the only point in the tick at which it happens.
 What the queue promises the blocks in it, and why a piston told about a change
 by a packet handler still moves in the same tick this phase belongs to, is
 [pistons and block
@@ -407,7 +422,7 @@ update raised inside the tick from one raised outside it.
 
 `ServerChunkCache.hasActiveTickets` — really
 `TicketStorage.shouldKeepDimensionActive`, which is the players' *simulation*
-tickets and a handful of others — resets `ServerLevel.emptyTime`. Otherwise
+tickets and the forced, portal and ender-pearl tickets — resets `ServerLevel.emptyTime`. Otherwise
 the counter rises, and it rises only while running, so a frozen dimension
 never falls asleep. Past `ServerLevel.EMPTY_TIME_NO_TICK`, 300 ticks, the
 level skips the dragon fight, the entity loop and the block entities. That
@@ -424,25 +439,28 @@ neither a player nor something carrying one. Otherwise it gets
 chunk answers `DistanceManager.inEntityTickingRange`. A passenger whose
 vehicle is alive and still lists it is passed over here and ticked by the
 vehicle instead; a stale link is broken with `Entity.stopRiding`.
-`ServerLevel.tickNonPassenger` records the old position, bumps
-`Entity.tickCount` and calls `Entity.tick`, then `ServerLevel.tickPassenger`
+`ServerLevel.tickNonPassenger` calls `Entity.commonTick`, which counts
+`Entity.invulnerableTime` down, records the old position and bumps
+`Entity.tickCount`, and then `Entity.tick`; `ServerLevel.tickPassenger`
 runs `Entity.rideTick` for each rider that is a `Player` or in the tick
 list, recursively down the stack. `Level.guardEntityTick` wraps each one in
 a crash report titled *Ticking entity*, so a mob that throws names itself.
 
 The list stays stable under all of that by construction. Membership changes
-during the loop — a spawner's mob, a fired arrow, a lightning bolt — arrive
+during the loop — a bred baby, a fired arrow, a bolt a trident calls down —
+arrive
 through `ServerLevel.EntityCallbacks.onTickingStart` immediately.
 `EntityTickList` allows exactly one `EntityTickList.forEach` at a time and,
-on any add or remove while it is iterating, copies into its
+on the first add or remove while it is iterating, copies into its
 `EntityTickList.passive` map and swaps that with `EntityTickList.active`:
 the running loop keeps walking the view it started with, and the new entity
 waits for the next tick. Which entities are in the list at all is
 `PersistentEntitySectionManager`'s answer, through
 `Visibility.fromFullChunkStatus` — only `FullChunkStatus.ENTITY_TICKING`
 maps to a ticking visibility — with one override, `Player.isAlwaysTicking`,
-which keeps a player ticking whatever its chunk is doing and makes the
-`ServerPlayer` test inside the loop a second, redundant guard. Entities are
+which keeps a player in the list whatever its chunk is doing; the
+`ServerPlayer` test inside the loop is the other half of that exemption,
+letting the player past the range check. Entities are
 Part VI's subject: [entity
 lifecycle](../entities/entity-lifecycle.md#findable-ticking-or-neither).
 
@@ -453,10 +471,10 @@ tickers as it goes and running the rest — but only those whose position
 passes `ServerLevel.shouldTickBlocksAt`, which is the **block**-ticking
 range, and only while `TickRateManager.runsNormally`. That single condition
 is why a furnace keeps smelting one chunk further out than a zombie keeps
-walking. A block entity created mid-tick — a chest a piston just pushed —
-lands on `Level.pendingBlockEntityTickers` instead, because
-`Level.tickingBlockEntities` is true, and is merged in at the top of the
-next tick. [Block
+walking. A block entity created during the walk — a sculk sensor a catalyst's
+spread has just grown — lands on `Level.pendingBlockEntityTickers` instead,
+because `Level.tickingBlockEntities` is true, and is merged in when the next
+tick's walk begins. [Block
 entities](../blocks/block-entities.md#loaded-is-not-enough-to-tick) has the
 rest.
 
@@ -472,30 +490,32 @@ world here — and then processes
 `ServerLevel.EntityCallbacks.onTickingEnd`) are exactly what add and remove
 entries in the tick list the previous step walked.
 
-Last, `LevelDebugSynchronizers.tick` pushes this tick's neighbour updates,
-brains, paths, POIs and raids to any client subscribed through
-`DebugSubscriptions` — and, just before it, arms or clears the neighbour
-listener on `CollectingNeighborUpdater` depending on whether anyone is
-subscribed to `DebugSubscriptions.NEIGHBOR_UPDATES` at all. It is the one
-step of the level tick whose entire output is diagnostic, and it is outside
-every gate.
+Then `LevelDebugSynchronizers.tick` pushes this tick's brains, paths, POIs
+and raids to any client subscribed through `DebugSubscriptions` — and, just
+before it, arms or clears the neighbour listener on `CollectingNeighborUpdater`,
+which sends each neighbour update the moment it happens, depending on whether
+anyone is subscribed to `DebugSubscriptions.NEIGHBOR_UPDATES` at all. It is the
+one step of the level tick whose entire output is diagnostic, and it is outside
+every gate. The last step is `RandomState.garbageCollect`, which drops the
+density buffers world generation pooled and no longer uses.
 
 ## What leaves the level, and when
 
 | the packet | the step that sends it | to whom |
 |---|---|---|
-| `ClientboundGameEventPacket`, rain and thunder levels | `ServerLevel.advanceWeatherCycle` | this dimension's players |
+| `ClientboundGameEventPacket`, rain and thunder levels | `ServerLevel.advanceWeatherCycle` | this dimension's players, and everyone on a start or a stop |
 | `ClientboundGameEventPacket`, start and stop raining | the same step, on a transition | every player in every dimension |
 | `ClientboundSetTimePacket` | `ServerClockManager.moveToTimeMarker`, from the sleep skip | everyone, sent by the clock manager |
 | `ClientboundBlockUpdatePacket` · `ClientboundSectionBlocksUpdatePacket` | `ChunkHolder.broadcastChanges`, per 16³ section | everyone tracking the chunk |
 | `BlockEntity.getUpdatePacket` | the same walk, beside a changed position that has one | everyone tracking the chunk |
-| `ClientboundLightUpdatePacket` | the same walk, before the blocks | the players on their tracked area's border |
-| entity add, move and remove | `ChunkMap.TrackedEntity`, inside `ChunkMap.tick` | whoever tracks that entity |
+| `ClientboundLightUpdatePacket` | the same walk, before the blocks | the players at the edge of their tracked area |
+| entity moves, and the adds and removes a move causes | `ChunkMap.TrackedEntity`, inside `ChunkMap.tick` | whoever tracks that entity |
 | `ClientboundBlockEventPacket` | `ServerLevel.runBlockEvents` | players within 64 blocks |
 
 None of them go out when they are written. Every one is queued behind the
 suspended flush that `MinecraftServer.tickChildren` opens around all the
-levels, and leaves on the wire at the end of the server tick
+levels, and leaves on the wire when `Connection.tick` flushes the channel in
+the connection phase, after every level has ticked
 ([the server tick](server-tick.md#the-two-writes-each-client-gets)).
 
 ## Questions players ask
@@ -512,14 +532,16 @@ tick is a promise to *that* block: `ServerLevel.tickBlock` compares the
 `Block` at the position with the one scheduled, and a mismatch runs nothing.
 
 **Why does `/weather rain` in the Nether change the overworld?** There is one
-`WeatherData` on the `MinecraftServer` and every dimension advances the same
-countdowns. Only the fade of `Level.rainLevel` and `Level.thunderLevel` is
-per level, and only where `Level.canHaveWeather`.
+`WeatherData` on the `MinecraftServer`, and the command writes it from whatever
+dimension it runs in; only a dimension that `Level.canHaveWeather` counts it
+down. The fade of `Level.rainLevel` and `Level.thunderLevel` is per level, and
+only there.
 
-**Why does a mob that spawns this tick not move until the next one?**
-`EntityTickList` swapped its maps the moment the mob was added, so the loop
-that is running kept the view it started with. The mob is in the list — it
-is just not in *this* walk of it.
+**Why does an arrow a skeleton fires not move until the next tick?**
+`EntityTickList` swapped its maps the moment the arrow was added, so the loop
+that is running kept the view it started with. The arrow is in the list — it
+is just not in *this* walk of it. A mob that spawned naturally is ticked at
+once: the chunk source added it before the walk began.
 
 > **For a 1.21-era reader.** The day–night cycle is out of the level. Time is
 > a set of `WorldClock`s owned by `ServerClockManager` and ticked by the
@@ -540,7 +562,7 @@ In the order the tick runs them. `ServerLevel.tick` ·
 `ServerChunkCache.broadcastChangedChunks` · `ChunkHolder.broadcastChanges` ·
 `ChunkMap.tick` · `ServerLevel.runBlockEvents` · `EntityTickList.forEach` ·
 `Level.tickBlockEntities` · `PersistentEntitySectionManager.tick` ·
-`LevelDebugSynchronizers.tick`
+`LevelDebugSynchronizers.tick` · `RandomState.garbageCollect`
 
 ---
 

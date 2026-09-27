@@ -2,7 +2,8 @@
 
 > Verified against **Minecraft 26.3** · Part III · Dropping the jar in an empty folder, typing *java -jar server.jar*, and waiting for the line that says *Done*.
 
-The first run writes two files and exits: you have not agreed to the EULA.
+The first run unpacks the libraries the jar carries, writes two files and
+exits: you have not agreed to the EULA.
 The second gets as far as *Preparing level "world"* and, a second or two
 later, *Done (1.284s)! For help, type "help"*. By the time the second of
 those lines prints, the server has opened a data pack stack, built every
@@ -26,12 +27,12 @@ kinds), and exactly two of the nine are ever written down.
 
 | class | what it decides | thread |
 |---|---|---|
-| `server/Main` | everything decided before a second thread exists: the flags, the properties, the EULA, which directory is the world, and when to hand off | JVM main |
-| `DedicatedServerSettings` | the live copy of `server.properties` — and the rewrite that happens every time a setting changes | main, then Server |
-| `LevelStorageSource.LevelStorageAccess` | one open world: its directory layout, its `session.lock`, and every read and write of `level.dat` | whoever holds it |
-| `WorldLoader` | the packs, the registries and the datapack-driven resources, assembled into a `WorldStem` | main and `Util.backgroundExecutor` |
-| `DedicatedServer` | what a dedicated server has and singleplayer does not: the console, the port, the legacy conversions, RCON, query, the watchdog | Server, but constructed on main |
-| `MinecraftServer` | the levels, the saves and the loop — and `MinecraftServer.spin`, the line where the second thread begins | Server |
+| `server/Main` | everything decided before the Server thread exists: the flags, the properties, the EULA, which directory is the world, and when to hand off | *ServerMain*, which the jar's bundler starts |
+| `DedicatedServerSettings` | the live copy of `server.properties` — and the rewrite that happens every time a setting changes | *ServerMain*, then Server |
+| `LevelStorageSource.LevelStorageAccess` | one open world: its directory layout, its `session.lock`, and every read and write of `level.dat` while the world is open | whoever holds it |
+| `WorldLoader` | the packs, the registries and the datapack-driven resources, assembled into a `WorldStem` | *ServerMain* and `Util.backgroundExecutor` |
+| `DedicatedServer` | what a dedicated server has and singleplayer does not: the console, the port, the legacy conversions, RCON, query, the watchdog | Server, but constructed on *ServerMain* |
+| `MinecraftServer` | the levels, the saves and the loop — and `MinecraftServer.spin`, the line where the Server thread begins | Server |
 | `ServerLevel` | one dimension: its chunk source, its saved data, its ticket store | Server |
 | `LevelLoadListener` | what boot progress looks like: log lines on a dedicated server, a progress bar on a client | the caller's |
 
@@ -48,10 +49,10 @@ sequenceDiagram
     Main->>Main: the flags, Bootstrap.bootStrap, server.properties, the EULA gate
     Main->>Main: JsonRpc.create, if the management server is enabled at all
     Main->>LSA: validateAndCreateAccess, taking session.lock in the constructor
-    LSA-->>Main: level.dat parsed, or level.dat_old restored into its place
+    Main->>LSA: getUnfixedDataTagWithFallback, if there is a world: level.dat, or level.dat_old restored
     Main->>WL: load, wrapped in Util.blockUntilDone, so this thread is an executor
-    WL->>Main: the pack-opening stage and the final assembly, single-threaded
-    WL->>Worker: static tags, worldgen then dimension registries, the resources
+    WL->>Main: the pack-opening stage, the reload's apply steps and the final assembly, single-threaded
+    WL->>Worker: static tags, world then dimension registries, the resources
     Worker-->>WL: the background stages, finished
     WL-->>Main: a WorldStem
     Main->>LSA: saveDataTag rewrites level.dat now, upgrade or no upgrade
@@ -59,12 +60,12 @@ sequenceDiagram
     Note over Main,DS: the thread starts only now, and main returns
 ```
 
-*The first half of the boot, and the wall at the foot of it: one thread does
-every line above that note, and the server object does not exist for most of
-them. The second half, below, picks up on the other side.*
+*The first half of the boot, and the wall at the foot of it: one thread drives
+every line above that note, with the worker pool's help, and the server object
+does not exist for most of them.*
 
-Read the note bar as a wall. Above it one thread does all the work; below it
-*main* has returned, and everything that remains is the Server thread and the
+Read the note bar as a wall. Above it one thread drives the work, handing the
+load's background stages to the worker pool; below it *main* has returned, and everything that remains is the Server thread and the
 daemons arranged around it — the half drawn under [*The Server thread wakes
 up*](#the-server-thread-wakes-up-and-can-still-fail-twice) below.
 [Anatomy](../anatomy/anatomy.md) draws the same hand-off from the client's
@@ -72,8 +73,11 @@ side, where the thread that spins the server is the one drawing frames.
 
 ## Everything *main* does before there is a second thread
 
-`Main.main` runs on the thread the JVM handed it and stays there for all of
-what follows. `SharedConstants.tryDetectVersion` reads *version.json* out of
+`Main.main` does not run on the thread the JVM started with: the jar opens
+with a bundler, which unpacks the libraries and the game's own jar into the
+working directory and starts `Main.main` from that copy on a thread named
+*ServerMain*, and that thread stays with it for all of what
+follows. `SharedConstants.tryDetectVersion` reads *version.json* out of
 the jar first, so everything downstream knows what version it is. Then the
 flags are parsed — *--nogui*, *--port*, *--universe*, *--world*,
 *--forceUpgrade*, *--recreateRegionFiles*, *--safeMode*, *--initSettings*,
@@ -115,7 +119,9 @@ the boot, if the secret it finds is not forty alphanumeric characters. A
 *missing* secret is not that failure: `DedicatedServerProperties` resolves
 *management-server-secret* to a freshly generated key when the file has none,
 and the properties rewrite above puts that key in the file — so what stops a
-boot is a malformed secret, not an absent one. What starts is a Netty
+boot is a malformed secret, not an absent one. TLS stops it too: it is on by
+default and wants a keystore, which by default is not configured, so enabling
+the management server and nothing else ends the boot. What starts is a Netty
 WebSocket listener with its own event-loop group named *Management server
 IO*, TLS on by default, and a
 `JsonRpcNotificationService` registered on the `NotificationManager` that
@@ -150,7 +156,7 @@ it over the original. That raw tag goes through
 `LevelSummary.requiresManualConversion` and `LevelSummary.isCompatible` — two
 gates that each end the boot with one explanatory line — and separately
 through `DataFixers.getFileFixer` for the fully upgraded tag the world is
-actually built from.
+built from.
 
 ### The world load turns the main thread into an executor
 
@@ -164,23 +170,28 @@ collects tags for the static registries, `RegistryDataLoader` loads
 `RegistryDataLoader.DIMENSION_REGISTRIES`, the `WorldLoader.WorldDataSupplier`
 turns the fixed `level.dat` into a `PrimaryLevelData` through
 `LevelStorageSource.getLevelDataAndDimensions` — or, with no world data at
-all, `Main.createNewWorldData` builds one out of `server.properties` — and
-`ReloadableServerResources.loadResources` compiles the recipes, loot tables,
-functions and advancements. What comes back is a `WorldStem`.
+all, `Main.createNewWorldData` builds one out of `server.properties`. Last,
+`ReloadableServerResources.loadResources` loads the rest:
+`RegistryDataLoader.RELOADABLE_REGISTRIES`, the loot tables, recipes and
+advancements among them, through `ReloadableServerRegistries.reload`, and then
+the functions. What comes back is a `WorldStem`.
 
 The threading is the part worth noticing. `WorldLoader.load` takes two
 executors: `Util.backgroundExecutor` for the work, and a main-thread executor
 for the stages that must be single-threaded. `Util.blockUntilDone` supplies
 the second by handing the loader a queue's *add* method and then draining that
-queue until the future completes. For the length of the world load the JVM
-main thread is an event loop, running the pack-opening stage and the final
-assembly itself between bouts of waiting on the workers.
+queue until the future completes. For the length of the world load
+*ServerMain* is an event loop, running the pack-opening stage, the reload's
+apply steps and the final assembly itself between bouts of waiting on the
+workers.
 
 Two things then happen before the server object exists. With *--forceUpgrade*
-or *--recreateRegionFiles*, a `WorldUpgrader` rewrites every region file while
-*main* polls it once a second and logs a percentage. And either way
+or *--recreateRegionFiles*, a `WorldUpgrader` rewrites the chunks that need it (an older version's, those
+holding a cache *--eraseCache* clears, or every chunk with
+*--recreateRegionFiles*) while *main* polls it once a second and logs
+a percentage. And either way
 `LevelStorageSource.LevelStorageAccess.saveDataTag` writes `level.dat` back
-out, by the same atomic replace every later save uses ([level data and
+out, by the same replace every later save uses ([level data and
 rules](../../reference/level-data-and-rules.md#what-is-left-in-leveldat)).
 That is unconditional: a server started and killed one second later has
 already rewritten its world data.
@@ -191,7 +202,7 @@ already rewritten its world data.
 the point. It builds the `Thread` object first, sets priority 8 on a machine
 with more than four processors, calls the factory *on the calling thread*, and
 only then starts the thread — so the whole of the `DedicatedServer`
-constructor runs on the JVM main thread, and the new thread cannot begin
+constructor runs on *ServerMain*, and the new thread cannot begin
 before there is a server for it to run.
 
 That constructor is real work. `MinecraftServer`'s own opens the server-wide
@@ -204,7 +215,7 @@ registry has no overworld. `DedicatedServer`'s adds the `ServerTextFilter`,
 the `ServerLinks` built from the bug-report property, and — when
 *enable-code-of-conduct* is set — every *.txt* file under the *codeofconduct*
 folder, which throws if that folder is missing. A misconfigured code of
-conduct kills the server on the main thread, before a Server thread exists to
+conduct kills the server on *ServerMain*, before a Server thread exists to
 be killed.
 
 Back in *main*, the factory has already applied *--port*, *--demo* and
@@ -228,7 +239,7 @@ sequenceDiagram
     DS->>MS: loadLevel, which is createLevels, forceDifficulty and prepareLevels
     MS->>SL: the overworld first, then one level per LevelStem on DerivedLevelData
     MS->>SL: the persisted tickets re-armed, then a wait in 10 ms slices
-    SL-->>MS: nothing pending, because nothing was ever asked for
+    SL-->>MS: on an ordinary world, nothing pending: nothing was asked for
     MS-->>DS: loadLevel returns
     DS->>DS: Done is logged here, before the loop is ever entered
     DS->>DS: the optional listeners, each if its property is set
@@ -246,8 +257,8 @@ named *Server console handler* reading `System.in` line by line. It runs
 nothing itself. Each line becomes a `ConsoleInput` — the text plus a
 `CommandSourceStack` built there on the console thread — appended to a
 synchronized list that `DedicatedServer.handleConsoleInputs` drains from
-`DedicatedServer.tickConnection`, so a typed command executes inside a tick
-like every other command.
+`DedicatedServer.tickConnection`, so a typed command executes inside a tick,
+in its connection phase.
 
 Then the properties become fields: online mode, the local IP, the default game
 type, the port. `MinecraftServer.initializeKeyPair` generates the RSA pair that
@@ -264,8 +275,9 @@ identically.
 
 The conversion itself is `DedicatedServer.convertOldUsers`, which attempts
 five migrations — the two ban lists, the op list, the whitelist and the player
-save files — retrying each up to twice more, five seconds apart, and reporting
-whether *any* of them did something. The gate is the separate check above, so
+save files — retrying a failed one up to twice more, five seconds apart, and reporting
+true unless all five failed; a missing legacy file counts as a success, so an
+ordinary server reports true on every boot. The gate is the separate check above, so
 what stops the boot is the file nobody could convert. Either failure returns
 false out of `DedicatedServer.initServer`, and a false there is not a quiet
 exit: `MinecraftServer.runServer` calls it inside its own *try* and
@@ -303,15 +315,15 @@ server-wide `WeatherData`, and the spawn a level reports to
 `MinecraftServer.effectiveRespawnData`
 ([level data and rules](../../reference/level-data-and-rules.md#the-spawn-every-level-reports-is-the-servers-not-each-levels)).
 
-A brand-new world takes one detour, and it is the detour that actually
-generates terrain at boot. When `ServerLevelData.isInitialized` is false,
-`MinecraftServer.setInitialSpawn` asks the biome sampler for a spawn chunk,
-reads the generator's spawn height, and walks a spiral over the chunks five
-in each direction — the value `MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS`
-names, though the method spells it as literals rather than reading it —
-calling `PlayerSpawnFinder.getSpawnPosInChunk` until one of them offers a
+A brand-new world takes one detour, as soon as the overworld exists and
+before the other dimensions do, and it is the detour that actually generates
+terrain at boot. When `ServerLevelData.isInitialized` is false,
+`MinecraftServer.setInitialSpawn` asks the generator for its origin chunk
+(`ChunkGenerator.getOrigin`), reads the generator's spawn height, and walks a
+spiral over the chunks five in each direction — the value
+`MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS` names — calling `PlayerSpawnFinder.getSpawnPosInChunk` until one of them offers a
 standable block. The bonus chest is placed here if *--bonusChest* asked for
-one. Then the flag is set, and no later boot of that world repeats any of it.
+one. Then the flag is set, and no later boot of that world searches again.
 
 ## Preparing the levels, which prepares nothing
 
@@ -326,8 +338,8 @@ contains ([tickets and
 loading](../world/tickets-and-loading.md#what-a-ticket-asks-for) has the nine).
 The world spawn is kept by nothing.
 
-**Zero** — chunks `MinecraftServer.prepareLevels` loads on a world with no
-forceloads and no live portal ticket.
+**Zero chunks** are loaded by `MinecraftServer.prepareLevels` on a world with
+no forceloads and no live portal ticket.
 
 What follows is `MinecraftServer.waitUntilNextTick` with the deadline set
 `MinecraftServer.PREPARE_LEVELS_DEFAULT_DELAY_NANOS` — 10 ms — out, repeated
@@ -345,8 +357,8 @@ The output is worth reading literally. `LoggingLevelLoadListener` logs
 when it finishes, with *Preparing spawn area: N%* — still the
 *menu.preparingSpawn* string, its percentage computed by
 `LevelLoadProgressTracker` — printed at most twice a second in between. On an
-ordinary world there is no in between: N is zero and the percentage line never
-gets a chance to run. Of the four values `LevelLoadListener.Stage` declares,
+ordinary world there is no in between: N is zero, and the percentage line
+prints at most once, on the loop's single pass. Of the four values `LevelLoadListener.Stage` declares,
 `LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN` fires only on a world's first
 boot, `LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS` belongs to a player joining
 rather than to boot — `PrepareSpawnTask`, in the configuration phase
@@ -390,25 +402,27 @@ which has the complete set including the pools and the situational ones
 | *RCON Listener*, plus one *RCON Client* per connection | `RconThread.create`, after *Done* | no | TCP accept. `DedicatedServer.runCommand` hops the command onto the Server thread with `BlockableEventLoop.executeBlocking` |
 | *Query Listener* | `QueryThreadGs4.create`, after *Done* | no | a UDP status protocol, read-only |
 | *Management server IO* | `JsonRpc.create`, back in *main* | yes | the JSON-RPC socket. `ManagementServer.tick` runs from `DedicatedServer.tickServer` |
-| *Timer hack thread* | `Util.startTimerHackThread`, in *main* | yes | nothing. It sleeps and is never woken |
+| *Timer hack thread* | `Util.startTimerHackThread`, in *main* | yes | nothing. It sleeps, and nothing wakes it |
 
 Two rows carry a consequence for the other end of the story. `RconThread` and
 `QueryThreadGs4` are the only non-daemon threads in this table besides the
 Server thread itself — `Util.ioPool`'s *IO-Worker* threads, made outside it and
 squarely in the boot path, are non-daemon too — so boot is where the process
 acquires the three things that will later have to be stopped by hand rather
-than abandoned, and what that costs at the other end is [how a server
-dies](how-a-server-dies.md#the-closes-and-the-last-thread)'s. Why those two poll,
-and the two conditions that can leave RCON unstarted with *enable-rcon* set, are
+than abandoned, and what that costs at the other end belongs to [how a server
+dies](how-a-server-dies.md#the-closes-and-the-last-thread). Why those two poll,
+and the conditions that can leave RCON unstarted with *enable-rcon* set, are
 per-thread facts and live with the rest of them
 ([threads](../../reference/threads.md#the-threads-a-lecture-leans-on)).
 
 One more thing outlives boot without being a thread: `server.properties` stays
 live. Nineteen `DedicatedServerProperties` fields are `Settings.MutableValue`s,
 and `Settings.MutableValue.update` rebuilds the whole properties object and
-`DedicatedServerSettings.update` writes the file back, so */difficulty*,
-*/whitelist*, the spawn-protection setter and the JSON-RPC settings calls all
-edit `server.properties` on disk while the server runs.
+`DedicatedServerSettings.update` writes the file back, so */whitelist*,
+the spawn-protection setter and the JSON-RPC settings calls all edit
+`server.properties` on disk while the server runs. */difficulty* does not: it
+changes the world, and `DedicatedServer.forceDifficulty` puts the file's
+difficulty back at the next boot.
 
 ## Singleplayer boots the same server with a shorter list
 

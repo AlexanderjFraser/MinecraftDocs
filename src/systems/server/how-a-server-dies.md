@@ -1,30 +1,30 @@
 # How a server dies
 
-> Verified against **Minecraft 26.3** · Part III · `/stop` typed at the console, an exception out of the tick loop, and a tick that never ends — three endings that write three different amounts of your world to disk.
+> Verified against **Minecraft 26.3** · Part III · `/stop` typed at the console, an exception out of the tick loop, and a tick that never ends — three endings, and what each writes of your world to disk.
 
 An admin types `/stop`. The command sets one boolean and returns, and the
-tick already in progress carries on to its end. Everything a player would
+lap already in progress carries on to its end. Everything a player would
 call *shutting down* — the players written, the unloads drained, `level.dat`
 rotated, `session.lock` released — happens afterwards, inside the *finally*
 of the loop that just exited, on the same Server thread that was ticking
 mobs a moment ago. Which is what makes the second ending strange, and worth
-a lecture: **a crash saves your world and the watchdog does not.** An
+a lecture: **a crash in the tick saves your world and the watchdog does not.** An
 exception out of the tick loop lands in that same *finally*, so a server
 that dies of a bad block entity writes exactly what `/stop` writes.
 `ServerWatchdog` instead calls `System.exit`, which runs the Server Shutdown
 Thread hook, which calls `MinecraftServer.halt` with *wait* true and waits
 for the Server thread to finish — the very thread wedged in the tick that
 tripped the watchdog. That wait never returns. Ten seconds later the
-watchdog's own scheduled `Runtime.halt` ends the JVM with nothing written.
+watchdog's own scheduled `Runtime.halt` ends the JVM with no save run.
 
 ## Three endings, side by side
 
-|  | `/stop` | a tick-loop crash | a watchdog kill |
+|  | `/stop` | a crash in the tick | a watchdog kill |
 |---|---|---|---|
-| **what clears `MinecraftServer.running`** | `MinecraftServer.halt`, called with *wait* false by `StopCommand` and by five other callers below | nothing: the loop is left by the throw, not by the condition | the shutdown hook, eventually — `System.exit` runs it and it calls `MinecraftServer.halt` with *wait* true |
+| **what clears `MinecraftServer.running`** | `MinecraftServer.halt`, called by `StopCommand` with *wait* false and by five other callers below | nothing: the loop is left by the throw, not by the condition | the shutdown hook, eventually — `System.exit` runs it and it calls `MinecraftServer.halt` with *wait* true |
 | **does `MinecraftServer.runServer`'s *finally* run** | yes, on the Server thread | yes, on the Server thread, after the crash report | no: the Server thread never leaves the tick |
 | **are players saved** | yes, `PlayerList.saveAll` then `PlayerList.removeAll` | yes, identically | no |
-| **are chunks saved** | yes: the unload drain, then `MinecraftServer.saveAllChunks` with *flush* | yes, identically | no — only what the last autosave happened to write |
+| **are chunks saved** | yes: the unload drain, then `MinecraftServer.saveAllChunks` with *flush* | yes, identically | no — only what an autosave, an unload or the eager sweep had already written |
 | **is `level.dat` written** | yes, `LevelStorageSource.LevelStorageAccess.saveDataTag` | yes, identically | no |
 | **is `session.lock` released** | yes, `LevelStorageSource.LevelStorageAccess.close` drops the `DirectoryLock` | yes, identically | not by the game — the OS drops it when the process dies |
 | **is a crash report written** | no | yes, into *crash-reports/*, from `MinecraftServer.constructOrExtractCrashReport` | yes, into *crash-reports/*, from `ServerWatchdog.createWatchdogCrashReport`, before the exit |
@@ -39,7 +39,7 @@ the rest of this page is why.
 
 | class | what it decides | thread |
 |---|---|---|
-| `MinecraftServer` | the three booleans, the tick loop, and the *finally* that is the whole of shutdown | Server |
+| `MinecraftServer` | the two shutdown flags, the tick loop, and the *finally* that is the whole of shutdown | Server |
 | `StopCommand` | that `/stop` is one call to `MinecraftServer.halt` with *wait* false, at `Commands.LEVEL_OWNERS` | Server |
 | `DedicatedServer` | what wraps the base teardown: the JSON-RPC notification, `Util.shutdownExecutors`, and the side threads in `DedicatedServer.onServerExit` | Server |
 | `ServerWatchdog` | that a tick past *max-tick-time* is a dead server, and that the JVM goes with it | Server Watchdog, a daemon |
@@ -60,7 +60,7 @@ sequenceDiagram
     participant Disk
 
     Note over MS: StopCommand calls halt with wait false, so running goes false
-    Note over MS: the tick in progress finishes, then the loop condition fails
+    Note over MS: the lap in progress finishes, then the loop condition fails
     MS->>MS: stopped goes true, then stopServer, out of runServer's finally
     MS->>MS: PacketProcessor.close, then the connection listener is stopped
     MS->>PL: saveAll, then removeAll
@@ -96,9 +96,10 @@ a time.*
 *commands.stop.stopping* and calls `MinecraftServer.halt` with *wait* false.
 That call assigns `MinecraftServer.running` — volatile, and the loop's only
 condition — and returns. Nothing else
-happens on that line of the console: the tick that was running the command
-finishes its entities, its block entities and its packet flush, and the loop
-condition at the top of `MinecraftServer.runServer` fails on the next pass.
+happens on that line of the console: the rest of the lap runs out — a console
+command runs in the connection phase, after every level has ticked, and a
+player's between ticks — and the loop condition at the top of
+`MinecraftServer.runServer` fails on the next pass.
 Five other places on this side of the jar call the same method: the server
 GUI's window-close listener and `Main`'s shutdown hook, both with *wait* true,
 so that they block until the Server thread has finished; the JSON-RPC
@@ -123,7 +124,7 @@ decoded, and `PacketProcessor.processQueuedPackets` returns without draining
 — so packets already in the queue go the same way as the ones still
 arriving. Then `ServerConnectionListener.stop` closes the channels it
 *bound*, and only those: closing a Netty parent channel does not close the
-connections accepted through it. Live sessions are severed one step later by
+connections accepted through it. Live sessions are severed after the players are saved, by
 `PlayerList.removeAll`, with the *multiplayer.disconnect.server_shutdown*
 reason. A connection still in handshake, login or configuration has no
 `ServerPlayer` and is in neither list, so it is closed by neither, and simply
@@ -162,9 +163,8 @@ survive `/stop`.
 
 `ChunkMap.hasWork` is the question, and it is a broad one — nine things in
 one *or*: pending light, pending unloads, a non-empty updating map, POI work,
-chunks queued to drop, a non-empty unload queue, the worldgen and light
-dispatchers, and — the reason the loop terminates at all —
-`DistanceManager.hasTickets`. While any level answers yes, the server pushes
+chunks queued to drop, a non-empty unload queue, the worldgen and light dispatchers, and `DistanceManager.hasTickets`, the
+reason the loop terminates at all. While any level answers yes, the server pushes
 the tick deadline one millisecond out, calls
 `ServerChunkCache.deactivateTicketsOnClosing` and `ServerChunkCache.tick` on
 each level, and runs `MinecraftServer.waitUntilNextTick`, which drains the
@@ -175,15 +175,15 @@ that millisecond.
 proceed while the main-thread queue keeps taking chunk results.
 
 `TicketStorage.deactivateTicketsOnClosing` moves every ticket except
-`TicketType.UNKNOWN` into a parked map — the map that the flush save below
-writes out as the dimension's *chunk_tickets* saved data, under
+`TicketType.UNKNOWN` into a parked map — the flush save below writes the
+persistent ones out as the dimension's *chunk_tickets* saved data, under
 `TicketStorage.TYPE` — and that is what ends the loop:
 `TicketStorage.hasTickets` counts only the live map, so parking a ticket stops
 it holding a chunk. Parked is not forgotten — which of them survive to the
-next boot, and what re-arms them there, is [tickets and
-loading](../world/tickets-and-loading.md#what-a-ticket-asks-for)'s and
+next boot, and what re-arms them there, belong to [tickets and
+loading](../world/tickets-and-loading.md#what-a-ticket-asks-for) and
 [starting a
-server](starting-a-server.md#preparing-the-levels-which-prepares-nothing)'s.
+server](starting-a-server.md#preparing-the-levels-which-prepares-nothing).
 
 ### The flush save
 
@@ -203,8 +203,7 @@ follow, through the level's `PersistentEntitySectionManager`.
 
 `level.dat` is written next, the same way at every save, flush or not —
 `LevelStorageSource.LevelStorageAccess.saveDataTag`, a gzipped temp file
-through `NbtIo.writeCompressed`, and an atomic replace that keeps the previous
-copy ([level data and
+through `NbtIo.writeCompressed`, and a replace that keeps the previous copy ([level data and
 rules](../../reference/level-data-and-rules.md#what-is-left-in-leveldat) has
 the path and the retries). Only after that does the *server-wide*
 `SavedDataStorage` get its `SavedDataStorage.saveAndJoin`. There are two tiers
@@ -231,7 +230,8 @@ untouched, and survives only because its threads are daemons.
 the server started is a daemon — the console reader, the Netty groups, the
 management server's group, the watchdog — except the RCON and query threads,
 which `GenericThread.stop` joins here in one-second slices, and the IO
-pool's workers, which went a step earlier with `Util.shutdownExecutors`. So
+pool's workers, which went a step earlier with `Util.shutdownExecutors`, and the
+chat filter's pool, whose workers the text filter's close shuts down. So
 when `MinecraftServer.runServer` returns, the Server thread is the last one
 left, and the JVM ends because there is nothing to keep it
 ([the thread reference](../../reference/threads.md#the-threads-a-lecture-leans-on)).
@@ -239,9 +239,11 @@ left, and the JVM ends because there is nothing to keep it
 ## The crash that saves
 
 `MinecraftServer.runServer` wraps the entire loop, `DedicatedServer.initServer`
-included. Anything thrown out of a tick — a block entity, a mob's AI, a
-command, a packet handler that did not catch its own trouble — is logged,
-turned into a report, saved, and then falls into the same *finally*.
+included. Anything thrown out of a tick — a block entity, a mob's AI — is
+logged, turned into a report, saved, and then falls into the same *finally*.
+A packet handler's exception and a command's are caught before they get here;
+what escapes is an *Error*, or, from a packet handler, a `ReportedException`
+carrying an *OutOfMemoryError*.
 
 `MinecraftServer.constructOrExtractCrashReport` walks the cause chain and
 keeps the *innermost* `ReportedException` it finds, using that exception's
@@ -254,7 +256,8 @@ available data packs, the enabled feature flags, the world-generation
 lifecycle, the world seed, and the contents of the server's
 `SuppressedExceptionCollector`, which has been quietly watching every chunk
 load failure, chunk save failure and packet-handler exception since boot —
-keeping the latest eight of them in full, and a running count of the rest.
+keeping the latest eight (the message, the class and the place, without the
+stack) and a count of every one by place and class.
 `DedicatedServer.fillServerSystemReport` adds two lines, the modded
 status and the words *Dedicated Server*. The file lands in *crash-reports/*
 under `MinecraftServer.getServerDirectory`, named by
@@ -272,7 +275,14 @@ throws it as a `ReportedException`, and the dedicated server is constructed
 that way. So a worker that dies does not die silently: it dies as a
 tick-loop crash, on the Server thread, at whatever moment that thread next
 looks for a task ([the server
-tick](server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)). The integrated server
+tick](server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)). It does
+not save like one. The parked report is never cleared, so the shutdown's own
+drain throws it again the first time it waits for chunks: the players are
+written, and so are the chunks the drain's first pass unloads, and then the
+teardown stops before the flush save, leaving the entities, `level.dat` and
+the saved data unwritten, the executors never shut down — the IO pool's
+workers keep the JVM alive until they idle out — and the lock for the
+operating system to drop. The integrated server
 is constructed with propagation off and hands its report to the client
 instead, through `IntegratedServer.onServerCrash`.
 
@@ -297,13 +307,13 @@ sequenceDiagram
     Hook->>MS: halt with wait true, running becomes false
     Hook->>MS: then waits for the Server thread, which is the wedged one
     MS-->>Hook: nothing, because the tick never returns
-    Note over SW,Disk: ten seconds later the armed halt fires, and nothing more is written
+    Note over SW,Disk: ten seconds later the armed halt fires, with no save run
 ```
 
-*The only ending with a circular wait in it: the exit is waiting for the hook,
-the hook is waiting for the wedged thread, and the armed halt is the only thing
-that moves. The one message to the **Disk** lane is the difference between this
-and a server that dies silently.*
+*The only ending that waits on a thread that will never finish: the exit waits
+for the hook, the hook for the wedged thread, and the armed halt is the only
+thing that moves. The one message to the Disk lane is the difference between
+this and a server that dies silently.*
 
 `ServerWatchdog` is a daemon thread started by `DedicatedServer.initServer`
 whenever `DedicatedServer.getMaxTickLength` is positive — that is
@@ -325,16 +335,16 @@ The report comes first, and it is the good part of the design.
 sorts them daemon-last, appends the lot as a *Thread Dump* category, and
 grafts the Server thread's stack trace onto a synthetic error — so the
 report's headline stack is the code that hung. `MinecraftServer.fillSystemReport`
-adds the usual, plus a *Performance stats* category holding the random-tick
-game rule and `ServerLevel.getWatchdogStats` for every level: players,
-entities by type, block entities by type, block and fluid tick counts, chunk
-source stats. All of it is read from another thread with no synchronisation
-whatsoever, off a world that is mid-tick — which is exactly the trade the
+adds the usual, and the watchdog then adds a *Performance stats* category
+holding the random-tick game rule and `ServerLevel.getWatchdogStats` for every
+level: players, the five commonest entity types and ticking block-entity
+types, block and fluid tick counts, chunk source stats. All of it is read from another thread
+with no lock on the world, off a world that is mid-tick — which is exactly the trade the
 class makes, because the alternative is asking a wedged thread for the
 answer. It goes to real stdout through `Bootstrap.realStdoutPrintln` and to
 *crash-reports/* like any other report.
 
-Then the deadlock. The watchdog schedules `Runtime.halt` on a timer and calls
+Then the wait that cannot end. The watchdog schedules `Runtime.halt` on a timer and calls
 `System.exit`, which runs the registered shutdown hooks — including the
 "Server Shutdown Thread" that `Main` registered at boot, whose whole body is
 `MinecraftServer.halt` with *wait* true. That sets `MinecraftServer.running`
@@ -343,8 +353,8 @@ thread to end. It does not end. `System.exit` will not return until its hooks
 do, so the JVM sits there until the watchdog's timer fires.
 
 **Ten seconds** — from the watchdog's `System.exit` to its `Runtime.halt`
-(`ServerWatchdog.MAX_SHUTDOWN_TIME`), and the world is not touched in any of
-them.
+(`ServerWatchdog.MAX_SHUTDOWN_TIME`), and the Server thread writes nothing in
+any of them; only writes already queued on `Util.ioPool` can still land.
 
 The watchdog is a liveness backstop, and reading it as a safe stop gets the
 guarantee backwards. Whether anything guards shutdown depends on how
@@ -365,9 +375,9 @@ enough save after a crash can be shot by the watchdog mid-write.
 Ctrl-C at the console and a *SIGTERM* from a service manager are the same
 thing as far as the game is concerned: the JVM runs its shutdown hooks, and
 the one `Main` registered calls `MinecraftServer.halt` with *wait* true. The
-contrast with the watchdog is only in the health of the thread being waited
-for. Here the Server thread is fine, notices the cleared flag at the top of
-its next tick, and runs the entire `/stop` teardown while the hook thread
+contrast with the watchdog is in the health of the thread being waited for,
+and in the halt nothing here has armed. Here the Server thread is fine, notices the cleared flag at the top of
+its next lap, and runs the entire `/stop` teardown while the hook thread
 waits. A Ctrl-C on a healthy server *is* a `/stop`, and the JVM does not exit
 until the world is on disk. The server GUI's window-close button does the
 same thing from the AWT thread.
@@ -412,29 +422,31 @@ own life, long after the world is closed.
 Ordinary autosave is `MinecraftServer.saveEverything` with neither *flush*
 nor *force*, on the countdown the tick keeps at the bottom of every lap
 ([the server tick](server-tick.md#the-bookkeeping-at-the-bottom)) — five
-wall-clock minutes, whatever the tick rate. It writes every player, every
+minutes of the server's scheduled time, whatever the tick rate. It writes every player, every
 dirty chunk — under none of the per-chunk spacing that throttles ordinary
 saving, because the sweep clears it on the way in ([chunk
 storage](../world/chunk-storage.md#the-four-moments-a-chunk-is-written)) —
 and, unconditionally, `level.dat`, followed by a scheduled write of the
-level's `SavedData`. Between the two, the spawn point and the world time (in
+server's `SavedData`. Between the two, the spawn point and the world time (in
 `level.dat`) and the weather, the game rules and the world clocks (each its
 own `SavedData` file — *weather*, *game_rules*, *world_clocks*) on disk are
 never more than one autosave stale, even on a server nobody ever stops
-cleanly. Everything else — a chest filled two minutes ago, a mob that walked
-into a new chunk, an inventory change — lives in the `LevelChunk` and the
-entity sections until something saves them.
+cleanly. Everything else — a chest filled a moment ago, a mob that walked
+into a new chunk, an inventory change — lives in the `LevelChunk`, the entity
+sections and the player until something saves them; a changed chunk goes out
+with the eager sweep once the tick has time and ten seconds have passed since
+its last write ([chunk
+storage](../world/chunk-storage.md#the-four-moments-a-chunk-is-written)).
 
 ### The honest answer, per ending
 
-After `/stop` or a tick-loop crash,
+After `/stop` or a crash thrown by the tick itself,
 nothing is lost: the drain, the flush save and the joined `IOWorker` mean the
 process does not end until the bytes are down. The crash has one asterisk the
 clean stop does not — the watchdog is still armed all the way through it — but
 short of a save slow enough to trip it, both endings land the same. After a
 watchdog kill, or a
-*kill -9*, or a power cut, you lose everything since the last autosave, plus
-anything still queued inside the `IOWorker` — those writes run on
+*kill -9*, or a power cut, you lose everything no autosave, unload, eager sweep or logout had written, plus anything still queued inside the `IOWorker` — those writes run on
 `Util.ioPool`, and `Runtime.halt` does not wait for a pool.
 
 What you never lose is access to the world. The lock the boot took is an
@@ -450,7 +462,8 @@ written calls `MinecraftServer.reportChunkSaveFailure`: logged, added to the
 `SuppressedExceptionCollector` that the next crash report will print, written
 out as its own `ReportType.CHUNK_IO_ERROR` file under *debug/*, and followed
 by a disk-space check. The tick does not stop, the server does not stop, and
-the only sign at the time is a line in the log.
+the only signs at the time are a line in the log and that file, with a toast
+as well in singleplayer.
 
 ## Where to look
 

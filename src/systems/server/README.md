@@ -23,7 +23,7 @@ That is a small system to know so much about. Counting the four packages
 `server/level`'s forty-two classes at nearly three hundred lines apiece,
 because the objects that own a world are few and enormous. The other landmark
 is one file: `MinecraftServer`, the largest of the ninety-five and most of
-this part's first three pages. Part I counts it too, because it is where the
+this part's first page and its last two. Part I counts it too, because it is where the
 Server thread is made — the atlas lets a class belong to two parts, and this
 is the part that watches it work.
 
@@ -43,7 +43,7 @@ flowchart TD
     Start -- "the thread, the levels" --> Tick
     Tick -- "MinecraftServer.tickChildren" --> Level
     Level -- "the packets it wrote" --> Tick
-    Tick -- "the connection phase" --> Players
+    Tick -- "the packet drain, the connection phase" --> Players
     Players -- "a join, a disconnect" --> Tick
     Tick -- "the loop's finally" --> Death
 ```
@@ -52,8 +52,7 @@ flowchart TD
 order the program runs them; an arrow is a hand-off at run time, not a
 dependency between lectures.*
 
-The two numbered first are the loop itself, and the arrows between them are the
-only pair that goes both ways. Seven later parts (IV, V, VI, VII, VIII, IX and
+The two numbered first are the loop itself. Seven later parts (IV, V, VI, VII, VIII, IX and
 XIII: every part that runs on the Server thread except world generation) assume
 one of those two or the other, which makes them the most load-bearing pair in
 the book after *Anatomy*. The beginning and the end are numbered last because
@@ -81,24 +80,22 @@ tick](server-level-tick.md#three-ranges-before-we-need-them) defines both
 before it uses them, so it keeps until Part IV. [Environment attributes and
 timelines](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)
 does not keep: the level tick's first act is to throw that system's cache
-away, and the level tick's opening paragraph does not mean much to a reader
-who has never met it. Watch that page out of order; everything else in Part IV
+away, and that step does not mean much to a reader who has never met it. Watch that page out of order; everything else in Part IV
 can wait.
 
 ## Watch in this order
 
 1. [The server tick](server-tick.md) — one 50 ms lap: the deadline that
    moves before the work starts, every packet since last time handled at
-   once, every dimension advanced, and the two writes per client the tick
-   leaves behind. *"Can't keep up!"* is not a warning that the server is
+   once, every dimension advanced, and the two writes per client that carry
+   the tick's own packets. *"Can't keep up!"* is not a warning that the server is
    about to skip ticks — it is the skip.
 2. [The level tick](server-level-tick.md) — one step of that lap, which is
    the whole world changing: weather, scheduled ticks, mob spawns, random
-   ticks, every entity, every block entity. The block changes go out
+   ticks, every entity, every block entity. The block changes are broadcast
    *before* the entities move, so a change a piston makes reaches you a tick
    later than one a player's command makes — with falling sand the exception
-   that sends its own packet, and a console command the one that is as late
-   as the piston.
+   that sends its own packets, and a console command as late as the piston.
 3. [Players and sessions](players-and-sessions.md) — a join from the end of
    the login handshake to a player standing in a world with chunks on the
    way, and then the four ways that session changes: death, a dimension,
@@ -111,21 +108,22 @@ can wait.
    chunks loads none of them on an ordinary world.
 5. [How a server dies](how-a-server-dies.md) — three endings compared:
    `/stop`, a crash in the tick loop, and the watchdog thread that kills a
-   server whose tick never ends. A crash saves your world. The watchdog does
-   not.
+   server whose tick runs past its limit. A crash in the tick saves your
+   world. The watchdog does not.
 
 ## Where the part stops
 
-Almost nothing, and none of it by omission: {{#include ../../generated/coverage-server.md}},
+Almost nothing: {{#include ../../generated/coverage-server.md}},
 which after Parts I and VIII is as close to complete as the book gets. What
-the five lectures leave out they leave to
-another part, because a package is not a subject. Chunk *generation* — half of
+the five lectures leave out they mostly leave to another part, because a
+package is not a subject; the rest is a handful of small classes no lecture
+names, `ServerEntityGetter` the largest. Chunk *generation* — half of
 `ChunkMap` and everything around it — is Part IV's, where a chunk rather than
 a tick is the thing being followed ([chunk
 generation](../world/chunk-generation-pipeline.md)). The server half of a
-click is Parts V and VIII's. The data-pack machinery that happens to live in
-`net/minecraft/server` — the scoreboard, the function library, the
-advancement manager — is Part XIII's, and the reload beside it is Part II's.
+click is Parts V, VII and VIII's. The machinery beside the loop that commands
+and data packs drive — the scoreboard, the function library, the advancement
+manager, all living in `net/minecraft/server` — is Part XIII's, and the reload beside it is Part II's.
 What is left, and it is the part's whole subject, is the loop, the levels it
 drives, the players in them, and the two ends of the process.
 
@@ -138,8 +136,8 @@ name, out of fifty-nine.
 [Level data and rules](../../reference/level-data-and-rules.md) — which file
 remembers what, and how *level.dat* is written.
 [Packets](../../reference/packets.md) — everything the tick sends.
-[Diagram lanes](../../reference/lanes.md) — what each lane in the figures
-above stands for.
+[Diagram lanes](../../reference/lanes.md) — what each lane in the part's
+figures stands for.
 
 ---
 

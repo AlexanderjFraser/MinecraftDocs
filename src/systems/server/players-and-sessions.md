@@ -22,9 +22,9 @@ that will keep answering questions all day.
 | `ServerPlayer` | one player's world state, and what a new one inherits from an old one | Server |
 | `ServerGamePacketListenerImpl` | the session: the player it points at, the flush suspension, the load gate, the kicks | Netty to decode, Server to handle |
 | `ServerConfigurationPacketListenerImpl` | the strictly serial task queue a join is prepared in | Netty, with four handlers hopping to Server |
-| `PrepareSpawnTask` | where the player will stand, and when the `ServerPlayer` is finally constructed | Server |
-| `PlayerDataStorage` | the `.dat` file, its *.dat_old* twin and its corrupt-copy rescue | Server |
-| `PlayerChunkSender` | how many chunks a client is trusted with, starting at almost none | Server |
+| `PrepareSpawnTask` | where the player will stand, and when the `ServerPlayer` is finally constructed | Server, or Netty when accepting a code of conduct starts it |
+| `PlayerDataStorage` | the `.dat` file, its *.dat_old* twin and its corrupt-copy rescue | whichever thread starts the task, then Server |
+| `PlayerChunkSender` | how many chunks a client is trusted with, starting at one unacknowledged batch | Server |
 | `CommonListenerCookie` | the four facts that survive a phase change: profile, latency, client options, transferred | — |
 
 The phases this trace passes through — login, configuration, play, and the
@@ -36,11 +36,12 @@ at all.
 ## Admission is a `Component` or nothing
 
 Identity here is a `NameAndId`: a record of a UUID and a name, made from the
-authenticated `GameProfile`, and the key that every stored-user list, every
-op lookup and every save file is addressed by. `UserNameToIdResolver`,
+authenticated `GameProfile`, and the key that the ban list, the whitelist, every
+op lookup and every save file are addressed by (the IP ban list keys on the
+address). `UserNameToIdResolver`,
 reached through `MinecraftServer.services`, is the cache that maps between
 the two halves — a `CachedUserNameToIdResolver` over *usercache.json*, with a
-`ProfileResolver` behind it for the lookups the file cannot answer — and
+`GameProfileRepository` behind it for the lookups the file cannot answer — and
 comparing its remembered name against the profile's is how the server notices
 a player has been renamed since their last visit.
 
@@ -50,13 +51,17 @@ a player has been renamed since their last visit.
 rendered on the disconnect screen — or null for *let them in*. It asks
 four questions in order — the ban list, the whitelist, the IP ban list, then
 capacity — and the first three ask the same kind of object. A `StoredUserList`
-is a JSON file of `StoredUserEntry` records keyed by identity, rewritten whole
+is a JSON file of `StoredUserEntry` records keyed by identity (the IP bans by
+address), rewritten whole
 on every change, and there are four of them: `UserBanList`, `IpBanList`,
 `UserWhiteList` and the `ServerOpList` that both surprises below turn on. The two
 ban lists share a `BanListEntry` carrying a source, a reason and an expiry,
 and nothing sweeps that expiry on a schedule: `StoredUserList.get` drops what
-has lapsed before it answers, so a temporary ban ends the moment somebody
-asks about it. The two ways past the gate are not the ones a reader expects.
+has lapsed before it answers, but the login gate asks `UserBanList.isBanned`
+or `IpBanList.isBanned` first, which do not. So the first login after a
+temporary ban lapses finds the ban, fetches an entry that is no longer there,
+and throws; the server logs *Internal server error* and closes the connection,
+and the sweep that caused it lets the next attempt in. The two ways past the gate are not the ones a reader expects.
 The
 whitelist is bypassed by being an **op**: `PlayerList.isWhiteListed` is
 satisfied by presence in the op list, and `DedicatedPlayerList.isWhiteListed`
@@ -64,10 +69,9 @@ overrides it to route through `PlayerList.isOp`, which also asks whether
 the identity is the singleplayer owner — a branch that never fires here,
 because `DedicatedServer.isSingleplayerOwner` returns false for everyone.
 The *bypassesPlayerLimit* flag in *ops.json* is a
-separate thing entirely and reaches exactly one of the four questions:
-`ServerOpListEntry.bypassesPlayerLimit` is read only by
-`DedicatedPlayerList.canBypassPlayerLimit`, and only the capacity test calls
-it. A banned op is still banned.
+separate thing entirely and reaches exactly one of the four questions: of
+them, only the capacity test reads `ServerOpListEntry.bypassesPlayerLimit`,
+through `DedicatedPlayerList.canBypassPlayerLimit`. A banned op is still banned.
 
 ### The gate runs twice, and disagrees with itself
 
@@ -77,7 +81,7 @@ during login; `ServerConfigurationPacketListenerImpl.handleConfigurationFinished
 runs it again when the client says configuration is over, because a ban or a
 newly full server can land in the seconds a configuration takes. Duplicate
 logins differ between the two. At login the newcomer wins:
-`PlayerList.disconnectAllPlayersWithProfile` kicks every session holding
+`PlayerList.disconnectAllPlayersWithProfile` kicks every player holding
 that UUID with `PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE`, and the
 login parks until the old connection is really gone. At the second check the
 newcomer loses — an existing player with that id is a flat rejection, since
@@ -100,29 +104,28 @@ sequenceDiagram
     Note over SCPL: one task at a time, never two at once
     SCPL->>SCPL: Synchronize<br/>RegistriesTask<br/>first, then the<br/>code of conduct<br/>or a resource pack
     SCPL->>PST: start, appended by returnToWorld with a JoinWorldTask behind it
-    PST->>PDS: load, decoding the saved position out of the datafixed file
+    PST->>PL: loadPlayerData, for the saved position
+    PL->>PDS: load, the whole file read and datafixed
     PST->>SL: a PLAYER_SPAWN ticket at radius 3, through its chunk source
     rect rgba(0, 0, 0, 0.04)
         Note over SCPL,SL: every tick until the chunks land, the client still in configuration
         SL-->>PST: the load future completes, Preparing becomes Ready
     end
     SCPL->>SCPL: JoinWorldTask sends the finish packet
-    SCPL->>PL: canPlayerLogin again, and the duplicate check again
+    SCPL->>PL: the duplicate check again, then canPlayerLogin
     SCPL->>PST: spawnPlayer
 ```
 
 *A join assembled while the client waits: the queue above the band runs one
-task at a time and never overlaps, and the band is the one thing that does
-overlap — a world being built for a client that has no idea.*
-
-Nothing in that queue overlaps.
+task at a time and never overlaps, and the band is where the waiting happens —
+a world being built for a client that has no idea.*
 
 Nothing in that queue overlaps.
 `ServerConfigurationPacketListenerImpl.startNextTask` throws rather than
 start a task while another is unfinished, so the registry transfer completes
 before `PrepareSpawnTask` reads a byte, and the two optional tasks sit
-between them. What *does* overlap is the chunk load and the client's
-remaining work: once the ticket is placed the task simply reports *not
+between them. What *does* run alongside it is the chunk load and the
+client's wait: once the ticket is placed the task simply reports *not
 finished* from `ConfigurationTask.tick` each tick, and the client spends
 that time in configuration with no idea a world is being assembled for it.
 
@@ -139,11 +142,13 @@ moment the task reaches `PrepareSpawnTask.Ready` the clock does run, and
 slow to acknowledge the finish packet would arrive to find its spawn chunks
 expired underneath it.
 
-A player with no save file gets a search instead of a position.
+A player with no save file gets a search instead of a position, except on a
+world whose game mode is Adventure, where the world spawn is used without a
+search, only its height corrected.
 `PlayerSpawnFinder.findSpawn` walks up to
 `PlayerSpawnFinder.ABSOLUTE_MAX_ATTEMPTS` candidates — a thousand and
 twenty-four, or fewer if `GameRules.RESPAWN_RADIUS` or the world border says
-so — in a coprime-strided order from a random offset, loading each
+so — in a strided order from a random offset, loading each
 candidate's chunk under a one-tick `TicketType.SPAWN_SEARCH` ticket and
 returning a future. The `ChunkLoadCounter` beside it feeds only the
 server's `LevelLoadListener`, through
@@ -169,16 +174,15 @@ not I/O, and a join pays the migration cost twice — once here, and once in
 
 `ServerLevel.waitForEntities`
 blocks the Server thread until the entities in the spawn chunks have
-finished loading — a horse to remount has to exist before a rider can be
-attached to it — and then the `ServerPlayer` constructor runs, pulling its
+finished loading, and then the `ServerPlayer` constructor runs, pulling its
 `ServerStatsCounter` and `PlayerAdvancements` out of `PlayerList` on the way
-past and defaulting `ServerPlayer.requestedViewDistance` to 2 until the
-client's `ClientInformation` says otherwise. The second read fills the
+past and applying the `ClientInformation` the client sent in configuration. The second read fills the
 object in, the player is snapped to the prepared position,
 `PlayerList.placeNewPlayer` runs, and only afterwards do
 `ServerPlayer.loadAndSpawnEnderPearls` and
-`ServerPlayer.loadAndSpawnParentVehicle` put back what the player was
-carrying and sitting on when they left.
+`ServerPlayer.loadAndSpawnParentVehicle` put back the ender pearls the player
+had in flight and what they were sitting on when they left, both re-created
+from the file.
 
 ### Two rescues wired into the read
 
@@ -189,17 +193,18 @@ nothing — the file is missing, or `NbtIo.readCompressed` threw and logged
 *\<uuid\>_corrupted_\<timestamp\>.dat* and then tries *\<uuid\>.dat_old*,
 the twin the previous write rotated out. So a corrupted file is kept — under
 the *corrupted* name, for whoever wants to look at it — and the player loses
-one session rather than everything; a player with no readable file and no
+what changed since the save before last rather than everything; a player with no readable file and no
 twin is built from nothing, which is a new spawn rather than an error. Only
 what survives that is datafixed.
 
-The second rescue is about identity. `PlayerList.loadPlayerData` checks
-whether the joining identity is the singleplayer owner and, if the world
+The second rescue is about identity, and only an integrated server has it.
+`PlayerList.loadPlayerData` checks whether the joining identity is the
+singleplayer owner and, if the world
 records a *singleplayer_uuid* in its level data, loads **that** file rather
-than the one named for the joining id. It works once: the save writes under
+than the one named for the joining id. It works for one session: the save writes under
 the current id and `MinecraftServer.saveAllChunks` stamps the current
-owner's id into the level data, so the old file is read on one join and
-orphaned by the first save afterwards.
+owner's id into *level.dat*, so the next time the world is opened the old file
+is orphaned.
 
 ## `PlayerList.placeNewPlayer` sends a world in one write
 
@@ -211,34 +216,35 @@ sequenceDiagram
     participant CM as ChunkMap
     participant Wire as the network
 
-    Note over PL,Wire: in the scheduled packet processing at the top of a tick
+    Note over PL,Wire: in the packet drain at the top of a tick
     PL->>SGPL: suspendFlushing, on a listener already set to play
     PL->>SGPL: ClientboundLoginPacket, difficulty, abilities, held slot, recipes
     PL->>SGPL: the permission level as an entity event, then the command tree
-    PL->>SGPL: recipe book, scoreboard, the chat join message, teleport, status
+    PL->>SGPL: recipe book, scoreboard, teleport, status
     PL->>SGPL: the tab list as it stands, everyone already here
     PL->>PL: the joiner is added to PlayerList.players
     PL->>SGPL: the joiner, to everyone, themselves included
-    PL->>SGPL: the border, the clocks, the spawn, the rain, LEVEL_CHUNKS_LOAD_START
+    PL->>SGPL: the border, the clocks, the spawn, the rain, LEVEL_CHUNKS_LOAD_START, the tick rate
     PL->>SL: addNewPlayer
     SL->>CM: addEntity, then updatePlayerStatus and the first ChunkTrackingView
-    CM->>SGPL: every chunk in that view marked pending on PlayerChunkSender
+    CM->>SGPL: every ready chunk in that view marked pending on PlayerChunkSender
     PL->>SGPL: the boss bars, the effects, the inventory menu, then resumeFlushing
     SGPL->>Wire: one write
     Note over SL,Wire: later in the same tick, the first chunk batch, and only one
 ```
 
-*Everything `PlayerList.placeNewPlayer` sends, and the single write at the foot
-that carries all of it; the self-message in the middle is the step the tab-list
-order turns on.*
+*Everything `PlayerList.placeNewPlayer` sends the joiner, and the single write
+at the foot that carries it; the self-message in the middle is the step the
+tab-list order turns on.*
 
 The whole method sits inside one suspension, so everything above — a login
 packet, a command tree, a scoreboard, a tab list, a world border — leaves as a
-single write. It is the same
+single write; what it tells the players already there goes out on their own
+connections, one packet at a time. It is the same
 `ServerCommonPacketListenerImpl.suspendFlushing` bracket [the server
 tick](server-tick.md#the-two-writes-each-client-gets) puts around every client
 every tick, and the one place in the game it is opened by hand: a join is
-handled in the scheduled packet processing that runs *before*
+handled in the packet drain that runs *before*
 `MinecraftServer.tickChildren` opens the tick's own.
 
 `ClientboundLoginPacket` is where the client learns the entity id it is
@@ -263,25 +269,26 @@ needs to know is that both halves are re-sent whenever `PlayerList.op` or
 The tab list goes out in a deliberate order, and it is the middle step that
 makes it one: the joiner is sent everyone already present, *then* added to
 `PlayerList.players`, *then* everyone — themselves included — is sent the
-joiner. The last thing `PlayerList.sendLevelInfo` sends after it is
-`ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START`, which is the client's
-signal to stop waiting and start drawing whatever terrain arrives. And the chat
-join message is chosen a few lines earlier than it is sent, because
-*multiplayer.player.joined.renamed* is used when the name in the profile
-differs from the one the name cache remembers, and the cache is overwritten
-at the top of the method.
+joiner. Near the end of `PlayerList.sendLevelInfo`, with only the tick rate
+after it, comes `ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START`, the
+client's signal to stop waiting for the server and start waiting for its own
+chunk. And the chat join message, which goes to the players already there and
+not to the joiner, uses *multiplayer.player.joined.renamed* when the name in
+the profile differs from the one the name cache remembered, which is why that
+name is read at the top of the method, before the cache is overwritten.
 
 Entering the level is the step that starts the terrain, though it is not
 the last: the boss bars, the active effects, the inventory menu and
 `NotificationManager.playerJoined` — which is not the chat message, sent
-twenty lines above — all follow it, and `ServerCommonPacketListenerImpl.resumeFlushing`
+before the player entered the level — all follow it, and `ServerCommonPacketListenerImpl.resumeFlushing`
 closes the single write.
 `ServerLevel.addNewPlayer` hands the player to
 `PersistentEntitySectionManager.addNewEntity`, whose callback adds it to
 `ServerLevel.players` and to the chunk source; `ChunkMap.updatePlayerStatus`
 registers the player with `DistanceManager`, resets its chunk tracking to
 `ChunkTrackingView.EMPTY` and computes the real one, and every chunk inside
-that view is marked pending on the connection's `PlayerChunkSender`. So
+that view that is ready to send is marked pending on the connection's
+`PlayerChunkSender`. So
 there are two player lists, written by different systems:
 `PlayerList.players` is *who is on the server* and `PlayerList` alone writes
 it, while `ServerLevel.players` is *whose entity is in this level* and only
@@ -293,10 +300,10 @@ the chunk-sending loop that is a fact about *joining*: `PlayerChunkSender`
 starts with a budget of a single unacknowledged batch, so the first batch a
 player ever receives is a hard round trip before the second can leave. The
 loop it then settles into — the client's measured rate, the clamps and the
-nearest-first order — is [what the client is
-told](../networking/what-the-client-is-told.md#the-rate-the-client-asks-for)'s,
-and which chunks are in the player's set at all is [tickets and
-loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s.
+nearest-first order — belongs to [what the client is
+told](../networking/what-the-client-is-told.md#the-rate-the-client-asks-for),
+and which chunks are in the player's set at all, to [tickets and
+loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible).
 
 ## Loaded is something the client says
 
@@ -315,8 +322,8 @@ end of `ServerPlayer.die`, sets a flag that no timer clears: a dead player's
 client counts as unloaded indefinitely, and only
 `ServerGamePacketListenerImpl.restartClientLoadTimerAfterRespawn` — reached
 from the respawn, or from a brand-new listener — clears the flag and starts
-the sixty ticks again. The death screen is held open by the same field the
-*Joining world* screen is.
+the sixty ticks again. The death screen is held open by the same gate as the
+*Joining world* screen, through a different field.
 
 That the countdown ticks from `ServerPlayer.tick` while the food, health and
 stat sync tick from `ServerPlayer.doTick` is the whole reason a player is
@@ -324,8 +331,7 @@ ticked from two places every tick; [the two-phase
 tick](../player/the-two-phase-tick.md#both-halves-in-the-order-they-run) is
 the lecture on that. The fact worth
 carrying out of here is that the level's entity loop ticks players
-*regardless* of entity-ticking range, which is how a player standing in an
-otherwise idle chunk still moves.
+*regardless* of entity-ticking range.
 
 ## Four ways the session changes
 
@@ -347,12 +353,13 @@ command, and they disagree about almost everything.
 ### The object, and the reference that outlives it
 
 `PlayerList.respawn` builds the new `ServerPlayer` from the old one's
-profile and client information, then performs three assignments that make
-the difference invisible from outside: `ServerPlayer.connection` is set to
+profile and client information, then performs three assignments that keep
+the difference out of every tab list: `ServerPlayer.connection` is set to
 the old player's listener, `Entity.setId` copies the entity id, and the
 listener's own player field is reassigned by its caller. To every other
-client on the server nothing has happened — same id, same UUID, same tab
-list row, and no `ClientboundPlayerInfoUpdatePacket` is sent at all. To
+client's tab list nothing has happened — same id, same UUID, same row — though
+entity tracking removes the old body and adds the new one, and a hardcore
+respawn sends the row's new game mode. To
 anything inside the server holding the old object, everything has happened:
 it was removed from its level before the new one existed, and it is not in
 `PlayerList.players` any more.
@@ -377,14 +384,15 @@ the one people name it for. Its *restore everything* branch — permanent
 attribute modifiers, health, hunger, every active effect, the inventory, the
 portal state — is reached only when `PlayerList.respawn` is called with
 `Entity.RemovalReason.CHANGED_DIMENSION`, which happens in exactly one place:
-a player pressing *Respawn* on the end credits, with `ServerPlayer.wonGame`
+a player leaving the end credits, with `ServerPlayer.wonGame`
 set. That is the End-portal return, not *keepInventory*.
 
 Which makes the end credits a fifth way out of a `ServerLevel`, and the
 reason the table above has four columns rather than five:
 `ServerPlayer.showEndCredits` removes the player with
-`Entity.RemovalReason.CHANGED_DIMENSION` like a dimension change, and then
-hands it to `PlayerList.respawn` like a death. It is not a way a session
+`Entity.RemovalReason.CHANGED_DIMENSION` like a dimension change, and the
+client, when the credits end or are closed, sends the respawn that hands it to
+`PlayerList.respawn` like a death. It is not a way a session
 changes so much as the one place two of them meet.
 
 An ordinary death takes the other branch. Health is reset to maximum,
@@ -392,8 +400,8 @@ effects are gone, and `GameRules.KEEP_INVENTORY` — or having died as a
 spectator — decides only whether `ServerPlayer.restoreFrom` runs
 `ServerPlayer.transferInventoryXpAndScore`, which moves the inventory, the
 experience and the score and nothing else. What the same rule decided on the
-way *out*, when the old player died, is [damage and
-death](../entities/damage-and-death.md#the-death-screen-and-what-the-client-does-alone)'s.
+way *out*, when the old player died, belongs to [damage and
+death](../entities/damage-and-death.md#the-death-screen-and-what-the-client-does-alone).
 Outside the branch, and so true of every death, a long tail is copied
 unconditionally: the ender chest, the enchantment seed, both game modes,
 base attribute values, the recipe book, the warden spawn tracker, the chat
@@ -459,19 +467,18 @@ connection left alive. It runs `ServerGamePacketListenerImpl.removePlayerFromWor
 saved file, tab-list removal and all — which is the half that belongs here:
 as far as this page's four ways are concerned, a reconfigure *is* a leave
 that keeps the socket. What the connection then does with the phase, and why
-no registry is re-sent on the way back, is [protocol
-phases](../networking/protocol-phases.md#play-and-the-way-back)'. It is also
-why `CommonListenerCookie` carries the transferred flag and the client's
-options across at all.
+no registry is re-sent on the way back, belong to [protocol
+phases](../networking/protocol-phases.md#play-and-the-way-back). `CommonListenerCookie` carries the client's options and the transferred
+flag across that return, as it does across every phase change.
 
 ### What everyone else is told
 
-Very little, and only on the way out. A respawn and a dimension change send
-nothing to other clients about the player, because the identity a tab list
-is keyed on never changed. A disconnect sends one
-`ClientboundPlayerInfoRemovePacket` to everybody, and the only other thing a
-tab list hears about anyone is the latency sweep `PlayerList.tick` broadcasts
-on its own slow counter ([the server
+Very little, and nearly all of it on the way out. A respawn and a dimension change send
+other clients nothing for the tab list, a hardcore respawn's game mode aside,
+because the identity a tab list is keyed on never changed. A disconnect sends one
+`ClientboundPlayerInfoRemovePacket` to everybody, and otherwise a tab list
+hears a row's game mode, hat or chat session when one changes and the latency
+sweep `PlayerList.tick` broadcasts on its own slow counter ([the server
 tick](server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)).
 The rest of what other players see is entity tracking in `ChunkMap`, and the
 removal reasons in the table above have already told it what to do.
@@ -491,14 +498,15 @@ configuration phase too ([the
 connection](../networking/the-connection.md#how-a-connection-dies)).
 
 The asymmetry is what this section is about. **The singleplayer owner is
-exempt from the keep-alive, and from that alone**: it is the only one of the
-three kicks that asks
-`ServerCommonPacketListenerImpl.isSingleplayerOwner`, and the host can be
-kicked for idling or for flying like anyone else.
+exempt from the keep-alive, the one kick of the three that could reach it**:
+the keep-alive alone asks
+`ServerCommonPacketListenerImpl.isSingleplayerOwner`, and the host exists only
+on an integrated server, which allows flight and sets no idle timeout, so
+nobody there is kicked for either of the others.
 
-> **For a 1.21-era reader.** Identity is a `NameAndId` record, not a
-> `GameProfile`, everywhere below the login handshake — the ban list, the op
-> list, the whitelist, the save file and the name cache all key on it. And a
+> **For a 1.21-era reader.** Stored identity is a `NameAndId` record, not a
+> `GameProfile` — the ban list, the op list, the whitelist, the save file and
+> the name cache all key on it. And a
 > permission is no longer an integer: `ServerOpListEntry` holds a
 > `LevelBasedPermissionSet`, and the number in *ops.json* is a spelling of
 > one.

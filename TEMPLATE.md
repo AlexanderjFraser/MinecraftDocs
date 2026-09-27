@@ -981,7 +981,7 @@ the break in from a render, and is the check after adding a lane.
 | `WCUS` | `WorldCreationUiState` |
 | `WOF` | `WorldOpenFlows` |
 | `Game` | *the game's own code above Blaze3D, not a class* |
-| `Main` | *the JVM main thread, running whichever program's Main the diagram is about — the server's or the client's, so not one class* |
+| `Main` | *the thread running whichever program's Main the diagram is about — the client's on the JVM main thread, the server's on the thread the jar's bundler starts — so not one class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
 | `Auth` | *the User Authenticator thread, not a class* |

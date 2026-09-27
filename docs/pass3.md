@@ -1448,6 +1448,19 @@ writes one strikes it through; a session that rules one out says why, here.*
   decorations reach the client, and when the trader is due are explained
   nowhere. Declared, not taught; a second edition's.
 
+- **Part III's unnamed classes, `ServerEntityGetter` the largest.** *(pass 5,
+  session F's finding; carried here by pass 8's session C, 2026-09-26, which
+  found the Part III landing page saying *none of it by omission* when
+  `pass5_coverage.py --part server` lists ten.)* Ten small classes in Part III's
+  packages, 442 lines, were named on no page when the session began: `ServerEntityGetter` (132), the
+  server-side entity-query interface `ServerLevel` implements and Part VI's
+  vocabulary, then `ChainedJsonException`, `ParticleStatus`, `ColumnPos`, the
+  three stored-user entries and a handful of one-screen helpers. The landing
+  page's *Where the part stops* now declares them and names the
+  largest; no lecture names any of them. Declared, not taught; a
+  second edition's, and `ServerEntityGetter` belongs on `entities/entity-lifecycle`
+  if anywhere.
+
 - **`net/minecraft/core/dispenser` has no owner, and Part II's landing page
   now says so.** *(pass 6, session B.)* Thirteen classes and 1,090 lines —
   `DispenseItemBehavior` and twelve implementations — sit inside Part II's

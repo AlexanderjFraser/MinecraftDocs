@@ -111,7 +111,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   client falling behind is one thread deciding what to spend a frame on — which
   is the fourth time the reversal has produced the part's argument in one
   sentence. The remaining three are their own sessions' and session O's.
-  [kind=lecture]
+  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim.
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -520,7 +520,7 @@ six corrections it made are in [pass9.md](pass9.md).*
 
 ### For other part sessions (pass 5)
 
-- **Session I (IX) — the handover between `players-and-sessions` and
+- ~~**Session I (IX) — the handover between `players-and-sessions` and
   `protocol-phases` is declared twice and in two places.** `players-and-sessions`:30-34
   says "This page starts where that one hands over: with `PlayerList` deciding
   whether the login is allowed at all"; `protocol-phases`:313-315 says it
@@ -541,7 +541,7 @@ six corrections it made are in [pass9.md](pass9.md).*
   that the client sits in configuration with no idea a world is being
   assembled for it, and that without `PrepareSpawnTask.keepAlive` a slow
   client would arrive to find its spawn chunks expired. Whatever is decided,
-  the two handover sentences and `server/README`:91-92 must name one line.
+  the two handover sentences and `server/README`:91-92 must name one line.~~ *Overtaken: session I settled the seam by linking here — `protocol-phases` now sends the admission gate and the spawn preparation to this page's anchors and declares no second hand-over, so this page's opening and the landing page's item 3 name the one line, the login gate — pass 8, session C.*
 - ~~**Session I (IX) — keep-alive.** `players-and-sessions`:426-433 and
   `the-connection`:370-380 both explain it…~~ **Done, session I (pass 5)**
   exactly as written: the connection owns it, both moves went with the cut,
@@ -599,9 +599,9 @@ six corrections it made are in [pass9.md](pass9.md).*
   `HopperBlockEntity.MOVE_ITEM_SPEED` is 8, and the only place the book said
   so was Part III's landing page, which is a summariser. Cut from there;
   `block-entities` is where a ticker's cadence belongs if session E wants it.
-- **Session F (VI) — `ServerEntityGetter`** (132 lines, `server/level`), the [kind=book] *(pass-6 planning session: still unnamed at pass 6's planning; pass 10's.)*
+- ~~**Session F (VI) — `ServerEntityGetter`** (132 lines, `server/level`), the [kind=book] *(pass-6 planning session: still unnamed at pass 6's planning; pass 10's.)*
   server-side entity-query interface `ServerLevel` implements, is named
-  nowhere in the book and is Part VI's vocabulary.
+  nowhere in the book and is Part VI's vocabulary.~~ *Second edition: `ServerEntityGetter` is still named nowhere; it and Part III's nine other unnamed classes are declared on the part's landing page and queued in pass3.md §7 — pass 8, session C.*
 - ~~**Session H (VIII) — `DemoMode`**~~ *Done, session H: written as a
   paragraph in* player-anatomy's *game-mode section, from the source.*
   (102 lines) extends
@@ -731,24 +731,24 @@ six corrections it made are in [pass9.md](pass9.md).*
 
 ### For pass 8 — the voice
 
-- Part III's five pages all end their opening paragraph on a bolded or dashed
+- ~~Part III's five pages all end their opening paragraph on a bolded or dashed
   sentence — the tic pass 4's session C logged and this session left.
-  [kind=voice]
-- `players-and-sessions` calls the packet drain "the scheduled packet
+  [kind=voice]~~ *Overtaken: none of the five openings ends on a bolded or dashed sentence now — pass 8, session C.*
+- ~~`players-and-sessions` calls the packet drain "the scheduled packet
   processing" twice (:170, :192-193), which is the profiler zone's name; the
   book's term is *the drain* (`server-tick`:94-110). One voice, one name.
-  [kind=voice]
-- `how-a-server-dies` uses *the number* device twice (**Ten seconds** and
+  [kind=voice]~~ *Done: both now say *the packet drain* — pass 8, session C.*
+- ~~`how-a-server-dies` uses *the number* device twice (**Ten seconds** and
   **One millisecond**) where once is the convention; pass5.md:1553's version
   of this entry named the comparison table's "differ in one cell" as the
   second instance and is **overtaken** — that cell now reads "three of the
-  eight rows". [kind=voice]
-- `server-tick`'s `tickChildren` table has one cell reading "its own counter
+  eight rows". [kind=voice]~~ *Ruled: `TEMPLATE.md` sets no once-a-page limit on the number device, and both carry their noun in the bold, the form V9 ratified — pass 8, session C.*
+- ~~`server-tick`'s `tickChildren` table has one cell reading "its own counter
   has not passed 600 — so every 601st call, not every 600th tick", the
-  longest *skipped when* value in the table. [kind=voice]
-- The repeated hedges pass 4's session C logged ("almost nothing", "all but
+  longest *skipped when* value in the table. [kind=voice]~~ *Done: the cell now reads *its own counter has not passed 600, so it fires on every 601st call* — pass 8, session C.*
+- ~~The repeated hedges pass 4's session C logged ("almost nothing", "all but
   the first", "two of the three endings") are unchanged and now joined by
-  "over half of those lines" on the landing page. [kind=voice]
+  "over half of those lines" on the landing page. [kind=voice]~~ *Ruled under V3: each hedge names its population in its sentence — *almost nothing* the coverage phrase beside it, *over half of those lines* `server/level`'s — pass 8, session C.*
 
 ## Session B — Parts I and II (pass 5) *(2026-09-05)*
 
@@ -1040,7 +1040,7 @@ create, routed by kind.*
   (`client/prediction-and-acks`, 18 uses), `server-tick`'s *three ledgers* at
   the bottom of a tick, and a loose metaphor on `items/loot-tables` and
   `items/contexts-and-predicates`. The through-line owns the first; the other
-  two want a different word or an explicit one. [kind=voice]
+  two want a different word or an explicit one. [kind=voice] **`server-tick`'s half done, pass 8 session C** — it now closes with *three pieces of bookkeeping*; the items half is session G's.
 - **`rendering/README`:140 says "they were one page until pass 3".** A
   published page naming a pass number a reader cannot resolve; the same
   sentence in `lectures.md` was fixed this session ("two pages that were
@@ -2116,17 +2116,17 @@ header should get its ticking image back around the true number.
 
 ## Session C — Part III The server (pass 4) *(2026-09-04)*
 
-Wording debt from twenty-eight fact fixes. Nothing here was acted on; pass 4
-does not polish. [kind=record]
+~~Wording debt from twenty-eight fact fixes. Nothing here was acted on; pass 4
+does not polish. [kind=record]~~ *Record: the preface to the units under it, each settled on its own line — pass 8, session C.*
 
-**Rewrites to re-read.** Three fixes grew a sentence into a passage and each
-should be read again for rhythm rather than for truth:
+~~**Rewrites to re-read.** Three fixes grew a sentence into a passage and each
+should be read again for rhythm rather than for truth:~~ *Done: every item under it is settled on its own line — pass 8, session C.*
 
-- `starting-a-server`'s **opening paragraph**. Its frame ("Between those two
+- ~~`starting-a-server`'s **opening paragraph**. Its frame ("Between those two
   lines the server …") was inverted — five of the six things listed happen
   before *Preparing level* prints — and the fix adds a clause and a second
   sentence to a paragraph that was already the page's densest. The hook is
-  untouched. Worth trying as two sentences instead of one long one.
+  untouched. Worth trying as two sentences instead of one long one.~~ *Ruled under V11: the opening's long sentence is one idea, the list of what boot has done before *Done*, and its frame was checked true by this session's agent — pass 8, session C.*
 - ~~`server-tick`'s **packet-drain paragraph**~~ **— overtaken. Checked by
   session C of pass 5 against the page: it is three lines, not five, and it
   already points forward ("so chat and commands arrive as *tasks*, drained by
@@ -2139,11 +2139,11 @@ should be read again for rhythm rather than for truth:
   clause, and the section already defers the exception in its first sentence).
   [kind=lecture]
 
-**Repeated hedges introduced.** "Almost nothing", "almost none", "all but the
+~~**Repeated hedges introduced.** "Almost nothing", "almost none", "all but the
 first", "two of the three endings", "on this side of the jar" — five new
 qualifiers in one part, each earned individually. Read them together; if the
 part now reads as hedged, some of them want re-scoping into a positive claim
-instead ("`FallingBlockEntity` is the one place that …").
+instead ("`FallingBlockEntity` is the one place that …").~~ *Ruled under V3: each names its population in the sentence or table beside it — *all but the first* the table under it, *two of the three endings* the comparison table, *on this side of the jar* the five server callers listed beside the client's three — pass 8, session C.*
 
 **Structural findings, not acted on.**
 
@@ -2182,12 +2182,12 @@ instead ("`FallingBlockEntity` is the one place that …").
   now sits above a paragraph that names a fifth** (the end credits).~~
   **Done, pass 6 session C** — the same finding as the pass-6 entry above; the
   fifth moved to the paragraph it is the point of.
-- `server-tick`'s `tickChildren` table row about the player-info broadcast
+- ~~`server-tick`'s `tickChildren` table row about the player-info broadcast
   now reads "its own counter has not passed 600 — so every 601st call, not
   every 600th tick", which is two corrections in one cell and the longest
-  *skipped when* value in the table. [kind=voice]
-- The em dash count in `how-a-server-dies`'s durability section went up by
-  four with the watchdog asterisk. Whole-page voice pass.
+  *skipped when* value in the table. [kind=voice]~~ *Done with pass5.md:746, which it restates — pass 8, session C.*
+- ~~The em dash count in `how-a-server-dies`'s durability section went up by
+  four with the watchdog asterisk. Whole-page voice pass.~~ *Ruled under V4: each sentence in the section carries at most one pair of dashes — pass 8, session C.*
 
 ## Session B — Parts I and II (pass 4) *(2026-09-04)*
 
@@ -2646,7 +2646,7 @@ correction):
 *(pass-3 and pass-4 sessions append below, newest first: the page, what
 was cut or moved, and why)*
 
-- **2026-09-02, session D — Part III.** Five pages, and the register debt
+- ~~**2026-09-02, session D — Part III.**~~ *Record: pass 3 session D's cut log for Part III, its open questions settled — the list question by pass 6, the three homeless items by pass 5, the opening tic overtaken, and the `SampleLogger` paragraph kept, as the book's one account of the debug screen's TPS chart, in the bookkeeping section it belongs to; every move it lists was read on the pages this session — pass 8, session C.* Five pages, and the register debt
   pass 2 logged against this part is **paid**: the dozen "not X but Y",
   "two, not one" and "and there is no Z" constructions that made Part III
   the corpus's worst offender are gone, restated positively. The three
@@ -5283,9 +5283,9 @@ on are in [pass9.md](pass9.md). [kind=record]~~ *Record: the preface to the unit
 
 ## Session C — Part III · The server (pass 6) *(2026-09-10)*
 
-Six readers, one per page and one for the landing page, under the Part 1
+~~Six readers, one per page and one for the landing page, under the Part 1
 brief. What the reading raised that this session did not act on, tagged by
-kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [kind=record]
+kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [kind=record]~~ *Record: the preface to the readers' units under it, each settled on its own line — pass 8, session C.*
 
 ### For pass 7 (the figures)
 
@@ -5321,72 +5321,72 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md). [ki
 
 ### For pass 8 (the voice)
 
-- **The bold-number device reads as a fragment.** `server-tick`'s "**Two** —
+- ~~**The bold-number device reads as a fragment.** `server-tick`'s "**Two** —
   writes to the socket per client per tick" and "**Three** — the things
   `MinecraftServer.haveTime` decides": the noun the number counts arrives
   after the dash, so the bold word is unattached until you have read past it.
-  Both readers who met it said so, on two pages. [kind=voice]
-- **Two of the corpus's ambiguous counts are here**, and both are scope rather
+  Both readers who met it said so, on two pages. [kind=voice]~~ *Done: both are now one bold phrase with their noun, *Two writes* and *Three things* — pass 8, session C.*
+- ~~**Two of the corpus's ambiguous counts are here**, and both are scope rather
   than arithmetic. `server-tick`'s "**Two** — writes to the socket per client
   per tick" is true of sends made *on the Server thread*, and the same
   paragraph says anything sent from another thread flushes on its own; and
   "**Three** — the things `haveTime` decides" counts what the supplier gates
   *inside the tick*, while the event-loop figure four sections later shows it
   deciding whether a queued task runs at all. Pick the reading and say it, or
-  drop the number. [kind=voice]
-- **`server-tick`'s two overload thresholds are each "a constant plus N ticks'
+  drop the number. [kind=voice]~~ *Done: *Two writes … come out of `MinecraftServer.tickChildren`*, with the sends outside it named as flushed on their own, and *Three things are all `MinecraftServer.haveTime` decides inside the tick* — pass 8, session C.*
+- ~~**`server-tick`'s two overload thresholds are each "a constant plus N ticks'
   worth — X seconds at the default rate"**, and the reader had to decide twice
-  whether *X seconds* was the second term or the total. [kind=voice]
-- **`server-level-tick`'s asides are longer than their sentences** in two
+  whether *X seconds* was the second term or the total. [kind=voice]~~ *Done: each now says *in all* — pass 8, session C.*
+- ~~**`server-level-tick`'s asides are longer than their sentences** in two
   places: the whole lightning mechanism (the 1-in-100000 roll, the rod, the
   mob, the heightmap, the trap horse and its percentage) parked inside the
   sentence that walks the spawning chunks, and the `MobCategory.MISC` and
   persistence exclusions arriving before the verb they qualify. The reader
-  skipped the first outright. [kind=voice]
-- **`starting-a-server`'s world-load stage is one nine-clause sentence** —
+  skipped the first outright. [kind=voice]~~ *Done: the thunder is its own sentence; the census's two exclusions stay in the aside they qualify, now a parenthesis — pass 8, session C.*
+- ~~**`starting-a-server`'s world-load stage is one nine-clause sentence** —
   `createResourceManager`, tags, two registry loads, the data supplier, the
   new-world fallback and `ReloadableServerResources` in a single breath.
-  [kind=voice]
-- **`how-a-server-dies` uses *door* for two mechanisms** — the packet's route
+  [kind=voice]~~ *Done: a correction split it, and the reloadable registries are now their own sentence — pass 8, session C.*
+- ~~**`how-a-server-dies` uses *door* for two mechanisms** — the packet's route
   into the world on `server-tick`, and the task queue's two entry points here
   — and reuses *border* on `server-level-tick` for the world border and for
   the edge of a player's tracked area, the second inside a figure label before
-  the first is finished with. [kind=voice]
-- **`persistence` means two things forty lines apart on `server-level-tick`**:
+  the first is finished with. [kind=voice]~~ *Done: *door* now means only the task queue's entry points in this part (`server-tick`'s packets *reach the Server thread another way*), and the level tick's table says *edge* for the tracked area, keeping *border* for the world border — pass 8, session C.*
+- ~~**`persistence` means two things forty lines apart on `server-level-tick`**:
   mobs that *require persistence* (excluded from the census) and the
-  *persistent categories* considered every 400 ticks. [kind=voice]
-- **`server-level-tick`:322-325 — "A command typed at the *console* is as late
+  *persistent categories* considered every 400 ticks. [kind=voice]~~ *Done: *The categories marked persistent*, against *mobs that require persistence* — pass 8, session C.*
+- ~~**`server-level-tick`:322-325 — "A command typed at the *console* is as late
   as the piston, and for the same reason"** — the consequence is the same and
   the reason is not (the piston is late because block entities tick after the
   broadcast; the console command because it is drained after every level has
-  ticked). [kind=voice]
-- **Terms the part uses as common ground and never glosses**: *debug world*
+  ticked). [kind=voice]~~ *Done: the console command is as late as the piston *because it too changes blocks after the broadcast*, and the sentence gives its own reason — pass 8, session C.*
+- ~~**Terms the part uses as common ground and never glosses**: *debug world*
   (one of `server-level-tick`'s three gates and one of its four stated
   surprises), *POI*, *the simulation graph*, *the radius-8 tracker*, *block
   events*, `SavedData`, *serverbound*, and *Tracy*. Each is one clause.
-  [kind=voice]
+  [kind=voice]~~ *Done where a clause does it: *debug world*, *Tracy* and the radius-8 tracker are glossed on their pages; *block events*, points of interest, `SavedData` and simulation distance are glossary headwords; *serverbound* is the networking part's direction word — pass 8, session C.*
 
 ### For pass 9 (the fact-check), beyond this session's own claims
 
-- **`server-level-tick`:229-232** — `ChunkMap.forEachBlockTickingChunk` is
+- ~~**`server-level-tick`:229-232** — `ChunkMap.forEachBlockTickingChunk` is
   said to walk `DistanceManager.forEachEntityTickingChunk` "despite its name",
   which makes random ticks reach the *narrower* of the two ranges while the
   page's own number line frames block-ticking as the wider one. The naming
   curiosity is probably the point; worth confirming which set
-  `ServerLevel.tickChunk` really runs over. [kind=fact]
-- **`server-level-tick`'s weather countdowns** — one `WeatherData` on the
+  `ServerLevel.tickChunk` really runs over. [kind=fact]~~ *Answered: the entity-ticking set, level 31 and below, filtered to holders with a ticking chunk (`server/level/ChunkMap.java`:1032–1043) — random ticks reach the narrower range, as the page says — pass 8, session C.*
+- ~~**`server-level-tick`'s weather countdowns** — one `WeatherData` on the
   `MinecraftServer`, and `ServerLevel.advanceWeatherCycle` running once per
   dimension per tick. Does a three-dimension server count the rain timer down
   three times a tick? The reader derived the question from two of the page's
-  own sentences and the page does not answer it. [kind=fact]
-- **`server-tick`:420-421** — the autosave interval is the tick rate times
+  own sentences and the page does not answer it. [kind=fact]~~ *Answered: once, in vanilla — only a dimension that `Level.canHaveWeather` counts the shared timers down (`server/level/ServerLevel.java`:740), which is the overworld; the page now says so — pass 8, session C.*
+- ~~**`server-tick`:420-421** — the autosave interval is the tick rate times
   300, floored at 100 ticks, and the page says an autosave is five wall-clock
   minutes. Check the floor does not break the five-minute claim at very low
-  tick rates. [kind=fact]
-- **`players-and-sessions`:62 against :173-179** —
+  tick rates. [kind=fact]~~ *Answered: no — the tick rate cannot go below 1, so the interval is at least 300 ticks and the floor never binds (`world/TickRateManager.java`:9; `server/MinecraftServer.java`:1140); the page now says so, and that the five minutes are the server's scheduled time — pass 8, session C.*
+- ~~**`players-and-sessions`:62 against :173-179** —
   `DedicatedServer.isSingleplayerOwner` "returns false for everyone", and the
   singleplayer-owner save-file rescue is described as working once. Check the
-  second reads the same field as the first. [kind=fact]
+  second reads the same field as the first. [kind=fact]~~ *Answered: the same test — both call `MinecraftServer.isSingleplayerOwner`, false for everyone on a dedicated server (`server/dedicated/DedicatedServer.java`:796–798), so the save-file rescue is an integrated server's; the page now says so — pass 8, session C.*
 - ~~**`players-and-sessions`, the `PLAYER_SPAWN` ticket** — the figure waits an
   unbounded number of ticks for the chunks, and the prose re-arms the
   twenty-tick ticket only once the task has reached `PrepareSpawnTask.Ready`.~~ **answered, pass 7 session C**: nothing has to hold them. `TicketType.PLAYER_SPAWN` carries `TicketType.FLAG_LOADING` and nothing else, so `TicketType.canExpireIfUnloaded` is false and its twenty-tick timeout does not begin while the chunks are still on their way — which is exactly why `ServerChunkCache.addTicketAndLoadWithRadius` accepts the type at all, since it throws for any type that could expire before it loads. The clock starts at `PrepareSpawnTask.Ready`, which is where `PrepareSpawnTask.keepAlive` starts re-arming. The page now says so.
@@ -6669,7 +6669,7 @@ Part 3; these are the pieces of work that ruling created.
 
 ## Pass 7, session C — Part III · The server *(2026-09-15)*
 
-- **A message labelled with the caller's method, drawn arriving at the callee,
+- ~~**A message labelled with the caller's method, drawn arriving at the callee,
   was Part III's part-wide fault** — twelve of them, one on every page of the
   part, and every one a gate failure: `MinecraftServer.saveAllChunks` on an
   arrow into `ServerLevel` (which receives `ServerLevel.save`),
@@ -6680,15 +6680,15 @@ Part 3; these are the pieces of work that ruling created.
   `MinecraftServer.createLevels` and `MinecraftServer.prepareLevels` into
   `ServerLevel`, and five more. Fixed here; **the shape is worth looking for in
   every other part**, because the gate finds it mechanically and most of the 88
-  corpus failures left are this. [kind=figure]
-- **The gate could not read the band its own ruling tells sessions to draw.**
+  corpus failures left are this. [kind=figure]~~ *Record: fixed in Part III by pass 7; this session's agents checked every message head in the part and found none of that shape — pass 8, session C.*
+- ~~**The gate could not read the band its own ruling tells sessions to draw.**
   F8 says a trace that crosses a tick draws `rect rgba(0, 0, 0, 0.04)`;
   `check_figure_names.py` read the colour as a label and noted a call named
   `rgba`. Part III drew the corpus's first four bands and found it. Fixed with
   one rule (a `rect`'s rest is a colour, a `box`'s leading colour is stripped)
   and two probe cases. Session B found the same shape in the same tool for
   `<br/>` inside a message, so: **the gate is worth re-probing against each new
-  device a part session is the first to use.** [kind=record]
+  device a part session is the first to use.** [kind=record]~~ *Record: the gate's band rule, with its probe cases — pass 8, session C.*
 - ~~**`pass7_figures.py`'s *names first met here* cannot see a lead figure's
   situation.** For a figure directly under the cast table the count is
   structurally 100% unless the cast names the methods, so the metric fires on
@@ -6708,7 +6708,7 @@ Part 3; these are the pieces of work that ruling created.
   need it, the table wants a fourth row. [kind=figure]~~ — **done, pass 7 session O**: the subgraph row now allows *a call whose insides it holds, named for the call*; `anatomy`, `server-level-tick` and the frame graph all use it.
 
 
-- **A caption that closes its italics is not a caption**, and nothing but the
+- ~~**A caption that closes its italics is not a caption**, and nothing but the
   render ever said so. `custom.css` matches `p:has(> em:only-child)`, so a
   caption written `*…the four values of* \`FullChunkStatus\` *— …*` has two
   `<em>` children, stops matching, and loses its styling and its figure number
@@ -6718,7 +6718,7 @@ Part 3; these are the pieces of work that ruling created.
   the rule is in `TEMPLATE.md` (one italic run, names in backticks *inside* it),
   and `check_mermaid.js --probe` now gates it with six cases. Session O should
   read it as the shape to look for: **a standard whose only enforcement is the
-  stylesheet is a standard nothing checks.** [kind=record]
+  stylesheet is a standard nothing checks.** [kind=record]~~ *Record: the caption rule is in `TEMPLATE.md` and gated by `check_mermaid.js` — pass 8, session C.*
 - **An explicit `<br/>` turns the theme's wrap off for the whole label.** F18
   sends part sessions to break a long name in a message, and doing that to a
   message that carries any other words makes the figure *wider*: four such

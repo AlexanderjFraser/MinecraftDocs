@@ -850,7 +850,7 @@ V2, or B into A, if either runs short.
 | **V2** | **the version pass, the systems that changed shape — the scope V1 set (2026-09-26): the 42 pages still verified against 26.2**, listed by system in [pass9.md](pass9.md) under *Pass 8, session V1*, *For session V2*, with what 26.3 does instead under each: world generation (the brief's four plus `features-and-placement`, `blending`, `biomes`, `structure-placement`, `trees`, Part XII's landing page), the reloadable registries (`identifiers-and-registries`, `resource-system`, `contexts-and-predicates`, `recipes`, `loot-tables`, `advancements`, Part VII's landing page, and the brief's two codec pages), the swing and the dig (`the-sword-swing`, `using-an-item`, `block-breaking`, `particles`), the window and the renderer (SDL3, `renderpearl`, OIT: `blaze3d`, Part XI's landing page, `the-window`, `the-frame`, `post-processing`, `visibility-and-the-frame-graph`, `lightmap-fog-and-sky`, `block-entity-rendering`, `submit-phases`, `the-client-loop`, `input-and-keybinds`), the singleplayer seam (`anatomy`, `permissions`), `packets-and-stream-codecs`, `items-and-stacks`, `chunk-storage`, `signal-and-dust`, `density-function-nodes` (hand-kept, not generated), and the summarisers (`glossary`, `what-this-book-skips`), read last. `python tools/verify_names.py --current` passes when none is left. The brief's original list, for the record: `worldgen/terrain`, `worldgen/density-functions`, `world/chunk-generation-pipeline` (the status ladder without `CARVERS` and `SURFACE`; the surface rules and carvers gone or moved), `rendering/blaze3d` and Part XI's landing page (`renderpearl`: `api`, `backend`, `frontend`, `util`), `foundations/codecs-nbt-json` and `data-driven-types` (the registry codecs), `world/chunk-storage` (`level/storage`), `blocks/signal-and-dust` (`RedStoneWireBlock`), `player/the-sword-swing` and the introduction (`ServerboundSwingPacket`), `items/using-an-item` (`ItemInHandRenderer`), `reference/density-function-nodes` regenerated and its prose re-read. Each page made true of 26.3 with the decompile open, figures included, in the smallest rewrite; what the part session must re-read deeper is written into the ledger under *Pass 8, session V2*; the 1.21 blockquotes gain the 26.3 drift where a reader would hunt for the old name (V13); `naming-drift` gains the rows. Gates, deploy, the paragraph | 42 pages; 455 names and 30 in figures still unresolved against 26.3 | — | — | — | done 2026-09-26 | **Every page says 26.3** and `verify_names.py --current` passes: the forty-two pages rewritten in one session (the owner set no split), one agent per page with every diff audited — 681 ledger entries, sixteen false headings corrected with their links, the lane key's removed classes replaced, sixty-four naming-drift rows. Found beyond V1's list: eight more 26.3 changes on pages V1 had moved (the hurt cooldown, `LocalPlayer.sendChanges`, `MoveSimulationType` among them), and two probable upstream bugs, written as what the code does (blending's carving filter, the delayed dig) |
 | **A** | **the standard.** Part 4 ruled against the exemplar (`entities/entity-lifecycle`: its own agent under Part 2, its polish under V2–V17), the rulings written into `TEMPLATE.md` as *Voice* and the device amended (V9), Part 4 rewritten as the record; the ledger's 56 frame-level notes (`pass8_queue.py --part Frame`) struck *(no claim)* or routed to a page; pass 7's close's audit of the ledger's shape ([pass9.md](pass9.md), session O's entry) read and its workarounds written into Part 3 where they bind a session; the queue's routing tags checked (`pass5_queue.py --unsure`) so that R8's count is honest; Part 2 rehearsed on the exemplar and amended if the report's shape failed it | 56 | — | 3·2·1·0 | 5.2k | done 2026-09-26 | Part 4 ruled (11 ratified, 5 amended, V6 reversed, V18 new) and written into `TEMPLATE.md` as *Voice*; **the exemplar carried twenty-nine errors**, all fixed and re-derived; the book's *constant nobody reads* asides found to be javac's inlining, listed by page for the part sessions and written into Part 2; Part 2 amended in seven places from the rehearsal; the router taught two page forms and paragraph entries (the ledger is 1,398 entries); the queue's 75 guesses tagged, a sixth kind (*fact*) sent to the agents |
 | **B** | I · Anatomy, II · Foundations and the Maps | 25+3 · 61 · 24 | 4·2·3·9 / 3·0·0·13 / maps in frame | 14·18·2·2 / 29·34·7·6 | 32.5k | done 2026-09-26 | **293 corrections on sixteen pages** two fact-checks had passed, every one re-derived in the tree (54 inside a figure or a caption, nine of them 26.3 changes V1 and V2 missed); the 115 ledger entries struck, 36 wrong in whole or in part; 44 queue units settled; the queue router's part numerals fixed; the record's own audit found eight more errors beside the session's corrections; items handed to G, L, O and P |
-| **C** | III · The server | 81+3 | 6·1·1·22 | 28·34·5·11 | 20.9k | — | |
+| **C** | III · The server | 81+3 | 6·1·1·22 | 28·34·5·11 | 20.9k | done 2026-09-26 | **176 corrections on six pages** (22 inside a figure or a caption, nine of them 26.3 changes V1 missed), every one re-derived in the tree; the 84 ledger entries struck, 41 of 83 wrong in whole or in part; 31 queue units settled; the record drafted by one agent per page and audited, which found **38 more errors, 15 of them in sentences the session had just written**; three probable upstream bugs written as mechanism (a relayed crash that skips the flush save, a lapsed ban's first login, the spawn search's stride); items handed to D, F, I, M, N and O |
 | **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | — | |
 | **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | — | |
 | **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | — | |
@@ -1111,3 +1111,42 @@ wire as NBT; and two descendant counts `map_source.py` trades between a pair of 
 V2 entries, and V1's *1,218* items (the count of `Items`' fields; 1,658 items are registered). Written on its page
 as mechanism, one probable upstream bug: the component reverse index keeps its answers across a `/reload`
 (`foundations/data-components`).
+
+**Session C — Part III · The server (2026-09-26).** Six pages, each checked under Part 2 by its own agent while
+the session read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, V1's one
+entry here and session A's V6 item. **176 corrections**, every one re-derived in `reference/26.3` before it was
+made; 22 are inside a figure or a caption, and nine are 26.3 changes V1 did not see (the command-suggestion
+handler no longer hops, so `server-tick`'s *fifty-two of sixty-one* is fifty-one of sixty-one and the listener's
+tick does four things, not three; `RandomState.garbageCollect` is the level tick's new last step;
+`Entity.commonTick` does what `ServerLevel.tickNonPassenger` used to; falling sand sends a second packet; loot
+tables, recipes and advancements load as reloadable registries at boot; the spawn origin comes from
+`ChunkGenerator.getOrigin`). Ledger entries checked: the 84 on these pages (40 checked, 37 checked except a
+part, 4 wrong, 2 overtaken, 1 no claim — 41 of the 83 that made a claim wrong in whole or in part). The three
+worst corrections: `how-a-server-dies` taught that *a crash saves your world* for every crash, where a crash
+relayed from a worker thread is never cleared, is thrown again by the shutdown's own drain, and ends the
+teardown before the flush save — no entities, `level.dat` or saved data (a probable upstream bug, the same in
+26.2) — and its list of what crashes a tick named commands and packet handlers, both of which are caught;
+`starting-a-server` ran boot on *the JVM main thread*, where `java -jar server.jar` opens a bundler that unpacks
+the libraries and starts `Main.main` on a thread named *ServerMain*, a fact the decompile cannot show (read from
+the jar); and `server-level-tick`'s closer answered *why does a mob that spawns this tick not move until the
+next one?* with a mechanism that does not apply, since a natural spawn is added before the entity walk and
+ticks at once. What the whole-part read found that the reports did not: three, one of them a contradiction
+between pages (the level's packets leaving *at the end of the server tick*, where `server-tick` has them in the
+connection phase's flush); it also found, before the reports, four cross-page errors the reports then shared
+(`how-a-server-dies`' crash causes against `server-tick`'s suppressed handler errors, `/stop`'s tick
+*finishing its entities*, `server-tick`'s *submits and waits* that session B had fixed on `anatomy`, and the
+level tick's command timing against `server-tick`'s commands-as-tasks). **The record's audit is this session's
+finding**: one agent per page re-derived every changed sentence and read its neighbours and the corpus, and
+found 38 more errors, 15 of them in sentences the session had just written (a credits screen with a
+*Respawn* button it does not have, a lapsed-ban player shown a message the login protocol cannot carry, a
+relayed crash said to leave the chunks unwritten when the drain's first pass writes them, the login
+authenticator listed as non-daemon, the landing page's new sentence naming the very class it said no page
+names) and 23 beside a correction it had not reached. Session B's lesson held at five times B's rate: a
+correcting session's own new sentences carry errors, and a second agent reading them against the tree finds
+them. The polish: the three bare number devices (V9), eleven possessives on a link, one em-dash chain, one
+*actually*, *ledger* and *door* and *border* each kept to one sense, three one-clause glosses, and every caption
+at most two sentences; each sentence whose meaning could move is quoted in the ledger. Also corrected:
+`reference/threads` (the handler count, the dedicated server's boot thread, RCON's conditions) and
+`TEMPLATE.md`'s `Main` lane row; `ServerEntityGetter` and nine other unnamed classes queued in pass3.md §7. Left
+for D, F, I, M, N and O: the fourteen sentences on other parts' pages that repeat a claim corrected here, listed
+in the ledger's *For later sessions*. For P: V1's entry on `starting-a-server`, and this session's diff.

@@ -45,7 +45,7 @@ sequenceDiagram
 
     Note over MS,SGPL: MinecraftServer.runServer moves MinecraftServer.nextTickTimeNanos past the backlog if it warns
     MS->>PP: processQueuedPackets
-    PP->>MS: every serverbound packet Netty queued since the last drain
+    PP->>SGPL: each packet Netty queued since the last drain, handled on its listener
     rect rgba(0, 0, 0, 0.04)
         Note over PP,Wire: MinecraftServer.tickChildren, one pass
         MS->>SGPL: suspendFlushing, on every player's listener
@@ -64,12 +64,12 @@ sequenceDiagram
     Note over MS,SGPL: MinecraftServer.waitUntilNextTick runs all tasks, then BlockableEventLoop.managedBlock parks
 ```
 
-*One tick, and the two moments it reaches the socket; the shaded band is
-`MinecraftServer.tickChildren`, and everything outside it is the loop's own
-bookkeeping.*
+*One tick, and the two moments the tick's own packets reach the socket; the
+shaded band is `MinecraftServer.tickChildren`, the stretch in which a playing
+client's packets wait to be flushed.*
 
-Follow the two arrows into *the network*: they are the whole of what a client
-hears from this tick, and the second one is the one the chunks ride.
+Follow the two arrows into *the network*: they carry what the tick itself sends a
+playing client, and the second one is the one the chunks ride.
 
 ### The deadline moves before the work starts
 
@@ -79,10 +79,10 @@ hears from this tick, and the second one is the one the chunks ride.
 means the wall clock has already passed that field. The overload branch fires
 when it has passed by more than `MinecraftServer.OVERLOADED_THRESHOLD_NANOS`
 (one second) plus `MinecraftServer.OVERLOADED_TICKS_THRESHOLD` ticks' worth —
-two seconds at the default rate — **and** the last warning is at least
+two seconds in all at the default rate — **and** the last warning is at least
 `MinecraftServer.OVERLOADED_WARNING_INTERVAL_NANOS` (ten seconds) plus
 `MinecraftServer.OVERLOADED_TICKS_WARNING_INTERVAL` ticks' worth behind it,
-fifteen seconds at the default rate. Both effects — the log line, and
+fifteen seconds in all at the default rate. Both effects — the log line, and
 `MinecraftServer.nextTickTimeNanos` jumping over the missed ticks — are
 statements of that one branch. Lateness therefore has to *accumulate* before
 either happens: a server running every lap ten percent long says nothing while
@@ -106,7 +106,7 @@ check nothing to measure, and sends the loop straight back for another. Sprintin
 
 ### Every packet since last time, in one drain
 
-`MinecraftServer.processPacketsAndTick` opens the Tracy frame, then calls
+`MinecraftServer.processPacketsAndTick` opens the frame for the Tracy profiler, then calls
 `PacketProcessor.processQueuedPackets` — before `MinecraftServer.tickServer`,
 so the frame a profiler shows includes the packets. Each entry in that
 `ConcurrentLinkedQueue` is a `PacketProcessor.ListenerAndPacket`: a Netty
@@ -115,17 +115,20 @@ thread decoded the packet, the handler called
 aborted the Netty-side call by throwing `RunningOnDifferentThreadException`
 ([the connection](../networking/the-connection.md#one-packet-there-and-one-back)
 has the crossing, in both directions). This is where most
-player input enters the world, but not all of it: the handlers that never
-call `PacketUtils.ensureRunningOnSameThread` hop by the other door instead.
-**Fifty-two of `ServerGamePacketListenerImpl`'s sixty-one game handlers open
-on that call**, and the nine that do not divide into four kinds
+player input enters the world, but not all of it: the handlers that never call `PacketUtils.ensureRunningOnSameThread` reach the Server thread another way, when they reach it at all.
+**Fifty-one of `ServerGamePacketListenerImpl`'s sixty-one game handlers open
+on that call**, and the ten that do not divide into four kinds
 ([the handlers that never hop](../../reference/threads.md#the-handlers-that-never-hop)
 lists them). Two really touch nothing — the ping reply and an empty
-custom-payload hook. Three — `ServerGamePacketListenerImpl.handleChat` and both
-command packets — run their work through `MinecraftServer.execute`, and two more,
-filtered sign and book text, come back on a `CompletableFuture` completed
-against the server: so chat and commands arrive as *tasks*, drained by the event
-loop below, and not with the packets. The last two write listener state on Netty
+custom-payload hook. Four — `ServerGamePacketListenerImpl.handleChat`, both
+command packets and the command-suggestion request — run their work through
+`MinecraftServer.execute` (the suggestions by way of a
+`ServerCommandSuggestionsProvider`, which keeps only the latest request,
+answers at most one a tick, and leaves one it has no budget for to the
+player's own tick), and two more, filtered sign and book text, come
+back on a `CompletableFuture` completed against the server: so chat and
+commands arrive as *tasks*, drained by the event loop below, and not with the
+packets. The last two write listener state on Netty
 outright, because there is nothing to hand it to — a chat acknowledgement
 advances `LastSeenMessagesValidator` under a lock, and the acknowledgement that
 ends the play phase installs the configuration listener. And the chat family
@@ -141,9 +144,10 @@ a handler that throws does not end the tick: `ServerPacketListener` overrides
 `PacketListener.onPacketError` to log *"suppressing error"* and return, and
 `ServerCommonPacketListenerImpl.onPacketError` additionally files the
 throwable through `MinecraftServer.reportPacketHandlingException` into the
-`SuppressedExceptionCollector` that the next crash report dumps. The one
-escape is a `ReportedException` wrapping an *OutOfMemoryError*, which
-`PacketUtils.makeReportedException` rethrows.
+`SuppressedExceptionCollector` that the next crash report dumps. Two things
+escape: a `ReportedException` wrapping an *OutOfMemoryError*, which
+`PacketUtils.makeReportedException` builds for the processor to throw, and any
+*Error*, which the catch does not cover.
 
 ### An empty server stops ticking
 
@@ -153,8 +157,10 @@ times twenty — the *pause-when-empty-seconds* property, default 60 in
 `DedicatedServerProperties`, and zero on the base class, which disables the
 feature. The counter advances only while nobody is online *and* the loop is
 not sprinting; on the tick it first reaches the threshold the server logs,
-autosaves once, and from then on runs `MinecraftServer.tickConnection` alone
-and returns. `MinecraftServer.tickCount` does not advance, so a paused server
+autosaves once, and from then on runs `MinecraftServer.tickConnection` and
+returns before the rest of the tick. Only the dedicated server pauses this
+way, and its override still ticks the JSON-RPC `ManagementServer` after that
+return. `MinecraftServer.tickCount` does not advance, so a paused server
 is stopped in every sense that matters and still answers pings.
 
 The integrated server pauses on a different signal.
@@ -189,7 +195,7 @@ flush has none, and the debug row is three:
 | time sync | `MinecraftServer.forceGameTimeSynchronization` broadcasts a `ClientboundSetTimePacket` | not a multiple of 20 ticks |
 | levels | `MinecraftServer.updateEffectiveRespawnData`, then `ServerLevel.tick` for each dimension in `MinecraftServer.getAllLevels` order, overworld first | never |
 | connection | `MinecraftServer.tickConnection` — every `Connection`, and each playing client's own tick | never |
-| players | `PlayerList.tick` broadcasts a latency-only `ClientboundPlayerInfoUpdatePacket` | its own counter has not passed 600 — so every 601st call, not every 600th tick |
+| players | `PlayerList.tick` broadcasts a latency-only `ClientboundPlayerInfoUpdatePacket` | its own counter has not passed 600, so it fires on every 601st call |
 | debug, game tests, tickables | `ServerDebugSubscribers.tick`, `GameTestTicker.tick`, the dedicated server GUI's refresh through `MinecraftServer.addTickable` | game tests alone, when frozen |
 | send chunks | `PlayerChunkSender.sendNextChunks`, then `ServerCommonPacketListenerImpl.resumeFlushing`, per player | never |
 
@@ -198,9 +204,11 @@ false. `/tick freeze` sets `TickRateManager.isFrozen`, and
 `TickRateManager.tick` turns that into this tick's
 `TickRateManager.runGameElements` — unless `/tick step` left
 `TickRateManager.frozenTicksToRun` above zero, which it also decrements.
-Everything that consults `TickRateManager.runsNormally` stops: the functions
-and the clocks in the table above, and inside a level the weather, the block
-and fluid ticks, the other entities and the game tests.
+Everything that consults `TickRateManager.runsNormally` stops: the functions,
+the clocks and the game tests in the table above, and inside a level every step
+[the level tick](server-level-tick.md#the-whole-tick-and-its-three-gates) marks
+*running*, every entity but a player or what carries one, and a player's
+pushing of entities and the movement packets' rate check.
 
 A throwable out of `ServerLevel.tick` is caught, filled with the level's
 details as *"Exception ticking world"* and rethrown as a `ReportedException`
@@ -227,17 +235,20 @@ channel; and every twentieth tick recompute the packet-rate averages. For a
 playing client that listener is `ServerGamePacketListenerImpl`, whose
 `ServerGamePacketListenerImpl.tick` acknowledges pending block changes, runs
 `ServerPlayer.doTick` through `ServerGamePacketListenerImpl.tickPlayer`, and
-then, only if that returns without having kicked anyone, three more things
-in this order: the fifteen-second keep-alive
+then, only if that returns without having kicked anyone (or at once, with no
+player tick, while the server is paused), four more things in this order: the
+fifteen-second keep-alive
 (`ServerCommonPacketListenerImpl.LATENCY_CHECK_INTERVAL`), the three spam
-throttles, and the idle-timeout check.
+throttles, any command-suggestion request still waiting, and the idle-timeout
+check.
 
 So a movement packet is applied to the player before any level ticks, and the
 player *entity* takes its step after all of them. Entities see the player
 where the packets put her; the player then ticks against a world that has
-already moved. A throw out of `Connection.tick` does not end the tick either,
-but what it does end depends on the channel rather than on the fault ([the
-connection](../networking/the-connection.md#questions-players-ask)). On a
+already moved. An exception out of `Connection.tick` ends the tick only on singleplayer's
+in-memory channel; elsewhere what it ends depends on the channel rather than
+on the fault ([the
+connection](../networking/the-connection.md#a-throw-out-of-connectiontick-and-why-the-channel-decides-what-it-costs)). On a
 dedicated server `DedicatedServer.tickConnection` adds
 `DedicatedServer.handleConsoleInputs`, which is how a command typed at the
 console reaches the Server thread. RCON does not come this way:
@@ -263,20 +274,22 @@ batch, both clears the flag and calls `Connection.flushChannel` itself,
 carrying the player-list update, the debug subscribers, the game-test ticker,
 the server's own tickables and last the chunks.
 
-**Two** — writes to the socket per client per tick: one after the levels, one
-after the chunks.
+**Two writes** to the socket per client come out of
+`MinecraftServer.tickChildren`: one after the levels, one after the chunks. A
+reply sent while the packets are drained before it, or from a task after it,
+is flushed on its own.
 
-The pacing of that second write is [what the client is
-told](../networking/what-the-client-is-told.md#the-rate-the-client-asks-for)'s
-subject; which chunks are eligible to be in it is [tickets and
-loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s.
+The pacing of that second write belongs to [what the client is
+told](../networking/what-the-client-is-told.md#the-rate-the-client-asks-for);
+which chunks are eligible to be in it, to [tickets and
+loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible).
 `PlayerChunkSender`
 answers to the client's own acknowledgements, so a slow client throttles its
 own chunks without slowing the tick.
 
 ### The bookkeeping at the bottom
 
-`MinecraftServer.tickServer` closes with three ledgers. The cached
+`MinecraftServer.tickServer` closes with three pieces of bookkeeping. The cached
 `ServerStatus` is rebuilt when the old one is more than
 `MinecraftServer.STATUS_EXPIRE_TIME_NANOS` (five seconds) old, so a ping never
 costs a walk of the player list. `MinecraftServer.ticksUntilAutosave` counts
@@ -284,9 +297,10 @@ down to `MinecraftServer.autoSave`, and it counts *ticks* while promising
 *minutes*: it starts at `MinecraftServer.AUTOSAVE_INTERVAL` (6000) and is
 thereafter `MinecraftServer.computeNextAutosaveInterval`, the tick rate times
 300, floored at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS` (100 — the typo is
-Mojang's). So an autosave is five wall-clock minutes whatever `/tick rate` is
-set to; `MinecraftServer.onTickRateChanged` re-derives the figure whenever
-that changes, but only ever *shortens* the pending countdown, and a sprint
+Mojang's). So an autosave is five minutes of the server's scheduled time
+whatever `/tick rate` is set to, and at any set rate the floor never binds,
+since the rate cannot go below 1; `MinecraftServer.onTickRateChanged` re-derives the figure
+whenever that changes, but only ever *shortens* the pending countdown, and a sprint
 uses the measured rate from `MinecraftServer.getAverageTickTimeNanos` so that
 it saves at the speed it is really running. And the tick's own duration replaces its
 slot in the hundred-entry `MinecraftServer.tickTimesNanos` ring, updates
@@ -320,9 +334,10 @@ than once.
 ## The event loop, and what a tick's spare time buys
 
 `MinecraftServer` extends `ReentrantBlockableEventLoop` of `TickTask`: it is
-an `Executor` whose queue drains on the Server thread, and every other thread
-that needs to touch server state submits to it and waits. This section is
-where the rest of the book sends you for that machinery.
+an `Executor` whose queue drains on the Server thread, and submitting a task to
+it is how most other threads touch server state — a packet takes the
+processor's queue instead, and a console line the console's list. This section
+is where the rest of the book sends you for that machinery.
 
 ```mermaid
 flowchart TD
@@ -333,43 +348,44 @@ flowchart TD
     S -- "older than three ticks" --> RUN
     S -- "otherwise" --> H{"MinecraftServer.haveTime"}
     H -- "time left" --> RUN
-    H -- "out of time, left queued" --> OFF["nothing ran, and the levels are offered the turn"]
+    H -- "out of time, left queued" --> OFF["nothing ran from the server's own queue"]
     E -- "nothing queued" --> OFF
 ```
 
 *The one question the head of the queue is asked, and the three independent
 reasons the answer is yes; the two edges into the bottom box are the ones the
-next figure but one picks up.*
+next figure picks up.*
 
 Read the bottom box twice. An empty queue and a queue whose head may not run
 yet are the same answer to `MinecraftServer.pollTaskInternal`, and that answer
-is the only thing a level's chunk source is waiting for.
+is the first of the two things a level's chunk source waits for; the guard in
+the next figure is the second.
 
 ### Every runnable becomes a `TickTask`
 
 `MinecraftServer.wrapRunnable` stamps the current `MinecraftServer.tickCount`
-onto whatever is handed to the server, from whichever thread. That stamp is
+onto every task queued for the server, from whichever thread. That stamp is
 the whole of a task's identity to the scheduler: `MinecraftServer.shouldRun`
 lets a task run when there is time left, *or* when it is older than
 `MinecraftServer.MAX_TICK_LATENCY` (three) ticks — so a saturated server still
 drains its queue, late but in order and without unbounded growth. Submitting
-from the Server thread does not mean running inline:
-`ReentrantBlockableEventLoop.scheduleExecutables` reports true while another
-task is running, so re-entrant work queues instead of nesting. Both of those
-doors answer differently once the server has stopped, which is [how a server
-dies](how-a-server-dies.md#the-front-door-closes-the-guests-do-not-leave)'s
-first move.
+from the Server thread runs the work inline unless a task is already running:
+`ReentrantBlockableEventLoop.scheduleExecutables` reports true then, so
+re-entrant work queues instead of nesting. `MinecraftServer.scheduleExecutables`
+and `MinecraftServer.executeIfPossible`, the two doors into the queue, both
+answer differently once the server has stopped, which is the first move of [how a server
+dies](how-a-server-dies.md#the-front-door-closes-the-guests-do-not-leave).
 
-A task that throws is not the loop's problem either.
+A task that throws an exception is not the loop's problem either.
 `BlockableEventLoop.doRunTask` logs the failure under the fatal marker and
 returns, rethrowing only what `BlockableEventLoop.isNonRecoverable` calls
-unrecoverable — an *OutOfMemoryError* or a `StackOverflowError`, unwrapped
-through any `ReportedException` around it.
+unrecoverable — a `ReportedException` wrapping an *OutOfMemoryError* or a
+`StackOverflowError` — while an *Error* thrown bare passes its catch untouched.
 
-A worker thread that dies surfaces here too, as a throw out of
-`BlockableEventLoop.pollTask` rather than out of anything the tick called:
-that is [how a server dies](how-a-server-dies.md#the-crash-that-saves)'s
-relay, and what it becomes — the crash report, the shutdown the loop's
+On a dedicated server a worker thread that dies surfaces here too, as a throw
+out of `BlockableEventLoop.pollTask` rather than out of anything the tick
+called: that is the relay [how a server
+dies](how-a-server-dies.md#the-crash-that-saves) describes, and what it becomes — the crash report, the shutdown the loop's
 *finally* performs, and the watchdog that reads
 `MinecraftServer.getNextTickTime` from outside the loop and halts the JVM
 without saving — is that page's whole subject.
@@ -389,11 +405,12 @@ It stops applying the moment the thread blocks. Inside
 `BlockableEventLoop.managedBlock` the blocking depth is non-zero, so
 `BlockableEventLoop.shouldRunAllTasks` is true and
 `BlockableEventLoop.pollTask` never consults `MinecraftServer.shouldRun`:
-every queued task runs, budget and age irrelevant. That is what lets a level
-block on a chunk mid-tick without deadlocking — the wait *is* the drain, and
-the thread doing the waiting is the thread that completes the thing it waits
-for. `MinecraftServer.waitUntilNextTick` is the same mechanism used
-deliberately: `BlockableEventLoop.runAllTasks`, then
+every queued task runs, budget and age irrelevant. A level that blocks on a
+chunk mid-tick does the same on its own `ServerChunkCache.MainThreadExecutor`,
+whose tasks always run, and does not deadlock for the same reason — the wait
+*is* the drain, and the thread doing the waiting is the thread that completes
+the thing it waits for. `MinecraftServer.waitUntilNextTick` is the mechanism
+used deliberately: `BlockableEventLoop.runAllTasks`, then
 `BlockableEventLoop.managedBlock` on *no time left*.
 `MinecraftServer.waitForTasks` parks with `LockSupport` until
 `MinecraftServer.nextTickTimeNanos` — or 100 µs at a time when the loop is not
@@ -403,16 +420,16 @@ pointedly does not: a packet landing in the slack waits for the next drain.
 
 ### What the budget actually gates
 
-**Three** — the things `MinecraftServer.haveTime` decides, once it has
-travelled from `MinecraftServer.tickServer` through
+**Three things** are all `MinecraftServer.haveTime` decides inside the tick,
+once it has travelled from `MinecraftServer.tickServer` through
 `MinecraftServer.tickChildren`, `ServerLevel.tick`, `ServerChunkCache.tick`
 and `ChunkMap.tick`.
 
 They are `ChunkMap.processUnloads` (the unload queue, which drains anyway
 while it holds more than two thousand entries), `ChunkMap.saveChunksEagerly`
 (at most twenty chunks a tick, and only under 128 outstanding writes) and
-`SectionStorage.tick` by way of `PoiManager.tick` (the dirty village-point
-sections being written out). Loading a chunk, generating one, propagating
+`SectionStorage.tick` by way of `PoiManager.tick` (the village-point data of
+dirty chunks being written out). Loading a chunk, generating one, propagating
 tickets and ticking chunks take no supplier and are not gated at all. A late
 server does not load fewer chunks, then; it postpones unloading and saving
 them, and its memory grows while it is behind.
@@ -421,9 +438,9 @@ them, and its memory grows while it is behind.
 
 After the tick, `MinecraftServer.waitUntilNextTick` spends the remaining
 milliseconds. `MinecraftServer.pollTaskInternal` polls the server's own queue
-first and, only if that queue had nothing to run, offers every level's
-`ServerChunkCache.MainThreadExecutor.pollTask` a turn — when the loop is
-sprinting, or blocked, or still in time. The levels get the leftovers of the
+first and, only if that queue had nothing to run, offers the levels'
+`ServerChunkCache.MainThreadExecutor.pollTask` a turn, one after another until
+one runs something — when the loop is sprinting, or blocked, or still in time. The levels get the leftovers of the
 leftovers.
 
 ```mermaid
@@ -449,12 +466,12 @@ Sprinting inverts the arithmetic. `MinecraftServer.processPacketsAndTick`
 hands `MinecraftServer.tickServer` a constant *false* instead of
 `MinecraftServer.haveTime`, so unloading, eager saving and section flushing
 stop for the length of the sprint — and yet `ServerTickRateManager.isSprinting`
-is the *first* term of the condition guarding the chunk-source poll, so every
-level's queue is drained on every poll regardless. A sprint therefore does
+is the *first* term of the condition guarding the chunk-source poll, so the
+levels are offered the turn on every poll regardless. A sprint therefore does
 more chunk work per wall-clock second than an ordinary server, not less,
-while doing almost none of the housekeeping that would let the results reach
-the disk — the exception being the unload queue, which the two-thousand rider
-drains whether there is time or not.
+while doing little of the housekeeping that would let the results reach the
+disk — the exceptions being the unload queue, which the two-thousand rider
+drains whether there is time or not, and the autosave, which keeps counting.
 
 ## Questions players ask
 
@@ -470,15 +487,15 @@ Clients are told: `ServerTickRateManager.setTickRate` and
 `ServerTickRateManager.setFrozen` broadcast a `ClientboundTickingStatePacket`,
 `ServerTickRateManager.stepGameIfPaused` a `ClientboundTickingStepPacket`, and
 `ServerTickRateManager.updateJoiningPlayer` sends both to anyone arriving. A
-sprint is not announced as such — a client sees the unfreeze before it and the
-refreeze after.
+sprint is not announced as such — a client is sent an unfrozen state as it starts
+and, if the game was frozen, the refreeze after.
 
-**Why is an empty Nether nearly free?** Because a dimension that nothing holds
-a simulation ticket in stops ticking entities and block entities after 300
-ticks of `ServerLevel.emptyTime`, while still running its chunk-source work.
-That is [the level
-tick](server-level-tick.md#an-empty-dimension-skips-exactly-three-things)'s
-rule, and [tickets and
+**Why is an empty Nether nearly free?** Because a dimension that no player's
+simulation ticket, forced chunk, portal or ender pearl keeps active stops
+ticking entities, block entities and any dragon fight after 300 ticks of
+`ServerLevel.emptyTime`, while still running its chunk-source work. That rule
+belongs to [the level
+tick](server-level-tick.md#an-empty-dimension-skips-exactly-three-things), and [tickets and
 loading](../world/tickets-and-loading.md#when-a-ticket-dies) owns which ticket
 resets it.
 

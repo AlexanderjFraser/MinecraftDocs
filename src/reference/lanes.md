@@ -300,7 +300,7 @@ read it off this table.
 | `Game` | *the game's own code above Blaze3D, not a class* |
 | `Hook` | *the Server Shutdown Thread JVM hook, not a class* |
 | `JVM` | *the process itself, not a class* |
-| `Main` | *the JVM main thread, running whichever program's Main the diagram is about — the server's or the client's, so not one class* |
+| `Main` | *the thread running whichever program's Main the diagram is about — the client's on the JVM main thread, the server's on the thread the jar's bundler starts — so not one class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Sess` | *the Mojang session service both machines call over HTTPS, not a class* |
 | `Wire` | *the network between the two programs, not a class* |
