@@ -22,20 +22,20 @@ unlocked, and any authority whatever over the outcome.
 | class | what it decides | thread |
 |---|---|---|
 | `Recipe` | ten methods and no result getter — a result leaves through `Recipe.assemble`, `Recipe.display`, or a stonecutter's `StonecutterRecipe.resultDisplay` | data, and a `Recipe` object never leaves the server |
-| `RecipeManager` | the loaded set, four indexes derived from it, and the server's `RecipeAccess` | the background executor for its constructor, server main for everything after |
-| `RecipeMap` | the immutable store, holding exactly two indexes: `RecipeMap.byType` and `RecipeMap.byKey` | built off-thread, swapped in and read on server main |
+| `RecipeManager` | the loaded set, four indexes derived from it, and the server's `RecipeAccess` | the worker pool for its constructor; the Server thread after, the first finalize on whichever thread builds the server |
+| `RecipeMap` | the immutable store, holding exactly two indexes: `RecipeMap.byType` and `RecipeMap.byKey` | built on the worker pool, swapped in and read on the Server thread |
 | `Ingredient` | whether one stack satisfies one slot — a `HolderSet` of items wearing a predicate face | both sides |
-| `CraftingInput` | the trimmed grid a crafting recipe is matched against, and the presence index a shapeless one is matched with | server main |
-| `ResultSlot` | the order of the endgame: award first, then look the recipe up again, then decrement | server main, mirrored on the client's own menu |
-| `ServerRecipeBook` | which recipes this player has unlocked, and which of them still glow | server main |
-| `ClientRecipeContainer` | everything the client knows about recipes *as recipes*: nine `RecipePropertySet`s and the stonecutter's input set | client, rebuilt wholesale from each packet |
+| `CraftingInput` | the trimmed grid a crafting recipe is matched against, and the presence index a shapeless one is matched with | Server, and a result slot's `ResultSlot.onTake` builds one on the Render thread too |
+| `ResultSlot` | the order of the endgame: award first, then look the recipe up again, then decrement | Server, mirrored on the Render thread's menu |
+| `ServerRecipeBook` | which recipes this player has unlocked, and which of them still glow | Server |
+| `ClientRecipeContainer` | everything the client knows about recipes *as recipes*: nine `RecipePropertySet`s and the stonecutter's input set | Render, rebuilt wholesale from each packet |
 
 ## Loading: one scan, one swap, and four indexes built later
 
 `RecipeManager` is not a reload listener. `RegistryDataLoader` reads the recipe
 files into a reloadable registry, `Registries.RECIPE`, and a fresh
 `RecipeManager` builds its `RecipeMap` from that registry in its constructor,
-both on a worker; on a reload the server thread then swaps the new manager in.
+both on the worker pool; on a reload the Server thread then swaps the new manager in.
 That is the two-phase shape of
 [the resource system](../foundations/resource-system.md#prepare-every-listener-at-once) without a listener — and
 the second phase does something unusual.
@@ -53,8 +53,7 @@ flowchart TD
     P3 --> P4["RecipeManager.recipeToDisplay, key to displays"]:::server
 ```
 
-*Figure: the reload's two phases — the worker's two boxes above, the server
-main thread's below — and the gap between them. The dotted edge is the one
+*The reload's two phases — the worker pool's two boxes above, the Server thread's below — and the gap between them. The dotted edge is the one
 the section is about: the swap is not what builds the four
 indexes, and between those two boxes they hold nothing.*
 
@@ -62,10 +61,9 @@ Each index applies its own feature-flag filter as it is built: an ingredient
 is dropped from a `RecipePropertySet` unless every item in it is enabled, the
 stonecutter's set keeps an entry only if input and result display are both
 enabled, and a display is kept only if its result and its crafting station
-are. Three tests, three different senses of *enabled*, and none of them the
-recipe-book sense the rest of this page uses: these are the level's
-`FeatureFlagSet`, the same filter `ItemStack.isItemEnabled` applies to an
-assembled stack two sections below.
+are. Three tests of three different things, all against one `FeatureFlagSet`, the
+level's, and the same filter `ItemStack.isItemEnabled` applies to an assembled
+stack two sections below.
 
 Three things in that picture are worth saying out loud.
 
@@ -78,15 +76,13 @@ across restarts, and the same order fixes the numbering of every display id
 below.
 
 **The indexes are not built with the map.**
-`RecipeManager.finalizeRecipeLoading` has exactly two call sites, both of them
-in `MinecraftServer`, and neither is on the worker. Between the
+`RecipeManager.finalizeRecipeLoading` has exactly two call sites, both of them in `MinecraftServer`, and neither is on the worker pool. Between the
 swap and that call the four derived indexes are **empty** rather than stale: a
 reload builds a fresh `RecipeManager`, and its constructor builds the
 `RecipeMap` but leaves all four at their empty values, so the recipe book, the
 property sets and the stonecutter index describe nothing at all rather than
 describing the pack you just replaced. Nothing can catch the game in that
-state — the swap and the call are five statements apart in one lambda on the
-server thread — which is the only reason the gap is allowed to exist.
+state — the swap and the call are five statements apart in one lambda on the Server thread — which is the only reason the gap is allowed to exist.
 
 The last two indexes are a pair: `RecipeManager.allDisplays` is the flat
 list, and `RecipeManager.recipeToDisplay` maps a recipe key to the entries it
@@ -104,44 +100,42 @@ returns one display per legal material count — up to
 eight consecutive ids.
 
 The same walk decides what a recipe *is*, and it forgives more than you would
-expect. A non-special recipe whose `PlacementInfo.isImpossibleToPlace` — the
-usual cause being an ingredient tag that resolved to nothing, which
+expect. A non-special recipe whose `PlacementInfo.isImpossibleToPlace` — the cause being an ingredient tag that
+resolved to nothing, which
 `Ingredient.CODEC` cannot reject because only a *literal* empty list is illegal
-— is logged as unplaceable and then **kept**. It stays in `RecipeMap`, it still
-matches a manual craft, and it still gets a `RecipeDisplayEntry`, one whose
-ingredient list is present but empty; and `RecipeDisplayEntry.canCraft` on an
-empty ingredient list is trivially *true*, so the book paints it as craftable
-out of thin air. Only gate six of the auto-fill, below, stops the click.
+— is logged as unplaceable and then **kept**. It stays in `RecipeMap`, where its empty ingredient matches no stack and so no
+manual craft, and it still gets a `RecipeDisplayEntry`, one whose ingredient list
+is present but empty; and `RecipeDisplayEntry.canCraft` on an empty ingredient
+list is trivially *true*, so the book paints as craftable a recipe nobody can make. Only gate six of the auto-fill, below, stops the click.
 
 ### It is not only shaped and shapeless
 
 `RecipeSerializers` registers twenty-two serializers and fourteen of them are
-crafting-table recipes. **Nine** of those fourteen are `CustomRecipe`s — Java,
-not data. `CustomRecipe` hard-codes `Recipe.isSpecial` true, `Recipe.group`
+crafting-table recipes. **Nine** of those fourteen are `CustomRecipe`s — matching and assembly written in
+Java, though eight of the nine read their ingredients and base result from JSON. `CustomRecipe` hard-codes `Recipe.isSpecial` true, `Recipe.group`
 empty and `PlacementInfo.NOT_PLACEABLE`, and not one of the nine overrides
 `Recipe.display`, so a special recipe contributes nothing to the display list in
 the first place. Eight of the nine register under an id beginning *crafting_special_*, which is
 where the name comes from; the ninth, `DecoratedPotRecipe`, registers as
-*crafting_decorated_pot* and is a `CustomRecipe` all the same. The nine are
-the recipes whose output cannot be written down: `FireworkStarRecipe`,
+*crafting_decorated_pot* and is a `CustomRecipe` all the same. The nine are the crafting recipes the book never shows: `FireworkStarRecipe`,
 `FireworkStarFadeRecipe`, `FireworkRocketRecipe`, `BookCloningRecipe`,
 `BannerDuplicateRecipe`, `ShieldDecorationRecipe`, `MapExtendingRecipe`,
 `DecoratedPotRecipe` and `RepairItemRecipe`, which is the one this part comes
-back for: it fuses two damaged tools and carries every curse from both inputs onto
-the result ([enchanting](enchanting.md#what-each-path-is-allowed-to-add)). Of
+back for: it fuses two items of one kind that have durability and carries every curse from
+both inputs onto the result ([enchanting](enchanting.md)). Of
 the five crafting-table serializers that remain, `ShapedRecipe` and
 `ShapelessRecipe` are the pair everyone knows, and `DyeRecipe`, `ImbueRecipe` and `TransmuteRecipe` are genuine
 `NormalCraftingRecipe`s — data-driven, with hand-written matching, hand-built
 placement info, and the exotic `SlotDisplay` variants to draw themselves with
-(`SlotDisplay.OnlyWithComponent` and `SlotDisplay.DyedSlotDemo` for the first,
-`SlotDisplay.WithAnyPotion` for the second). So *special* and *neither shaped nor
+(`SlotDisplay.OnlyWithComponent` and `SlotDisplay.DyedSlotDemo` for the dye
+recipe, `SlotDisplay.WithAnyPotion` for the imbue). So *special* and *neither shaped nor
 shapeless* are not the same set, and the difference matters, because it is
 *special* that the book cannot show.
 
 ## Eight planks: the trace
 
-Putting the last plank into a crafting grid is two traces a tick or more
-apart, and only the second one reaches the recipe book.
+Putting the last plank into a crafting grid is two traces, the second on a later
+click, and only the second one reaches the recipe book.
 
 ```mermaid
 sequenceDiagram
@@ -162,14 +156,14 @@ sequenceDiagram
     end
 ```
 
-*Figure: the result slot is filled and announced in the tick the grid changed,
+*The result slot is filled and announced in the tick the grid changed,
 and nothing has been taken yet. The packet at the foot is written by hand
 rather than left to the menu's own diffing pass.*
 
 Nothing above happens on the client: the client's `CraftingMenu` is handed
 `ContainerLevelAccess.NULL` and matches nothing. What arrives is the last
-arrow. The second half of the trace is a later tick, and only then does a
-recipe reach the book.
+arrow. The second half of the trace is a later click, and only then does a recipe reach
+the book.
 
 ```mermaid
 sequenceDiagram
@@ -181,18 +175,18 @@ sequenceDiagram
     participant Wire as the network
 
     rect rgba(0, 0, 0, 0.04)
-        Note over ResultS,Wire: some later tick, the player clicks the result
+        Note over ResultS,Wire: a later click, the player takes the result
         ResultS->>ResultS: checkTakeAchievements runs before a cell is emptied
         ResultS->>ResultC: awardUsedRecipes, which then nulls the stored holder
         ResultC->>SRB: addRecipes, through ServerPlayer.awardRecipes
         SRB->>Wire: ClientboundRecipeBookAddPacket
         ResultS->>RM: getRecipeFor again, holder or no holder
-        ResultS->>TCC: Container.removeItem, one cell at a time, then the remainders
+        ResultS->>TCC: Container.removeItem, one cell at a time, each followed by its remainder
         Note over ResultS,TCC: every removal re-enters CraftingMenu.slotsChanged
     end
 ```
 
-*Figure: taking the stack is where the recipe reaches the book, and where the
+*Taking the stack is where the recipe reaches the book, and where the
 grid is emptied a cell at a time — each removal starting the first figure
 again.*
 
@@ -204,13 +198,13 @@ crafting overrides of it end in the same static,
 `InventoryMenu.slotsChanged` calls the static directly, gated only on having a
 `ServerLevel`. The two-argument `CraftingMenu` constructor — the client's — is
 handed `ContainerLevelAccess.NULL`, which runs nothing at all ([containers and
-menus](containers-and-menus.md#the-chest-you-see-is-not-the-chest)), so the
+menus](containers-and-menus.md#three-asymmetries-between-the-two-copies)), so the
 client never matches anything.
 
 **Trimming.** Every recipe kind is matched against a `RecipeInput`, and there
 are exactly four implementations of it in the game: `CraftingInput` for a
-grid, `SingleRecipeInput` for the one-slot stations — the four
-`AbstractCookingRecipe` kinds and the stonecutter's `SingleItemRecipe` —
+grid, `SingleRecipeInput` for the one-slot stations — the four `AbstractCookingRecipe`
+kinds and the stonecutter's, all of them `SingleItemRecipe`s —
 `SmithingRecipeInput` for the smithing table's three, and `BrewingInput` for a
 brewing stand's bottle and reagent.
 `CraftingContainer.asPositionedCraftInput` produces a
@@ -246,8 +240,9 @@ before scanning; the auto-fill supplies one through
 the first thing re-matched — and the base
 `AbstractCraftingMenu.finishPlacingRecipe` is a no-op, so the player's own
 2×2 grid never gets one. `RecipeManager.CachedCheck` remembers the last
-successful key and re-hints with it — `AbstractFurnaceBlockEntity` holds one per
-block entity and `CampfireBlock` hands one to `CampfireBlockEntity.cookTick`. And
+successful key and re-hints with it — `AbstractFurnaceBlockEntity` holds one per block entity,
+`BrewingStandBlockEntity` another, and `CampfireBlock` hands one to
+`CampfireBlockEntity.cookTick`. And
 `RecipeCache`, ten entries held statically by `CrafterBlock` and keyed on the
 grid contents, caches **misses** as well as hits, and invalidates on object
 identity: it keeps a weak reference to the manager and wipes itself the moment
@@ -257,9 +252,8 @@ the level hands back a different one, which works because a reload builds a new
 **The gate, and then the result.** `RecipeCraftingHolder.setRecipeUsed` returns
 false — leaving the result slot empty — when `GameRules.LIMITED_CRAFTING` is on,
 the recipe is not special, and `ServerRecipeBook.contains` says no. Limited
-crafting is enforced *here*, in the result slot, not in matching. Past it,
-`Recipe.assemble` produces the stack — for everything but the hand-written
-recipes it ignores its input entirely and materialises a stored
+crafting is enforced *here*, in the result slot, not in matching. Past it, `Recipe.assemble` produces the stack — for every crafting recipe but the
+hand-written ones it ignores its input entirely and materialises a stored
 `ItemStackTemplate` ([items and
 stacks](items-and-stacks.md#an-item-a-count-some-components--said-three-ways)) —
 `ItemStack.isItemEnabled` filters that against the level's feature flags, and
@@ -304,8 +298,9 @@ The client's entire recipe API is two methods. `RecipeAccess` declares
 `RecipeAccess.propertySet` and `RecipeAccess.stonecutterRecipes` and nothing
 else, and exactly two classes implement it: `RecipeManager` on the server and
 `ClientRecipeContainer` on the client, the latter holding a map and a set and
-having no other content at all. Neither method returns a `Recipe`. That
-interface is the page's claim in two lines of Java.
+having no other content at all. Neither method's type is a `Recipe`, but the type is not what keeps recipes off
+the wire: on the server the stonecutter set carries a recipe in every entry, and
+the codec below is what drops it.
 
 `ClientboundUpdateRecipesPacket` goes out twice: once from `PlayerList` as a
 player joins, once to everybody from `PlayerList.reloadResources`. It carries two
@@ -321,7 +316,7 @@ place.
 Those sets exist so that menus can answer *may this item go in this slot* — and
 route a shift-click on the strength of it — without knowing a single recipe.
 The recipe classes behind those stations are as thin as the sets suggest:
-`SingleItemRecipe` is the shape `StonecutterRecipe` extends, and `SmithingTransformRecipe`
+`SingleItemRecipe` is the shape `StonecutterRecipe` and the cooking recipes extend, and `SmithingTransformRecipe`
 and `SmithingTrimRecipe` are the smithing table's two — one that replaces the
 item, one that writes an `ArmorTrim` component onto it.
 `SmithingMenu` builds its three input slots out of the three smithing sets,
@@ -329,7 +324,8 @@ item, one that writes an `ArmorTrim` component onto it.
 `RecipePropertySet.BLAST_FURNACE_INPUT` and `RecipePropertySet.SMOKER_INPUT`
 its type was constructed with — the fourth set,
 `RecipePropertySet.CAMPFIRE_INPUT`, reaches no menu at all and is read by
-`CampfireBlock` on a right-click — and
+`CampfireBlock` on a right-click — `BrewingStandMenu` reads the two brewing sets,
+and
 `StonecutterMenu` asks the stonecutter set the same question through
 `SelectableRecipe.SingleInputSet.acceptsInput`.
 
@@ -337,14 +333,14 @@ its type was constructed with — the fourth set,
 
 The book gets something far richer and still anonymous: a `RecipeDisplayEntry`
 per display, carrying the display id, the `RecipeDisplay` itself, a group index,
-a `RecipeBookCategory`, and an optional ingredient list used for one thing only —
-deciding whether the entry lights up. `RecipeDisplay` and `SlotDisplay` are
+a `RecipeBookCategory`, and an optional ingredient list used for one thing only — deciding whether the entry
+shows as craftable. `RecipeDisplay` and `SlotDisplay` are
 dispatched registries of their own (`Registries.RECIPE_DISPLAY`,
 `Registries.SLOT_DISPLAY`, and `Registries.RECIPE_BOOK_CATEGORY` for the
 categories `RecipeBookCategories` fills), and *their* stream codecs are very much
 used: five `RecipeDisplay` types, one per station shape, and eleven registered
-`SlotDisplay` variants, which `SlotDisplay.resolve` turns into concrete stacks
-against a `SlotDisplayContext`. The chest's single ingredient reaches the client
+`SlotDisplay` variants, which `SlotDisplay.resolve` turns into concrete stacks against a `ContextMap` that
+`SlotDisplayContext` builds. The chest's single ingredient reaches the client
 as a `SlotDisplay.TagSlotDisplay` over *minecraft:planks*
 ([tags](../foundations/tags.md#a-tag-is-a-key-and-a-file)) — everything needed to draw the recipe, and
 nothing at all about its name.
@@ -385,7 +381,7 @@ grindstone were never recipes at all ([enchanting](enchanting.md#the-five-paths-
 Craftability is decided on the client and then decided again on the server.
 `RecipeCollection.selectRecipes` asks `RecipeDisplayEntry.canCraft` against a
 `StackedItemContents` that `RecipeBookComponent` fills from the player's
-inventory, purely to choose which entries glow. A lying client gains nothing by
+inventory, purely to choose which entries show as craftable. A lying client gains nothing by
 it, because the placement re-checks and `CraftingMenu.slotChangedCraftingGrid`
 runs a full `Recipe.matches` afterwards regardless.
 
@@ -413,11 +409,10 @@ which on a `CraftingMenu` raises a private flag that makes
 every single write — and calls
 `ServerPlaceRecipe.placeRecipe`, which **counts before it clears**: a dry run of
 emptying the grid back into the inventory, a tally of what the player has, a
-calculation of how many crafts that allows, clamped to the smallest stack size
-among the items chosen, and only then the real clear and the layout through
+calculation of how many crafts that allows, clamped to the smallest maximum stack size among the items chosen, and only then the real clear and the layout through
 `PlaceRecipeHelper.placeRecipe`. Whether it may drop items in order to clear the
-grid is simply `Player.isCreative`, so for a survival player with a full
-inventory the whole call returns `RecipeBookMenu.PostPlaceAction.NOTHING` — no
+grid is simply `Player.isCreative`, so for a survival player whose inventory cannot take back what the grid holds the
+whole call returns `RecipeBookMenu.PostPlaceAction.NOTHING` — no
 fill *and* no ghost. When the ingredients merely are not there it returns
 `RecipeBookMenu.PostPlaceAction.PLACE_GHOST_RECIPE` instead, and the server sends
 `ClientboundPlaceGhostRecipePacket` carrying the `RecipeDisplay` itself.
@@ -436,16 +431,15 @@ complaint, and the difference between the two is one method name.
 
 ## Where to look
 
-Read `RecipeAccess` first. It is ten lines, it is the whole of what a recipe
+Read `RecipeAccess` first. It declares two methods, it is the whole of what a recipe
 system has to offer a client, and everything else on this page is an argument
 about why it is that short.
 
 Then the server's side in loading order: `ResourceManagerRegistryLoadTask` for
 the scan, `MinecraftServer.reloadResources` for the swap and `RecipeManager`
-for the four indexes, with `RecipeMap` beneath it for the two the store
-actually keeps. `Recipe` is the interface every kind implements, and
+for the four indexes, with `RecipeMap` beneath it for the two the store keeps. `Recipe` is the interface every kind implements, and
 `ShapedRecipePattern` is the one piece of matching worth reading line by line,
-for the mirrored pass. `CustomRecipe` is the nine that are Java.
+for the mirrored pass. `CustomRecipe` is the nine the book never shows.
 
 For the trace, `CraftingMenu.slotChangedCraftingGrid` is the whole of what
 happens when a plank lands, and `ResultSlot.onTake` is the whole of what

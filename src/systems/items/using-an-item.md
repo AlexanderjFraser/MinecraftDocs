@@ -7,24 +7,24 @@ eaten it. You hold the same button on a bow and nothing happens at all until
 you let go. These are the same machine: `Item.use` starts both,
 `LivingEntity.useItemRemaining` counts down on the client *and* the server
 for both, `ItemStack.onUseTick` runs every tick on both sides, and
-`LivingEntity.stopUsingItem` ends both. What differs is whether reaching zero
-is allowed to end anything, and only one of the two ever gets there: a meal is
+`LivingEntity.stopUsingItem` ends both. What differs is whether the countdown ever reaches zero, and in play only the
+meal's does: a meal is
 thirty-two ticks long and a bow is set to 72000, an hour. **And the client's
 countdown does not stop at zero on either.** The meal ends because one byte
 arrives from the server — a `ClientboundEntityEventPacket` carrying
 `EntityEvent.USE_ITEM_COMPLETE`, which is the byte 9, the number this page
-uses for it from here on. The bow's hour never expires, so the shot is fired
-by a `ServerboundPlayerActionPacket` instead: the same packet, carrying the
+uses for it from here on. The bow's shot lives only in its release, so it is fired by a
+`ServerboundPlayerActionPacket` instead: the same packet, carrying the
 same action, that the meal would read as *the player changed their mind*.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
-| `Minecraft` | which key edge starts a use, and which one ends it | client main |
-| `MultiPlayerGameMode` | the client's own copy of the use, and the packet that reports it | client main |
-| `ServerGamePacketListenerImpl` | which handler each packet reaches, and whether the rotation is snapped first | server main |
-| `LivingEntity` | the countdown, the synched flags, and both endings | both main |
+| `Minecraft` | which key edge starts a use, and which one ends it | Render |
+| `MultiPlayerGameMode` | the client's own copy of the use, and the packet that reports it | Render |
+| `ServerGamePacketListenerImpl` | which handler each packet reaches, and whether the rotation is snapped first | Server |
+| `LivingEntity` | the countdown, the synched flags, and both endings | both |
 | `ItemStack` | the dispatch into the item, and the after-use side effects | both |
 | `Item` | `Item.use`, `Item.getUseDuration`, `Item.releaseUsing`, `Item.useOnRelease` | both |
 | `Consumable` | everything the meal does, on both sides | both |
@@ -46,10 +46,10 @@ stacks](items-and-stacks.md#four-fields-and-only-one-of-them-is-really-data).
 | what `ItemStack.onUseTick` does | particles and the chew sound, on both sides | nothing — `BowItem` does not override `Item.onUseTick` |
 | how it ends | the count reaches zero on the server | the use key comes up on the client |
 | the packet that ends it | `ClientboundEntityEventPacket`, downward | `ServerboundPlayerActionPacket`, upward |
-| is the ending acknowledged | yes — that *is* the acknowledgement | **no**, nothing answers a release |
+| is the ending answered | yes — that *is* the answer | **no**, nothing answers a release |
 | `Item.releaseUsing` | not overridden, returns false, so letting go simply abandons the meal | `BowItem.releaseUsing` is where the whole shot lives |
 | `ItemStack.useOnRelease` | false | **also false** |
-| what the client predicts | the entire meal, twice over | the animation, and nothing else |
+| what the client predicts | the start and every tick of the meal, then the ending replayed when event 9 arrives | the animation, and the release on its own copy, which shoots nothing |
 
 ### `ItemStack.useOnRelease` is not the row that decides it
 
@@ -71,8 +71,8 @@ with `Consumable.consumeTicks` derived from it; the `ItemUseAnimation` the
 arm plays; the sound; the particles; and a list of `ConsumeEffect`s to apply
 at the end — `ApplyStatusEffectsConsumeEffect`,
 `RemoveStatusEffectsConsumeEffect`, `ClearAllStatusEffectsConsumeEffect`,
-`TeleportRandomlyConsumeEffect` and `PlaySoundConsumeEffect`, registered
-through `Registries.CONSUME_EFFECT_TYPE`. What it does *not* hold is what the
+`TeleportRandomlyConsumeEffect` and `PlaySoundConsumeEffect`, whose types are registered in
+`BuiltInRegistries.CONSUME_EFFECT_TYPE`. What it does *not* hold is what the
 food is worth, which is a second component and Part VIII's ([hunger and
 experience](../player/hunger-and-experience.md#eating-is-a-component-walk)).
 
@@ -82,10 +82,9 @@ Duration is one base method and eight overrides. `Item.getUseDuration`'s base
 body reads `Consumable.consumeTicks` off the stack if there is a `Consumable`
 on it, and otherwise answers the hour for anything carrying
 `DataComponents.BLOCKS_ATTACKS` or `DataComponents.KINETIC_WEAPON` — so a
-shield and a spear get their long draw from the base method and no class of
+shield and a spear get their long draw from the base method and no override of
 their own. `BowItem`, `CrossbowItem` and `TridentItem` override it to return
-the same 72000 by hand, which `Item.APPROXIMATELY_INFINITE_USE_DURATION`
-names and no override actually reads. At the other end `EnderEyeItem` returns
+the same 72000, the number `Item.APPROXIMATELY_INFINITE_USE_DURATION` names. At the other end `EnderEyeItem` returns
 **zero**, which makes it the one item in the game whose use is instant by
 declaration rather than by having no `Consumable` at all. The remaining four
 overrides are ordinary finite numbers: the spyglass's 1200, two hundred each
@@ -97,10 +96,11 @@ horn's own sounded length in ticks.
 `Minecraft.handleKeybinds` sees the press and calls `Minecraft.startUseItem`,
 which sets the four-tick `Minecraft.rightClickDelay` itself, refuses while
 `LocalPlayer.isHandsBusy`, and walks both hands for a target. With nothing
-under the crosshair it reaches `MultiPlayerGameMode.useItem`, which opens a prediction window first
+under the crosshair it reaches `MultiPlayerGameMode.useItem`, which, once any
+pending hotbar change has been sent, opens a prediction window
 (`MultiPlayerGameMode.startPrediction`,
-[prediction and acks](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)) and does everything
-else inside it: it builds the `ServerboundUseItemPacket` — hand, sequence
+[prediction and acks](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)) and does the rest
+inside it: it builds the `ServerboundUseItemPacket` — hand, sequence
 number and both rotations — then consults the client's own `ItemCooldowns`,
 and runs `ItemStack.use` **locally first** only if the item is off cooldown.
 The packet goes up either way; the cooldown suppresses the prediction, not the
@@ -160,8 +160,9 @@ bow does not abort the draw.**
 ## Every tick, and what the bow does instead
 
 `LivingEntity.updateUsingItem` offers `ItemStack.onUseTick` the count
-*before* it decrements, so a thirty-two-tick meal is offered 32 down to 1
-and never 0. For the meal that one call is the whole visible experience:
+*before* it decrements, so on the server a thirty-two-tick meal is offered 32
+down to 1 and never 0; the client, waiting for its byte, goes on to 0 and
+below. For the meal that one call is the whole visible experience:
 `Consumable.shouldEmitParticlesAndSounds` is true once more than
 `Consumable.CONSUME_EFFECTS_START_FRACTION` of the duration has elapsed and
 the remaining count is a multiple of `Consumable.CONSUME_EFFECTS_INTERVAL`,
@@ -183,16 +184,17 @@ its thresholds are fractions of `BowItem.MAX_DRAW_DURATION`.
 
 The crossbow is the exception that makes the rule legible. It *does*
 override `Item.onUseTick`, and that body is entirely server-side: it plays
-the three `CrossbowItem.ChargingSounds` at fixed fractions of
+the start, middle and end sounds a `CrossbowItem.ChargingSounds` holds (Quick
+Charge's has no middle) at fixed fractions of
 `CrossbowItem.getChargeDuration` and, on reaching one, writes
 `DataComponents.CHARGED_PROJECTILES` onto the stack. Its client half is a
-render-thread computation — `CrossbowPull` and `FirstPersonHandsAndItems` both
+Render-thread computation — `CrossbowPull` and `FirstPersonHandsAndItems` both
 call `CrossbowItem.getChargeDuration`, which calls
 `EnchantmentHelper.modifyCrossbowChargingTime`
-([enchantments](enchantments.md#what-runs-on-the-client-and-why-it-is-only-ever-a-number)
+([enchantments](enchantments.md#what-runs-on-the-client-and-why-no-entity-effect-does)
 owns the two enchantment values a client is allowed to compute). **An
-enchantment hook, evaluated on the render thread, once per frame, to pick one
-of three textures.**
+enchantment hook, evaluated on the Render thread every frame, to pose an arm and
+pick one of three textures.**
 
 ## Moving while you use
 
@@ -212,7 +214,7 @@ by exactly as much as eating does, through exactly the same field.**
 speed by one; the attack that ends *that* use is a different packet again
 ([the spear](../player/the-spear.md#the-charge)).
 
-The component's third field is not about movement at all, and it is the half
+The component's remaining field is not about movement at all, and it is the half
 that runs on the server. `UseEffects.interactVibrations` is what
 `ItemStack.causeUseVibration` consults before letting a use emit a game
 event, so an item whose component clears the flag starts and finishes
@@ -242,11 +244,11 @@ flowchart TD
     E -- "false, everything else" --> F["LivingEntity.completeUsingItem"]:::server
     F --> G["ServerPlayer.completeUsingItem sends ClientboundEntityEventPacket 9 first"]:::server
     G --> H["ItemStack.finishUsingItem, then LivingEntity.stopUsingItem"]:::server
-    G -. "the byte lands" .-> X["Player.handleEntityEvent replays Player.completeUsingItem"]:::client
+    G -. "the byte lands" .-> X["Player.handleEntityEvent replays LivingEntity.completeUsingItem"]:::client
     W --> X
 ```
 
-*Figure: the client's arm of the branch reaches nothing on its own. The
+*The client's arm of the branch reaches nothing on its own. The
 dotted edge is the whole of what ends a meal on the client — a byte from the
 server, arriving at a branch that was otherwise waiting for ever.*
 
@@ -266,7 +268,7 @@ flowchart TD
     K -- "returned false" --> M["the meal is simply abandoned"]
 ```
 
-*Figure: one method run twice, once per copy, and the split at the top is the
+*One method run twice, once per copy, and the split at the top is the
 point — the client releases locally without waiting, and only the server's
 run reaches a `ServerLevel` and so an arrow.*
 
@@ -287,14 +289,12 @@ other item asks for that. Release is also not only a key-up: besides the
 client's and the server's key-up paths, `LivingEntity.releaseUsingItem` is
 called from five other places — once by `LivingEntity.completeUsingItem`
 itself, when the stack turned out not to match the hand; once each by
-`CrossbowAttack` and `RangedCrossbowAttackGoal`, which is how a pillager
-fires; and twice by `BrushItem.onUseTick`, which ends its own use from inside
+`CrossbowAttack` and `RangedCrossbowAttackGoal`, which is how a piglin and a pillager finish loading; and twice by `BrushItem.onUseTick`, which ends its own use from inside
 the tick.
 
 ## The meal, tick by tick
 
-The whole of it is one press, thirty-two quiet ticks and one byte, and the
-bands below are the three moments that are not quiet.
+The whole of it is one press, thirty-one ticks in which the meal sends its eater nothing, and one byte, and the three bands below are those three.
 
 ```mermaid
 sequenceDiagram
@@ -319,16 +319,16 @@ sequenceDiagram
         SP->>SP: the same call, particles discarded, sound broadcast to everyone else
     end
     rect rgba(0, 0, 0, 0.04)
-        Note over LP,Cons: tick 32, the count reaching zero on the server alone
+        Note over LP,Cons: tick 32, the count at zero, and only the server ending it
         SP->>Wire: ClientboundEntityEventPacket, EntityEvent.USE_ITEM_COMPLETE
         SP->>Cons: Consumable.onConsume, from ItemStack.finishUsingItem, FoodData.eat inside it
-        Wire->>LP: handleEntityEvent replays Player.completeUsingItem locally
+        Wire->>LP: handleEntityEvent replays LivingEntity.completeUsingItem locally
         SP->>Wire: ClientboundSetHealthPacket, same tick, overwrites the prediction
     end
     Note over Wire,SP: a later tick: AbstractContainerMenu.broadcastChanges corrects the count
 ```
 
-*Figure: three bands, and the count reaches zero in only one of them. Watch
+*Three bands, and the count reaches zero in only one of them. Watch
 the third — the client is told the meal is over by a single byte, and its own
 countdown had nothing to do with it.*
 
@@ -378,7 +378,7 @@ sequenceDiagram
     rect rgba(0, 0, 0, 0.04)
         Note over LP,SP: every tick after that, both sides
         LP->>LP: the count falls, onUseTick is empty, the model reads the use duration
-        SP->>SP: the count falls, and nothing else happens at all
+        SP->>SP: the count falls, and only the using-item trigger fires
     end
     rect rgba(0, 0, 0, 0.04)
         Note over LP,SP: the tick the key comes up
@@ -394,7 +394,7 @@ sequenceDiagram
     Note over Wire,SP: a later tick: the container sync corrects the arrows and the damage
 ```
 
-*Figure: the same method twice, once per copy — the two self-messages in the
+*The same method twice, once per copy — the two self-messages in the
 third band are `BowItem.releaseUsing` on each machine, and only the lower one
 has a `ServerLevel` to shoot into. The dashed line is the only reply, and it
 is empty.*
@@ -407,14 +407,14 @@ returns false below a tenth of full power, which is why a tap of the button
 neither shoots nor costs durability. Above it, `ProjectileWeaponItem.draw`
 decides how many arrows leave the string
 (`EnchantmentHelper.processProjectileCount`) and
-`ProjectileWeaponItem.useAmmo` decides whether an arrow is actually spent
+`ProjectileWeaponItem.useAmmo` decides whether an arrow is spent
 (`EnchantmentHelper.processAmmoUse`). Both consult a `ServerLevel` and fall
 back to one and zero otherwise, and `ProjectileWeaponItem.shoot` is itself
 inside a `ServerLevel` test — so **on the client the draw produces a single
 phantom arrow marked `DataComponents.INTANGIBLE_PROJECTILE`, spends nothing
 and shoots nothing.**
 
-On the server it is five enchantment hooks and one ordering worth
+On the server it is six enchantment hooks and one ordering worth
 remembering. Two have already run inside `ProjectileWeaponItem.draw`; the
 third, `EnchantmentHelper.processProjectileSpread`, fans a multishot
 volley, and each arrow is aimed by `BowItem.shootProjectile` through
@@ -428,8 +428,9 @@ different items: once for the arrow's stack and once for the bow's. The fifth
 is out of sight in the arrow itself — the `AbstractArrow` constructor asks
 `EnchantmentHelper.getPiercingCount` off the weapon it was fired from
 ([enchantments](enchantments.md#seven-families-of-moment)).
-`ItemStack.hurtAndBreak` takes the durability after each arrow, and the
-volley breaks off if the bow dies mid-flight.
+`ItemStack.hurtAndBreak` takes the durability after each arrow, through the
+sixth, `EnchantmentHelper.processDurabilityChange`, and the volley breaks off
+if the bow dies mid-flight.
 
 Only when `Item.releaseUsing` returns true does `ItemStack.releaseUsing` run
 `ItemStack.applyAfterUseComponentSideEffects` — the same private step
@@ -440,7 +441,7 @@ Only when `Item.releaseUsing` returns true does `ItemStack.releaseUsing` run
 are grouped rather than per-item: `ItemCooldowns.getCooldownGroup` returns
 `UseCooldown.cooldownGroup` when the component names one and the item's
 `Identifier` otherwise, both sides own an `ItemCooldowns` — the client's is
-a real prediction, consulted before it will even attempt a use — and
+a real prediction, consulted before it will even predict a use — and
 `ServerItemCooldowns.onCooldownStarted` mirrors the server's as one
 `ClientboundCooldownPacket` naming a *group*.
 
@@ -463,7 +464,8 @@ server's copy and never their own.
 
 The completion is barely richer. There is no *you ate this* packet: event 9
 tells the client to re-derive the outcome from components it already holds,
-and `ClientboundSetHealthPacket` corrects whatever it got wrong. The single
+and `ClientboundSetHealthPacket` corrects the hunger it got wrong, the
+container sync the count. The single
 override of `Item.finishUsingItem` in the whole tree is
 `SpyglassItem.finishUsingItem`, which plays a sound — the spyglass being the
 one item whose completion is worth a sound of its own.
@@ -471,9 +473,9 @@ one item whose completion is worth a sound of its own.
 That override is reached only by the countdown running out, all 1200 ticks of
 it. Letting go takes the other door: `SpyglassItem` **also** overrides
 `Item.releaseUsing` — the fourth and last override of it in the tree, after
-the bow, the crossbow and the trident — plays the same sound there, and
-returns true. So the spyglass gets its sound either way, and the two ways
-share no method at all. That is the last thing this page has to say about the
+the bow, the crossbow and the trident — plays the same sound there through the same private `SpyglassItem.stopUsing`,
+and returns true. So the spyglass gets its sound either way, through two
+overrides that meet only in that helper. That is the last thing this page has to say about the
 two endings: they are not one path with a switch on it. They are two.
 
 > **For a 1.21-era reader.** There is no bow-pull item property class left
@@ -503,10 +505,8 @@ For where a use begins, read down: `Minecraft.startUseItem`, then
 `ProjectileWeaponItem` above it holds the two methods that decide how many
 arrows leave and whether any is spent; `CrossbowItem` is the one ranged
 weapon that uses the tick hook and the one item that sets
-`ItemStack.useOnRelease`. `UseEffects` and `UseCooldown` are the two
-components that outlive the use, and `FirstPersonHandsAndItems` and
-`FirstPersonHandsAndItemsRenderer` between them are everything you actually
-see.
+`ItemStack.useOnRelease`. `UseEffects` shapes the use while it runs and `UseCooldown` outlives it, and `FirstPersonHandsAndItems` and
+`FirstPersonHandsAndItemsRenderer` between them are everything you see.
 
 ---
 

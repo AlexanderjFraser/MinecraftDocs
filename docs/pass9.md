@@ -74,6 +74,381 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session G — Part VII · Items and inventories *(2026-09-28)*
+
+Nine pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
+`items-and-stacks`, `using-an-item`, `containers-and-menus`, `recipes`, `enchantments`, `enchanting`,
+`contexts-and-predicates` and `loot-tables`. The prompts carried each page's pass 5–7 ledger entries and, by hand, the
+V1 and V2 entries on these pages (V2's per-page sections and its *For the part session (G)* lines), session B's handoff
+on `containers-and-menus` and session A's V6 constants. An interruption stopped five of the nine agents mid-check; each
+was resumed from its transcript and nothing was lost. The whole-part read, written down before any report was opened,
+listed 18 items: 15 became corrections below (1, 5, 32, 39, 50, 61, 71, 84, 93, 102, 104, 129, 145, 169, 177), and the
+other three were the caption prefix, the thread names and the landing page's order sentence (11). The session
+re-derived every finding in `reference/26.3` before making it. The record was then audited by nine agents, one per page,
+each told to re-derive every changed sentence against the tree, read its neighbours and grep the rest of the book:
+**the audit found 71 more errors, 45 of them in sentences this session had just written** (185–255). Page lines are the
+pages before this session's edits. Paths are under `reference/26.3/net/minecraft/`.
+
+**255 corrections** (one, 182, withdrawn by the audit), 31 of them inside a figure or a caption. Six false headings
+were corrected, none with a link the session did not repoint in the same change: `containers-and-menus`' *Twenty-nine
+subclasses* (61), and on `enchantments` *The curve every effect is scaled by* (97), *And the condition every effect sits
+behind* (98), *The three famous ones that have no effect component* (104, its one inbound link on `loot-tables`
+repointed), *What runs on the client, and why it is only ever a number* (107, rewritten again by the audit, 243; its
+one inbound link on `using-an-item` repointed twice), and on `enchanting` *Exclusivity, which no path gets to bend*
+(127). Two correct a 26.3 change the version pass did not reach (17: villager trades are a registry of records, and
+`VillagerTrades` the bootstrap that writes them; 93: `LootPredicates` is a fifth file naming `Enchantments`' keys). Three
+are V6: session A's two (32, 177) and a third its list missed (39, `Item.APPROXIMATELY_INFINITE_USE_DURATION`). The
+handoffs are 71 (B's) and V2's notes (1, 5, 25, 33, 50, 84, 87, 156, 169, 176). Four overturn a listed claim: pass 5
+session G's (39), pass 6 session G's count and sort (50, 1), and pass 7 session G's ruling that the engines lean on
+nothing but the vocabulary (5).
+
+### Corrections
+
+#### `items/README`
+
+1. `items/README`:12–16 — *Three of those four are a client guessing*, linked to the block-state ledger — the dungeon chest is a roll the server has not made yet, and a container click is not on that ledger (the page's own :33); now *Two of those four are a client running ahead of the server, the shift-click and the bow*, the dungeon chest named for what it is, and the link to `containers-and-menus`; overturns pass 6 session G's sort (V2's note) — `world/RandomizableContainer.java`:80–101; `client/multiplayer/MultiPlayerGameMode.java`:435, :503–534, :563–567
+2. `items/README`:17–18 (the bold argument) — *every page here is about a container* — `contexts-and-predicates` and `enchantments` are not (the page's own :47); now *almost every page* *(page-internal)*
+3. `items/README`:24–26 — `Equippable` *to Part VIII · The player*; *Each is an item only in the sense that it is the handle* — no Part VIII page names `Equippable`, which any wearer reads, and both it and `AttackRange` are components; now `Equippable` *to whatever wears it* and *In each the item is only the handle* (the audit widened *armour* to *armour and saddle alike*, 214) — `world/item/equipment/Equippable.java`:34; `world/item/Items.java`:638, :1176, :1202
+4. `items/README`:39, :182 — *three engines* over five pages, never named; now the three are named (recipes, enchantments, loot tables) with enchanting and contexts and predicates placed beside the last two, and :182 says *each engine's* (the audit reversed a first rewrite that dropped *three*, 215) *(page-internal)*
+5. `items/README`:44–46 — the engines lean *not on each other*, and *two of enchanting's five paths are loot functions* — the figure draws two arrows between engines, enchantments' conditions are contexts and predicates' machine, and one path (*providers and loot*) runs through loot functions; now says the pages link each other's machines (the audit's wording, 216); overturns pass 7 session G's ruling premise — `enchanting`'s *providers and loot* column and its loot section; `world/item/enchantment/EnchantmentEffectComponents.java`:123–125
+6. `items/README`:52 — *read across two and nothing is owed* — enchantments owes contexts and predicates its conditions; now names the one debt and the link that pays it *(page-internal)*
+7. `items/README`:77–79 (caption) — *a page with no arrow into it — contexts and predicates —* — items and stacks has none either; now *the one page after the first with no arrow into it* *(page-internal)*
+8. `items/README`:87–88 — *the four ways one stack is serialised* — the linked page's four paths, one of them a parse; now *the four paths a stack travels* (pass5.md:1824) — `foundations/codecs-nbt-json`:38–40
+9. `items/README`:94–96 — enchantments *that `/reload` never re-reads at all* — it re-reads their tags; now *their tags aside* — `server/MinecraftServer.java`:1667
+10. `items/README`:100–101 — the drain *is why a click and its correction land in the same tick* — the correction leaves from inside the click's handler; now *a click is answered inside that drain* — `server/network/ServerGamePacketListenerImpl.java`:2274–2278
+11. `items/README`:110 — *then the engines in any order you like* — the figure's arrows order two pairs, and contexts and predicates can come first (pass5.md:1764); now *in any order the arrows allow* and says so *(page-internal)*
+12. `items/README`:115 — *the one thing about an item a client never predicts* — as `items-and-stacks`' hook (clients predict repairs); now *why a client never predicts the wear a tool takes*
+13. `items/README`:128–129 — *the three enchantments players talk about most have no effect component at all* — only Fortune has none; now *driven from the other end, only one of them with no effect component at all* — *data/minecraft/enchantment/mending.json*, *looting.json*, *fortune.json*
+14. `items/README`:143–144 — the first reader *commits the roll with no luck at all* — a player who opens it first rolls with luck, and no chest table reads it; now *with no player in it*
+15. `items/README`:148 — *seven is the one Part XIII comes back for* — Part XIII's pages link seven of Part VII's eight; its landing page names only this one; now *Part XIII's landing page* — `commands/README`:91; `commands/advancements`:9
+16. `items/README`:155, :160–161 — *the four families* over five kinds, and the nine special recipes *whose output cannot be written down* — eight read a result from JSON; now *the families* and *the nine the recipe book never shows* (the audit's wording, 209)
+17. `items/README`:163–166 — villager trading, brewing, the creative tabs and trims are *not a family* — 26.3's trades are a registry of records (391 trade files), `VillagerTrades` is the bootstrap that writes them, and brewing is a recipe kind; now *explained nowhere* only, with what each is — `world/item/trading/VillagerTrades.java`:363; `resources/RegistryDataLoader.java`:98; `world/item/crafting/RecipeType.java`:16
+18. `items/README`:178–179 — the components reference lists each type *with what holds it* — with what it holds (value type, persistent, synced) — `reference/components`:9
+
+#### `items/items-and-stacks`
+
+19. `items/items-and-stacks`:22 (the bold hook), :244 — *Durability is the one thing a client never even guesses at*; *a client never predicts durability* — clients predict repaired durability in the anvil, the grindstone and wolf armour; what they never guess is the durability a tool spends; now says so — `world/inventory/AnvilMenu.java`:159, :184; `world/inventory/GrindstoneMenu.java`:191; `world/entity/animal/wolf/Wolf.java`:463
+20. `items/items-and-stacks`:34, :179 — `DataComponentInitializers` and the reload validator *on the background executor* — true of the server; a joining client builds on the Render thread (the owning page's cast says so) — `client/multiplayer/RegistryDataCollector.java`:142–148; `server/ReloadableServerResources.java`:70–72
+21. `items/items-and-stacks`:73 (f1 caption) — *the two arrows out of them* — four edges, the dotted one from the map; rewritten *(page-internal)*
+22. `items/items-and-stacks`:76–78 — one map *shared by every stack of that item* — a reload rebinds the holder and a stack made before keeps its captured prototype; a parenthesis says so — `core/component/PatchedDataComponentMap.java`:20; `core/component/DataComponentInitializers.java`:138; `core/Holder.java`:267–268
+23. `items/items-and-stacks`:88 — the pop time set *when a stack grows* — also when a damaged item lands in an empty slot — `world/entity/player/Inventory.java`:259
+24. `items/items-and-stacks`:104–106 — *Seven conveniences, `tool` and `spear` among them, are the ones that make a weapon*, after a list of seven that are not — a different seven; now says so *(page-internal)* — `world/item/Item.java`:512–542
+25. `items/items-and-stacks`:127–128 — *hover text* copies; *each copy allocates one small object* — hover text builds a template, and a copy allocates the stack and its map — `world/item/ItemStack.java`:618, :1114; `core/component/PatchedDataComponentMap.java`:249–252
+26. `items/items-and-stacks`:130 — the wire *the third of the four serialisations* — the linked table's second column — `foundations/codecs-nbt-json`:40
+27. `items/items-and-stacks`:150 — *keying stacks in maps* — its callers key hash sets and the crafting input's hash — `world/item/ItemStackLinkedSet.java`; `world/item/crafting/CraftingInput.java`:148
+28. `items/items-and-stacks`:191–193 — nesting escapes the creative slot *so* … — the reason is that the creative slot never runs the strict validator; now says so — `server/network/ServerGamePacketListenerImpl.java`:2344–2355
+29. `items/items-and-stacks`:193–195 — *an over-weight `BundleContents` fails too* — the weight check fails only when the weight cannot be computed (an overflow), so a bundle over capacity passes — `world/item/component/BundleContents.java`:61–81; `world/item/ItemStack.java`:271–274
+30. `items/items-and-stacks`:199 — `ItemInstance` *the contract those validators are written against* — the reload validator takes a map and `validateStrict` a stack; the contents check and the bundle's weight test take `ItemInstance` — `world/item/Item.java`:672; `world/item/ItemStack.java`:131, :291
+31. `items/items-and-stacks`:210–213 — a template's patch *came straight from a builder*, *the one thing in the game* that can carry a default-equal value *and send it verbatim* — `ItemStackTemplate.fromStack` stores a sanitised patch, and `TransmuteResult` has the same shape but never reaches the wire; now *never sanitised* and *the one thing on the wire* — `world/item/ItemStackTemplate.java`:60–62; `world/item/crafting/TransmuteResult.java`:16, :22; `resources/RegistryDataLoader.java`:100–101 (the audit narrowed both halves again, 206)
+32. `items/items-and-stacks`:268–270 — `Item.MAX_BAR_WIDTH`, *though `Item.getBarWidth` spells the number out and no reader of the constant survives the decompile* — a compile-time constant (V6); now *the thirteen pixels `Item.MAX_BAR_WIDTH` names* — `world/item/Item.java`:132
+33. `items/items-and-stacks`:302–304 — the sixty-seven subclasses *each exist for the same reason* — `BannerItem` adds only an accessor (V2's note); now *all but a few* — `world/item/BannerItem.java`
+
+#### `items/using-an-item`
+
+34. `items/using-an-item`:11 — *only one of the two ever gets there* — a bow held 72000 ticks completes like any use (no shot); now *in play only the meal ever gets there* — `world/entity/LivingEntity.java`:3713–3714; `world/item/BowItem.java`:78–80
+35. `items/using-an-item`:16 — *The bow's hour never expires* — it can; now *Nobody holds a bow for an hour* — as above
+36. `items/using-an-item`:52 — the client predicts *the entire meal, twice over* — it runs the start and every tick, and replays the ending once on event 9; the cell now says so — `world/entity/player/Player.java`:416–418; `world/item/component/Consumable.java`:42–49
+37. `items/using-an-item`:75 — consume effects *registered through `Registries.CONSUME_EFFECT_TYPE`* — the key; they register in `BuiltInRegistries.CONSUME_EFFECT_TYPE` — `world/item/consume_effects/ConsumeEffect.java`:33
+38. `items/using-an-item`:85 — a shield and a spear have *no class of their own* — `ShieldItem` exists and does not override the duration; now *no override of their own* — `world/item/ShieldItem.java`:6
+39. `items/using-an-item`:86–88 — the 72000 returned *by hand*, which `Item.APPROXIMATELY_INFINITE_USE_DURATION` *names and no override actually reads* — a compile-time constant javac writes in at every use (V6, a sentence session A's list missed); now *the number … names* — `world/item/Item.java`:133
+40. `items/using-an-item`:100–102 — `MultiPlayerGameMode.useItem` *opens a prediction window first … and does everything else inside it* — the spectator test and the pending hotbar packet come first; now *once any pending hotbar change has been sent … does the rest inside it* — `client/multiplayer/MultiPlayerGameMode.java`:429, :432, :435
+41. `items/using-an-item`:162–164 — the meal *is offered 32 down to 1 and never 0* — on the server; the client keeps offering 0 and below until the byte arrives (its own :276 says the counter falls past zero) — `world/entity/LivingEntity.java`:3712–3713
+42. `items/using-an-item`:186 — *the three `CrossbowItem.ChargingSounds`* — one record holding three sounds; now the start, middle and end a `CrossbowItem.ChargingSounds` holds, Quick Charge's without the middle (the audit's wording, 189) — `world/item/CrossbowItem.java`:275
+43. `items/using-an-item`:193–195 — Quick Charge *evaluated on the render thread, once per frame* — at least twice a frame (both hands) plus each `CrossbowPull` evaluation; now *every frame* — `client/player/FirstPersonHandsAndItems.java`:105–106; `client/renderer/item/properties/numeric/CrossbowPull.java`:26
+44. `items/using-an-item`:215 — *The component's third field* — `interactVibrations` is the record's second; now *remaining field* — `world/item/component/UseEffects.java`:9
+45. `items/using-an-item`:245, :325 (f1 node X, f3) — *replays `Player.completeUsingItem`* — declared on `LivingEntity`; now `LivingEntity.completeUsingItem` — `world/entity/LivingEntity.java`:3815
+46. `items/using-an-item`:289–291 — `CrossbowAttack` and `RangedCrossbowAttackGoal`, *which is how a pillager fires* — `CrossbowAttack` is the piglin's brain behaviour; now *a piglin and a pillager*, and the audit found the release finishes their loading rather than firing (191) — `world/entity/monster/piglin/PiglinAi.java`:147; `world/entity/monster/illager/Pillager.java`:75
+47. `items/using-an-item`:296–297 — *thirty-two quiet ticks … the bands below are the three moments that are not quiet* — the middle band is the quiet stretch, ticks 1 to 31; now *thirty-one quiet ticks … the three bands below are those three* *(page-internal)*
+48. `items/using-an-item`:322 (f3 note) — *the count reaching zero on the server alone* — both counts reach zero, only the server completes (the page's own :276–279); now *the count at zero, and only the server ending it* — `world/entity/LivingEntity.java`:3713
+49. `items/using-an-item`:381 (f4) — the server's tick: *nothing else happens at all* — `ServerPlayer.updateUsingItem` fires `CriteriaTriggers.USING_ITEM` every tick; now *only the using-item trigger fires* — `server/level/ServerPlayer.java`:2252–2255
+50. `items/using-an-item`:417 — *five enchantment hooks* — six: `EnchantmentHelper.processDurabilityChange` runs inside every arrow's `ItemStack.hurtAndBreak`, now named at :431; overturns pass 6 session G's count — `world/item/ItemStack.java`:458–468; `world/item/ProjectileWeaponItem.java`:60
+51. `items/using-an-item`:442–443 — the client's cooldown is *consulted before it will even attempt a use* — the use packet goes up on cooldown (the page's own :106); now *predict a use* — `client/multiplayer/MultiPlayerGameMode.java`:439–441, :306
+52. `items/using-an-item`:466 — `ClientboundSetHealthPacket` *corrects whatever it got wrong* — health, food and saturation only; the count is the container sync's (:335); now says both — `server/level/ServerPlayer.java`:774–775
+53. `items/using-an-item`:475–476 — the spyglass's two ways *share no method at all* — both overrides call the private `SpyglassItem.stopUsing`; now *two overrides that meet only in that helper* — `world/item/SpyglassItem.java`:38–51
+54. `items/using-an-item`:506–507 — `UseEffects` and `UseCooldown` *the two components that outlive the use* — `UseEffects` acts while the use runs; now *shapes the use while it runs and `UseCooldown` outlives it* — `client/player/LocalPlayer.java`:778; `world/item/ItemStack.java`:406–420
+
+#### `items/containers-and-menus`
+
+55. `items/containers-and-menus`:12–13 — the click packet *carries a CRC32C hash per changed slot* — each changed slot is an item, a count and one CRC32C per added component (the page's own :290); now says so — `network/HashedStack.java`:44–46; `network/HashedPatchMap.java`:17, :21–29
+56. `items/containers-and-menus`:15–16 — *what the client is allowed to fill it with is a hash and never a stack* — the creative slot writes the client's stack into the record (:439); now *what a click is allowed* — `server/network/ServerGamePacketListenerImpl.java`:2358–2359
+57. `items/containers-and-menus`:27 (cast) — `ContainerSynchronizer` *the diffing channel* — the menu and `RemoteSlot` diff, the synchronizer sends; now *the channel from a menu's diff to the connection* — `world/inventory/AbstractContainerMenu.java`:303–343
+58. `items/containers-and-menus`:58 — *The second asymmetry* under a heading of three, with the first in the parent section; now names it *(page-internal)*
+59. `items/containers-and-menus`:72 — `ContainerLevelAccess.execute` *runs nothing and returns an empty optional* — `execute` is void; `NULL`'s `evaluate` returns the empty optional and `execute` runs nothing through it — `world/inventory/ContainerLevelAccess.java`:11–16, :33–38
+60. `items/containers-and-menus`:73–74 — *stripping enchantments* as work inside the access call — the grindstone strips in `computeResult` from `slotsChanged`, outside any access, on both sides; now *chipping an anvil* — `world/inventory/GrindstoneMenu.java`:136–165; `world/inventory/AnvilMenu.java`:105
+61. `items/containers-and-menus`:79 (heading) — *Twenty-nine subclasses, one machine* — twenty-eight in `world/inventory` (five abstract), as the body under it says since V2; no inbound link — `world/inventory/*Menu.java` *(heading corrected)*
+62. `items/containers-and-menus`:81–86 — *the rest are the same machine …:* followed by twelve names as if all of them — nineteen concrete menus remain (the furnaces, grindstone, smithing table, stonecutter and `InventoryMenu` unnamed); now *among them* — `world/inventory/`
+63. `items/containers-and-menus`:86–88 — *A station menu is a `Container` the server owns* and *where it has a progress bar or a price — a `ContainerData`* — the loom, stonecutter, anvil and others build scratch containers on both sides, the anvil's price is a standalone `DataSlot` and enchanting's costs shared ones; now *the block entity's, or a scratch one the menu builds for itself on each side* and *a data slot or a `ContainerData`* — `world/inventory/ItemCombinerMenu.java`:96–108; `world/inventory/AnvilMenu.java`:55; `world/inventory/EnchantmentMenu.java`:95–97
+64. `items/containers-and-menus`:88–90 — `SlotRanges` and `ItemCombinerMenuSlotDefinition` *are the two small vocabularies the anvil and the smithing table are laid out from* — `SlotRanges` is the slot-name table of commands and predicates, used by no menu (false in 26.2 too); now says so — `world/inventory/SlotRanges.java`:22–40; `commands/arguments/SlotArgument.java`; `advancements/predicates/SlotsPredicate.java`
+65. `items/containers-and-menus`:94 — a null-typed menu *cannot be opened over the network at all* — the two mount menus are, by their own packet (:97–101); now *cannot be opened the ordinary way*, because `ServerPlayer.openMenu` asks for its type — `server/level/ServerPlayer.java`:1539, :1561, :1575
+66. `items/containers-and-menus`:229–233 — `CrafterSlot`, the item-combiner slots *and the crafting grid* call `slotsChanged` *from `Container.setChanged`* — `CrafterSlot` calls it from `Slot.setChanged`; the crafting grid's container calls it from `setItem`/`removeItem` and both crafting menus override it without the base's broadcast; rewritten, and the audit widened it again: the grindstone and the lectern reach the base too, and a bundle click calls it on any open menu (198) — `world/inventory/CrafterSlot.java`:21–23; `world/inventory/TransientCraftingContainer.java`:62–79; `world/inventory/CraftingMenu.java`:74–82
+67. `items/containers-and-menus`:282–283 — a thrown click is *neither corrected nor fatal* and closes nothing — it also leaves the menu's remote updates suppressed until a later click succeeds, since the only `resumeRemoteUpdates` call follows the click; now says so, and :386's *never left standing* is scoped *outside the thrown click above* — `server/network/ServerGamePacketListenerImpl.java`:2262–2273; `world/inventory/AbstractContainerMenu.java`:304, :318, :332
+68. `items/containers-and-menus`:301–302 — *a hash cannot be turned back into an item* — the item and count travel in clear; now *a hashed component cannot be turned back into its value* — `network/HashedStack.java`:44–46
+69. `items/containers-and-menus`:320–321 — a data slot is *either* shared *or* standalone — a third factory, `DataSlot.forContainer`, serves every `ContainerData`, the furnace and lectern among the page's own examples — `world/inventory/DataSlot.java`:9–21; `world/inventory/AbstractContainerMenu.java`:157–161
+70. `items/containers-and-menus`:338–341 — *the one write on this page that goes around the synchronizer* — the close rescue's `ClientboundSetPlayerInventoryPacket` goes around it too (:396); now *the one write on the click path* — `world/entity/player/Inventory.java`:325, :337–338
+71. `items/containers-and-menus`:362–369 — the button click as *a third place … not in the tick at all* and *the one write on this page whose answer does not wait for a phase* — a slot click is answered inside its handler too, as are pick-block and the creative slot, on the drain the section's first paragraph already names (session B's handoff); now *The drain answers more than slot clicks* — `server/network/ServerGamePacketListenerImpl.java`:2275, :2277, :821, :2360
+72. `items/containers-and-menus`:371–378 — *only the first is accompanied by a broadcast* and the hopper *after that tick's only broadcast* — a pickup in `ServerPlayer.doTick`, after the levels, broadcasts too (V2's fix at :355–360); now *brings a broadcast of its own*, *regular broadcast*, and *unless a pickup in the player's own tick broadcasts first* — `server/level/ServerPlayer.java`:744, :1361–1363; `server/MinecraftServer.java`:1210–1234
+73. `items/containers-and-menus`:393–395 — the cursor is dropped *if the player has been removed* — not when the removal is a change of dimension — `world/inventory/AbstractContainerMenu.java`:711
+74. `items/containers-and-menus`:401–402 — *changes to those four are re-sent and nothing else is* — the rescue writes slots before `transferState` copies the beliefs, so every rescued slot goes down again as a slot update — `server/level/ServerPlayer.java`:1605–1606; `world/entity/player/Inventory.java`:304–327
+75. `items/containers-and-menus`:406 — the button number *means something different in every one* — `QUICK_MOVE`'s repeat `PICKUP`'s (the table's own row); now *nearly every one* *(page-internal)*
+76. `items/containers-and-menus`:461–463 — `ServerboundSetCarriedItemPacket` *and its clientbound answer* — the handler answers nothing, and the clientbound selection packet is `ClientboundSetHeldSlotPacket` (false in 26.2 too) — `server/network/ServerGamePacketListenerImpl.java`:1721–1733
+
+#### `items/recipes`
+
+77. `items/recipes`:65–68 — *Three tests, three different senses of* enabled*, … these are the level's `FeatureFlagSet`* — one `FeatureFlagSet` tests three different things, and *the recipe-book sense the rest of this page uses* points at nothing; now *three different things, all against one `FeatureFlagSet`* — `world/item/crafting/RecipeManager.java`:100, :118, :144–147, :269
+78. `items/recipes`:108–113 — an unplaceable recipe *still matches a manual craft*, and *the usual cause* — its empty ingredient matches no stack, so nothing can craft it; an empty ingredient is the only cause for a data recipe; now *matches no stack and so no manual craft* and *paints as craftable a recipe nobody can make* — `world/item/crafting/PlacementInfo.java`:13, :39–41, :60–62, :78–80; `world/item/crafting/RecipeManager.java`:109–110; `world/item/crafting/Ingredient.java`:73–75; `core/TypedInstance.java`:19–21; `world/item/crafting/display/RecipeDisplayEntry.java`:25–27
+79. `items/recipes`:118–120, :125–126, :448 — the nine `CustomRecipe`s are *Java, not data*, *whose output cannot be written down*, *the nine that are Java* — eight of the nine read ingredients and a base result from JSON (false in 26.2 too); now *matching and assembly written in Java*, and the audit's *the crafting recipes the book never shows* (209) — `world/item/crafting/BannerDuplicateRecipe.java`:19–22; `DecoratedPotRecipe.java`:17–26; `RepairItemRecipe.java`:22; *data/minecraft/recipe/decorated_pot.json*
+80. `items/recipes`:130 — `RepairItemRecipe` *fuses two damaged tools* — any two items of one kind with durability, damaged or not — `world/item/crafting/RepairItemRecipe.java`:50–51; `world/item/Item.java`:452–455
+81. `items/recipes`:143–144, :171–172, :184 (f3 note) — the two traces *a tick or more apart*, *a later tick* — the drain handles every queued click in one pass, so both can land in one tick; now *a later click* — `server/MinecraftServer.java`:1101; `network/PacketProcessor.java`:35–38
+82. `items/recipes`:190 (f3) — *one cell at a time, then the remainders* — each cell's remainder follows its own removal — `world/inventory/ResultSlot.java`:105–127
+83. `items/recipes`:212–213, :324 — *the stonecutter's `SingleItemRecipe`*; `SingleItemRecipe` *the shape `StonecutterRecipe` extends* — the cooking recipes extend it too — `world/item/crafting/AbstractCookingRecipe.java`:19
+84. `items/recipes`:248–250 — the `RecipeManager.CachedCheck` holders: the furnace and the campfire — the brewing stand holds one too (V2's note) — `world/level/block/entity/BrewingStandBlockEntity.java`:65, :123
+85. `items/recipes`:261–263 — *for everything but the hand-written recipes it ignores its input entirely* — the smithing recipes read theirs; scoped to *every crafting recipe* — `world/item/crafting/SmithingTransformRecipe.java`:56–57
+86. `items/recipes`:307–308 — *Neither method returns a `Recipe`. That interface is the page's claim in two lines of Java.* — on the server the stonecutter set carries a `RecipeHolder` in every entry, and the codec strips it; now says so — `world/item/crafting/RecipeManager.java`:119; `world/inventory/StonecutterMenu.java`:177; `world/item/crafting/SelectableRecipe.java`
+87. `items/recipes`:321–334 — seven of the nine property sets accounted for — the brewing stand's two now named with their menu (V2's note) — `world/inventory/BrewingStandMenu.java`:50, :145–146; `world/item/crafting/PotionIngredient.java`:44–47
+88. `items/recipes`:341, :388 — *lights up*, *glow* for craftability where :30 and :357 use *glow* for the highlight set (one word, two senses); now *shows as craftable* — `stats/ServerRecipeBook.java`:36; `client/gui/screens/recipebook/RecipeCollection.java`:39
+89. `items/recipes`:346–347 — `SlotDisplay.resolve` works *against a `SlotDisplayContext`* — it takes a `ContextMap`, which `SlotDisplayContext` builds — `world/item/crafting/display/SlotDisplay.java`:43; `SlotDisplayContext.java`:9–18
+90. `items/recipes`:416–417 — clamped *to the smallest stack size* — the smallest maximum stack size — `recipebook/ServerPlaceRecipe.java`:137–145
+91. `items/recipes`:419–421 — NOTHING *for a survival player with a full inventory* — the test is whether the grid's contents fit back; now says so — `recipebook/ServerPlaceRecipe.java`:36, :201–244
+92. `items/recipes`:439 — `RecipeAccess` *is ten lines* — a line count (V10); now *declares two methods*
+
+#### `items/enchantments`
+
+93. `items/enchantments`:10 — *only four files outside the data generator ever name* the keys — five in 26.3 (`LootPredicates` is new; every use a bootstrap or a builder the data generator calls) — `world/item/enchantment/providers/VanillaEnchantmentProviders.java`:27; `world/item/trading/TradeRebalanceVillagerTrades.java`:147; `world/level/storage/loot/functions/EnchantedCountIncreaseFunction.java`:91; `world/level/storage/loot/predicates/LootItemRandomChanceWithEnchantedBonusCondition.java`:53; `world/level/storage/loot/predicates/LootPredicates.java`:40
+94. `items/enchantments`:15–17 — *every behaviour … is a component key* — the four *prevents* tags and *smelts_loot* are tags the page itself names (:133, :393); now *or a tag that names it* *(page-internal)*
+95. `items/enchantments`:30 (cast) — `EnchantedItemInUse` *the bundle every walk builds and every effect receives* — the slotless walk builds none and a value effect receives none; now *the bundle an entity or location effect receives* — `world/item/enchantment/EnchantmentHelper.java`:145–155; `world/item/enchantment/effects/EnchantmentValueEffect.java`:23
+96. `items/enchantments`:84–85 — *attribute* is *the only effect that is location-based without also being an entity effect* — the location registry's own *all_of*, `AllOf.LocationBasedEffects`, is too — `world/item/enchantment/effects/AllOf.java`:57
+97. `items/enchantments`:87 (heading) — *The curve every effect is scaled by* — ten effect types hold no `LevelBasedValue` (the three `AllOf` records among them); now *The curve that scales a level*, and :415–416's *underneath all of them* is *most* (no inbound link) — `world/item/enchantment/effects/PlaySoundEffect.java`, `ReplaceBlock.java`, `RunFunction.java`, `SetBlockProperties.java`, `SpawnParticlesEffect.java`, `SummonEntityEffect.java`, `DamageImmunity.java`
+98. `items/enchantments`:97 (heading) — *the condition every effect sits behind* — the seven plain keys have none (the page's own :65–71); now *the condition twenty-four keys sit behind* (no inbound link) — `world/item/enchantment/EnchantmentEffectComponents.java`:101–121
+99. `items/enchantments`:148–151 and f1's flag arm — `has` and `hasTag` *ask the record whether the key is present* — `hasTag` asks the holder's tags; now says both — `world/item/enchantment/EnchantmentHelper.java`:498–527
+100. `items/enchantments`:167–169 (f1 caption) — the flag row *the only row that costs nothing to ask*, and *the left arm* — other entry points (the unfiltered values, the sound picks, the level reads) build no context either, and the arm's side is dagre's; rewritten — `world/item/enchantment/Enchantment.java`:315–322; `EnchantmentHelper.java`:529–556 *(caption rewritten)*
+101. `items/enchantments`:206 (f2 note) — *every twentieth one after it* — the band's one arrow, the flag, is set every tick; the damage is every twentieth — `world/entity/Entity.java`:586, :602–604
+102. `items/enchantments`:212 (f2 caption) — *five lanes … no enchantment object among the last two* — six lanes, and `Ignite` is an enchantment effect; now *Six lanes* *(page-internal)*
+103. `items/enchantments`:242–244 — the attacker pass walks *the attacker's main hand only* — it walks the stack it was handed, labelled the main hand (the page's own :250–256; `stabAttack` hands the used slot's item) — `world/item/enchantment/EnchantmentHelper.java`:276; `world/entity/player/Player.java`:1179–1180, :1220
+104. `items/enchantments`:287–292 (heading and lead) — *The three famous ones that have no effect component … are not in them* — Mending has *repair_with_xp* and Looting *equipment_drops*; only Fortune has none; now *Three famous ones driven from the other end*, one inbound link (`loot-tables`) repointed — *data/minecraft/enchantment/mending.json*, *looting.json*, *fortune.json*
+105. `items/enchantments`:300–304 — `getEnchantmentLevel` *the overload that walks a `LivingEntity`'s equipment*; *equipment_drops … nothing to do with mob loot* — not an overload, and it walks the slots the enchantment counts in; the component raises a mob's equipment drop chance and plays no part in its loot table — `world/item/enchantment/EnchantmentHelper.java`:320–335, :399–429
+106. `items/enchantments`:306–310 — Mending: *the item is merely found. Nothing on the item runs at all* — the orb runs the stack's *repair_with_xp* value, a multiply by two, so each point of experience repairs two of durability — `world/entity/ExperienceOrb.java`:321–333; `world/item/enchantment/EnchantmentHelper.java`:390–397
+107. `items/enchantments`:312 (heading) and :331–336 — *why it is only ever a number*; *two numbers and three kinds of drawing* — the client also asks Curse of Binding's flag in `ArmorSlot.mayPickup` during click prediction and picks the trident's sound with `EnchantmentHelper.pickHighestLevel`; heading now *why it is never an effect*, one inbound link (`using-an-item`) repointed — `world/inventory/ArmorSlot.java`:48–51; `world/item/TridentItem.java`:75
+108. `items/enchantments`:346–347 — `/reload` *leaves the enchantments exactly as the world found them* — it re-reads every registry's tags, the enchantments' among them; now *the enchantments themselves … their tags aside* — `server/MinecraftServer.java`:1667
+109. `items/enchantments`:377–379 — `runIterationOnItem`, *the private walk under every hook* — three private walks, and several hooks use none; now *the private walks under every effect hook* — `world/item/enchantment/EnchantmentHelper.java`:145, :157, :178, :498–515
+110. `items/enchantments`:406–409 — *every hook above them is a one-line wrapper around one of the two* — a third walk, and multi-branch hooks; now *most hooks … a thin wrapper around one of them* — as above, :264–288
+111. `items/enchantments`:413–414 — the two shapes *every list entry takes* — *attributes* and the two sound lists hold neither; now *a conditional entry* — `world/item/enchantment/EnchantmentEffectComponents.java`:101–112
+
+#### `items/enchanting`
+
+112. `items/enchanting`:11–13 (the bold hook) — the seed is *re-rolled by nothing in the game except the enchanting table itself* — a load that finds it zero re-rolls it, which a new player's first reload does; now *and a load that finds it still zero* — `world/entity/player/Player.java`:165, :635–637
+113. `items/enchanting`:15–16, :362–363 — the client draws the gibberish *from that same number* — a data slot crosses as a short, so the client holds the low sixteen bits; now says so at both — `network/protocol/game/ClientboundContainerSetDataPacket.java`:23–30
+114. `items/enchanting`:36 (cast) — the grindstone *the only removal a player can reach* — `RepairItemRecipe` keeps only curses; now *the removal made on purpose* — `world/item/crafting/RepairItemRecipe.java`:70, :77–88
+115. `items/enchanting`:55, :163–166 — *two exceptions* to the `ENCHANTABLE` gate, and `SingleEnchantment` alone asking neither item question — `SetEnchantmentsFunction` skips both too; now three — `world/level/storage/loot/functions/SetEnchantmentsFunction.java`:53–68
+116. `items/enchanting`:58 (table) — providers and loot: exclusivity *filtered, or ignored by flag* — the flag governs `canEnchant`, not exclusivity, and three producers never ask `Enchantment.areCompatible`; now *filtered among the cost-based picks, unasked by the rest* — `world/level/storage/loot/functions/EnchantRandomlyFunction.java`:37, :68–73
+117. `items/enchanting`:59, :225–226 — randomness *the level's random source* — a loot context's (a seed, a sequence, the level's last), a mob's own for raid gear; now *the random source its caller hands in* and *the loot context's* — `world/level/storage/loot/LootContext.java`:187–213
+118. `items/enchanting`:62–67 — the write methods by path: *the providers call `updateEnchantments` themselves*, and `SetEnchantmentsFunction` and `EnchantWithLevelsFunction` unplaced — the providers go through `EnchantmentHelper.enchantItemFromProvider` (as :378 says); all now placed — `world/item/enchantment/EnchantmentHelper.java`:609–620, :707–716; `SetEnchantmentsFunction.java`:58
+119. `items/enchanting`:79–81 — *every path that can be handed a plain `Items.BOOK` transmutes it first* — a creative player's anvil writes the active component onto a plain book; now *a creative player's anvil apart* — `world/inventory/AnvilMenu.java`:202–206, :291
+120. `items/enchanting`:88–93 — the missing component arises when *an item definition replaces the default component initializer*, and then *every path but the anvil's … becomes a no-op* — `Item.Properties` offers no way to drop the default; the table and the anvil refuse such a stack, the rest no-op — `world/item/Item.java`:413–415; `world/item/ItemStack.java`:1063–1071; `world/item/enchantment/EnchantmentHelper.java`:78–80
+121. `items/enchanting`:96–99 — *only the anvil … and `SetEnchantmentsFunction`* call `ItemEnchantments.Mutable.set` — `RepairItemRecipe` does too — `world/item/crafting/RepairItemRecipe.java`:86
+122. `items/enchanting`:113 (myth row) — the decompile's answer to *more bookshelves make better enchantments* — the cost the shelves raise is what buys higher levels and extras; the row now says so — `world/item/enchantment/EnchantmentHelper.java`:594–596, :645, :696–699
+123. `items/enchanting`:121–124 — the anvil's price — it also adds two when merging a second item of its kind repairs the left one, and one for clearing a name (the audit's wording, 222) — `world/inventory/AnvilMenu.java`:172–186, :255–257
+124. `items/enchanting`:127–129 — a stacked input *sets the price to a flat 40* — the prior-work tax is added after it; now *before the prior-work tax is added* — `world/inventory/AnvilMenu.java`:235–237, :249–261
+125. `items/enchanting`:160–162 — the narrow filter used by *the table, the cost-based providers and chest loot* — chest loot is mostly `enchant_randomly` (18 files against 8), which asks the supported set; now `EnchantWithLevelsFunction` — *data/minecraft/loot_table/chests/*; `EnchantRandomlyFunction.java`:68–73
+126. `items/enchanting`:184–186 — *the anvil's only punitive rule* — the stack rule is a second; now *besides the stack rule above* *(page-internal)*
+127. `items/enchanting`:207 (heading) and :209–214, :443–444 — *Exclusivity, which no path gets to bend*; *one static method everywhere*; *the exclusivity test none of them can bend* — `EnchantRandomlyFunction`, `SingleEnchantment` and `SetEnchantmentsFunction` never ask it, and the selection asks it only among its own picks; heading now *one test wherever it is asked* (no inbound link) — `world/item/enchantment/EnchantmentHelper.java`:645–647; `world/inventory/AnvilMenu.java`:213; `server/commands/EnchantCommand.java`:75
+128. `items/enchanting`:218–220 — *everything else rolls one* and *Six things choose an enchantment* — `/enchant` rolls nothing, `SetEnchantmentsFunction` rolls only if its level providers do (vanilla's are constants), and `SingleEnchantment` is given its enchantment (the page's own :224); now *everything else but … rolls one* and *Six things roll what an item gets* (the audit's wording, 224) — `world/level/storage/loot/functions/SetEnchantmentsFunction.java`:61, :65
+129. `items/enchanting`:251–253 (f1 caption) — *a fourth enchantment nearly impossible and a first one, above a cost of forty-nine, certain* — the roll is `nextInt(50) <= cost`, certain from 49, and it is the first *extra*; a fourth runs about 4–13 per cent at a thirty-level offer; rewritten — `world/item/enchantment/EnchantmentHelper.java`:645, :657 *(caption rewritten; the audit rewrote it again, 225)*
+130. `items/enchanting`:262 — *by the third or fourth pass the roll is nearly always lost* — the third is lost about three times in four; now *by the fourth* — as above
+131. `items/enchanting`:308 (f2 note) — `AbstractContainerMenu.slotsChanged` runs — the override `EnchantmentMenu.slotsChanged` does, never calling the base — `world/inventory/EnchantmentMenu.java`:107–163
+132. `items/enchanting`:313 (f2) — `broadcastChanges` drawn arriving at the network — the menu's own method; the message is now the packet, *from broadcastChanges* (the caller's-method shape)
+133. `items/enchanting`:314 (f2) — *the ten values … the seed* arriving at `EnchantmentScreen` — they land in the client's menu, and the seed crossed when the menu opened; now `Wire->>CEM`, *the costs and the clues, the seed there since the menu opened* — `client/multiplayer/ClientPacketListener.java`:1585–1590; `world/inventory/AbstractContainerMenu.java`:171–177
+134. `items/enchanting`:317 (f2) — *true only if the lapis and the levels are really there* — true for infinite materials regardless; now says so — `world/inventory/EnchantmentMenu.java`:172, :174
+135. `items/enchanting`:322 (f2 note) — `Player.onEnchantmentPerformed` drawn after the enchant loop — it runs first; the note moved above `updateEnchantments` — `world/inventory/EnchantmentMenu.java`:180, :186–192
+136. `items/enchanting`:324 (f2) — *three fresh offers from the new seed* — an enchanted item fails `ItemStack.isEnchantable`, so the costs are zeroed and the clues cleared; now *an enchanted item gets no offers* — `world/item/ItemStack.java`:1063–1071; `world/inventory/EnchantmentMenu.java`:154–159
+137. `items/enchanting`:325 (f2) — *the ten values again, all different*, from `slotsChanged` — the handler broadcasts; what changes is the zeroed costs, the cleared clues and the new seed — `server/network/ServerGamePacketListenerImpl.java`:2335–2336
+138. `items/enchanting`:328–330 (f2 caption) — the client answers *out of the ten numbers on the left, which is every number it has* — it reads one cost, the lapis, the item, the levels and infinite materials; rewritten — `world/inventory/EnchantmentMenu.java`:167–174 *(caption rewritten)*
+139. `items/enchanting`:356 — *A slot with nothing to show carries −1* — a clue does; a cost carries 0 — `world/inventory/EnchantmentMenu.java`:134–135, :155–158
+140. `items/enchanting`:365 — `ServerPlayer.restoreFrom` copies the seed *across death and dimension change* — `restoreFrom` runs only on a respawn (death, the End's exit); a portal keeps the same player — `server/players/PlayerList.java`:417
+141. `items/enchanting`:387 — *the regional difficulty* — local difficulty, the book's term and the decompile's — `world/entity/Mob.java`:1152; `world/item/enchantment/providers/EnchantmentsByCostWithDifficulty.java`:29–30
+142. `items/enchanting`:397–398 — the librarian's `EnchantRandomlyFunction` *with compatibility checking turned off* — the *only_compatible* flag is the item check, not exclusivity; now says so — `world/level/storage/loot/functions/EnchantRandomlyFunction.java`:37, :68–73
+143. `items/enchanting`:400 — `EnchantWithLevelsFunction` *is the chest-loot one* — it is the cost-based one, in chest loot, fishing and trades; now says so — *data/minecraft/loot_table/gameplay/fishing/treasure.json*
+144. `items/enchanting`:410 — `EnchantedCountIncreaseFunction` multiplies a drop count — it adds `round(level × n)` — `world/level/storage/loot/functions/EnchantedCountIncreaseFunction.java`:79–81
+145. `items/enchanting`:425 — `selectEnchantment`: *four of the five paths run it* — four callers on two paths (the table; providers and loot) — `world/inventory/EnchantmentMenu.java`:232; `world/item/enchantment/EnchantmentHelper.java`:609; `providers/EnchantmentsByCost.java`:28; `providers/EnchantmentsByCostWithDifficulty.java`:31
+146. `items/enchanting`:442–443 — `ItemStack.enchant` and `updateEnchantments` *the two ends every path meets at* — the anvil writes with `EnchantmentHelper.setEnchantments` (the page's own :66); now three ends — `world/inventory/AnvilMenu.java`:291
+
+#### `items/contexts-and-predicates`
+
+147. `items/contexts-and-predicates`:16–17 — the declared type *is read exactly once* — once a reload, by the validator; now says so — `server/ReloadableServerRegistries.java`:58–60; `world/level/storage/loot/LootDataType.java`:22
+148. `items/contexts-and-predicates`:26, :43 (f1) — a caption saying every arrow means *built out of* — two arrows mean *brings* and *builds*; rewritten, and the audit rewrote the node and the caption again (233) *(caption rewritten)*
+149. `items/contexts-and-predicates`:54 — *every enchantment effect* — only the conditional ones build a context (the page's own :165) — `world/item/enchantment/EnchantmentEffectComponents.java`:101–125
+150. `items/contexts-and-predicates`:98, :143–144, :331 (f2) — `LootContext.getOptional`, *the only reader a context has* — `LootContext.hasParameter` reads presence too; now *the one way a context hands out a parameter's value* (the audit's scope, 232) — `world/level/storage/loot/LootContext.java`:38–44; `world/level/storage/loot/predicates/LootItemKilledByPlayerCondition.java`:27
+151. `items/contexts-and-predicates`:133–134 — *survive all of the first and still fail at the last* — backwards against the list's order (build, read, load); now *pass the load-time check and still come back empty at read time* *(page-internal)*
+152. `items/contexts-and-predicates`:141–142 — the build-time throw *takes the tick down* — from a command it is caught and the command fails — `commands/Commands.java`:351
+153. `items/contexts-and-predicates`:208 — *the zero in the middle of that order* — the zero is the first step's; now *a zero seed in that order* *(page-internal)*
+154. `items/contexts-and-predicates`:230 — a scoreboard name *out of a context target* — there is a fixed kind too — `world/level/storage/loot/providers/score/ScoreboardNameProviders.java`:31–32
+155. `items/contexts-and-predicates`:241 — *the player half of every trigger* — `ImpossibleTrigger` has none — `advancements/triggers/ImpossibleTrigger.java`:17
+156. `items/contexts-and-predicates`:253–255 — the six bold rows as the ones with no loot table — six non-bold rows roll none either (the section's own count, V2's note); now says so *(page-internal)*
+157. `items/contexts-and-predicates`:259 — `BlockBehaviour.BlockStateBase.getDrops` builds the `BLOCK` context — `BlockBehaviour.getDrops` does, the state's delegating — `world/level/block/state/BlockBehaviour.java`:249–253, :1179–1180
+158. `items/contexts-and-predicates`:268, :270 — *suspicious sand*; *on mob spawn* — suspicious gravel too; only spawners call the equipment-table path — `world/level/block/Blocks.java`:162; `world/level/BaseSpawner.java`:217; `world/level/block/entity/trialspawner/TrialSpawner.java`:256
+159. `items/contexts-and-predicates`:278, :299–300 — `ItemCommands.applyModifier` serves `/item … with` — `/item … modify` and the *from … modifier* forms (the audit's, 234); *with* builds no context — `server/commands/ItemCommands.java`:76–78, :103–107, :162
+160. `items/contexts-and-predicates`:312, :436–437 — *the shortest complete use*; *the two smallest complete examples in the game* — `ItemCommands` builds and uses one in as few statements; now *a short*, *two small* — `server/commands/ItemCommands.java`:208–227
+161. `items/contexts-and-predicates`:390–393 — *a registry's tags are loaded before its elements are validated*, so an item tag is resolved when `validateContextUsage` runs — `validateContextUsage` reads no tags, and the item tags are read into the decode lookup before any predicate is decoded; the first rewrite said *bound*, which the audit found wrong (231) — `server/ReloadableServerRegistries.java`:33–37
+162. `items/contexts-and-predicates`:399 — *The two dependants outside this part are Part XIII's commands … and the advancement system* — both are Part XIII's; now says so — `SUMMARY.md`
+163. `items/contexts-and-predicates`:431–432 — `Validatable.validateHolder` *for the recursion guard* — the load-time cycle check, a different mechanism from the `LootContext` guard :184 names — `world/level/storage/loot/Validatable.java`:28–35; `ValidationContext.java`:52–64
+
+#### `items/loot-tables`
+
+164. `items/loot-tables`:16–17 (the bold hook) — a hopper commits the roll *with no player present, and therefore no luck, for good* — the mechanism is right, but no vanilla chest table reads luck (*quality* only in the fishing table, *bonus_rolls* in none), so what a playerless roll loses is `CriteriaTriggers.GENERATE_LOOT`, which only a bastion chest's advancement reads for a container; rewritten, and the audit rewrote it again (246) — `world/RandomizableContainer.java`:88–92; *data/minecraft/loot_table/chests/simple_dungeon.json*; *data/minecraft/advancement/nether/loot_bastion.json*
+165. `items/loot-tables`:25 — *Loot is that engine's oldest and largest client* — *oldest* is history the tree cannot show; now *largest client, fourteen of its thirty-one parameter sets* — `world/level/storage/loot/parameters/LootContextParamSets.java`
+166. `items/loot-tables`:81–83 — `setItem` unpacks first *so that the write is not overwritten by the roll a moment later* — `fill` writes only slots `getAvailableSlots` found empty, so no later roll could; the write lands on top of the roll — `world/level/storage/loot/LootTable.java`:166–175, :217–228; `world/level/block/entity/RandomizableContainerBlockEntity.java`:74–77
+167. `items/loot-tables`:85–87, :99 — *Every way a player loses a dungeon chest's luck*; *luckless* — now *rolled without its player … no `Attributes.LUCK` and fires no `CriteriaTriggers.GENERATE_LOOT`* and *with no player in the roll* (as the hook)
+168. `items/loot-tables`:137–139 (f1 caption) — *the screen is the last two arrows* — the open-screen packet is third from last; now *the last three arrows* *(page-internal)*
+169. `items/loot-tables`:212 (f2 caption) — *The two diamonds are the whole of the chance in it* — the figure has three, and the chance is in the weights and the `nextInt` at its foot; rewritten, and *a pool* is *a draw* (V2's note) — `world/level/storage/loot/LootPool.java`:71, :85, :107 *(caption rewritten)*
+170. `items/loot-tables`:227–229 — the modifier tiers *are the trace above and the scatter below* — they are in this section (*Functions apply innermost first*); now says so *(page-internal)*
+171. `items/loot-tables`:238–240 — the validator *reports* an unconditioned non-final child *because every later alternative is then unreachable* — a warning, and a composite child with no condition can still fail; now *warns … since a leaf with none always contributes* — `world/level/storage/loot/entries/AlternativesEntry.java`:75–78; `world/level/storage/loot/entries/SequentialEntry.java`:36
+172. `items/loot-tables`:258–261 — *Everything a player calls luck on a drop is something else*, and *Fortune and Looting have no effect component between them* — Luck of the Sea is real luck the fishing table's *quality* reads, and Looting has an *equipment_drops* component; now says both, the link repointed to the corrected heading — `world/entity/projectile/FishingHook.java`:469; *data/minecraft/loot_table/gameplay/fishing.json*; *data/minecraft/enchantment/looting.json*
+173. `items/loot-tables`:267 — *as the call stack unwinds* — the wrapped consumers run going down; now *a drop passes the entry's modifier first* — `world/level/storage/loot/functions/LootItemFunction.java`:20–22
+174. `items/loot-tables`:273–276 — the functions *mutate the stack in place and return it* — at least seven return another stack; now *Most also*, the list completed by the audit (250) — `world/level/storage/loot/functions/SetItemFunction.java`:34; `SmeltItemFunction.java`:52; `DiscardItem.java`:28
+175. `items/loot-tables`:276–279 — the shulker box's uncopied callback, as the example — no vanilla table names it; the one vanilla `minecraft:dynamic` entry is the decorated pot's *sherds*, whose callback builds fresh stacks; now says so — *data/minecraft/loot_table/blocks/decorated_pot.json*; `world/level/block/DecoratedPotBlock.java`:167–178
+176. `items/loot-tables`:297–301 — the runtime guard as the operative check — a self-referencing table is a fatal validation problem and never loads (V2's note); now says so (the whole reload fails, 251), and the guard is *a list*, not *a ledger* (V7, pass5.md:4550) — `world/level/storage/loot/Validatable.java`:34–36; `ValidationContext.java`:129–140; `server/ReloadableServerRegistries.java`:64–65
+177. `items/loot-tables`:310–311 — `LootTable.RANDOMIZE_SEED` *names that zero, and nothing in the game reads the constant* — a compile-time constant (V6); now *the zero `LootTable.RANDOMIZE_SEED` names* — `world/level/storage/loot/LootTable.java`:39
+178. `items/loot-tables`:313–315 — a command-given chest *rolls unpredictably* — every vanilla table declares a random sequence (1,447 of 1,447), so it draws the saved sequence's next value; now *rolls whatever its table's sequence is up to* — `world/level/storage/loot/LootContext.java`:207–210
+179. `items/loot-tables`:338–343 — `SeededContainerLoot` *put there by `SetContainerLootTable`*, and a shulker box *can come out of a chest already owing a roll* — no vanilla table uses *set_loot_table*; vanilla's writer is the block entity's implicit component when a container whose table copies it is broken with no player to roll it; rewritten, and the audit narrowed it (253) — `world/level/block/entity/RandomizableContainerBlockEntity.java`:110–117; *data/minecraft/loot_table/blocks/black_shulker_box.json*
+180. `items/loot-tables`:364 — `unpackLootTable` *is twenty lines* — twenty-five, and a line count moves with the decompiler (V10); now *one short method* — `world/RandomizableContainer.java`:80–104
+181. `items/loot-tables`:380–388 — *Four callers*, one of them `EnchantWithLevelsFunction` — a function a table runs, not a caller; now three callers and the function named apart — `world/level/storage/loot/functions/LootItemFunctions.java`:47
+
+#### Elsewhere, where a correction here made the page disagree
+
+182. `lectures.md`:166 — *the last five are three engines* — *(withdrawn by the audit: the three-engine reading is the true one, 215; the line is as it was)*
+183. `reference/glossary`:245 — *Enchantment* — *a data-pack record of effect components conditioned on loot predicates* — seven of the thirty-one keys carry no condition; now *most of them conditioned* — `world/item/enchantment/EnchantmentEffectComponents.java`:101–121
+184. `reference/glossary`:437 — *Loot context* asked by *every … enchantment effect* — only the conditional ones (as `contexts-and-predicates`:54)
+
+#### Found by the audit of the record — one agent per page, every changed sentence re-derived
+
+185. `items/using-an-item`:10–11 — *whether reaching zero is allowed to end anything*, left beside 34 — a bow reaching zero completes like any use; now *whether the countdown ever reaches zero* — `world/entity/LivingEntity.java`:3713; `world/item/Item.java`:384–386
+186. `items/using-an-item`:16 — 35's own *Nobody holds a bow for an hour, so the shot is fired by …* — the hour running out would complete the use with no shot; the shot lives only in the release; now says so — `world/item/BowItem.java`:27–59; `world/item/Item.java`:257–260
+187. `items/using-an-item`:52 (the bow's cell) — *the animation, and nothing else*, beside 36's corrected meal cell — the client runs the release on its own copy; now says so, and that it shoots nothing — `client/multiplayer/MultiPlayerGameMode.java`:563–567
+188. `items/using-an-item`:74 — 37's own *registered in `BuiltInRegistries.CONSUME_EFFECT_TYPE`* — the registry holds the effects' types — `world/item/consume_effects/ConsumeEffect.java`:24–33
+189. `items/using-an-item`:186 — 42's own *the three sounds a `CrossbowItem.ChargingSounds` holds* — three optional slots, and Quick Charge's fills two; now *the start, middle and end … (Quick Charge's has no middle)* — `world/item/CrossbowItem.java`:275; *data/minecraft/enchantment/quick_charge.json*
+190. `items/using-an-item`:193–195, `items/enchantments`:322 — 43's own *every frame, to pick one of three textures* — the per-frame evaluation in `FirstPersonHandsAndItems` poses the arm, and `CrossbowPull` picks the model; now *to pose an arm and pick one of three textures* — `client/renderer/FirstPersonHandsAndItemsRenderer.java`:346; `client/renderer/item/properties/numeric/CrossbowPull.java`:26–28
+191. `items/using-an-item`:290–291 — 46's own *which is how a piglin and a pillager fire* — the AI's release finishes the charge; the shot is `RangedAttackMob.performRangedAttack` 20 to 39 ticks later; now *finish loading* — `world/entity/ai/behavior/CrossbowAttack.java`:71–84; `world/entity/ai/goal/RangedCrossbowAttackGoal.java`:121–133
+192. `items/using-an-item`:296–297 — 47's own *thirty-one quiet ticks* — the middle band has particles and a broadcast chew sound; now *thirty-one ticks in which the meal sends its eater nothing* — `world/entity/player/Player.java`:401–402
+193. `items/using-an-item`:189, :27 (cast) — *render-thread*, and *Server and Render* beside three *both*s in one column — the polish's misses (V7); now *Render-thread* and *both* *(polish)*
+194. `player/the-spear`:156–158 — *so the charge ends only when you release* — a 72000-tick use can complete at zero (34); now *in play*
+195. `items/containers-and-menus`:12–15 — 55's own *a CRC32C hash per component … before it compares anything* — a hash per component the patch adds, and the state id is compared first; now *per component its patch adds … before it compares any slot* — `network/HashedPatchMap.java`:17, :21–29; `server/network/ServerGamePacketListenerImpl.java`:2260, :2269
+196. `items/containers-and-menus`:26 (cast) — *every menu's writer but one*, beside 70 — the close rescue and a station's `clearContainer` write around it too; now *the writer of every slot update a click causes but one* — `world/entity/player/Inventory.java`:325; `world/inventory/AbstractContainerMenu.java`:722–727
+197. `items/containers-and-menus`:73–74 — *without a side test anywhere in the body*, in the sentence 60 rewrote — `CraftingMenu`'s access lambda tests for a `ServerLevel`; now *whatever the body itself tests* — `world/inventory/CraftingMenu.java`:77
+198. `items/containers-and-menus`:228–234 — 66's own *those three reach … (the two crafting menus override it …)*, and the older *for a chest nothing calls back into the menu* — the grindstone and the lectern reach the base too, and a bundle click calls `AbstractContainerMenu.slotsChanged` on whatever menu is open, a chest's included; rewritten — `world/inventory/GrindstoneMenu.java`:53, :137; `world/inventory/LecternMenu.java`:39; `world/item/BundleItem.java`:316–322
+199. `items/containers-and-menus`:373 — *So the distance test*, now following the paragraph 71 inserted; now *Back in the tick* *(page-internal)*
+200. `items/containers-and-menus`:387 — 67's own *outside the thrown click above* — the ladder's three silent drops leave a prediction standing too (the page's own table); now *after a click the server ran to its end* — `server/network/ServerGamePacketListenerImpl.java`:2250–2258
+201. `items/containers-and-menus`:478–479 — *what the client is allowed to put in it*, beside 56 — now *what a click is allowed* (as 56)
+202. `items/items-and-stacks`:22, :239, `items/README`:115 — 19's and 12's own *the durability a tool spends*, *the wear a tool takes* — no client path spends any item's durability; now *an item* — `world/item/ItemStack.java`:458, :486, :505–522
+203. `items/items-and-stacks`:32 (cast) — the polish's *written on the Server or Render thread at reload* — a dedicated server's first bind is on the boot thread; now names the thread loading the world, the Server thread at `/reload` and the Render thread for a joining client — `server/Main.java`:184–196; `server/WorldLoader.java`:54–56
+204. `items/items-and-stacks`:35, :79 — copying a stack *free*, beside 25's *two small objects* — now *cheap* *(page-internal)*
+205. `items/items-and-stacks`:72 (f1 caption) — 21's own *Four fields each* — only `ItemStack` and `Item` hold four; now names them — `core/component/PatchedDataComponentMap.java`:20–22
+206. `items/items-and-stacks`:206–207 — 31's own *never sanitised … the one thing on the wire* — a template made from a stack carries its sanitised patch, and `ItemCost`'s predicate also sends default-equal values; now *the template itself never sanitises … a template read from data … which no `ItemStack` can* — `world/item/ItemStackTemplate.java`:60–62; `world/item/trading/ItemCost.java`:23
+207. `items/items-and-stacks`:295–297 — 33's own *all but a few* — two, `BannerItem` and `ProjectileWeaponItem` (a hedge names its population); now *all but two*, both named — `world/item/BannerItem.java`; `world/item/ProjectileWeaponItem.java`:32–126
+208. `items/README`:153–154 — *each kept for a behaviour hook*, beside 33 — now *all but two* (as 207)
+209. `items/recipes`:121, :443, `items/README`:157 — 79's and 16's own *whose output depends on what went in*, *whose matching is Java* — the dye, imbue, transmute and smithing recipes build from their input too, and three have Java matching; what sets the nine apart is that the book never shows them; now says so — `world/item/crafting/DyeRecipe.java`:89–103; `ImbueRecipe.java`:80–85; `CustomRecipe.java`
+210. `items/recipes`:28 (cast) — `CraftingInput` on the Server thread only — the client's `ResultSlot.onTake` builds one too — `world/inventory/ResultSlot.java`:99
+211. `items/recipes`:80 — *the worker*, the polish's miss (V7); now *the worker pool* *(polish)*
+212. `items/recipes`:126, :202 — two links landing on sections that no longer hold their fact (the curses, `ContainerLevelAccess.NULL`); repointed to `enchanting`'s opening and `containers-and-menus`' *Three asymmetries* *(links)*
+213. `items/README`:12–14 — 1's own link covered only the shift-click, and *not a guess at all* lost its antecedent; now *guessing ahead of the server*, with `using-an-item` linked for the bow
+214. `items/README`:25 — 3's own *to anything that wears armour* — `Equippable` is also the carved pumpkin, the saddle, the elytra, the heads; now *whatever wears it, armour and saddle alike* — `world/item/Items.java`:638, :1176, :1202, :1692
+215. `items/README`:39–42, `lectures.md`:166 — 4's own *The last five are engines* — dropping *three* made every page an engine, against :47 and the verified line; restored and the three named, and 182 withdrawn *(page-internal)*
+216. `items/README`:44, :52 — 5's and 6's own *only where the figure draws an arrow*, *the one debt* — the pages link each other more than that (`enchantments` and `loot-tables` both ways, `contexts-and-predicates` to `enchantments`); now *each page links the other's machine* and *a link, not a lesson* *(page-internal)*
+217. `items/README`:101–103 — *when a menu's changes are broadcast*, beside 10 — now *other changes* *(page-internal)*
+218. `items/README`:155 — *twenty-eight menus* — five of them abstract; now *menu classes* — `world/inventory/*Menu.java`
+219. `lectures.md`:180–181 — *the one page in this part that Part XIII needs* — Part XIII's pages link seven of the eight; now *that Part XIII's landing page names* (15's fact) — `commands/README`:91
+220. `lectures.md`:386 — *for every trigger* — `ImpossibleTrigger` has no player condition (155's fact); now *every trigger that tests a player* — `advancements/triggers/ImpossibleTrigger.java`:17
+221. `items/enchanting`:8–10 — *ships the answer … as ten integers*, beside 113 and 133 — shorts, and the seed crossed at the menu's opening; now *holds the answer as ten numbers the menu syncs* — `network/protocol/game/ClientboundContainerSetDataPacket.java`:23–30
+222. `items/enchanting`:119–120 — 123's own *two for merging two damaged items of one kind* — the two is charged when the merge repairs the left item, whatever the right one's state; now says so — `world/inventory/AnvilMenu.java`:172–186
+223. `items/enchanting`:160–164 — 115's own *the same three*, and *`EnchantRandomlyFunction` asks the supported one* — the flag and a plain book switch that test off; now *the three that do not ask the narrow question* and the condition named — `world/level/storage/loot/functions/EnchantRandomlyFunction.java`:68
+224. `items/enchanting`:219–222, :403 — 128's own *`SetEnchantmentsFunction` rolls nothing*, and *the deterministic one* — it samples a `ContextIntProvider`, which vanilla's data makes constant; now says so — `world/level/storage/loot/functions/SetEnchantmentsFunction.java`:61, :65
+225. `items/enchanting`:253–255 (f1 caption), :264 — 129's own *which makes … the first extra roll certain*; *the first extra is certain* — the halving explains only the rarity, and only the roll is certain (the loop can still find nothing compatible); now says both — `world/item/enchantment/EnchantmentHelper.java`:645–652, :657
+226. `items/enchanting`:329–331 (f2 caption) — 138's own *from the cost … and the lapis and levels it can see* — the item and infinite materials are asked too; now named — `world/inventory/EnchantmentMenu.java`:167–174
+227. `items/enchanting`:398–399 — *discards the trade if the result somehow is not an enchanted book*, on the line 142 rewrote — the filter discards a book with nothing stored in it — *data/minecraft/villager_trade/librarian/1/emerald_and_book_enchanted_book.json*; `advancements/predicates/EnchantmentPredicate.java`
+228. `items/enchanting`:434–435 — *`EnchantmentScreen` is the client copy* — the copy is the menu; now *the client's side, whose copy of the menu can only say no* *(page-internal)*
+229. `items/loot-tables`:388–389 — `EnchantWithLevelsFunction` *is the loot side of enchanting*, leaning on the framing 143 removed — now *the cost-based function on the loot side*
+230. `items/enchanting`:21–22 — `RepairItemRecipe` carries the curses *onto the tool it makes* (80's fact) — now *the item*
+231. `items/contexts-and-predicates`:388–389 — 161's own *the tags a predicate names are bound before it is even decoded* — read into the decode lookup, and bound only when the reload is applied; it contradicted `foundations/tags`; now says so — `server/ReloadableServerRegistries.java`:33–37; `core/MappedRegistry.java`:466–511; `server/ReloadableServerResources.java`:82–84
+232. `items/contexts-and-predicates`:98, :142, :328 (f2) — 150's own *the one way a context hands out a value* — the level, the luck, the random source and the resolver too; now *a parameter's value* — `world/level/storage/loot/LootContext.java`:62–76
+233. `items/contexts-and-predicates`:26, :43, :52 (f1) — 148's own Callers node *loot tables* and *toward the one invocation at the foot* — a table's declared type is not the set a roll brings, and the client's arrow ends at a map; now the node names what rolls tables, the caption *a checked map or the invocation built on it*, and :52 *Whatever rolls a loot table* — `world/level/block/state/BlockBehaviour.java`:253; `world/item/crafting/display/SlotDisplayContext.java`:16–18
+234. `items/contexts-and-predicates`:275, :297 — 159's own `/item … modify` — also the *from … modifier* forms of `replace`, `fill` and `override`; now named — `server/commands/ItemCommands.java`:76, :97–98, :191
+235. `items/contexts-and-predicates`:16–17 — 147's own *never consulted while the game is running* — a reload runs while it runs; now *never consulted by a roll*
+236. `items/contexts-and-predicates`:400–401 — *a context per tested entity* — per interaction too, by its own rows *(page-internal)*
+237. `items/contexts-and-predicates`:176 — *none of this runs on the client* — the client builds a `ContextMap` (the page's own :55–57); now *no loot context is built on the client* (first logged as polish, pass5.md:4500) — `world/level/storage/loot/LootParams.java`:63
+238. `items/enchantments`:15–16 — 94's own *or a tag that names it* — loot data names Fortune, Silk Touch and Looting by id too; now three kinds — *data/minecraft/loot_table/blocks/diamond_ore.json*:19; *data/minecraft/predicate/tool/can_silk_touch.json*:7
+239. `items/enchantments`:24, :25 (cast) — *every moment an enchantment can change*; *Server for every effect*, beside 104 and 107 — now *one per moment an effect can act* and *every entity and location effect* — `world/item/enchantment/Enchantment.java`:315–322
+240. `items/enchantments`:118 — the polish's *The calls run one way, into the enchantment package* — it calls out (`Ignite` to `Entity`, `EnchantmentHelper` to the owner's slots); now *calls out little and is called from everywhere* — `world/item/enchantment/effects/Ignite.java`:21; `EnchantmentHelper.java`:184
+241. `items/enchantments`:143, :166 (f1 caption) — *Six of those seven rows*, *the one row that does not take it*, beside 100 — the value and sound hooks skip the shape too; now *Most hooks* and *the flag row's way round it* — `world/item/enchantment/EnchantmentHelper.java`:529–556
+242. `items/enchantments`:298 — 105's own *drops what it wears* — every equipment slot, held items included; now *its equipment* — `world/entity/Mob.java`:974–999
+243. `items/enchantments`:310 (heading), :312 — 107's own *why it is never an effect* — two value effects run on the client; now *why no entity effect does* and *No entity or location effect*; the inbound link repointed — `world/item/enchantment/Enchantment.java`:315–320
+244. `items/enchantments`:331–337 — 107's own list — `Equippable.swapWithEquipmentSlot` asks the flag too, the anvil and the grindstone build their results on the client, and the sound is Riptide's, not a throw's; now says so — `world/item/equipment/Equippable.java`:64; `world/inventory/ItemCombinerMenu.java`:104–115; *data/minecraft/enchantment/riptide.json*
+245. `items/enchantments`:379–380 — 109's own *the private walks under every effect hook* — Mending's `EnchantmentHelper.getRandomItemWith` reads the component directly; now says so — `world/item/enchantment/EnchantmentHelper.java`:558–582
+246. `items/loot-tables`:16–17 (the bold hook) — 164's own *no luck in it, and no loot advancement for anyone* — the page's dungeon chest loses neither: no chest table reads luck, and only a bastion chest counts for an advancement; now *in vanilla that costs nothing but a bastion chest's advancement* — *data/minecraft/advancement/nether/loot_bastion.json*
+247. `items/loot-tables`:81–82 — 166's own *lands on top of what the roll put there* — it replaces the slot; now *replaces* — `world/level/block/entity/BaseContainerBlockEntity.java`:139–140
+248. `items/loot-tables`:206 (f2 node P), :210–212 (f2 caption) — 169's own *narrowing from the pool's condition to a single candidate* and *rolls no dice at all* — the condition and the count are per pool, a draw narrows to at most one, and the pick uses no roll though modifiers may; now *A pool's draws, each narrowing to at most one candidate* and *taken without a roll to pick it* — `world/level/storage/loot/LootPool.java`:82–83, :104–111
+249. `items/loot-tables`:257–261 — 172's own *Looting's one plays no part in its loot table* — an unclear antecedent beside a list of loot functions; now names the equipment drop chance
+250. `items/loot-tables`:272–273 — 174's own three — at least seven functions return another stack; now `SetRandomDyesFunction` and the three enchanting functions given a book beside them — `world/level/storage/loot/functions/EnchantRandomlyFunction.java`:89–91; `SetEnchantmentsFunction.java`:54–56; `SetRandomDyesFunction.java`:52
+251. `items/loot-tables`:301–302 — 176's own *such a table never loads* — the whole reload fails; now says so — `server/ReloadableServerRegistries.java`:61–66
+252. `items/loot-tables`:315–316 — 178's own *whatever its table's sequence is up to* — a table naming none falls to the level's random; now says so — `world/level/storage/loot/LootContext.java`:207–213
+253. `items/loot-tables`:338–345 — 179's own *a container that is broken still owing its roll* and *broken unopened* — a player's break rolls a shulker box first, only a playerless break (an explosion, a piston) leaves the key, only tables that copy the component carry it, and creative pick-block writes it too; now says so — `world/level/block/ShulkerBoxBlock.java`:101–115; `server/network/ServerGamePacketListenerImpl.java`:739–766
+254. `items/loot-tables`:390–391 — *how few involve loot*, beside 165's *largest client* — now *which of them roll a table* *(page-internal)*
+255. `foundations/data-driven-types`:305 — *the three levels of modifiers* — four tiers (entry, composite, pool, table), as `loot-tables` now says — `world/level/storage/loot/entries/CompositeEntryBase.java`:30–31
+
+### Figures changed
+
+- `items/using-an-item` f1 — node X *replays LivingEntity.completeUsingItem* (45). No arrow added, removed or reversed.
+- `items/using-an-item` f3 — the third band's note *tick 32, the count at zero, and only the server ending it* (48); the replay message names `LivingEntity.completeUsingItem` (45). No arrow reordered.
+- `items/using-an-item` f4 — the server's self-message in the second band *the count falls, and only the using-item trigger fires* (49).
+- `items/enchantments` f1 — the flag arm's node *ask the record or its tags: is it there at all* (99). f2 — the band's note *a later tick, and every tick after it while the fire lasts* (101).
+- `items/enchanting` f2 — the note *EnchantmentMenu.slotsChanged* (131); EM → Wire *one ClientboundContainerSetDataPacket per changed slot, from broadcastChanges* (132); the data now lands on the client's menu, Wire → CEM *the costs and the clues, the seed there since the menu opened* (133); CEM → EScr *true only if the lapis and the levels are there, or materials are infinite* (134); the `Player.onEnchantmentPerformed` note moved above the enchant message (135); EM self *slotsChanged again, and an enchanted item gets no offers* (136); EM → Wire *the zeroed costs, the cleared clues and the new seed, from the handler's broadcastChanges* (137). Its ordering: the second selection, then `Player.onEnchantmentPerformed`, then `EnchantmentHelper.updateEnchantments` once per entry, then the lapis and the stat, then `EnchantmentMenu.slotsChanged`, then the broadcast.
+- `items/recipes` f3 — the band's note *a later click, the player takes the result* (81); ResultS → TCC *Container.removeItem, one cell at a time, each followed by its remainder* (82).
+- `items/contexts-and-predicates` f1 — the Callers node *block breaks, deaths, chests, commands, selectors, advancements, trades, enchantment effects, fuel, composters* (148, 233). f2 — LIC → LootC *getOptional, the one way to a parameter, null for a missing key* (150, 232).
+- `items/loot-tables` f2 — node P *taken, with no roll to pick it* (248).
+- Rendered (`render_figures.js --pages systems/items`): 19 figures, the smallest type 12.6px, none below the bar; `using-an-item` f1's one crossing is the layout pass 7 left.
+
+### Captions changed
+
+Nine rewritten, word for word (the audit rewrote five of them a second time):
+
+- `items/README` f1: *The two tiers of the part, numbered to the watch order. Every arrow means "and now you can assume this", so contexts and predicates, the one page after the first with no arrow into it, is one you can watch whenever you like.* (7)
+- `items/items-and-stacks` f1: *`ItemStack`'s four fields and `Item`'s four, and the arrows between the classes. The dotted one is the shape of the whole system — a stack reads defaults it can never touch.* (21, 205)
+- `items/enchantments` f1: *One shape, and the flag row's way round it. The flag row answers from the record and its tags alone, with no context built and no condition run.* (100, 241)
+- `items/enchantments` f2: *Six lanes between the click and the flame. The band is where the enchantment has already finished — what the other player sees is a `SynchedEntityData` flag, and one point of damage a second is the entity's own business.* (102)
+- `items/enchanting` f1: *Four sources of variance in a row, and then a loop. The cost halves on every pass through it, which makes each extra enchantment rarer than the last; the first extra roll, taken before any halving, is certain from a cost of forty-nine.* (129, 225)
+- `items/enchanting` f2: *One menu class, two copies, and the boundary drawn. The client's `EnchantmentMenu` answers the click before any packet is sent, from the cost it was sent, the item and lapis in its slots, and the player's levels or infinite materials.* (138, 226)
+- `items/contexts-and-predicates` f1: *Every arrow leads down toward a checked map or the invocation built on it, and the box is the whole of the general-purpose half. The three classes inside it name no item, block, entity or loot table; the two below it are the loot package, and everything that asks a question is outside on the right.* (148, 233)
+- `items/loot-tables` f1: *The roll is three messages deep inside `RandomizableContainerBlockEntity.createMenu`, and the screen is the last three arrows. Look at where the chest is filled relative to where the client is told anything — the contents exist before the screen is asked for.* (168)
+- `items/loot-tables` f2: *A pool's draws, each narrowing to at most one candidate. Note the middle arm out of the last diamond, where a draw with one surviving candidate is taken without a roll to pick it.* (169, 248)
+
+The other ten lost only the *Figure:* the stylesheet already prints before every caption (`custom.css`), which had made every Part VII caption read *Figure 3. Figure: …*; `python tools/pass7/captions.py` lists them. All nineteen are at most two sentences.
+
+### Polished
+
+Sentences whose meaning could have moved, each re-read against the tree:
+
+- `items/loot-tables`:41, :264, :266 — the nesting of modifiers is a *tier*, not a *level* (pass5.md:4494; the page's own *tiers of modifiers*; `world/level/storage/loot/functions/LootItemFunction.java`:16–26)
+- `items/contexts-and-predicates`:188 — *a **stack, not a history*** (was *a ledger*; pass5.md:1039, :4550; `world/level/storage/loot/LootContext.java`:54–60); :209 — *belongs to [loot tables](…)* (was the possessive on the link, V8)
+- `items/enchantments`:118 — *Everything above does nothing until something calls* (was *is inert*; pass5.md:4497); :179 — *Fire Aspect as data is one small JSON file* (pass5.md:4540; V10)
+- `items/containers-and-menus`:401 — *changes to any of those are re-sent* (pass5.md:4542)
+- `items/recipes`:131 — *for the dye recipe … for the imbue* (pass5.md:4546; `world/item/crafting/DyeRecipe.java`:139, :142; `ImbueRecipe.java`:101, :103)
+- `items/using-an-item`:49 — *is the ending answered … that is the answer* (pass5.md:4548)
+- Thread names (V7): every cast on the part now says *Server*, *Render*, *both* or *the worker pool*, and the prose at `containers-and-menus`:246, `enchantments`:322, `loot-tables`:327–330 and `recipes`:38, :57, :80, :88 says *Server thread*, *Render thread* and *the worker pool*; no *server main*, *client main*, *main thread* or *background executor* is left in the part. Four cast cells changed what they say with it, each now a correction: `recipes`' `RecipeManager` (*the first finalize on whichever thread builds the server*, `server/MinecraftServer.java`:312–315, :372) and `CraftingInput` (210), and `items-and-stacks`' `DataComponentInitializers` (20) and `Holder.Reference` (203)
+- Two polished sentences the audit found had moved a meaning are corrections: pass5.md:4500's (237) and :4553's (240)
+
+By kind: thread names 8 pages, *actually* cut 7 (`containers-and-menus`, `enchanting`, `items-and-stacks` 2, `recipes`, `using-an-item` 2), caption prefix 19, possessive on a link 1, voice units settled by a clause 9.
+
+### The queue
+
+The 77 pass 5–7 ledger entries on these pages are all struck by this session: 64 checked (36 of them naming a neighbour or a part this session corrected), 4 wrong or wrong in part, 7 overtaken (V2's counts and 26.3's removals among them) and 2 notes with no claim; `pass8_queue.py --part VII` lists none open. Part VII's units in [pass5.md](pass5.md) settled: 35 struck, settling 39 units (the session H bullet carries five) — done 19, record 7, ruled 5, overtaken 2, second edition 2 — and a note appended to the seven units other parts share (82, 3301, 4302, 4308, 4318, 4389, 5096). `pass5_queue.py --summary`'s Part VII row now counts only two of those shared units, each carrying VII's share and left open for the later parts it names.
+
+### For later sessions
+
+- **H** — nothing on Part VIII's pages disagrees with a correction here; `player/hunger-and-experience`:278 already says the seed is re-rolled on a zero load. `Equippable` is named on no Part VIII page (the landing page no longer says it is Part VIII's).
+- **I** — `networking/packets-and-stream-codecs` keeps the `HashedStack` shape (pass5.md:4302); a `HashedStack` is an item, a count and a CRC32C per added component, not a hash per slot (55), which that page should agree with.
+- **J** — `client/gui-and-screens` and `containers-and-menus` are unlinked on the null `MenuType`, the click resolution and the creative screen (pass5.md:4308); the links are the gui page's to add.
+- **N** — `commands/advancements`:7–10 opens on `AbstractContainerMenu.broadcastChanges` and links `containers-and-menus` nowhere (pass5.md:4318). `commands/brigadier-and-commands`:344 gives the *from … modifier* form to `/item replace` only; in 26.3 `fill` and `override` take it too (`server/commands/ItemCommands.java`:76, :97–98).
+- **O** — the glossary's *Menu* entry names the server's object only (pass5.md:4308). Two generated intros in `tools/gen_reference.py`: `reference/loot-context-params`' *Every key is read the same way, with `LootContext.getOptional`* (`LootContext.hasParameter` reads presence too, 232) and its *the engine is older … than the loot package* (history the tree cannot show, 165); and `reference/enchantment-hooks`' intro, which `enchantments` no longer repeats near-verbatim (240).
+- **P** — the V1 and V2 entries on these pages (checked as claims in the prompts, not struck here), and this session's diff.
+- **A probable upstream bug, written on its page as mechanism.** `items/containers-and-menus`: a click that throws inside `AbstractContainerMenu.clicked` leaves the handler before `AbstractContainerMenu.resumeRemoteUpdates`, whose only call site follows the click, so the open menu's remote updates stay suppressed (the entity-phase broadcast, a pickup's, a hopper's change all send nothing to that client) until a later click succeeds (67; `server/network/ServerGamePacketListenerImpl.java`:2262–2273; the same in 26.2).
+
 ## Pass 8, session F — Part VI · Entities *(2026-09-27)*
 
 Ten pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
@@ -4056,12 +4431,12 @@ The gaps pass 9 has to work around:
   the server thread. **Correction** — it had been drawn arriving at
   `ServerLevel`; the read runs in `ChunkMap`'s continuation on
   `mainThreadExecutor` (`server/level/ChunkMap.java`:597–609).~~ *(checked on the lane (`server/level/ChunkMap.java`:594–606); the label named `SerializableChunkData.read` in a no-file scenario — see *Pass 8, session D* — pass 8, session D)*
-- `items/using-an-item` f1: the tick-32 arrow into `Consumable` is now headed
+- ~~`items/using-an-item` f1: the tick-32 arrow into `Consumable` is now headed
   by `Consumable.onConsume`, reached from `ItemStack.finishUsingItem`, with
   `FoodData.eat` *inside* it rather than after it (`world/item/Item.java`:240–243;
   `world/item/component/Consumable.java`:59–79, the listener loop;
   `world/food/FoodProperties.java`:35). **Correction** of the order the label
-  implied.
+  implied.~~ *(checked (`world/item/component/Consumable.java`:59–80; `world/item/Item.java`:257–260) — pass 8, session G)*
 - ~~`server/server-tick` f1: the arrow into `Connection` is headed
   `Connection.tick`, called on each connection from
   `ServerConnectionListener.tick` (`server/network/ServerConnectionListener.java`:199).~~ *(checked: `server/network/ServerConnectionListener.java`:181 — pass 8, session C)*
@@ -4145,10 +4520,10 @@ The gaps pass 9 has to work around:
   numbers (`world/level/block/Block.java`:93, :103); the caption's *the two that
   reach the piston page are why it is watched late* is now *every one of them
   runs from an earlier lecture to a later one*, which the numbers bear out.~~ *(checked (`world/level/block/Block.java`:92, :102) — pass 8, session E)*
-- `items/README`: *the engines*, not *the three engines* over five boxes;
+- ~~`items/README`: *the engines*, not *the three engines* over five boxes;
   *Figure:* dropped from the caption. `player/README` node 5 shortened.
   `commands/README`: floor titles lower-cased, ids renumbered to match, caption
-  now says its arrows are the one set that points down, and why.
+  now says its arrows are the one set that points down, and why.~~ *(checked (the figure's subgraph says *the engines*); :39 counted three without naming them — see *Pass 8, session G*, correction 4 — pass 8, session G)*
 - `networking/chat-and-signing`:150: *Five of the checks* run before the server
   thread, not four — **correction** (page-internal against its own :204 and
   figure; `server/network/ServerGamePacketListenerImpl.java`:1679–1683,
@@ -5369,7 +5744,7 @@ screen** and no overlap, overflow or clipping anywhere in the part.
 
 ### The figures redrawn, and what each asserts
 
-- `items/README` — the part figure gains two subgraphs (*the vocabulary*, *the
+- ~~`items/README` — the part figure gains two subgraphs (*the vocabulary*, *the
   three engines*) and its eight nodes are numbered to the watch order. **No arrow
   added, removed or reversed**: the six edges and their sentences are the page's
   own, unchanged. The claim the subgraphs assert is the section's own sentence
@@ -5377,8 +5752,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   standing request for an `EC → LO` edge (:4491) is **ruled out**: the prose says
   the engines lean on the vocabulary and not on each other, and an arrow here
   means *what the next page can now assume*, which loot tables does not owe
-  enchanting.
-- `items-and-stacks` figure 1 — the flowchart is now the book's **sixth
+  enchanting.~~ *(checked (the two subgraphs and six edges); the ruling's premise, that the engines lean not on each other, was wrong — see *Pass 8, session G*, correction 5 — pass 8, session G)*
+- ~~`items-and-stacks` figure 1 — the flowchart is now the book's **sixth
   `classDiagram`**, and it is the shape the section's heading promised (*Four
   fields*). `count` and `popTime` were edgeless boxes in a subgraph whose title
   was **clipped mid-phrase on screen** (*ItemStack — the object in*); they are
@@ -5389,8 +5764,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   labelled *reads the defaults, never writes them* — the page's thesis arrow,
   whose label had drifted onto the neighbouring solid edge in the render. The
   `Item` box lists the four fields the opening paragraph names, verified at
-  `Item.java:120-123`, and the `ItemStack` box the four at `ItemStack.java:123-128`.
-- `containers-and-menus` figure 1 — the `ContainerSynchronizer` lane **cut**
+  `Item.java:120-123`, and the `ItemStack` box the four at `ItemStack.java:123-128`.~~ *(checked (`world/item/ItemStack.java`:124–129; `world/item/Item.java`:134–137); the caption's *two arrows* was wrong — see *Pass 8, session G*, correction 21 — pass 8, session G)*
+- ~~`containers-and-menus` figure 1 — the `ContainerSynchronizer` lane **cut**
   (seven lanes → six), and with it the two arrows that drew *the absence of a
   packet as a packet*. **Correction, not a simplification**: `RemS-->>CSync:
   nothing, sendSlotChange is never reached` named the wrong caller —
@@ -5400,8 +5775,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   one note asserting that the synchronizer is not reached in the agreeing case.
   A `rect` band marks the server tick that drains the packet (F8); `matches?`
   is `matches`, the form the prose uses; *predicted on the twin* is *on the
-  client's own copy*, the page's own phrase.
-- `containers-and-menus` figure 2 — split at `IX -->|passes|`. The four gates are
+  client's own copy*, the page's own phrase.~~ *(checked (`world/inventory/AbstractContainerMenu.java`:303–311) — pass 8, session G)*
+- ~~`containers-and-menus` figure 2 — split at `IX -->|passes|`. The four gates are
   a two-column table (*the test* · *what a failure does*), and the figure is the
   five nodes the section is actually about. **Nodes removed**: `BC` → `AG` →
   `SIL` / `ONE`, which redrew figure 1's ending. **Correction**: the figure drew
@@ -5410,8 +5785,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   and not in the handler at all (`ServerGamePacketListenerImpl.handleContainerClick`,
   four tests then one `fullResyncNeeded` fork). The sentence pointing at "the
   order of the last two boxes" now points at a figure whose last two boxes are
-  the ones it means.
-- `contexts-and-predicates` figure 1 — **`LCtx -->|getParameter and
+  the ones it means.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:2250–2278) — pass 8, session G)*
+- ~~`contexts-and-predicates` figure 1 — **`LCtx -->|getParameter and
   getOptionalParameter| Users` reversed and then cut**: the users call the
   context (`DamageSourceCondition.java:31-32`), and the five of them belong to
   *What reads a context*, 180 lines below. `SlotSource` **cut**: declared outside
@@ -5422,15 +5797,15 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   ("everything *above* them is whoever wants a question answered… and, on the
   *client*, `SlotDisplayContext`, which builds a `ContextMap` of its own"). The
   loot subgraph is gone and its two nodes carry the `server` class instead: its
-  title was being drawn over the arrow entering it.
-- `contexts-and-predicates` figure 2 — `CMap-->>LootP` **relabelled** from
+  title was being drawn over the arrow entering it.~~ *(checked (the figure's arrows); the caption's *built out of* and the Callers node were wrong — see *Pass 8, session G*, correction 148 — pass 8, session G)*
+- ~~`contexts-and-predicates` figure 2 — `CMap-->>LootP` **relabelled** from
   *throws on an unexpected key, or on an absent required one* to *the checked
   map, or a throw on a bad key*: the old label drew a conditional throw as an
-  unconditional return, against the prose's three-moments account.
-- `enchanting` figure 1 — the five sentence labels are gone and the bare **50**
+  unconditional return, against the prose's three-moments account.~~ *(checked (`util/context/ContextMap.java`:71–84) — pass 8, session G)*
+- ~~`enchanting` figure 1 — the five sentence labels are gone and the bare **50**
   is paired with its meaning in the lead-in above the figure (F4). No arrow
-  changed: the loop, the two diamonds and the two exits are the same claims.
-- `enchanting` figure 2 — **split by machine**, with a lane each for the two
+  changed: the loop, the two diamonds and the two exits are the same claims.~~ *(checked (`world/item/enchantment/EnchantmentHelper.java`:626–660); the caption's boundary was off by one — see *Pass 8, session G*, correction 129 — pass 8, session G)*
+- ~~`enchanting` figure 2 — **split by machine**, with a lane each for the two
   copies of `EnchantmentMenu` (`CEM` and `EM`, a new key row, session F's
   `AbstractBoat` precedent). **Correction**: `EM->>SP: broadcastChanges` and
   `SP-->>EScr: broadcastChanges` put the same method on two arrows in two
@@ -5441,13 +5816,13 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   are now `EM->>Wire`. `Player` and `ServerPlayer` **cut** to two notes;
   `SGPL` cut, the packets going through the `Wire` lane the split gave the
   figure. The assertion the split makes is the section's own: the client's copy
-  answers the click before any packet is sent.
-- `enchantments` figure 1 — **arm added**: `EnchantmentHelper.has,
+  answers the click before any packet is sent.~~ *(checked on the split; five arrows and notes around it were wrong — see *Pass 8, session G*, corrections 131–137 — pass 8, session G)*
+- ~~`enchantments` figure 1 — **arm added**: `EnchantmentHelper.has,
   EnchantmentHelper.hasTag → ask the record: is the key there at all`, and the
   entry point is now a diamond. The paragraph above the figure calls the flag row
   "the exception and… the reason the shape is worth drawing" and the figure did
-  not draw it.
-- `enchantments` figure 2 — **two corrections of the caller's-method-at-the-callee
+  not draw it.~~ *(checked as drawn; `EnchantmentHelper.hasTag` asks the tags, not the record — see *Pass 8, session G*, corrections 99, 100 — pass 8, session G)*
+- ~~`enchantments` figure 2 — **two corrections of the caller's-method-at-the-callee
   shape**: `SGPL->>Player: handleAttack…` is `attack`
   (`ServerGamePacketListenerImpl.java:2020-2053` — `handleAttack` is the
   listener's own and `this.player.attack(target)` is what reaches the player);
@@ -5456,8 +5831,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   `Entity.setSharedFlagOnFire` (`Entity.java:583, 606-607, 2985-2991`). The
   `SynchedEntityData` lane is folded (one message, no decision) and the fire
   ticking is a `rect` band — the prose puts it on later ticks and the figure drew
-  it as the next moment.
-- `items/loot-tables` figure 1 — redrawn at six lanes with a `Wire` lane, and
+  it as the next moment.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:2111; `world/entity/Entity.java`:602–604); the caption's *five lanes* was wrong — see *Pass 8, session G*, correction 102 — pass 8, session G)*
+- ~~`items/loot-tables` figure 1 — redrawn at six lanes with a `Wire` lane, and
   **five corrections**: `ChestBlockEntity` and `RandomizableContainer` were two
   lanes for one object (`RandomizableContainerBlockEntity implements
   RandomizableContainer`, `:20`); `SP->>ChestM: ClientboundOpenScreenPacket goes
@@ -5471,19 +5846,19 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   called with and so is installed before any pool runs (`LootTable.java:114-122`);
   and `setItem` was a `LootTable` self-call when it writes into the container
   (`LootTable.java:166-172`). The opening arrow's `ChestBlock.useWithoutItem`
-  label — a class with no lane — is a note.
-- `items/loot-tables` figure 2 — **the placement tail cut** (`R` → `X`, seven
+  label — a class with no lane — is a note.~~ *(checked (`server/level/ServerPlayer.java`:1539–1540, :633–636; `world/level/storage/loot/LootTable.java`:120–122); the caption's *last two arrows* was wrong — see *Pass 8, session G*, correction 168 — pass 8, session G)*
+- ~~`items/loot-tables` figure 2 — **the placement tail cut** (`R` → `X`, seven
   nodes: the three function tiers, the splitter, the shuffle and the write),
   which the trace above now carries; and the five entry containers folded from
   five nodes and five edges into one *expand* node plus a two-column table.
-  26 nodes → 14, 2,025px → 1,771px, and no arrow's direction changed.
-- `recipes` figure 1 — the four sentence labels are gone, the two threads are the
+  26 nodes → 14, 2,025px → 1,771px, and no arrow's direction changed.~~ *(checked (fourteen nodes); the caption's *two diamonds* was wrong — see *Pass 8, session G*, correction 169 — pass 8, session G)*
+- ~~`recipes` figure 1 — the four sentence labels are gone, the two threads are the
   `worker` and `server` classes rather than the words *Worker:* and *server
   main:* inside labels, the empty window is a dotted edge, and the three
   feature-flag conditions leave the edge labels for one sentence (the queue's
   three senses of *enabled*, :4442). **No arrow's direction changed**; the
-  `A -.-> F` edge is the one the section is about.
-- `recipes` figure 2 — **split at the tick boundary the figure already noted**,
+  `A -.-> F` edge is the one the section is about.~~ *(checked (`world/item/crafting/RecipeManager.java`:118, :137–148, :269) — pass 8, session G)*
+- ~~`recipes` figure 2 — **split at the tick boundary the figure already noted**,
   into the tick the plank lands (five lanes) and the later tick the result is
   clicked (six). Both carry `rect` bands. **Four corrections of the same shape**:
   `CraftM->>CI: asCraftInput` drew the product as the callee — `asCraftInput` is
@@ -5495,8 +5870,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   `ServerPlayer.awardRecipes` between them (`RecipeCraftingHolder.java:23`,
   `ServerPlayer.java:1645-1646`); and `ResultS->>CraftM: removeItem` sent a
   `Container` method to the menu when the call is `craftSlots.removeItem` on the
-  `TransientCraftingContainer` (`ResultSlot.java:111`, `AbstractCraftingMenu.java:17-24`).
-- `using-an-item` figure 1 — **split into the two endings the page is about**,
+  `TransientCraftingContainer` (`ResultSlot.java:111`, `AbstractCraftingMenu.java:17-24`).~~ *(checked; figure 3's *then the remainders* was wrong — see *Pass 8, session G*, correction 82 — pass 8, session G)*
+- ~~`using-an-item` figure 1 — **split into the two endings the page is about**,
   which is what the old figure's two disconnected graphs in one box already
   were. **Arrow added**: `G -. the byte lands .-> X`, a new node
   *`Player.handleEntityEvent` replays `Player.completeUsingItem`*, and `W --> X`
@@ -5505,8 +5880,8 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   `completeUsingItem` on id 9 and nothing else on that side does, which is the
   page's own hook ("the meal ends when a single byte arrives"). In the second
   half, `S --> Q2` added: the client's local release is a *sibling* of the
-  packet, not downstream of `handlePlayerAction`.
-- `using-an-item` figures 3 and 4 — `Minecraft` cut from both (one message, no
+  packet, not downstream of `handlePlayerAction`.~~ *(checked (`world/entity/LivingEntity.java`:3714; `world/entity/player/Player.java`:416–418); node X's `Player.completeUsingItem` is `LivingEntity`'s — see *Pass 8, session G*, correction 45 — pass 8, session G)*
+- ~~`using-an-item` figures 3 and 4 — `Minecraft` cut from both (one message, no
   decision) and, in the bow, `BowItem` cut, because **one lane was standing for
   both machines' copies** and the page's point is that the same method runs twice
   and gets nowhere on one side; both releases are now self-messages on `LP` and
@@ -5518,7 +5893,7 @@ screen** and no overlap, overflow or clipping anywhere in the part.
   meal's tick label said *five particles every fourth tick* with no mention of
   the delay the prose states, though `Consumable.shouldEmitParticlesAndSounds`
   gates on **both** `CONSUME_EFFECTS_START_FRACTION` and the interval. Three
-  `rect` bands per figure replace the bare note bars.
+  `rect` bands per figure replace the bare note bars.~~ *(checked (`client/Minecraft.java`:1987; `world/item/component/Consumable.java`:42–49); figure 3's tick-32 note and figure 4's server tick were wrong — see *Pass 8, session G*, corrections 48, 49 — pass 8, session G)*
 
 ### Corrections
 
@@ -5552,11 +5927,11 @@ on the left, which is every number it has*).
 
 ### Ruled
 
-- `contexts-and-predicates` f2's message head `test` stays a gate **note**:
+- ~~`contexts-and-predicates` f2's message head `test` stays a gate **note**:
   `LootItemCondition extends Predicate<LootContext>`, so `test` is
   `java.util.function.Predicate`'s and outside every tree `verify_names.py`
   indexes. F12(d)'s prose-head allowance covers it; session O should not read it
-  as unresolved.
+  as unresolved.~~ *(checked (`world/level/storage/loot/predicates/LootItemCondition.java`:14) — pass 8, session G)*
 
 ## Pass 7, session F — Part VI · Entities: the figures *(2026-09-15)*
 
@@ -8315,50 +8690,50 @@ fifteen were found by the session while re-deriving another, and are marked.
 
 ### Corrections — what the page said, what the decompile says
 
-1. **`items-and-stacks`**' hook said durability's method "demands a
+1. ~~**`items-and-stacks`**' hook said durability's method "demands a
    `ServerLevel`, and the convenient overloads that do not have one silently do
    nothing at all", which claims the overloads never work. `ItemStack.java:493`
    and `:497`: the `LivingEntity` overloads test `owner.level() instanceof
    ServerLevel` and forward when it is one. They do nothing *on a client*, which
    is what the body had always said (and what makes the hook true). The hook now
-   says so.
-2. **`items-and-stacks`**' *Two validators* table listed
+   says so.~~ *(checked (`world/item/ItemStack.java`:502, :506, :509); the hook's *the one thing* was wrong — see *Pass 8, session G*, correction 19 — pass 8, session G)*
+2. ~~**`items-and-stacks`**' *Two validators* table listed
    `ItemStack.validateStrict`'s callers as `ItemInput`,
    `ItemStackTemplate.create` and `ItemStack.applyComponentsAndValidate`, while
    the prose named `ItemStackTemplate.apply` as a fourth. There are three call
    sites in the tree (`ItemInput.java:29`, `ItemStack.java:824`,
    `ItemStackTemplate.java:73`), and the third is a private `validate` that
    **both** `ItemStackTemplate.create` (`:68`) and `ItemStackTemplate.apply`
-   (`:88`) go through. The cell now says that.
-3. **`using-an-item`**'s bow diagram said the client's release produces "no ammo
+   (`:88`) go through. The cell now says that.~~ *(checked (`commands/arguments/item/ItemInput.java`:29; `world/item/ItemStack.java`:833; `world/item/ItemStackTemplate.java`:81) — pass 8, session G)*
+3. ~~**`using-an-item`**'s bow diagram said the client's release produces "no ammo
    and **no arrow**", while the prose 20 lines later says it produces "a single
    phantom arrow marked `DataComponents.INTANGIBLE_PROJECTILE`". The prose is
    right: `ProjectileWeaponItem.useAmmo` (`:126–164`) reaches `ammoToUse == 0`
    off a client level and returns `projectile.copyWithCount(1)` with the
    component set. No *entity* is spawned, because `ProjectileWeaponItem.shoot`
    is inside a `ServerLevel` test. The label now distinguishes the stack from
-   the entity.
-4. **`using-an-item`** said `SpyglassItem.finishUsingItem` is "reached either at
+   the entity.~~ *(checked (`world/item/ProjectileWeaponItem.java`:102–108, :133–154) — pass 8, session G)*
+4. ~~**`using-an-item`** said `SpyglassItem.finishUsingItem` is "reached either at
    its 1200-tick duration or, like any use, the moment you let go". Letting go
    reaches `ItemStack.releaseUsing` → `Item.releaseUsing`, never
    `Item.finishUsingItem`. The spyglass gets its sound on release from a
    **second override**, `SpyglassItem.releaseUsing` (`SpyglassItem.java:44`),
    which the page never mentioned — the fourth and last override of
    `Item.releaseUsing` in the tree, after `BowItem`, `CrossbowItem` and
-   `TridentItem`. Corrected and the second override named.
-5. **`using-an-item`** said the server's release runs "five enchantment hooks"
+   `TridentItem`. Corrected and the second override named.~~ *(checked (`world/item/SpyglassItem.java`:38–47); the sentence beside it, *share no method at all*, was wrong — see *Pass 8, session G*, correction 53 — pass 8, session G)*
+5. ~~**`using-an-item`** said the server's release runs "five enchantment hooks"
    and named four. The fifth is `EnchantmentHelper.getPiercingCount`, asked by
    the `AbstractArrow` constructor (`AbstractArrow.java:114`) rather than by
-   anything in `ProjectileWeaponItem`. Five is right; the fifth is now named.
-6. **`using-an-item`** used *`EntityEvent.USE_ITEM_COMPLETE`* and *event 9* as
+   anything in `ProjectileWeaponItem`. Five is right; the fifth is now named.~~ *(wrong: six hooks, `EnchantmentHelper.processDurabilityChange` the sixth — see *Pass 8, session G*, correction 50 — pass 8, session G)*
+6. ~~**`using-an-item`** used *`EntityEvent.USE_ITEM_COMPLETE`* and *event 9* as
    two names for one thing and never equated them.
-   `EntityEvent.java:13`: `USE_ITEM_COMPLETE = 9`. The opening now says so once.
-7. **`using-an-item`** called `UseEffects.DEFAULT`'s value "the famous twenty
+   `EntityEvent.java:13`: `USE_ITEM_COMPLETE = 9`. The opening now says so once.~~ *(checked (`world/entity/EntityEvent.java`:18) — pass 8, session G)*
+7. ~~**`using-an-item`** called `UseEffects.DEFAULT`'s value "the famous twenty
    per cent" without saying it is a multiplier. `UseEffects.java:11`:
    `DEFAULT = (false, true, 0.2F)`, and `LocalPlayer.modifyInput` (`:763`)
    *scales* the input by it — so you move at a fifth of your speed, not
-   four-fifths. Stated.
-8. **`enchantments`** said the third post-attack branch is "a slotless pass with
+   four-fifths. Stated.~~ *(checked (`world/item/component/UseEffects.java`:11) — pass 8, session G)*
+8. ~~**`enchantments`** said the third post-attack branch is "a slotless pass with
    no filter at all, reached through
    `EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak`", and later that
    the same method "hands `EquipmentSlot.MAINHAND` to the slot filter regardless
@@ -8366,46 +8741,46 @@ fifteen were found by the session while re-deriving another, and are marked.
    method* (`EnchantmentHelper.java:265–289`): the living-attacker branch at
    `:277` passes `MAINHAND`, the non-living branch at `:283` uses the two-arg
    overload with a null slot, and it only runs when a break callback was
-   supplied. The two sentences are now one paragraph that says which is which.
-9. **`enchantments`** said the effect codecs are "one of only two places in the
+   supplied. The two sentences are now one paragraph that says which is which.~~ *(checked (`world/item/enchantment/EnchantmentHelper.java`:279–284); the second branch's *main hand only* beside it was wrong — see *Pass 8, session G*, correction 103 — pass 8, session G)*
+9. ~~**`enchantments`** said the effect codecs are "one of only two places in the
    game where a context mismatch is a hard error at decode time" and never named
    the other. Grepped: `Validatable.validatorForContext` /
    `listValidatorForContext` have exactly two users —
-   `EnchantmentEffectComponents.java:124` and `VillagerTrade.java:52`. Named.
-10. **`recipes`**' loading figure said that between `RecipeManager.apply` and
+   `EnchantmentEffectComponents.java:124` and `VillagerTrade.java:52`. Named.~~ *(checked (`world/item/trading/VillagerTrade.java`:56; `world/item/enchantment/EnchantmentEffectComponents.java`:124) — pass 8, session G)*
+10. ~~**`recipes`**' loading figure said that between `RecipeManager.apply` and
     `finalizeRecipeLoading` the four indexes "still describe the PREVIOUS recipe
     set", while the prose 20 lines below says they are **empty**. The prose is
     right: `ReloadableServerResources.java:39` builds a fresh `RecipeManager`
     per reload and its constructor (`RecipeManager.java:85–89`) sets all four to
     empty. The node now says empty, and the prose says *empty rather than
-    stale*, which is the distinction the figure had inverted.
-11. **`recipes`** listed the nine `CustomRecipe`s as eight class names plus "its
+    stale*, which is the distinction the figure had inverted.~~ *(checked (`world/item/crafting/RecipeManager.java`:85–88) — pass 8, session G)*
+11. ~~**`recipes`** listed the nine `CustomRecipe`s as eight class names plus "its
     fade sibling", so the count could not be checked against the list. The ninth
     is `FireworkStarFadeRecipe` (`RecipeSerializers.java:20`), now named; and
     the *named special* distinction is now stated as what it is — eight register
     under ids beginning *crafting_special_*, `DecoratedPotRecipe` does not.
     Verified: 21 serializers, 14 with `crafting_` ids, 9 extending
-    `CustomRecipe`.
-12. **`recipes`** said "exactly five menus extend `RecipeBookMenu`" and named
+    `CustomRecipe`.~~ *(checked (`world/item/crafting/RecipeSerializers.java`:10–31); *Java, not data* beside it was wrong — see *Pass 8, session G*, correction 79 — pass 8, session G)*
+12. ~~**`recipes`** said "exactly five menus extend `RecipeBookMenu`" and named
     two. The five are `CraftingMenu` and `InventoryMenu` under
     `AbstractCraftingMenu`, and `FurnaceMenu`, `BlastFurnaceMenu` and
     `SmokerMenu` under `AbstractFurnaceMenu`. All five named, with the two
     abstract halves that explain why four `RecipeBookType` values need five
-    menus.
-13. **`enchanting`** promised "ten integers" in its opening and accounted for
+    menus.~~ *(checked (`world/inventory/RecipeBookType.java`; the five subclasses) — pass 8, session G)*
+13. ~~**`enchanting`** promised "ten integers" in its opening and accounted for
     four of them ("three `DataSlot.shared` views onto the cost array, one
     `DataSlot.standalone` holding the seed"). `EnchantmentMenu.java:95–104`:
     nine shared views over **three** arrays of three — `costs`, `enchantClue`
     and `levelClue` — plus the one standalone seed. A clue is a *pair*, which is
     why three offers cost six slots. All ten now accounted for, and the reader's
-    unanswered question with them.
-14. **`loot-tables`**' cast called `LootItemFunction` "forty-three
+    unanswered question with them.~~ *(checked (`world/inventory/EnchantmentMenu.java`:95–104); the values cross as shorts — see *Pass 8, session G*, correction 113 — pass 8, session G)*
+14. ~~**`loot-tables`**' cast called `LootItemFunction` "forty-three
     stack-to-stack transforms" while the body says the forty-third,
     `SequenceFunction`, "is a list of functions rather than a transform".
     `LootItemFunctions.java` registers 43; 42 extend `LootItemConditionalFunction`
     and `SequenceFunction.java:13` implements `LootItemFunction` directly. The
-    cast now says forty-three registered kinds, forty-two of them transforms.
-15. **`items/README`** listed "the chest whose contents appear a tick late"
+    cast now says forty-three registered kinds, forty-two of them transforms.~~ *(overtaken: V2's forty-two, all conditional (`world/level/storage/loot/functions/LootItemFunctions.java`:45–86) — pass 8, session G)*
+15. ~~**`items/README`** listed "the chest whose contents appear a tick late"
     among the small lies produced by predicting locally and confirming
     afterwards — and the same page says four paragraphs later that the container
     click is *not* on the prediction ledger. The tick-late chest is not a
@@ -8414,18 +8789,18 @@ fifteen were found by the session while re-deriving another, and are marked.
     phase. The argument now sorts the four symptoms into the three that are
     guesses and the one that is not, and makes the distinction the part's
     subject. *(Found by the landing page's reader; it is the error class pass 5
-    hunted — one page contradicting itself across four paragraphs.)*
-16. **`items/README`** said "about a third of those lines are named on no page",
+    hunted — one page contradicting itself across four paragraphs.)*~~ *(checked for the chest; the sort into three guesses was wrong — see *Pass 8, session G*, correction 1 — pass 8, session G)*
+16. ~~**`items/README`** said "about a third of those lines are named on no page",
     hand-counted. `pass5_coverage.py` gives **24%**. Replaced with
     `{{#include ../../generated/coverage-items.md}}`. *(Found by the session,
     not by a reader — the fourth hand-counted landing-page number in the book
-    and the third to be wrong.)*
-17. **`recipes`** — while restoring `RecipeInput` under A12 the session wrote
+    and the third to be wrong.)*~~ *(checked (the coverage include says 27%; `pass5_coverage.py --part items` gives 26.9%) — pass 8, session G)*
+17. ~~**`recipes`** — while restoring `RecipeInput` under A12 the session wrote
     "the seven cooking and stonecutting kinds"; there are three `RecipeInput`
     implementations in the game (`CraftingInput`, `SingleRecipeInput`,
     `SmithingRecipeInput`) and five one-slot kinds, not seven. Corrected before
     the commit. *(Found by the session: a count introduced and killed inside one
-    edit, and the reason the A12 restoration is not free.)*
+    edit, and the reason the A12 restoration is not free.)*~~ *(overtaken: V2's four `RecipeInput`s (`world/item/crafting/BrewingInput.java`:5) — pass 8, session G)*
 
 ### Claims introduced
 
@@ -8433,66 +8808,66 @@ fifteen were found by the session while re-deriving another, and are marked.
 figure.** Every one is a re-statement of a fact the page already carried, so
 pass 9 should check the *scoping* rather than re-derive the mechanism.
 
-- `enchantments` — four new H2s out of the dissolved *Questions the pattern
+- ~~`enchantments` — four new H2s out of the dissolved *Questions the pattern
   raises*: *The three famous ones that have no effect component* (Fortune,
   Looting, Mending), *What runs on the client, and why it is only ever a number*
   (the claim that the cast row's "some read-only entry points" is exactly two
   values and three kinds of drawing), *Where the forty-three live, and when they
   are read* (the `/reload` claim, plus what crosses the wire), and *One JSON
   file, four effect objects, no Java* (`Enchantments.LUNGE` as the pattern
-  entire). The closer keeps two questions.
-- `loot-tables` — *What counts as reading it*, which is the hook's payoff moved
+  entire). The closer keeps two questions.~~ *(checked as headings; two of the four were false — see *Pass 8, session G*, corrections 104, 107 — pass 8, session G)*
+- ~~`loot-tables` — *What counts as reading it*, which is the hook's payoff moved
   into the body, and it carries **one genuinely new claim**: breaking an
   unopened chest commits the roll, via
   `BlockEntity.preRemoveSideEffects` (`BlockEntity.java:306–311`) walking
   `Container.getItem` over every slot into `Containers.dropContents`. Verified;
   its reader had asked exactly this and the page had never answered it. Also
   new: *A loot table that travels inside an item*, out of the closer's
-  shulker-box answer.
-- `containers-and-menus` — *What the client does with a correction, and what
+  shulker-box answer.~~ *(checked (`world/level/block/entity/BlockEntity.java`:306–311; `world/Containers.java`:25–28); the new section's source for `SeededContainerLoot` was wrong — see *Pass 8, session G*, correction 179 — pass 8, session G)*
+- ~~`containers-and-menus` — *What the client does with a correction, and what
   closing rescues*, answering its reader's unanswered question. The claim is
   that `ClientPacketListener.handleContainerSetSlot` (`:1454–1490`) writes the
   one slot and stores the state id, with no rollback path, **and** that no
   mispredicted slot is ever left standing because `broadcastChanges` compares
-  every slot rather than only the claimed ones.
-- `items-and-stacks` — a paragraph saying the durability bar does not creep as
+  every slot rather than only the claimed ones.~~ *(checked (`client/multiplayer/ClientPacketListener.java`:1475–1509); *never left standing* has a thrown click's exception — see *Pass 8, session G*, correction 67 — pass 8, session G)*
+- ~~`items-and-stacks` — a paragraph saying the durability bar does not creep as
   you mine but jumps at the next slot update, which follows from the page's own
   facts and answers its reader's question. And *The hundred classes, and why
   ninety-eight of them are almost empty*, split out of the tick section, with
   the population stated (100 files in `world/item`'s own directory, of which
-  `Item` and `ItemStack` are two).
-- `recipes` — a paragraph at the head of *What the client actually gets*
+  `Item` and `ItemStack` are two).~~ *(checked (`server/level/ServerPlayer.java`:673) — pass 8, session G)*
+- ~~`recipes` — a paragraph at the head of *What the client actually gets*
   claiming that `RecipeAccess` is a two-method interface with exactly two
   implementations (`RecipeManager`, `ClientRecipeContainer`), neither returning
   a `Recipe`. That is the page's thesis restated as an interface, and it pays
-  off a cast row the body had never delivered.
+  off a cast row the body had never delivered.~~ *(checked (`world/item/crafting/RecipeAccess.java`); *the page's claim in two lines of Java* was wrong — see *Pass 8, session G*, correction 86 — pass 8, session G)*
 
 **Re-argued, renamed and re-scoped.**
 
-- `items/README`'s argument ends on a new claim (an item is the thing that is
+- ~~`items/README`'s argument ends on a new claim (an item is the thing that is
   never simply somewhere; every page is about a container and about which
   program may believe its contents), and the seventh section moved from first to
   its A6 place under the short heading *Where the part stops*, with the borders
-  paragraph moved into *The shape of the part*.
-- `contexts-and-predicates` — `## The trace: /execute if predicate` renamed to
+  paragraph moved into *The shape of the part*.~~ *(checked as placed; *every page here is about a container* was wrong — see *Pass 8, session G*, correction 2 — pass 8, session G)*
+- ~~`contexts-and-predicates` — `## The trace: /execute if predicate` renamed to
   *Four facts about a question with two keys in it*; `## None of this crosses
   the wire` renamed to *Three registries, rebuilt on `/reload`, and none of them
   networkable*, because two thirds of it was never about the wire. No inbound
-  link landed on either.
-- `contexts-and-predicates` — a new claim in *Three ways a parameter can be
+  link landed on either.~~ *(checked (no inbound link lands on either anchor) — pass 8, session G)*
+- ~~`contexts-and-predicates` — a new claim in *Three ways a parameter can be
   missing*: of the twenty registered `LootItemCondition` types, every one that
   reads a parameter uses the optional accessor **except** `EnchantmentActiveCheck`
   (`:18`), which uses the throwing one — so a predicate asking `/execute` for a
   block state is quietly false rather than fatal. Verified by grep over
-  `storage/loot/predicates`.
-- `loot-tables` — the opening no longer says the region file holds "a table key
+  `storage/loot/predicates`.~~ *(overtaken: `EnchantmentActiveCheck` reads with `LootContext.getOptional` in 26.3, and a context has no throwing reader (`world/level/storage/loot/predicates/EnchantmentActiveCheck.java`:17–20) — pass 8, session G)*
+- ~~`loot-tables` — the opening no longer says the region file holds "a table key
   and a seed" flatly; a seed is written only when non-zero
-  (`RandomizableContainer.java:72`), which the body already said.
-- Eight *Where to look* lists became prose reading routes (A12). Each names
+  (`RandomizableContainer.java:72`), which the body already said.~~ *(checked (`world/RandomizableContainer.java`:72–74) — pass 8, session G)*
+- ~~Eight *Where to look* lists became prose reading routes (A12). Each names
   fewer classes and asserts a **reading order**, which is a claim of a kind pass
-  9 has not had to check before: that a named class is a sensible entry point.
-- New H3s inside existing anchors on `using-an-item` (3), `recipes` (3) and
-  `enchanting` (5). No anchor moved.
+  9 has not had to check before: that a named class is a sensible entry point.~~ *(*(no claim)* — the routes' names resolve, and each page's agent read its route — pass 8, session G)*
+- ~~New H3s inside existing anchors on `using-an-item` (3), `recipes` (3) and
+  `enchanting` (5). No anchor moved.~~ *(checked (the three H3s on `using-an-item`) — pass 8, session G)*
 
 ### Openings varied (A1)
 
@@ -9984,8 +10359,8 @@ headwords marked for sense (*Batch* (game tests), *Trigger* (advancements),
 *Sensor* (brains)) with a link to the other sense; seven headwords moved into
 alphabetical order. 171 headwords, from 163.
 
-**`items/README`** — the Reference link that read "Enchantment helpers" is *The
-weapon helpers*, its real title, and "Two were written for it" introduced three.
+~~**`items/README`** — the Reference link that read "Enchantment helpers" is *The
+weapon helpers*, its real title, and "Two were written for it" introduced three.~~ *(checked (`reference/weapon-helpers`:1) — pass 8, session G)*
 
 **`lectures.md`** — the two Reference asides cut (the rule is stated once at the
 top for all of Reference); the Part V/X cut reduced to a clause and a link to
@@ -10420,10 +10795,10 @@ alone" to advancements plus the selector's *predicate* option.
    function *does* complete after a reload — which
    `commands/brigadier-and-commands` says and this page contradicted. Now: it
    is the tree's *shape* that goes stale, with the link.~~ *(checked: `server/MinecraftServer.java`:1832–1833, `server/network/ServerGamePacketListenerImpl.java`:1880–1883, and `server/network/ServerCommandSuggestionsProvider.java`:52–53, where 26.3's suggestions parse; the tree's one sender is `server/players/PlayerList.java`:645, which neither reload path reaches — pass 8, session B)*
-7. **`items/contexts-and-predicates`** said Part XIII's commands "own
+7. ~~**`items/contexts-and-predicates`** said Part XIII's commands "own
    `/execute if predicate`". No page in Part XIII mentions it; that page owns
    its own trace of it. Now: the page owns the command, Part XIII owns the
-   engine it runs in and the selector option that is the second caller.
+   engine it runs in and the selector option that is the second caller.~~ *(checked (`commands/entity-selectors`:111); the *two dependants* framing was wrong — see *Pass 8, session G*, correction 162 — pass 8, session G)*
 8. **`commands/brigadier-and-commands`**' door table routed `LootCommand` and
    `ItemCommands` to `loot-tables`, which names neither;
    `contexts-and-predicates`:247–248 names both. Repointed, with
@@ -11907,7 +12282,7 @@ generated and were not edited.
 
 ### Corrections — re-derived against the decompile before the fix
 
-- **`enchanting`: which paths roll in `EnchantmentHelper.selectEnchantment`.**
+- ~~**`enchanting`: which paths roll in `EnchantmentHelper.selectEnchantment`.**
   The page said "only the table and the provider and loot paths roll one to
   decide *what you get*, and they roll it in the same place:
   `EnchantmentHelper.selectEnchantment`", and then contradicted itself twice
@@ -11919,8 +12294,8 @@ generated and were not edited.
   and never selects (`SingleEnchantment.java`:22-24), and
   `EnchantRandomlyFunction.run` picks with `Util.getRandomSafe` off
   `LootContext.getRandom` (`EnchantRandomlyFunction.java`:65-87). Now: four
-  callers named, and the two that roll their own said so.
-- **`loot-tables`: where `LootTable.createStackSplitter` sits in the call.**
+  callers named, and the two that roll their own said so.~~ *(checked (four callers); *Where to look*'s *four of the five paths* was wrong — see *Pass 8, session G*, correction 145 — pass 8, session G)*
+- ~~**`loot-tables`: where `LootTable.createStackSplitter` sits in the call.**
   The sequence diagram put it on the pool's return ("stacks, each through
   createStackSplitter"). The decompile: `LootTable.fill` calls the private
   `getRandomItems(context)` (`LootTable.java`:157 → :137-143), which calls
@@ -11930,42 +12305,42 @@ generated and were not edited.
   therefore the outermost wrapper, applied once per fill and after the table's
   own functions, which is what the flowchart and the prose already said. The
   diagram now says so, and the load-bearing consequence (a nested table is
-  split once) is unchanged.
-- **`containers-and-menus`: the size of a click's traffic.** The page said "the
+  split once) is unchanged.~~ *(checked (`world/level/storage/loot/LootTable.java`:92–156) — pass 8, session G)*
+- ~~**`containers-and-menus`: the size of a click's traffic.** The page said "the
   traffic is 128 integers rather than 128 full `DataComponentPatch`es". A
   `HashedStack.ActualItem` carries an item holder, a count, one CRC32C integer
   per *added* component and the plain set of removed ones — the page says so
   itself two sentences earlier — so 128 claimed slots is not 128 integers.
   `ServerboundContainerClickPacket.java`:16-17 caps the map at 128 entries.
   Now: "each claimed slot costs an integer per component rather than a
-  re-encoded `DataComponentPatch`".
-- **`using-an-item`: which method has one override.** The page said
+  re-encoded `DataComponentPatch`".~~ *(checked (`network/protocol/game/ServerboundContainerClickPacket.java`:16–17; `network/HashedPatchMap.java`:72) — pass 8, session G)*
+- ~~**`using-an-item`: which method has one override.** The page said
   "**`CrossbowItem.useOnRelease` is its only override in the tree**" of
   `ItemStack.useOnRelease`. `ItemStack.useOnRelease` (`ItemStack.java`:790-791)
   delegates to `Item.useOnRelease` (`Item.java`:367), and it is the latter that
   `CrossbowItem.java`:264 overrides. Now: the delegation is stated and the
-  count attaches to the hook.
-- **`loot-tables`: the thirteen path prefixes.** The count is right — the
+  count attaches to the hook.~~ *(checked (`world/item/CrossbowItem.java`:266) — pass 8, session G)*
+- ~~**`loot-tables`: the thirteen path prefixes.** The count is right — the
   literal `register` calls in `BuiltInLootTables` fall under thirteen top-level
   prefixes (chests, gameplay, shearing, charged_creeper, archaeology,
   spawners, harvest, equipment, dispensers, pots, entities, carve, brush) — but
   the list beside it named twelve, missing `entities`, which is the sheep
-  colour set (`BuiltInLootTables.java`:78-80). The list now names it.
-- **`contexts-and-predicates`: the keys `ALL_PARAMS` omits.** L109-112 names
+  colour set (`BuiltInLootTables.java`:78-80). The list now names it.~~ *(overtaken: V2's fifteen directories, confirmed (`world/level/storage/loot/BuiltInLootTables.java`:15–141) — pass 8, session G)*
+- ~~**`contexts-and-predicates`: the keys `ALL_PARAMS` omits.** L109-112 names
   the four keys the set leaves out and the consequence sentence beneath it
   named three, silently dropping `LootContextParams.ENCHANTMENT_LEVEL`.
   `LootContextParams` declares fifteen keys and `ALL_PARAMS` requires eleven
   (`LootContextParamSets.java`), so all four behave alike. The consequence now
-  names four.
-- **`enchanting` against `enchantments`: the anvil's two book tests.**
+  names four.~~ *(overtaken: V2's sixteen keys, all required (`world/level/storage/loot/parameters/LootContextParamSets.java`:21–23) — pass 8, session G)*
+- ~~**`enchanting` against `enchantments`: the anvil's two book tests.**
   `enchanting`:158 said the anvil tests `Items.ENCHANTED_BOOK` by identity;
   `enchantments`:300 said it tests `DataComponents.STORED_ENCHANTMENTS`
   instead. Both are true of *different slots*: `AnvilMenu.java`:204 tests
   `input.is(Items.ENCHANTED_BOOK)` on the left-hand target, and
   `AnvilMenu.java`:145 tests `addition.has(DataComponents.STORED_ENCHANTMENTS)`
   on the right-hand addition for the halved price. Neither page said which
-  side; both now do.
-- **`enchantments`: what cooks the loot.** "That is a loot-table condition on
+  side; both now do.~~ *(checked (`world/inventory/AnvilMenu.java`:145, :204) — pass 8, session G)*
+- ~~**`enchantments`: what cooks the loot.** "That is a loot-table condition on
   `EnchantmentTags.SMELTS_LOOT`" named the guard, not the mechanism. In the
   data the cooking is the `minecraft:furnace_smelt` function
   (`SmeltItemFunction`) behind an `any_of` condition testing *this* entity's
@@ -11973,7 +12348,7 @@ generated and were not edited.
   (`data/minecraft/loot_table/entities/cow.json` and its siblings, built by
   `EntityLootSubProvider.java`:60). `EnchantmentTags.SMELTS_LOOT` has one
   member, Fire Aspect (`VanillaEnchantmentTagsProvider.java`:35). Now the
-  function is named and the condition is described as the guard.
+  function is named and the condition is described as the guard.~~ *(checked (*data/minecraft/loot_table/entities/cow.json*; *data/minecraft/tags/enchantment/smelts_loot.json*) — pass 8, session G)*
 - ~~**`foundations/resource-system`: a missing step in the reload's completion
   list.** The row said `PlayerList.reloadResources` "re-reads every player's
   advancements and broadcasts `ClientboundUpdateTagsPacket` and
@@ -11981,74 +12356,74 @@ generated and were not edited.
   `ServerRecipeBook.sendInitialRecipeBook` for every player
   (`PlayerList.java`:956), which is what makes `recipes`:74's claim about
   shifted display ids true. The step is now in the list.~~ *(checked: `server/players/PlayerList.java`:964, in the per-player loop after the recipes packet, :963 — pass 8, session B)*
-- **`items/README`: two claims the part's own pages contradict.** "the three
+- ~~**`items/README`: two claims the part's own pages contradict.** "the three
   engines … hand each other nothing" — two of enchanting's five paths are loot
   functions (`enchanting`:332-347), `RepairItemRecipe` carries curses
   (`enchanting`:21-23), and the recipe auto-fill refuses enchanted stacks
   (`recipes`:320-327). And "the sword that swings before the server has heard
   about it" is `player/the-sword-swing`'s hook, in Part VIII, and no page of
-  this part pays it off. Both replaced.
-- **`using-an-item`: `Item.APPROXIMATELY_INFINITE_USE_DURATION` "in all but
+  this part pays it off. Both replaced.~~ *(checked that both were removed; the first claim came back in new words — see *Pass 8, session G*, correction 5 — pass 8, session G)*
+- ~~**`using-an-item`: `Item.APPROXIMATELY_INFINITE_USE_DURATION` "in all but
   name".** The constant exists (`Item.java`:119) and has no reader in the tree;
   `BowItem.getUseDuration` and the base body both write the literal. Now stated
-  that way, in the new roster paragraph.
+  that way, in the new roster paragraph.~~ *(wrong: a compile-time constant javac writes in (V6) — see *Pass 8, session G*, correction 39 — pass 8, session G)*
 
 ### Suspicions re-derived and found sound (a strike is a claim)
 
-- `items-and-stacks`' *two spellings*: the reload-time validator installed by
+- ~~`items-and-stacks`' *two spellings*: the reload-time validator installed by
   `Item.Properties.finalizeInitializer` reads `DataComponents.DAMAGE`
   (`Item.java`, the `addValidator` lambda), and `ItemStack.validateComponents`
   reads `DataComponents.MAX_DAMAGE` (`ItemStack.java`:245-247). The two really
-  are different components, and the section's hook stands.
-- `containers-and-menus`' mount-menu generalisation:
+  are different components, and the section's hook stands.~~ *(checked (`world/item/Item.java`:670–676; `world/item/ItemStack.java`:247) — pass 8, session G)*
+- ~~`containers-and-menus`' mount-menu generalisation:
   `AbstractMountInventoryMenu.java`:20 passes `(MenuType) null` to super, and
   `ServerPlayer.openHorseInventory` sends `ClientboundMountScreenOpenPacket`.
   `AbstractChestBoat.openCustomInventoryScreen` calls `player.openMenu(this)`
   and is not a mount menu, which the page now says so a reader crossing to
   `client/gui-and-screens`' wider `HasCustomInventoryScreen` claim is not
-  confused.
-- `recipes`' "the server re-sends the player's whole book": true, and the gap
-  was on `resource-system` (above).
-- `using-an-item`'s two `completeUsingItem` spellings:
+  confused.~~ *(checked (`world/inventory/AbstractMountInventoryMenu.java`:20; `server/level/ServerPlayer.java`:1561, :1575); :94's *at all* was wrong — see *Pass 8, session G*, correction 65 — pass 8, session G)*
+- ~~`recipes`' "the server re-sends the player's whole book": true, and the gap
+  was on `resource-system` (above).~~ *(checked (`stats/ServerRecipeBook.java`:127–141) — pass 8, session G)*
+- ~~`using-an-item`'s two `completeUsingItem` spellings:
   `ServerPlayer.completeUsingItem` sends event 9 and calls super
   (`ServerPlayer.java`:1704-1711); `Player.handleEntityEvent` calls
-  `completeUsingItem` on id 9 (`Player.java`:404-407). Both sentences correct.
-- `enchantments`' `RegistrySynchronization.packRegistry`: a real private
+  `completeUsingItem` on id 9 (`Player.java`:404-407). Both sentences correct.~~ *(checked (`server/level/ServerPlayer.java`:1775–1778; `world/entity/player/Player.java`:416–418) — pass 8, session G)*
+- ~~`enchantments`' `RegistrySynchronization.packRegistry`: a real private
   per-registry method (`RegistrySynchronization.java`:34) beside the public
-  `packRegistries` loop (:28). Two methods, two pages, no drift.
-- `enchanting`'s "the grindstone and the providers call
+  `packRegistries` loop (:28). Two methods, two pages, no drift.~~ *(checked (`core/RegistrySynchronization.java`:28, :34) — pass 8, session G)*
+- ~~`enchanting`'s "the grindstone and the providers call
   `EnchantmentHelper.updateEnchantments` themselves": the provider path reaches
   it through `EnchantmentHelper.enchantItemFromProvider`
   (`EnchantmentHelper.java`:708-717), which is inside the helper. The
-  three-way split of write entry points stands.
-- `items/README`'s "enchantments are a world-load dynamic registry that
+  three-way split of write entry points stands.~~ *(wrong in part: the providers go through `EnchantmentHelper.enchantItemFromProvider` — see *Pass 8, session G*, correction 118 — pass 8, session G)*
+- ~~`items/README`'s "enchantments are a world-load dynamic registry that
   `/reload` never re-reads": `Registries.ENCHANTMENT` and
   `Registries.ENCHANTMENT_PROVIDER` are both in
   `RegistryDataLoader.WORLDGEN_REGISTRIES` and neither is in
   `RegistryLayer.RELOADABLE`. Sound — and the claim now has a home on
-  `enchantments`, which is the new claim below.
+  `enchantments`, which is the new claim below.~~ *(checked for the entries; `/reload` re-reads their tags — see *Pass 8, session G*, correction 9 — pass 8, session G)*
 
 ### Claims this session introduced
 
-- **`items-and-stacks`' new hook**: durability is the one thing a client never
+- ~~**`items-and-stacks`' new hook**: durability is the one thing a client never
   predicts, because `ItemStack.hurtAndBreak`'s working overload demands a
   `ServerLevel` and the `LivingEntity` overloads silently do nothing without
   one. (The page already carried the fact at its old L256-259; it is now the
-  opening claim.)
-- **`items-and-stacks`**: `ItemStackTemplate` holds a raw, never-sanitised
+  opening claim.)~~ *(wrong in part: a client predicts repaired durability — see *Pass 8, session G*, correction 19 — pass 8, session G)*
+- ~~**`items-and-stacks`**: `ItemStackTemplate` holds a raw, never-sanitised
   patch, so it is the one thing that can carry a value equal to the item's own
   default and send it verbatim (moved from `data-components`, which stated the
   premise without the consequence). The validator section gains the
   one-level/nesting-not-followed rule and the bundle-weight test, both moved
   from `data-components`. New family sentence: the ninety-eight remaining
   `world/item` classes exist for a behaviour hook no component can express,
-  and `AxeItem`/`ShovelItem`/`HoeItem` survive for block-side verbs.
+  and `AxeItem`/`ShovelItem`/`HoeItem` survive for block-side verbs.~~ *(checked except *the one thing … send it verbatim*, *came straight from a builder* and the bundle's weight test — see *Pass 8, session G*, corrections 29, 31 — pass 8, session G)*
 - ~~**`data-components`**: the twenty `delayedComponent` call sites and their
   roster, `Item.Properties.repairable` as the eager near miss, and the
   class-init half of the two-phase build (all moved from `items-and-stacks`);
   the claim that the deferral exists for twenty entries and everything else is
   deferred with them because the map is built in one pass.~~ *(checked except three claims: twenty-six call sites, not twenty — see *Pass 8, session B*, correction 236 — a roster that also takes in the block transformers, the sherds, the trim materials and more — see *Pass 8, session B*, correction 237 — and `Items` loaded by the dispenser and cauldron bootstraps, not by `BuiltInRegistries.bootStrap` — see *Pass 8, session B*, correction 235 — pass 8, session B)*
-- **`containers-and-menus`**: `ContainerLevelAccess.NULL` runs nothing and
+- ~~**`containers-and-menus`**: `ContainerLevelAccess.NULL` runs nothing and
   returns an empty optional, so a client menu's body is skipped wholesale and
   only the guard in front of it is real (moved in from `recipes` and
   `enchanting`); the menu-open sequence in order (moved in from `loot-tables`);
@@ -12056,31 +12431,31 @@ generated and were not edited.
   for a phase (moved in from `data-components`); the twenty-nine-menu family
   sentence; `AbstractMountInventoryMenu` and the chest-boat exception; a
   `DataSlot` is either a `shared` view or a `standalone` int and each costs its
-  own packet (moved in from `enchanting`).
-- **`recipes`**: the nine `CustomRecipe`s named (verified against the tree —
+  own packet (moved in from `enchanting`).~~ *(checked; *execute … returns an empty optional* and the grindstone example were wrong — see *Pass 8, session G*, corrections 59, 60 — pass 8, session G)*
+- ~~**`recipes`**: the nine `CustomRecipe`s named (verified against the tree —
   `BannerDuplicateRecipe`, `BookCloningRecipe`, `DecoratedPotRecipe`,
   `FireworkRocketRecipe`, `FireworkStarFadeRecipe`, `FireworkStarRecipe`,
   `MapExtendingRecipe`, `RepairItemRecipe`, `ShieldDecorationRecipe`), with
   `RepairItemRecipe`'s curse behaviour named so `enchanting`'s hand-forward is
   paid; `SingleItemRecipe`, `SmithingTransformRecipe` and `SmithingTrimRecipe`
   named as the stations' recipe shapes; the claim that the ordinary route into
-  the recipe book is an advancement reward rather than a craft.
-- **`using-an-item`**: the whole `Item.getUseDuration` roster — the base body's
+  the recipe book is an advancement reward rather than a craft.~~ *(checked (1,739 of 1,739 non-special recipes named by an advancement); *Java, not data* was wrong — see *Pass 8, session G*, correction 79 — pass 8, session G)*
+- ~~**`using-an-item`**: the whole `Item.getUseDuration` roster — the base body's
   three-way answer (a `Consumable`'s ticks, else the hour for
   `BLOCKS_ATTACKS`/`KINETIC_WEAPON`, else zero) and the eight overrides with
   their numbers, `EnderEyeItem`'s zero making it the one item instant by
-  declaration. (§7's *lost prose* entry, discharged.)
-- **`enchantments`**: the new reload paragraph (above); the anvil's
+  declaration. (§7's *lost prose* entry, discharged.)~~ *(checked (`world/item/Item.java`:346–349 and the eight overrides); *no class of their own* was wrong — see *Pass 8, session G*, correction 38 — pass 8, session G)*
+- ~~**`enchantments`**: the new reload paragraph (above); the anvil's
   addition-side test named as such; `SmeltItemFunction` named;
   `LootItemRandomChanceWithEnchantedBonusCondition` moved in from `loot-tables`
-  so the Fortune/Looting answer names all four classes.
-- **`enchanting`**: the four `selectEnchantment` callers and the two paths that
+  so the Fortune/Looting answer names all four classes.~~ *(checked; `/reload` re-reads the enchantments' tags — see *Pass 8, session G*, correction 108 — pass 8, session G)*
+- ~~**`enchanting`**: the four `selectEnchantment` callers and the two paths that
   roll their own (the correction above, stated positively); the anvil's
   left-slot/right-slot split; `Registries.ENCHANTMENT_PROVIDER` as a
   world-load registry and `EnchantmentProviderTypes` as its dispatch;
   *local difficulty* replacing *regional difficulty*, which is the book's term
-  everywhere else.
-- **`contexts-and-predicates`**: the six `LootContextUser` sub-interfaces named
+  everywhere else.~~ *(checked (`world/inventory/EnchantmentMenu.java`:232; `world/item/enchantment/EnchantmentHelper.java`:609; the two providers); the paths they sit on — see *Pass 8, session G*, correction 145 — pass 8, session G)*
+- ~~**`contexts-and-predicates`**: the six `LootContextUser` sub-interfaces named
   (verified: `SlotSource`, `LootItemFunction`, `LootItemCondition`,
   `NbtProvider`, `NumberProvider`, `ScoreboardNameProvider`); the `SlotSource`
   family — six registered kinds, answering a `SlotCollection`, with `SlotLoot`
@@ -12088,19 +12463,19 @@ generated and were not edited.
   `LootContext.Builder.withOptionalRandomSeed` moved in from `loot-tables`;
   `AbstractVillager.addOffersFromTradeSet` moved into the sequence sentence;
   the claim that a registry's tags load before its elements are validated, so a
-  predicate naming an item tag has it resolved by validation time.
-- **`loot-tables`**: `SequenceFunction` named as the forty-third function, the
+  predicate naming an item tag has it resolved by validation time.~~ *(overtaken: `NumberProvider` is gone in 26.3; V2's five types and two number interfaces are confirmed (`world/level/storage/loot/LootItemFunction.java`:12; `providers/number/EnvironmentAttributeProvider.java`:14) — pass 8, session G)*
+- ~~**`loot-tables`**: `SequenceFunction` named as the forty-third function, the
   one that is not a `LootItemConditionalFunction` (verified against
   `LootItemFunctions`); `LootPoolEntry` named as the candidate the funnel
   weighs; `SetContainerLootTable` and `SetContainerContents` named as where a
   `SeededContainerLoot` comes from; the claim that no client class references
-  the loot package at all (moved from a clause to the section's punchline).
-- **`items/README`**: the whole *Where the part stops* section is new — the
+  the loot package at all (moved from a clause to the section's punchline).~~ *(overtaken: forty-two, all conditional (`world/level/storage/loot/functions/SequenceFunction.java`:18) — pass 8, session G)*
+- ~~**`items/README`**: the whole *Where the part stops* section is new — the
   size through the include, the four family sentences, the four declines
   (villager trading, brewing, the creative tabs, armour identity and trims),
   and the *an item is where another system surfaces* claim with its five
   examples. The shape paragraph's engines-touch-at-the-boundaries claim, with
-  its three crossings, replaces "hand each other nothing".
+  its three crossings, replaces "hand each other nothing".~~ *(checked except `Equippable` to Part VIII and *not a family* — see *Pass 8, session G*, corrections 3, 17 — pass 8, session G)*
 - ~~**`data-driven-types`**: *The run half* now stops at the object existing and
   cites `loot-tables#one-roll-drawn`; seven *taught in* cells re-pointed
   (`LOOT_CONDITION_TYPE`, `LOOT_NUMBER_PROVIDER_TYPE`, `LOOT_NBT_PROVIDER_TYPE`,
@@ -12108,10 +12483,10 @@ generated and were not edited.
   `contexts-and-predicates`; `ENCHANTMENT_PROVIDER_TYPE` to `enchanting`;
   `CONSUME_EFFECT_TYPE` to `using-an-item`). Each cell is a claim about which
   page names the element; each was checked by grep before it moved.~~ *(checked: `items/loot-tables`:187 is the anchor, and each cell's page names its element — `items/contexts-and-predicates`:70–71, :214–215, `items/enchanting`:37, `items/using-an-item`:39, :71 — six of the seven cells; the seventh's registry, `LOOT_NUMBER_PROVIDER_TYPE`, is gone with 26.3, and V2's two context-provider rows point at the same page; the run half's *hanging off a `LootPool`* was false — see *Pass 8, session B*, correction 291 — pass 8, session B)*
-- **Anchors**: forty-six cross-part links in Part VII carried two anchors before
+- ~~**Anchors**: forty-six cross-part links in Part VII carried two anchors before
   this session and now carry them throughout. Every anchor is an implied claim
   that the named section is the answer; `check_links.py` proves the anchor
-  exists, not that it answers.
+  exists, not that it answers.~~ *(*(no claim)* — `check_links.py` resolves every anchor, and the page agents read the sections they land on — pass 8, session G)*
 
 ## Pass 5, session F — Part VI · Entities *(2026-09-05)*
 

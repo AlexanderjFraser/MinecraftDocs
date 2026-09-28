@@ -111,7 +111,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   client falling behind is one thread deciding what to spend a frame on — which
   is the fourth time the reversal has produced the part's argument in one
   sentence. The remaining three are their own sessions' and session O's.
-  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim.
+  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim.
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -1036,11 +1036,11 @@ create, routed by kind.*
 
 ### For pass 8, the voice
 
-- ***Ledger* names three unrelated things.** The prediction ledger
+- ~~***Ledger* names three unrelated things.** The prediction ledger
   (`client/prediction-and-acks`, 18 uses), `server-tick`'s *three ledgers* at
   the bottom of a tick, and a loose metaphor on `items/loot-tables` and
   `items/contexts-and-predicates`. The through-line owns the first; the other
-  two want a different word or an explicit one. [kind=voice] **`server-tick`'s half done, pass 8 session C** — it now closes with *three pieces of bookkeeping*; the items half is session G's.
+  two want a different word or an explicit one. [kind=voice] **`server-tick`'s half done, pass 8 session C** — it now closes with *three pieces of bookkeeping*; the items half is session G's.~~ *Done: `server-tick`'s half by session C; `loot-tables` now says *a list of everything seen* and `contexts-and-predicates` *a stack, not a history* — pass 8, session G.*
 - **`rendering/README`:140 says "they were one page until pass 3".** A
   published page naming a pass number a reader cannot resolve; the same
   sentence in `lectures.md` was fixed this session ("two pages that were
@@ -1753,25 +1753,25 @@ duplicate a Reference page that has been checked row by row.
 
 ### Wording to re-read (a fact fix rewrote the sentence around it)
 
-- **`enchanting`'s title and its opening section.** The H1 was *Enchanting: five
+- ~~**`enchanting`'s title and its opening section.** The H1 was *Enchanting: five
   ways onto an item* and is now *Enchanting: the five paths, and what each one
   is allowed to do*, because the grindstone is a removal; the section *The one
   line all five end on* became *The one question all five ask*, because the
   shared method does not exist and the shared *decision* does. Both are longer
   than what they replace. The verified line still says "picks up enchantments
   four other ways", which is now the only place the old framing survives — check
-  it reads right beside the new title.
-- **`items/README.md`'s shape paragraph.** "every later page assumes all three" [kind=voice]
+  it reads right beside the new title.~~ *Overtaken: the verified line now names the four other paths, and the old framing is gone — pass 8, session G.*
+- ~~**`items/README.md`'s shape paragraph.** "every later page assumes all three" [kind=voice]
   was false, and the replacement admits that *contexts and predicates* is the
   outlier and could be watched first. That is a truer paragraph and a wordier
   one; it also now half-contradicts the numbered list's "the first three in
-  order, then the engines in any order you like", which was already loose.
-- **`items/README.md`'s *before you start*** grew from two ordering facts to
+  order, then the engines in any order you like", which was already loose.~~ *Done: `items/README` now says the engines go in any order the arrows allow and that contexts and predicates can come first — pass 8, session G.*
+- ~~**`items/README.md`'s *before you start*** grew from two ordering facts to
   three when `server/server-tick` was added. The paragraph is now the longest on
-  the page.
-- **`containers-and-menus`' advancement-channel paragraph.** The claim "nothing
+  the page.~~ *Ruled: each of the three ordering facts is a prerequisite a page of the part cites, and the paragraph stays — pass 8, session G.*
+- ~~**`containers-and-menus`' advancement-channel paragraph.** The claim "nothing
   calls back into the menu" had to be scoped to the chest and the exceptions
-  named, which turned one clean sentence into four.
+  named, which turned one clean sentence into four.~~ *Ruled: the scope is the fact, and this pass corrected which slots call back (the crafter's, the item combiner's); the sentences stay — pass 8, session G.*
 - ~~**`loot-tables`' world-gen paragraph** and its `BuiltInLootTables` category
   list: the list was incomplete and is now longer. It is nine items in a book
   whose budget is seven.~~ **Done, pass 6 session G**: its reader counted the
@@ -1780,14 +1780,14 @@ duplicate a Reference page that has been checked row by row.
   named keys, two per-dye-colour families for sheep, thirteen directories, all
   three correct — and rewritten as a sample with a reason to read it rather than
   a census that has to close. [kind=lecture]
-- **`recipes`' reload-window paragraph**, rewritten from "a window that is short
+- ~~**`recipes`' reload-window paragraph**, rewritten from "a window that is short
   and, on a reload, real" to an explanation of why nothing can observe it. The
   punchline is gone and the paragraph is longer; it may want cutting to a
-  sentence.
+  sentence.~~ *Ruled: the explanation is what the section turns on; cutting it to a sentence is not the polish's — pass 8, session G.*
 
 ### Structural findings (logged, not acted on)
 
-- **`items-and-stacks`' *Two validators, one rule, two spellings* table** now has
+- ~~**`items-and-stacks`' *Two validators, one rule, two spellings* table** now has
   an *on failure* cell that is three clauses long, because the three
   `ItemStack.validateStrict` call sites do not agree. It is the only cell in the
   corpus that has to disambiguate its own row. **Checked, session G (pass 5)**:
@@ -1798,8 +1798,8 @@ duplicate a Reference page that has been checked row by row.
   the *runs inside* cell listed `ItemStack.validateStrict`'s three call sites
   while the prose named `ItemStackTemplate.apply` as a fourth. Both reach it
   through one private step the template class shares, which is now what the cell
-  says. [kind=lecture]
-- **`enchanting`'s five-path table** is doing too much: after this session two of
+  says. [kind=lecture]~~ *Done since pass 6, and re-checked: three call sites, the third a private step both template methods share — pass 8, session G.*
+- ~~**`enchanting`'s five-path table** is doing too much: after this session two of
   its cells carry three clauses each (the providers-and-loot gate and filter).
   Either the table narrows to the three columns that behave alike, or
   `EnchantRandomlyFunction` gets a sentence of its own. **Session G's note**:
@@ -1810,7 +1810,7 @@ duplicate a Reference page that has been checked row by row.
   in one place that the three-way filter split and the two gate exceptions are
   the same two paths. Its reader had gone further and said every cell in the
   table is a compressed forward reference, so the table now says so of itself in
-  one sentence above it. [kind=lecture]
+  one sentence above it. [kind=lecture]~~ *Done since pass 6; the two gate exceptions are three since this session (`SetEnchantmentsFunction`), and the cells still defer to the paragraph — pass 8, session G.*
 - ~~**`items/README.md`'s figure** lost an edge (`CM → CP`) and re-sourced another,
   so the second tier now has one node with no incoming arrow. That is *true* —
   contexts and predicates depends on none of the vocabulary — but a flowchart
@@ -1821,10 +1821,10 @@ duplicate a Reference page that has been checked row by row.
 
 ### Counts that are fine but say nothing
 
-- **`items/README.md`:47** "the four ways one stack is serialised" is a count of
+- ~~**`items/README.md`:47** "the four ways one stack is serialised" is a count of
   *destinations* borrowed from `foundations/codecs-nbt-json`, not of anything in
   the decompile — `ItemStack` declares seven public serialisers. Correct as a
-  cross-reference, meaningless as a number. Pass 5 may want to drop the number.
+  cross-reference, meaningless as a number. Pass 5 may want to drop the number.~~ *Done: now *the four paths a stack travels*, the linked page's four, one of them a parse — pass 8, session G.*
 
 ### The closer device
 
@@ -1842,11 +1842,11 @@ mark while the body never delivered it.
 
 ### For the terminology sweep
 
-- The part says *the wire*, *the connection* and *the network* for the same
-  thing, sometimes in one page (`containers-and-menus` uses all three). [kind=voice]
-- *Prototype* means the item's default `DataComponentMap` on `items-and-stacks`
+- ~~The part says *the wire*, *the connection* and *the network* for the same
+  thing, sometimes in one page (`containers-and-menus` uses all three). [kind=voice]~~ *Ruled: *the connection* names the `Connection`, *the network* is the lane key's word for the wire's lane, and *the wire* is the channel; three words for three things — pass 8, session G.*
+- ~~*Prototype* means the item's default `DataComponentMap` on `items-and-stacks`
   and nothing else anywhere; the glossary has it, but it reads as jargon on
-  first use in `enchanting`.
+  first use in `enchanting`.~~ *Overtaken: `enchanting` uses *prototype* only inside a link's anchor — pass 8, session G.*
 
 
 ## Session F — Part VI Entities (pass 4) *(2026-09-04)*
@@ -2892,7 +2892,7 @@ was cut or moved, and why)*
   should check the device's distribution across all thirteen parts. The part's hooks all land on a bold or em-dashed final sentence,
   the same tic session C logged for Part II.~~ *Done: the fall-credit rule has its section on the page (*Who gets the credit for a fall*); the rest are logged cuts and a line count the pass does not chase — pass 8, session F.*
 
-- **2026-09-03, session H — Part VII Items and inventories.** Eight pages, [kind=record]
+- ~~**2026-09-03, session H — Part VII Items and inventories.** Eight pages, [kind=record]
   318–391 lines. **Nothing was cut except by moving it**, but a lot of
   *names* left the pages when the field inventories went, and this is the
   list, because the class index is now their only home.
@@ -2949,7 +2949,7 @@ was cut or moved, and why)*
   table gained the legend its bold rows never had, above the table instead of
   below it. What is left is genuinely wording — the two isomorphic diagrams —
   and the last clause is now wrong: `enchantments` reached for the device too,
-  under a name of its own. [kind=voice]
+  under a name of its own. [kind=voice]~~ *Record, and settled: the names cut by session H live in the class index; the length is the second edition's (the last cuts are not this pass's, R10); `using-an-item`'s two isomorphic diagrams are ruled (the comparison is the page's point); the last clause's device on `enchantments` is its closer — pass 8, session G.*
 
 - **Session I (Part VIII), 2026-09-03.** **Length**: 316, 174, 410, 285, 231,
   250, 176 lines plus a 115-line landing page — six of the seven inside or
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands.
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4304,12 +4304,12 @@ corrections it made are in [pass9.md](pass9.md).*
   names `HashedPatchMap.addedComponents` and `HashedPatchMap.removedComponents`,
   which the click page describes without naming: a move, not a cut. The framing
   claim (*exactly one packet lets a client hand the server an item*) is the
-  packet page's and `containers-and-menus` now keeps the handler only.
+  packet page's and `containers-and-menus` now keeps the handler only. **VII's share, pass 8 session G**: nothing to change on `containers-and-menus`, which keeps the handler; the packet page's half is IX's.
 - **Session J (X) — `client/gui-and-screens` and `containers-and-menus` are
   unlinked in both directions on three shared mechanisms**: the null `MenuType`
   (its hook), `AbstractContainerScreen`'s click resolution, and
   `CreativeModeInventoryScreen`. The glossary's **Menu** entry (`glossary`:391)
-  describes only the server's object, where the page insists there are two.
+  describes only the server's object, where the page insists there are two. **VII's share ruled, pass 8 session G**: the missing links are `client/gui-and-screens`' to add (J), and the glossary's *Menu* entry is O's.
 - ~~**Session M (XIII) — `brigadier-and-commands`:255 routes `LootCommand` and~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M, as the entry's own last line says.
   `ItemCommands` to `loot-tables`, which names neither**; both are on
   ~~`contexts-and-predicates`:233-234. The row's `/item modify` claim is~~ **Struck by the pass-6 planning session (2026-09-07):** settled with the entry above.
@@ -4319,7 +4319,7 @@ corrections it made are in [pass9.md](pass9.md).*
   `AbstractContainerMenu.broadcastChanges` and links `containers-and-menus`
   nowhere**, and `entity-selectors`:118 and `advancements`:146-150 are each
   half of a fact whose other half is on `contexts-and-predicates`. Four
-  inbound links from Part XIII, none anchored.
+  inbound links from Part XIII, none anchored. **VII's share, pass 8 session G**: nothing to change on this part's pages; the missing links are Part XIII's (N).
 - ~~**Session M (XIII) — the predicate shape library, ruled.** §7 asks whether
   `MinMaxBounds`, `CollectionPredicate`, `EntitySubPredicate` and
   `DataComponentMatchers` belong here or in a Reference page. Session G's
@@ -4395,7 +4395,7 @@ corrections it made are in [pass9.md](pass9.md).*
   `using-an-item` 2, `the-connection` 2, and one each on `attributes`,
   `authority`, `movement-and-collision`, `synched-entity-data`, `the-spear`,
   `the-two-phase-tick`). Fixing two of the nineteen would make the corpus less
-  consistent, not more; this is the terminology sweep's. [kind=voice] **VI's share done, pass 8 session F**: Part VI's cast columns say *Server thread* and *Render thread*.
+  consistent, not more; this is the terminology sweep's. [kind=voice] **VI's share done, pass 8 session F**: Part VI's cast columns say *Server thread* and *Render thread*. **VII's share done, pass 8 session G**: Part VII's casts say *Server* and *Render*.
 - ~~**`recipes` says the `CraftingInput` constructor's accounting twice**, 170
   lines apart in different vocabulary (L152-153 and L324-326).~~ **Done, pass 6
   session G**: the two halves were one idea told from opposite ends — the
@@ -4415,16 +4415,16 @@ corrections it made are in [pass9.md](pass9.md).*
 its page. Fifteen facts corrected (in [pass9.md](pass9.md)); these are what is
 left, by the pass that owns it.*
 
-**Logged cuts** (A9 — a cut is a move or a logged cut, never a silence).
+~~**Logged cuts** (A9 — a cut is a move or a logged cut, never a silence).~~ *Record: a heading for the cut log below — pass 8, session G.*
 
-- **`containers-and-menus`' nine-packet enumeration** — the run of packet
+- ~~**`containers-and-menus`' nine-packet enumeration** — the run of packet
   classes that closed the page (the queue's own example of the part's length
   bill) cut to two sentences and a pointer at [the packet
   catalogue](../src/reference/packets.md), which already carries all nine rows.
   Kept out of the cut: the hotbar-selection packet, whose name misleads, and the
   structure-chest unpack. Its reader would have cut the block outright.
-  [kind=record]
-- **`enchantments`' `EnchantmentTags` census** — twenty-nine tags sorted into
+  [kind=record]~~ *Record — pass 8, session G.*
+- ~~**`enchantments`' `EnchantmentTags` census** — twenty-nine tags sorted into
   five families inside a closer answering a question about Fire Aspect. Verified
   before cutting (7 exclusivity + 1 tooltip order + 4 pool membership + 6
   behaviour flags + 7 biome trades = 25, plus the four trading and treasure
@@ -4432,14 +4432,14 @@ left, by the pass that owns it.*
   mid-clause and the question it hung off had been answered two sentences
   earlier. **It has no Reference home** — there is no enchantment-tags view —
   so this is the one thing in the part that left the book without a
-  destination. A candidate for [pass3.md](pass3.md) §7. [kind=record]
-- **`loot-tables`' `BuiltInLootTables` prefix run** — ten phrases, three of them
+  destination. A candidate for [pass3.md](pass3.md) §7. [kind=record]~~ *Second edition: an enchantment-tags view is new Reference material, which pass 8 does not add (R10) — pass 8, session G.*
+- ~~**`loot-tables`' `BuiltInLootTables` prefix run** — ten phrases, three of them
   conjunctions, standing for thirteen directories. Cut to a sample chosen to
   show the range, because its reader counted the run twice trying to make it
-  reach thirteen. [kind=record]
+  reach thirteen. [kind=record]~~ *Record — pass 8, session G.*
 
-**For pass 7 — the figures.** Every one of these is a reader's complaint about a
-figure *as read against the paragraph under it*, which is the pass's own test. [kind=record]
+~~**For pass 7 — the figures.** Every one of these is a reader's complaint about a
+figure *as read against the paragraph under it*, which is the pass's own test. [kind=record]~~ *Record: pass 7 ran — pass 8, session G.*
 
 - ~~**`containers-and-menus`' shift-click sequence sits before every paragraph
   that explains it**, and four of its labels
@@ -4485,34 +4485,34 @@ figure *as read against the paragraph under it*, which is the pass's own test. [
 
 **For pass 8 — the voice.**
 
-- **The dead-constant aside is a Part VII habit**, and two pages carry the same
+- ~~**The dead-constant aside is a Part VII habit**, and two pages carry the same
   one sentence apart in shape: `items-and-stacks` on `Item.MAX_BAR_WIDTH` ("no
   reader of the constant survives the decompile") and `loot-tables` on
   `LootTable.RANDOMIZE_SEED` ("nothing in the game reads the constant"). Both
   readers skipped both. Decide once whether the book names a constant nothing
-  reads. [kind=voice]
-- **One word, three senses, on one page**: `loot-tables` uses *level* for the
+  reads. [kind=voice]~~ *Done: both pages give the number with the constant's name (V6: the decompile cannot show a compile-time constant unread) — pass 8, session G.*
+- ~~**One word, three senses, on one page**: `loot-tables` uses *level* for the
   world, for an enchantment's level and for the entry/pool/table nesting, and
-  its reader read "one per level" as per enchantment level. [kind=voice]
-- **`enchantments` uses *inert* twice in different senses** — an enchanted
+  its reader read "one per level" as per enchantment level. [kind=voice]~~ *Done: the nesting is *tier* on the page, as its own *tiers of modifiers* already said — pass 8, session G.*
+- ~~**`enchantments` uses *inert* twice in different senses** — an enchanted
   book's stored set, and the whole record before anything calls
-  `EnchantmentHelper`. [kind=voice]
-- **`contexts-and-predicates` uses *context* for both `ContextMap` and
+  `EnchantmentHelper`. [kind=voice]~~ *Done: the record *does nothing until something calls* `EnchantmentHelper`; *inert* is the book's alone — pass 8, session G.*
+- ~~**`contexts-and-predicates` uses *context* for both `ContextMap` and
   `LootContext`**, which is what makes its cast row and its
   "none of this runs on the client" sentence read as a contradiction when they
-  are about different layers. [kind=voice]
-- **The trailing possessive after a link** (`[loot tables](…)'.`) was on two
+  are about different layers. [kind=voice]~~ *Done: the sentence now says *no loot context is built on the client*, and the cast row names the Render thread's own map — pass 8, session G.*
+- ~~**The trailing possessive after a link** (`[loot tables](…)'.`) was on two
   pages of this part and read as a typo to a reader; both rewritten here, but it
-  is worth a corpus grep. [kind=voice]
+  is worth a corpus grep. [kind=voice]~~ *Done: the part has none left (the last, on `contexts-and-predicates`, rewritten); the corpus rule is V8 — pass 8, session G.*
 
-**For pass 9 — the fact-check.** Beyond this session's own entry in
+~~**For pass 9 — the fact-check.** Beyond this session's own entry in
 [pass9.md](pass9.md), three things its readers raised that were checked and
 found *correct*, and are therefore worth re-checking rather than assuming:
 `enchantments`' `EnchantmentTags` arithmetic (29 = 25 + 4, five families, all
 verified); `loot-tables`' `BuiltInLootTables` counts (117 named keys, two
 colour families, thirteen directories, all verified); and `recipes`' nine
 `CustomRecipe`s (verified, and the ninth is `FireworkStarFadeRecipe`, which the
-page had left unnamed as "its fade sibling"). [kind=record]
+page had left unnamed as "its fade sibling"). [kind=record]~~ *Done: checked this pass — 121 keys, two colour families, fifteen directories; the nine `CustomRecipe`s; the tag census was cut from the page in pass 5 — pass 8, session G.*
 
 ### For pass 7 — the figures
 
@@ -4537,23 +4537,23 @@ page had left unnamed as "its fade sibling"). [kind=record]
 
 ### For pass 8 — the voice
 
-- **`enchantments` says "forty-three" of two unrelated things** 158 lines apart
-  (the vanilla enchantments, and the lines of JSON in Fire Aspect's file). [kind=voice]
-- **`containers-and-menus`:316 "those four"** counts four categories, one of
-  which is itself four slots. [kind=voice]
-- **`using-an-item`:328 "five enchantment hooks"** are spread over three
-  paragraphs and the fifth is only implicit. [kind=voice]
-- **`recipes`:104-105 says "for the first" and "for the second"** over a
-  three-item list, leaving the third unaccounted. [kind=voice]
-- **`using-an-item`:47 uses *acknowledged*** four rows above a sentence about
-  sequence numbers, for something that is not the ledger's acknowledgement. [kind=voice]
-- **The *ledger* metaphor** stands on both `loot-tables` and
+- ~~**`enchantments` says "forty-three" of two unrelated things** 158 lines apart
+  (the vanilla enchantments, and the lines of JSON in Fire Aspect's file). [kind=voice]~~ *Done: Fire Aspect's file is *one small JSON file* — pass 8, session G.*
+- ~~**`containers-and-menus`:316 "those four"** counts four categories, one of
+  which is itself four slots. [kind=voice]~~ *Done: *changes to any of those* — pass 8, session G.*
+- ~~**`using-an-item`:328 "five enchantment hooks"** are spread over three
+  paragraphs and the fifth is only implicit. [kind=voice]~~ *Done: six hooks now, the sixth named where it runs — pass 8, session G.*
+- ~~**`recipes`:104-105 says "for the first" and "for the second"** over a
+  three-item list, leaving the third unaccounted. [kind=voice]~~ *Done: *for the dye recipe … for the imbue* — pass 8, session G.*
+- ~~**`using-an-item`:47 uses *acknowledged*** four rows above a sentence about
+  sequence numbers, for something that is not the ledger's acknowledgement. [kind=voice]~~ *Done: the row asks *is the ending answered* — pass 8, session G.*
+- ~~**The *ledger* metaphor** stands on both `loot-tables` and
   `contexts-and-predicates` ("a stack, not a ledger"), which is the pair the
-  brief's A3 already logged for pass 8. [kind=voice]
-- **`enchantments`:109-112 is near-verbatim with `reference/enchantment-hooks`'
+  brief's A3 already logged for pass 8. [kind=voice]~~ *Done, with :1039 — pass 8, session G.*
+- ~~**`enchantments`:109-112 is near-verbatim with `reference/enchantment-hooks`'
   generated intro** ("the enchantment package barely calls anything and
   everything calls it"); the Reference prose lives in `gen_reference.py`, so
-  the page is the copy that should vary. [kind=voice]
+  the page is the copy that should vary. [kind=voice]~~ *Done: the page's sentence now reads *The enchantment package calls out little and is called from everywhere* (the audit's wording; the first, *The calls run one way*, was an absolute) — pass 8, session G.*
 
 ---
 
@@ -5141,7 +5141,7 @@ for other passes and the cuts it logged.*
   eye:** eleven of the fifteen were *members* of classes the pages still name
   (`NormalNoise.create`, `Climate.Sampler.sample`, `PoolElementStructurePiece.place`),
   which is what A12 is for — a list of a class's methods is the field inventory,
-  and the class is the door. [kind=lecture] **VI's share confirmed, pass 8 session F.**
+  and the class is the door. [kind=lecture] **VI's share confirmed, pass 8 session F.** **VII's share confirmed, pass 8 session G.**
 
 ### For pass 7 (the figures)
 
@@ -6849,31 +6849,31 @@ Part 3; these are the pieces of work that ruling created.
   `Class.` prefix in the figure. That is a convention F12 did not have because
   the kind was invisible to it; `TEMPLATE.md`'s *Figures* says it now, and
   session O should fold it into F12(b)'s wording. [kind=record]~~ — **done, pass 7 session O**: F12's wording in `TEMPLATE.md` now covers the whole class diagram, member lines and relation labels.
-- **`contexts-and-predicates` figure 2's message head `test` is a ruled note**,
+- ~~**`contexts-and-predicates` figure 2's message head `test` is a ruled note**,
   not an unresolved name: `LootItemCondition extends Predicate<LootContext>`, so
   `test` belongs to `java.util.function.Predicate` and is outside every tree the
-  verifier indexes. [kind=record]
-- **The lane key gains three rows** — `TCC` for `TransientCraftingContainer`,
+  verifier indexes. [kind=record]~~ *Record — pass 8, session G.*
+- ~~**The lane key gains three rows** — `TCC` for `TransientCraftingContainer`,
   and `CEM` beside the existing `EM`, both `EnchantmentMenu`, for the two copies
   of the menu in `enchanting`'s split-by-machine figure (session F's
   `AbstractBoat` precedent). `CI` (`CraftingInput`) is no longer declared by any
-  page and joins session O's prune list. [kind=record]
+  page and joins session O's prune list. [kind=record]~~ *Record — pass 8, session G.*
 
 **For pass 8 — the voice.**
 
-- **Two captions in this part name a packet and two name a method**, and the
+- ~~**Two captions in this part name a packet and two name a method**, and the
   register is not the same: *one `ClientboundContainerSetContentPacket`, from
   `sendAllDataToRemote`* against *the client is told the meal is over by a
   single byte*. The second is the book's voice and the first is the source's.
-  Worth reading Part VII's nineteen captions as one set. [kind=voice]
-- **"the client's own copy" and "the server's copy"** are now the part's phrase
+  Worth reading Part VII's nineteen captions as one set. [kind=voice]~~ *Done: the nineteen captions read as one set; every one lost the *Figure:* the stylesheet already prints, and none is over two sentences — pass 8, session G.*
+- ~~**"the client's own copy" and "the server's copy"** are now the part's phrase
   for the two menus, replacing *the twin*, which appeared once and nowhere else
   in the book. Check it against Part X's vocabulary for the same pair.
-  [kind=voice]
+  [kind=voice]~~ *Ruled: the pair is plain English and stays; Part X's own vocabulary is session J's — pass 8, session G.*
 
 **For pass 10.**
 
-- **Part VII's sections that wanted a figure and did not get one**, in the order
+- ~~**Part VII's sections that wanted a figure and did not get one**, in the order
   the viewers asked for them: `containers-and-menus`' *Where in the tick a
   broadcast happens* (four ordered moments in one tick, and the page's
   *hopper one tick late* conclusion rests entirely on which comes after which —
@@ -6891,7 +6891,7 @@ Part 3; these are the pieces of work that ruling created.
   and `using-an-item`'s *Where the hour comes from* (nine durations in one
   paragraph, over the page's own seven-item budget — a table). Seven sections,
   and five of them are a page's hook carried entirely in prose, which is now the
-  same pattern in Parts IV, V and VII. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  same pattern in Parts IV, V and VII. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: a figure for a long section is new drawing, which the polish does not do (R10) — pass 8, session G.*
 
 ## Pass 7, session H — Part VIII · The player *(2026-09-15)*
 

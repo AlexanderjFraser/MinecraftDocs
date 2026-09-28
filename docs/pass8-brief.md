@@ -854,7 +854,7 @@ V2, or B into A, if either runs short.
 | **D** | IV · The world | 88+8 | 5·5·0·25 | 51·52·17·9 | 38.8k | done 2026-09-27 | **284 corrections on eleven pages** (43 inside a figure or a caption, seven of them 26.3 changes V1 and V2 missed), every one re-derived in the tree; the 114 ledger entries struck, 27 of 111 wrong in whole or in part; 47 queue units settled; the record audited by one agent per page, which found **76 of the errors, 55 of them in sentences the session had just written**; one probable upstream bug written as mechanism (lava's slower spread, booked and then dropped as a duplicate); four pages in other parts corrected with it; items handed to E, F, I, J, L, M and O |
 | **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | done 2026-09-27 | **237 corrections on eight pages** (29 inside a figure or a caption; four 26.3 changes V1 and V2 missed, and three sentences the version pass left beside a fact it moved), every one re-derived in the tree; the 112 ledger entries struck; Part V's queue closed; the record audited by one agent per page, which found **73 of them, 45 in sentences the session had just written**; the write figure redrawn (D's handoff); sculk spread and four more unowned mechanisms into pass3.md §7; eight pages outside the part corrected with it; items handed to J, L, N, O and P |
 | **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | done 2026-09-27 | **307 corrections on ten pages** (44 inside a figure or a caption, twenty-one of them 26.3 changes V1 and V2 did not carry into the sentence), every one re-derived in the tree; the 109 ledger entries struck, 19 of 83 claims wrong in whole or in part; 43 queue units struck and eleven shared ones noted; the record audited by one agent per page, which found **80 of them, 54 in sentences the session had just written**; `authority`'s predicate figure redrawn for 26.3's move-simulation type (V2's handoff); seven pages outside the part corrected with it; items handed to H, I, J, O and P |
-| **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | — | |
+| **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | done 2026-09-28 | **255 corrections on nine pages** (31 inside a figure or a caption; two 26.3 changes the version pass did not reach; six false headings, four of them on `enchantments`), every one re-derived in the tree; the 77 ledger entries struck, 4 wrong or wrong in part; the part's queue settled; the record audited by one agent per page, which found **71 of them, 45 in sentences the session had just written**; every caption's doubled *Figure:* gone; one probable upstream bug written as mechanism (a thrown click leaves remote updates suppressed); four pages outside the part corrected with it; items handed to H, I, J, N, O and P |
 | **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | — | |
 | **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | — | |
 | **J** | X · The client — the largest ledger; may split at the GUI stack (pages 1–5, 6–12) | 118+17 | 6·3·4·27 | 59·71·10·9 | 29.6k | — | |
@@ -1259,3 +1259,38 @@ Corrected where a correction here made them disagree: `player/status-effects`, `
 and `reference/README`. Left for H, I, J, O and P: the items in the ledger's *For later sessions* — the passenger diff's
 *filtered*, which 26.3 does not filter, and `chunk-storage`'s account of what the unload filter turns away among them.
 For P: the V1 and V2 entries on these pages, and this session's diff.
+
+**Session G — Part VII · Items and inventories (2026-09-28).** Nine pages, each checked under Part 2 by its own agent while the
+session read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, the V1 and V2 entries on these
+pages (V2's *For the part session (G)* lines included), session B's handoff on `containers-and-menus` and session A's V6 constants.
+An interruption stopped five of the agents mid-check; each was resumed from its transcript, and the session's cancelled edits were
+re-applied by scripts that assert every target before writing. **255 corrections**, every one re-derived in `reference/26.3`
+before it was made; 31 are inside a figure or a caption. Two are 26.3 changes the version pass did not reach (villager trades are a
+registry of records and `VillagerTrades` the bootstrap that writes them, so the landing page's *not a family* was false;
+`LootPredicates` is a fifth file naming `Enchantments`' keys), three are V6 (a third constant session A's list missed,
+`Item.APPROXIMATELY_INFINITE_USE_DURATION`), and one is B's handoff (the button click is answered in its handler like any click).
+Ledger entries checked: the 77 on these pages (64 checked, 36 of them naming a neighbour this session corrected; 4 wrong or wrong
+in part; 7 overtaken; 2 notes). The three worst corrections: `enchantments`' *The three famous ones that have no effect
+component* — Mending's `repair_with_xp` doubles the durability each point of experience buys and Looting has `equipment_drops`,
+so only Fortune has none, and the claim sat on the landing page and `loot-tables` too (a false heading, corrected with its link);
+`enchanting`'s second figure, whose last two arrows drew *three fresh offers from the new seed* after a click, where an enchanted
+item fails `ItemStack.isEnchantable` and the costs are zeroed, and whose `Player.onEnchantmentPerformed` note sat after the enchant
+loop it precedes; and `containers-and-menus`' *every mispredicted slot corrected*, which a click that throws breaks — the handler
+never reaches `AbstractContainerMenu.resumeRemoteUpdates`, so that menu sends the client nothing until a later click succeeds (a
+probable upstream bug, written as mechanism). What the whole-part read found before the reports: eighteen items, fifteen of them
+corrections the agents then found too, and one the agents did not flag as a whole: every Part VII caption opened on a literal
+*Figure:* after the stylesheet's own *Figure N.*, so all nineteen rendered *Figure 3. Figure: …* (the only part that did). **The
+record's audit was again the session's finding**: nine agents re-derived every changed sentence and found **71 of the 255, 45 in
+sentences this session had just written** — the one-in-four rate of C to F for a fifth session — most of them a correction that
+named a population and not all of it (*those three* menus where five reach the base, three functions that return a new stack
+where seven do, *the one debt* between two engines that link each other four ways), and one an outright error (*the tags … are
+bound before it is even decoded*, where they are read then and bound only when the reload is applied, which `foundations/tags`
+says). The audit also reversed one of the session's own polish moves: dropping *three* from *three engines* made every engine page
+an engine, and the three are now named. The polish: the thread names on eight pages (V7), seven *actually*, one possessive on a
+link, the caption prefix on nineteen, and nine voice units settled by a clause. Also: the part's queue settled (35 struck, settling
+39 units: done 19, record 7, ruled 5, overtaken 2, second edition 2) and a note on the seven units other parts share. Corrected
+where a correction here made them disagree: `player/the-spear`, `foundations/data-driven-types`, `lectures.md` (two) and
+`reference/glossary` (two). Left for H, I, J, N, O and P: the items in the ledger's *For later sessions*, among them
+`gen_reference.py`'s intros for `reference/loot-context-params` (*every key is read … with `LootContext.getOptional`*, and a
+history claim) and `reference/enchantment-hooks`, which session O owns. For P: the V1 and V2 entries on these pages, and this
+session's diff.

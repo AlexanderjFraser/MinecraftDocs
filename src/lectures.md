@@ -178,8 +178,7 @@ all and could come first.
 5. [Enchantments](systems/items/enchantments.md)
 6. [Enchanting](systems/items/enchanting.md) — watch it directly after
    *enchantments*.
-7. [Contexts and predicates](systems/items/contexts-and-predicates.md) — the
-   one page in this part that Part XIII needs.
+7. [Contexts and predicates](systems/items/contexts-and-predicates.md) — the page in this part that Part XIII's landing page names.
 8. [Loot tables](systems/items/loot-tables.md) — watch it directly after
    *contexts and predicates*, which it is the worked example of.
 
@@ -383,8 +382,8 @@ and [the data-driven type pattern](systems/foundations/data-driven-types.md),
 of which dialogs and game tests are the two clearest instances; Part IX's
 [connection](systems/networking/the-connection.md) for the Netty/server
 thread boundary the command packets cross two different ways; and Part VII's
-[contexts and predicates](systems/items/contexts-and-predicates.md), which
-advancements need for every trigger and selectors for one option.
+[contexts and predicates](systems/items/contexts-and-predicates.md), which advancements need for every trigger that tests a player and selectors for
+one option.
 
 ## The dependencies between parts
 

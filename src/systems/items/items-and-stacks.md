@@ -19,8 +19,7 @@ component system behind it: what an `ItemStack` is made of, what makes two of
 them the same stack, what a stack may legally hold, and what happens to one
 that runs out of durability. That last is the odd one out in a part where
 almost everything is predicted locally and corrected afterwards.
-**Durability is the one thing a client never even guesses at** — the method
-that spends it demands a `ServerLevel` outright, and the convenient overloads
+**A client never even guesses at the durability an item spends** — the method that spends it demands a `ServerLevel` outright, and the convenient overloads
 that take a `LivingEntity` instead look its level up and silently do nothing
 when the answer is a client's.
 
@@ -28,14 +27,14 @@ when the answer is a client's.
 
 | class | what it decides | thread |
 |---|---|---|
-| `Item` | the behaviour hooks, and four fields that are not components | both main threads |
+| `Item` | the behaviour hooks, and four fields that are not components | both |
 | `Item.Properties` | the builder — which produces an *initializer*, never a component map | class-init, wherever the bootstrap runs |
-| `Holder.Reference` | where an item's default components actually live, and whether they exist yet | written on a main thread at reload |
-| `DataComponentInitializers` | the pile of pending default maps, one entry per registered item | built on the background executor |
-| `ItemStack` | a holder, a count, a pop time and a patched map — the mutable thing in a slot | both main threads |
-| `PatchedDataComponentMap` | prototype plus patch, and the copy-on-write flag that makes copying a stack free | wherever its stack is |
+| `Holder.Reference` | where an item's default components live, and whether they exist yet | written by the thread loading the world, on the Server thread at each `/reload`, and on the Render thread for a joining client |
+| `DataComponentInitializers` | the pile of pending default maps, one entry per registered item | built on the worker pool on the server, on the Render thread on a joining client |
+| `ItemStack` | a holder, a count, a pop time and a patched map — the mutable thing in a slot | both |
+| `PatchedDataComponentMap` | prototype plus patch, and the copy-on-write flag that makes copying a stack cheap | wherever its stack is |
 | `ItemStackTemplate` | the immutable stack: what a stack looks like inside a component, a particle or a recipe | both |
-| `ItemEntity` | a stack that is an entity, with a five-minute clock and a merge rule | server main, mirrored on the client |
+| `ItemEntity` | a stack that is an entity, with a five-minute clock and a merge rule | Server, mirrored on the Render thread |
 
 ## Four fields, and only one of them is really data
 
@@ -70,13 +69,13 @@ classDiagram
     PatchedDataComponentMap ..> Reference : reads the defaults, never writes them
 ```
 
-*Figure: four fields, and the two arrows out of them. The dotted one is the
-shape of the whole system — a stack reads defaults it can never touch.*
+*`ItemStack`'s four fields and `Item`'s four, and the arrows between the classes. The dotted one is the shape of the
+whole system — a stack reads defaults it can never touch.*
 
 A stack does not own its defaults and cannot change them: it points at a
-holder, and the holder owns one `DataComponentMap` shared by every stack of
-that item in both programs. What the patch is made of, and why copying a
-stack is free, belong to [data
+holder, and the holder owns one `DataComponentMap` shared by every stack of that item in both
+programs (a reload rebinds it, and a stack made before keeps the map it was made
+with). What the patch is made of, and why copying a stack is cheap, belong to [data
 components](../foundations/data-components.md#the-prototype-and-why-it-is-built-at-reload).
 
 The holder field the figure calls *item* is read through
@@ -85,7 +84,8 @@ for an empty stack, which is why `ItemStack.getItem` never returns null
 either. The
 pop time — `ItemStack.popTime` — is the odd one out: it is the five-tick
 squeeze the hotbar icon does
-when something lands in it, set to 5 by `Inventory` when a stack grows and by
+when something lands in it, set to 5 by `Inventory` when a stack grows or a damaged item lands in an empty
+slot, and by
 `ClientPacketListener.handleContainerSetSlot` when a slot update makes a
 hotbar stack larger, counted down by `ItemStack.inventoryTick` on **both**
 sides, and read by `Hud.extractSlot`, which scales the icon while it is above
@@ -101,9 +101,9 @@ component map. `Item.Properties.component` and every convenience over it —
 `Item.Properties.equippable`, `Item.Properties.useCooldown` — fold one more
 step onto a `DataComponentInitializers.Initializer`, a function that will be
 run against a `DataComponentMap.Builder` later, with a
-`HolderLookup.Provider` in hand. Seven conveniences, `Item.Properties.tool`
-and `Item.Properties.spear` among them, are the ones that make a weapon, and
-between them they build forty-two items out of a registry of over a thousand
+`HolderLookup.Provider` in hand. The ones that make a weapon are a different seven — `Item.Properties.tool`,
+`Item.Properties.spear` and five named for what they make — and between them they
+build forty-two items out of a registry of over a thousand
 ([the weapon helpers](../../reference/weapon-helpers.md)).
 
 Between the two halves of that arrangement an `Item` is a live object with no
@@ -123,12 +123,10 @@ item already had — which is what makes the equality table below behave. And
 the patch map is **shared until someone writes to it**: `ItemStack.copy` hands
 out the same map and sets a copy-on-write flag, and the fork happens on the
 first mutation. Copying a stack is therefore something the game does without
-thinking about it, and it does — menus, recipes, hover text and
-`ServerPlayerGameMode.destroyBlock` all copy constantly, and each copy
-allocates one small object and no component data.
+thinking about it, and it does — menus, recipes and `ServerPlayerGameMode.destroyBlock` all copy constantly, and
+each copy allocates two small objects and no component data.
 
-The wire form falls out of the same shape and is the third of the four
-serialisations [codecs, NBT and
+The wire form falls out of the same shape and is the second of the four serialisations [codecs, NBT and
 JSON](../foundations/codecs-nbt-json.md#the-four-paths-side-by-side) lays side
 by side: `ItemStack.OPTIONAL_STREAM_CODEC` writes the count, the item holder
 and the patch, never the prototype, because the receiver has the same
@@ -147,7 +145,7 @@ one.
 | `ItemStack.isSameItemSameComponents` | the item, then the whole `PatchedDataComponentMap` | stacking, and every *are these interchangeable* test |
 | `ItemStack.matches` | the count as well | container synchronisation ([containers and menus](containers-and-menus.md#the-ladder-the-server-climbs-before-it-believes-you)) |
 | `ItemStack.matchesIgnoringComponents` | everything except the component types a predicate excuses | the held-item swap animation |
-| `ItemStack.hashItemAndComponents` | the item's hash and the effective component map's | keying stacks in maps |
+| `ItemStack.hashItemAndComponents` | the item's hash and the effective component map's | keying stacks in hash sets |
 
 The second row is where the borrowed map pays off. Comparing two stacks of the
 same item amounts to comparing their patches, and because a patch never holds
@@ -176,7 +174,7 @@ components.
 | installed by | `Item.Properties.finalizeInitializer` | — |
 | rejects | `DataComponents.DAMAGE` on a stackable item | `DataComponents.MAX_DAMAGE` on a stackable item, and a count over the maximum |
 | runs inside | `DataComponentMap.Builder.build` | `ItemInput`, `ItemStack.applyComponentsAndValidate`, and `ItemStackTemplate.create` and `ItemStackTemplate.apply` through one private step they share |
-| when | at reload, on the background executor | when a command, a template or a component patch builds a stack |
+| when | at reload, on the worker pool (a joining client's on the Render thread) | when a command, a template or a component patch builds a stack |
 | on failure | throws, failing the reload | depends on the caller: `ItemInput` throws a command syntax error, the other two log and yield `ItemStack.EMPTY` or restore the previous patch |
 
 Neither is reached from a network decode. Exactly **one** serverbound packet
@@ -188,16 +186,14 @@ The strict validator reaches one level into a stack's contents and no further.
 `ItemStack.validateContainedItemSizes` runs inside `ItemStack.validateStrict`
 over `DataComponents.CONTAINER`, `DataComponents.BUNDLE_CONTENTS` and
 `DataComponents.CHARGED_PROJECTILES`, checking each contained stack's count
-against its own maximum — and it does **not** re-run the full validation
-there, so nesting is not followed and a shulker box full of impossible stacks
-is caught by a command rather than at the creative slot's door. The bundle is
-the one that gets a second test of its own: an over-weight `BundleContents`
-fails too.
+against its own maximum — and it does **not** re-run the full validation there, so nesting is not followed;
+a shulker box full of impossible stacks is caught by a command, and not at the
+creative slot's door, which never runs the strict validator at all. The bundle is the one that gets a second test of its own: a `BundleContents` whose
+weight cannot be computed fails too, though one merely over its capacity passes.
 
 ## An item, a count, some components — said three ways
 
-`ItemInstance` is the read-only contract those validators are written
-against: `ItemInstance.count`, `ItemInstance.getMaxStackSize`, and — through
+`ItemInstance` is the read-only contract the contents check is written against: `ItemInstance.count`, `ItemInstance.getMaxStackSize`, and — through
 `TypedInstance` and `DataComponentGetter` — five `TypedInstance.is` overloads
 for tags, holder sets, raw items, holders and resource keys, to which
 `ItemStack.is` adds a sixth taking a predicate. Its default
@@ -206,11 +202,9 @@ for tags, holder sets, raw items, holders and resource keys, to which
 happens, because the common set puts 64 there.
 
 Two classes implement it. `ItemStack` is the mutable one that lives in slots.
-`ItemStackTemplate` is an immutable record of a `Holder<Item>`, a count and a
-**raw** `DataComponentPatch` — one that came straight from a builder and was
-never sanitised against a prototype, so a template is the one thing in the
-game that can carry a component value equal to the item's own default and send
-it verbatim. It is what a stack becomes when it is stored *inside* something
+`ItemStackTemplate` is an immutable record of a `Holder<Item>`, a count and a **raw** `DataComponentPatch` — one the template itself never sanitises against a
+prototype, so a template read from data can carry a component value equal to the
+item's own default, which no `ItemStack` can. It is what a stack becomes when it is stored *inside* something
 else: `ItemContainerContents` (so a shulker box's contents are
 templates, not stacks), `BundleContents`, `ChargedProjectiles`,
 `ItemParticleOption`, `HoverEvent`, `UseRemainder`, the recipe classes, and
@@ -241,7 +235,7 @@ damage.
 `ItemStack.hurtAndBreak` is the way in for almost everything, and the overload
 that does the work demands a `ServerLevel` outright. The overloads taking a `LivingEntity`
 pattern-match on the entity's level and **silently do nothing** on the client,
-which is why a client never predicts durability. The amount then goes through
+which is why a client never predicts the durability an item spends. The amount then goes through
 `EnchantmentHelper.processDurabilityChange`
 ([enchantments](enchantments.md#seven-families-of-moment)), which is how Unbreaking turns a point of
 damage into no damage at all, and a player with `Player.hasInfiniteMaterials`
@@ -263,11 +257,9 @@ slot itself arrives separately, as a container update. Two siblings round the
 family out: `ItemStack.hurtWithoutBreaking` clamps one short of the maximum,
 and `ItemStack.hurtAndConvertOnBreak` transmutes rather than vanishing.
 
-What the player actually watched was three methods on `Item`.
+What the player watched was three methods on `Item`.
 `Item.isBarVisible` is *is this stack damaged*, `Item.getBarWidth` scales the
-damage over thirteen pixels — the width `Item.MAX_BAR_WIDTH` names, though
-`Item.getBarWidth` spells the number out and no reader of the constant
-survives the decompile — and
+damage over the thirteen pixels `Item.MAX_BAR_WIDTH` names, and
 `Item.getBarColor`
 sweeps a hue from green to red. `GuiGraphicsExtractor` draws the two-pixel bar
 under the icon from those three answers and nothing else.
@@ -299,9 +291,10 @@ reach it through `Block.popResource`
 
 `world/item`'s own directory holds seventy-nine classes beside its records,
 enums and interfaces. Two of them are `Item` and `ItemStack` and ten are
-helpers such as `Items` and `ItemCooldowns`; the other sixty-seven are one
-`Item` subclass each, and each exists for the same reason — a behaviour hook
-that no component can express. `BoneMealItem`, `HoneycombItem`,
+helpers such as `Items` and `ItemCooldowns`; the other sixty-seven are one `Item` subclass each, and all but two exist for the
+same reason — a behaviour hook that no component can express (`BannerItem` adds
+only an accessor, and `ProjectileWeaponItem` is the bow's and the crossbow's
+shared base). `BoneMealItem`, `HoneycombItem`,
 `EnderEyeItem`, `DebugStickItem`, `LeadItem` and thirty-four more override
 `Item.use`, `Item.useOn` or `Item.interactLivingEntity` and hold no state of
 their own. Axes, shovels and hoes are plain `Item`s: stripping, path-making

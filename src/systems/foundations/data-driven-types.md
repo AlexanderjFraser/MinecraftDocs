@@ -302,7 +302,7 @@ own packs registers as `Lifecycle.stable`, one from any other pack as
 is now an object hanging off a pool's entry. What runs it is the ordinary
 machinery of a draw — `RandomizableContainer.unpackLootTable` asking
 `MinecraftServer.reloadableRegistries` for the table, the pools rolling, the
-three levels of modifiers wrapping the output consumer one inside the
+tiers of modifiers wrapping the output consumer one inside the
 other, and `SetItemCountFunction.run` finally calling `ItemStack.setCount` with
 a number a `ContextIntProvider` produced ([loot
 tables](../items/loot-tables.md#one-roll-drawn)). None of that is the pattern;

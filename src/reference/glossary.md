@@ -242,8 +242,8 @@ a set of environment attributes and its own chunk storage. → [level data and r
 
 ## E
 
-**Enchantment** — a data-pack record of effect components conditioned on loot
-predicates; its registry is synchronised, but a client that already has the
+**Enchantment** — a data-pack record of effect components, most of them
+conditioned on loot predicates; its registry is synchronised, but a client that already has the
 pack is sent only the id. → [enchantments](../systems/items/enchantments.md)
 
 **Entity** — a thing the level ticks in its own right: a position, a bounding
@@ -433,8 +433,8 @@ the level's. → [player anatomy](../systems/player/player-anatomy.md#the-three-
 `/execute if predicate` check runs, under a different name. → [contexts and predicates](../systems/items/contexts-and-predicates.md#what-reads-a-context)
 
 **Loot context** — the bag of *what was involved* — the level, the position,
-the tool, the killer, the block entity — that every loot roll, predicate and
-enchantment effect is asked against; a `LootContext` built to satisfy exactly
+the tool, the killer, the block entity — that every loot roll, predicate and conditional enchantment effect is asked
+against; a `LootContext` built to satisfy exactly
 one parameter set. → [contexts and predicates](../systems/items/contexts-and-predicates.md#inputs-then-one-invocation)
 
 **Loot table** — the data-driven roll that turns an event (a block broken, a

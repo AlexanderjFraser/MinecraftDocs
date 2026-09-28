@@ -50,13 +50,14 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, and D, E and F on 2026-09-27** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, and G on 2026-09-28** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
 and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III, and the audit of its own
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
-audit; F found 307 on Part VI, 80 of them by that audit — and G onward have not. After it, nothing more is done here except a
+audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit — and H onward
+have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -517,3 +518,18 @@ understood; recording is after the release.
   predicate figure redrawn for the move-simulation type; *at least 1,200 ticks* is at most that, overturning pass 5's
   listed claim. Seven pages outside the part corrected where a correction here made them disagree; the passenger
   diff's *filtered* and `chunk-storage`'s unload filter among the items handed to H, I, J, O and P. Deployed.
+
+- **2026-09-28, pass 8, session G — Part VII · Items and inventories (Opus).** Nine pages checked under Part 2, one agent
+  per page (five of them stopped by an interruption and resumed from their transcripts), and the part read whole: **255
+  corrections**, every one re-derived in the tree (31 inside a figure or a caption; two 26.3 changes the version pass did
+  not reach — villager trades are a registry of records, and `LootPredicates` names `Enchantments`' keys — three V6
+  constants, one of them a sentence session A's list missed, and B's handoff on the button click). Six false headings corrected with their links, four of them on `enchantments`, whose *The three famous ones that have no effect component*
+  was false for Mending and Looting and had been repeated on the landing page and `loot-tables`. The 77 ledger entries
+  struck, 4 wrong or wrong in part and 36 naming a neighbour this session corrected; the part's queue settled (35 struck,
+  settling 39 units; seven shared ones noted). The record audited by one agent per page, which found **71 of the 255, 45 in
+  sentences the session had just written** — the one-in-four rate for a fifth session running, the new sentence that
+  names a population but not all of it the commonest. Every Part VII caption had rendered *Figure N. Figure: …*; the
+  prefix is gone from all nineteen. One probable upstream bug written as mechanism (`containers-and-menus`: a click that
+  throws leaves the menu's remote updates suppressed until a later click succeeds). Four pages outside the part corrected
+  with it (`player/the-spear`, `foundations/data-driven-types`, `lectures.md`, the glossary); items handed to H, I, J, N,
+  O and P. Deployed.

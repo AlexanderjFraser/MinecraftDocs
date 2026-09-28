@@ -153,9 +153,8 @@ design.
 
 A kinetic weapon is also *used*, not swung. `Item.use` sees
 `DataComponents.KINETIC_WEAPON`, calls `LivingEntity.startUsingItem` and
-plays the sound; `Item.getUseDuration` returns **72000** for it, the same
-effectively-endless duration a bow gets, so the charge ends only when you
-release ([using an
+plays the sound; `Item.getUseDuration` returns **72000** for it, the same effectively-endless duration a bow gets, so in play the charge ends
+only when you release ([using an
 item](../items/using-an-item.md#the-bow-tick-by-tick)). Starting also
 allocates `LivingEntity.recentKineticEnemies`, a server-side map of who has
 been hit and when, which `LivingEntity.stopUsingItem` throws away.

@@ -6,15 +6,14 @@ You swing a Fire Aspect sword at a zombie and the zombie catches fire. Go
 looking for the class that does that — the one with the *on hit, set them
 alight* method — and there is nothing to find. There are no enchantment
 subclasses. The forty-three vanilla enchantments are JSON files in the
-built-in data pack, `Enchantments` is a bag of forty-three registry keys
-that only four files outside the data generator ever name, and the whole
+built-in data pack, `Enchantments` is a bag of forty-three registry keys that only five files outside the data generator ever name, and the whole
 *Fire Aspect is melee only* rule is **one loot condition**, sitting on one
 entry of a `DataComponentMap` that no item ever holds.
 
 That is the pattern the rest of the page is about. An enchantment is a
-named modifier that holds no code; every behaviour in the game an
-enchantment can change is a component key that some other system asks
-about at a well-defined moment.
+named modifier that holds no code; every behaviour in the game an enchantment can change is something another
+system asks about at a well-defined moment: one of its component keys, a tag that
+names it, or its id in loot data.
 
 ## The cast
 
@@ -22,12 +21,12 @@ about at a well-defined moment.
 |---|---|---|
 | `Enchantment` | the record — a description, a definition, an exclusive set and a map of effects. No behaviour of its own | built at data-pack load, read on both sides |
 | `Enchantment.EnchantmentDefinition` | what it can go on, what it costs, which slots it counts in | data-pack load |
-| `EnchantmentEffectComponents` | the thirty-one keys that name every moment an enchantment can change | static, both sides |
-| `EnchantmentHelper` | the static hook surface — walks stacks and slots, calls into the record, holds no state | server main for every effect, with some read-only entry points on the client |
-| `ConditionalEffect` / `TargetedConditionalEffect` | whether this effect fires here, and on whom | server main |
-| `EnchantmentEntityEffect` | the thing that finally happens | server main only — the signature demands a `ServerLevel` |
+| `EnchantmentEffectComponents` | the thirty-one keys, one per moment an effect can act | static, both sides |
+| `EnchantmentHelper` | the static hook surface — walks stacks and slots, calls into the record, holds no state | Server for every entity and location effect; some entry points, two value effects among them, on the Render thread |
+| `ConditionalEffect` / `TargetedConditionalEffect` | whether this effect fires here, and on whom | Server |
+| `EnchantmentEntityEffect` | the thing that finally happens | Server only — the signature demands a `ServerLevel` |
 | `ItemEnchantments` | the id-to-level map on the stack, under one of two components | both sides |
-| `EnchantedItemInUse` | the stack, the slot it was found in, its owner and a break callback — the bundle every walk builds and every effect receives, and the reason a slotless walk is a thing that can exist | server main |
+| `EnchantedItemInUse` | the stack, the slot it was found in, its owner and a break callback — the bundle an entity or location effect receives, with a slot that may be empty | Server |
 
 ## A record with a definition and a bag of components
 
@@ -80,11 +79,12 @@ has fifteen and does something to an entity — `Ignite`, `DamageEntity`,
 `ApplyMobEffect`, `SummonEntityEffect`, `AllOf.EntityEffects` and ten more.
 `EnchantmentEntityEffect` *extends* `EnchantmentLocationBasedEffect`, whose
 registry has sixteen entries: those same fifteen ids plus one. That extra one
-is *attribute*, `EnchantmentAttributeEffect`, which installs an
-`AttributeModifier` ([attributes](../entities/attributes.md#where-the-modifiers-come-from)) and is the
-only effect that is location-based without also being an entity effect.
+is *attribute*, `EnchantmentAttributeEffect`, which installs an `AttributeModifier`
+([attributes](../entities/attributes.md#where-the-modifiers-come-from)) and is,
+beside that registry's own *all_of* (`AllOf.LocationBasedEffects`), the only effect
+that is location-based without also being an entity effect.
 
-### The curve every effect is scaled by
+### The curve that scales a level
 
 `LevelBasedValue` turns a level into a number, and six shapes are in its
 dispatch registry (`LevelBasedValue.Linear`, `LevelBasedValue.Clamped`,
@@ -94,7 +94,7 @@ dispatch registry (`LevelBasedValue.Linear`, `LevelBasedValue.Clamped`,
 other arm of an either-codec, which is what makes a bare float legal
 anywhere a curve is expected.
 
-### And the condition every effect sits behind
+### And the condition twenty-four keys sit behind
 
 `ConditionalEffect` is an effect plus an optional `LootItemCondition`.
 `TargetedConditionalEffect` adds two `EnchantmentTarget` fields — which side
@@ -115,8 +115,7 @@ hits later.
 
 ## Seven families of moment
 
-Everything above is inert until something calls `EnchantmentHelper`. The
-enchantment package barely calls anything and everything calls it, so the
+Everything above does nothing until something calls `EnchantmentHelper`. The enchantment package calls out little and is called from everywhere, so the
 artefact worth keeping is a table of who calls what: every entry point with
 its callers is [the enchantment hook
 table](../../reference/enchantment-hooks.md), and these are the seven kinds
@@ -141,19 +140,19 @@ comes off.
 
 ## How one hook fires
 
-Six of those seven rows are the same shape underneath. A system reaches a
+Most hooks in those seven rows are the same shape underneath. A system reaches a
 moment and asks `EnchantmentHelper`; the helper picks which stacks to walk,
 filtering by slot if it was given one; the record picks which effect entries
 apply; a loot condition decides whether this one fires. Only then does
 anything happen. The flag row is the exception and is the reason the shape is
-worth drawing: `EnchantmentHelper.has` and `EnchantmentHelper.hasTag` build no
-context and run no condition — they ask the record whether the key is present
-at all.
+worth drawing: `EnchantmentHelper.has` and `EnchantmentHelper.hasTag` build no context and run no
+condition: the first asks the record whether the key is present at all, the second
+whether the enchantment is in a tag.
 
 ```mermaid
 flowchart TD
     Caller["a system reaches a moment"] --> EH{"which EnchantmentHelper entry point"}
-    EH -- "EnchantmentHelper.has, EnchantmentHelper.hasTag" --> Flag["ask the record: is the key there at all"]
+    EH -- "EnchantmentHelper.has, EnchantmentHelper.hasTag" --> Flag["ask the record or its tags: is it there at all"]
     EH -- "any of the other six" --> Walk["walk one stack, or every EquipmentSlot of one entity"]
     Walk --> Slot["on the slot-aware walk, keep entries Enchantment.matchingSlot accepts"]
     Slot --> Comp["read the list under one EnchantmentEffectComponents key"]
@@ -164,9 +163,8 @@ flowchart TD
     Cond -- "yes" --> Apply["fold a value, or run the effect on the affected entity"]
 ```
 
-*Figure: one shape, and the one row that does not take it. Follow the left
-arm out of the diamond — the flag row answers from the record alone, which is
-why it is the only row that costs nothing to ask.*
+*One shape, and the flag row's way round it. The flag row answers from the
+record and its tags alone, with no context built and no condition run.*
 
 The `LootContext` in the middle is the same machinery loot tables and
 `/execute if predicate` use, and `Enchantment` builds five of them —
@@ -177,7 +175,7 @@ owns that half.
 
 ## Fire Aspect, from the click to the flame
 
-Fire Aspect as data is forty-three lines of JSON: supported and primary items
+Fire Aspect as data is one small JSON file: supported and primary items
 are tags, weight 2, maximum level 2, anvil cost 4, dynamic cost curves, one
 slot (*mainhand*), and **one effect** — a
 `EnchantmentEffectComponents.POST_ATTACK` entry whose enchanted target is
@@ -203,14 +201,13 @@ sequenceDiagram
     Ench->>Ignite: apply, with the victim as the affected target
     Ignite->>Entity: igniteForSeconds, raised only if the new value is larger
     rect rgba(0, 0, 0, 0.04)
-        Note over Ignite,Entity: a later tick, and every twentieth one after it
+        Note over Ignite,Entity: a later tick, and every tick after it while the fire lasts
         Entity->>Entity: baseTick sets the shared flags byte through SynchedEntityData
         Note over Entity: the flame travels as a data packet, the enchantment never does
     end
 ```
 
-*Figure: five lanes between the click and the flame, and no enchantment object
-among the last two. The band is where the enchantment has already finished —
+*Six lanes between the click and the flame. The band is where the enchantment has already finished —
 what the other player sees is a `SynchedEntityData` flag, and one point of damage a
 second is the entity's own business.*
 
@@ -239,9 +236,9 @@ true does `Player.itemAttackInteraction` call
 **The one method has three branches.** The helper walks the *victim's* whole
 equipment first, with `EnchantmentTarget.VICTIM` as the pass — that is
 Thorns' lane, and why Thorns works from a chestplate while Fire Aspect does
-not work from boots. Then, for a living causing entity, it walks the
-attacker's **main hand only**, in the `EnchantmentTarget.ATTACKER` pass,
-keeping enchantments whose declared slots include that slot. Its third branch
+not work from boots. Then, for a living causing entity, it walks **the one weapon stack it was
+handed**, in the `EnchantmentTarget.ATTACKER` pass, keeping enchantments whose
+declared slots include the main hand. Its third branch
 takes a causing entity that is *not* living: a slotless walk with no filter at
 all, which only fires when a break callback was supplied, and whose only
 vanilla caller is `ThrownTrident`. **An attacker's armour can never
@@ -284,12 +281,11 @@ which becomes
 `Entity.displayFireAnimation` on the client — whose own `Entity.baseTick`,
 finding no `ServerLevel`, clears the fire counter instead of burning.
 
-## The three famous ones that have no effect component
+## Three famous ones driven from the other end
 
-The thirty-one keys are the whole of what an enchantment can change, and the
-three enchantments players talk about most are not in them. Each reaches the
-same result from the other end, by having something *else* read its level off
-the stack.
+The three enchantments players talk about most are driven from the other end:
+something *else* finds each one on the stack and does the famous work, and only
+one of the three has no effect component at all.
 
 Fortune lives in the loot table. `ApplyBonusCount` and
 `BonusLevelTableCondition` read the *tool* parameter out of a `LootContext`
@@ -297,21 +293,23 @@ and call `EnchantmentHelper.getItemEnchantmentLevel` on it — a level, not an
 effect. Looting is the same trick twice more:
 `EnchantedCountIncreaseFunction` and
 `LootItemRandomChanceWithEnchantedBonusCondition` both read the *attacking
-entity* parameter and call `EnchantmentHelper.getEnchantmentLevel`, the
-overload that walks a `LivingEntity`'s equipment and keeps the best. Fortune
-has no effect component whatsoever, and Looting's only one is an
-*equipment_drops* entry that has nothing to do with mob loot
+entity* parameter and call `EnchantmentHelper.getEnchantmentLevel`, which walks the slots of a `LivingEntity` the enchantment counts in and keeps the
+best. Fortune has no effect component whatsoever, and Looting's only one is an
+*equipment_drops* entry, which raises the chance a mob drops its equipment and
+plays no part in its loot table
 ([loot tables](loot-tables.md#one-roll-drawn)).
 
-Mending inverts it once more, and is the clearest case of the three:
-`ExperienceOrb.repairPlayerItems` asks `EnchantmentHelper.getRandomItemWith`
-for a stack carrying `EnchantmentEffectComponents.REPAIR_WITH_XP`, so the
-**orb** drives the repair and the item is merely found. Nothing on the item
-runs at all.
+Mending inverts it once more: `ExperienceOrb.repairPlayerItems` asks
+`EnchantmentHelper.getRandomItemWith` for a damaged stack carrying
+`EnchantmentEffectComponents.REPAIR_WITH_XP`, so the **orb** drives the repair
+and the item is found. What runs on the item is one number: its
+`EnchantmentEffectComponents.REPAIR_WITH_XP` entry, a multiply by two that
+`EnchantmentHelper.modifyDurabilityToRepairFromXp` applies, makes each point of
+experience buy two points of durability.
 
-## What runs on the client, and why it is only ever a number
+## What runs on the client, and why no entity effect does
 
-No *effect* can: `EnchantmentEntityEffect` and
+No entity or location *effect* can: `EnchantmentEntityEffect` and
 `EnchantmentLocationBasedEffect` both demand a `ServerLevel` in their
 signatures, which is the same mechanical guarantee the loot system uses. But
 two *values* do. `Enchantment.modifyUnfilteredValue` takes only a
@@ -320,20 +318,24 @@ and `Enchantment.modifyTridentSpinAttackStrength`.
 
 Both are visible as gameplay. `CrossbowItem.getChargeDuration` is called by
 three entity renderers, by `FirstPersonHandsAndItems` and by the `CrossbowPull` item
-property, so **Quick Charge is evaluated on the render thread every frame a
-crossbow is being drawn** — an enchantment hook in the frame loop, to pick one
-of three textures. And `MultiPlayerGameMode.releaseUsingItem` runs
+property, so **Quick Charge is evaluated on the Render thread every frame a
+crossbow is being drawn** — an enchantment hook in the frame loop, to pose an arm and pick one of three
+textures. And `MultiPlayerGameMode.releaseUsingItem` runs
 `TridentItem.releaseUsing` on the client's own copy, which asks
 `EnchantmentHelper.getTridentSpinAttackStrength`, so **Riptide's strength is
 computed client-side too**, which is what lets the riptide push be predicted
 at all ([using an item](using-an-item.md#the-two-endings)).
 
-Everything else the client does with an enchantment is drawing:
+The rest is drawing, or a question with no effect behind it. The drawing is
 `ItemEnchantments.addToTooltip` for the tooltip, `ItemStack.hasFoil` for the
-glint, and `EnchantmentHelper.forEachModifier` for the attribute lines — which
-means the client evaluates the `LevelBasedValue` curve itself. That is the
-whole of the cast's "some read-only entry points on the client": two numbers
-and three kinds of drawing.
+glint, and `EnchantmentHelper.forEachModifier` for the attribute lines, which
+means the client evaluates the `LevelBasedValue` curve itself. The questions are Curse of Binding's flag, which
+`ArmorSlot.mayPickup` and `Equippable.swapWithEquipmentSlot` ask while a click or
+a use is predicted, and Riptide's sound, which
+`EnchantmentHelper.pickHighestLevel` chooses before the `ServerLevel` test. And
+the anvil and the grindstone build their results on the client's copy of the menu
+too, with the same helpers the server uses. That is what the cast's *some entry
+points on the Render thread* covers.
 
 ## Where the forty-three live, and when they are read
 
@@ -343,8 +345,9 @@ At world load, and not again. `Registries.ENCHANTMENT` and
 when a world opens ([identifiers and
 registries](../foundations/identifiers-and-registries.md#when-a-world-opens)) —
 not in `RegistryLayer.RELOADABLE`, where the loot tables and predicates live.
-**`/reload` rebuilds those and every recipe and leaves the enchantments exactly
-as the world found them**; changing one takes a restart. That is the sharpest
+**`/reload` rebuilds those and every recipe and leaves the enchantments themselves
+as the world found them**, their tags aside, which it re-reads with every other
+registry's; changing an enchantment takes a restart. That is the sharpest
 difference between this part's three engines, and the one a data-pack author
 meets first.
 
@@ -374,9 +377,9 @@ forward and tires you out. That is what an enchantment is.
 
 ## Questions players ask
 
-**Why is an enchanted book inert?** Because
-`EnchantmentHelper.runIterationOnItem` — the private walk under every hook —
-reads `DataComponents.ENCHANTMENTS` and nothing else. A book's set lives
+**Why is an enchanted book inert?** Because every effect hook reads `DataComponents.ENCHANTMENTS` and nothing else,
+through the private walks (`EnchantmentHelper.runIterationOnItem` among them) or,
+for Mending's `EnchantmentHelper.getRandomItemWith`, directly. A book's set lives
 under `DataComponents.STORED_ENCHANTMENTS`, and the routing between the two
 is keyed on the exact item `Items.ENCHANTED_BOOK`
 ([enchanting](enchanting.md#the-one-question-all-five-ask) owns that routing).
@@ -404,16 +407,15 @@ everything else on this page is about how those four fields are consulted.
 `EnchantmentEffectComponents` beside it is the list of thirty-one moments.
 
 Then `EnchantmentHelper`, which is the entire behaviour surface and holds no
-state. Read the private `EnchantmentHelper.runIterationOnItem` and its
-slot-aware sibling before any public entry point: they are the walk, and every
-hook above them is a one-line wrapper around one of the two. [The hook
+state. Read the private `EnchantmentHelper.runIterationOnItem` and its slot-aware
+siblings before any public entry point: they are the walk, and most hooks above
+them are a thin wrapper around one of them. [The hook
 table](../../reference/enchantment-hooks.md) is the map of which callers
 reach which.
 
-For the effect side, `ConditionalEffect` and `TargetedConditionalEffect` are
-the two shapes every list entry takes, and `Ignite` is the smallest effect
-worth reading — three lines that set an entity on fire. `LevelBasedValue` is
-the curve underneath all of them.
+For the effect side, `ConditionalEffect` and `TargetedConditionalEffect` are the two shapes a
+conditional entry takes, and `Ignite` is the smallest effect
+worth reading — three lines that set an entity on fire. `LevelBasedValue` is the curve underneath most of them.
 
 For what a stack carries rather than what an enchantment is,
 `ItemEnchantments`; for the selection machinery this page deliberately leaves
