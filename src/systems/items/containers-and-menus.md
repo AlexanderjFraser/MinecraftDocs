@@ -228,8 +228,8 @@ The advancement channel sees one state per click, not one per slot touched:
 back into the menu mid-click to reach either, a bundle click aside. That is a
 fact about the chest, not about menus: several menus call
 `AbstractContainerMenu.slotsChanged` from `Container.setChanged` or
-`Slot.setChanged` (the anvil's and the smithing table's, the crafter's, the
-grindstone's, the lectern's), a bundle click calls it on whatever menu is open,
+`Slot.setChanged` (the anvil's and the smithing table's `ItemCombinerMenu`
+containers, the crafter's `CrafterSlot`, the grindstone's, the lectern's), a bundle click calls it on whatever menu is open,
 and the base `AbstractContainerMenu.slotsChanged` is a bare
 `AbstractContainerMenu.broadcastChanges`, which the menus that override it
 reach only if they call up to it. The click's

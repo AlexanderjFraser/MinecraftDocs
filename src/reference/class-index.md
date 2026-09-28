@@ -7,7 +7,7 @@ introduction or the lecture map — or named inside one of its figures (a lane, 
 message; `tools/check_figure_names.py` reads those), and the pages that name it. Outside it:
 the generated views, whose backticks are registry and packet ids rather than class names.
 
-3156 names across 132 pages. A row is a
+3161 names across 132 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -162,6 +162,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BandwidthDebugMonitor` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `BanListEntry` | [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `BannerDuplicateRecipe` | [recipes](../systems/items/recipes.md) |
+| `BannerItem` | [items-and-stacks](../systems/items/items-and-stacks.md) |
 | `BannerRenderer` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `BannerSpecialRenderer` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `BaseCommandBlock` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
@@ -322,7 +323,8 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BreakingItemParticle` | [particles](../systems/rendering/particles.md) |
 | `Breeze` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `BrewingInput` | [recipes](../systems/items/recipes.md) |
-| `BrewingStandMenu` | [containers-and-menus](../systems/items/containers-and-menus.md) |
+| `BrewingStandBlockEntity` | [recipes](../systems/items/recipes.md) |
+| `BrewingStandMenu` | [containers-and-menus](../systems/items/containers-and-menus.md), [recipes](../systems/items/recipes.md) |
 | `BrigadierExceptions` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `Brightness` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `Broken` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
@@ -339,7 +341,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BuiltinDimensionTypes` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `BuiltInLootTables` | [naming-drift](../reference/naming-drift.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [loot-tables](../systems/items/loot-tables.md) |
 | `BuiltInPackSource` | [resource-system](../systems/foundations/resource-system.md) |
-| `BuiltInRegistries` | [fanin](../maps/fanin.md), [density-function-nodes](../reference/density-function-nodes.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [advancements](../systems/commands/advancements.md), [dialogs](../systems/commands/dialogs.md), [game-tests](../systems/commands/game-tests.md), [permissions](../systems/commands/permissions.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [attributes](../systems/entities/attributes.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [II · Foundations](../systems/foundations/README.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [resource-system](../systems/foundations/resource-system.md), [tags](../systems/foundations/tags.md), [containers-and-menus](../systems/items/containers-and-menus.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchantments](../systems/items/enchantments.md), [items-and-stacks](../systems/items/items-and-stacks.md), [status-effects](../systems/player/status-effects.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [points-of-interest](../systems/world/points-of-interest.md), [tickets-and-loading](../systems/world/tickets-and-loading.md), [density-functions](../systems/worldgen/density-functions.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [structure-placement](../systems/worldgen/structure-placement.md) |
+| `BuiltInRegistries` | [fanin](../maps/fanin.md), [density-function-nodes](../reference/density-function-nodes.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [advancements](../systems/commands/advancements.md), [dialogs](../systems/commands/dialogs.md), [game-tests](../systems/commands/game-tests.md), [permissions](../systems/commands/permissions.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [attributes](../systems/entities/attributes.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [II · Foundations](../systems/foundations/README.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [resource-system](../systems/foundations/resource-system.md), [tags](../systems/foundations/tags.md), [containers-and-menus](../systems/items/containers-and-menus.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchantments](../systems/items/enchantments.md), [items-and-stacks](../systems/items/items-and-stacks.md), [using-an-item](../systems/items/using-an-item.md), [status-effects](../systems/player/status-effects.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [points-of-interest](../systems/world/points-of-interest.md), [tickets-and-loading](../systems/world/tickets-and-loading.md), [density-functions](../systems/worldgen/density-functions.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `BuiltinStructures` | [structure-placement](../systems/worldgen/structure-placement.md) |
 | `BuiltinStructureSets` | [structure-placement](../systems/worldgen/structure-placement.md) |
 | `BuiltinTestFunctions` | [game-tests](../systems/commands/game-tests.md) |
@@ -570,7 +572,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundSetEquipmentPacket` | [synched-entity-data](../systems/entities/synched-entity-data.md), [data-components](../systems/foundations/data-components.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundSetExperiencePacket` | [hunger-and-experience](../systems/player/hunger-and-experience.md), [the-two-phase-tick](../systems/player/the-two-phase-tick.md) |
 | `ClientboundSetHealthPacket` | [damage-and-death](../systems/entities/damage-and-death.md), [using-an-item](../systems/items/using-an-item.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [the-two-phase-tick](../systems/player/the-two-phase-tick.md) |
-| `ClientboundSetHeldSlotPacket` | [naming-drift](../reference/naming-drift.md), [player-anatomy](../systems/player/player-anatomy.md) |
+| `ClientboundSetHeldSlotPacket` | [naming-drift](../reference/naming-drift.md), [containers-and-menus](../systems/items/containers-and-menus.md), [player-anatomy](../systems/player/player-anatomy.md) |
 | `ClientboundSetObjectivePacket` | [level-data-and-rules](../reference/level-data-and-rules.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
 | `ClientboundSetPassengersPacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundSetPlayerInventoryPacket` | [data-components](../systems/foundations/data-components.md), [containers-and-menus](../systems/items/containers-and-menus.md), [player-anatomy](../systems/player/player-anatomy.md) |
@@ -752,7 +754,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ContextIntProviders` | [data-driven-types](../systems/foundations/data-driven-types.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `ContextKey` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `ContextKeySet` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
-| `ContextMap` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
+| `ContextMap` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [recipes](../systems/items/recipes.md) |
 | `ContextualBar` | [hud-elements](../reference/hud-elements.md), [hud](../systems/client/hud.md) |
 | `ContinuationTask` | [functions-and-macros](../systems/commands/functions-and-macros.md), [the-execution-engine](../systems/commands/the-execution-engine.md) |
 | `ContinuousProfiler` | [the-client-loop](../systems/client/the-client-loop.md) |
@@ -976,6 +978,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `DirectPoolAlias` | [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
 | `DiscardedPayload` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `DiscardedQueryPayload` | [protocol-phases](../systems/networking/protocol-phases.md) |
+| `DiscardItem` | [loot-tables](../systems/items/loot-tables.md) |
 | `DisconnectionDetails` | [the-connection](../systems/networking/the-connection.md) |
 | `DiscreteVoxelShape` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `DispenserBlock` | [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md) |
@@ -1130,7 +1133,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `EquipmentSlot` | [enchantments](../systems/items/enchantments.md), [player-anatomy](../systems/player/player-anatomy.md) |
 | `EquipmentSlotGroup` | [enchantments](../systems/items/enchantments.md) |
 | `EquipmentUser` | [entity-anatomy](../systems/entities/entity-anatomy.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [loot-tables](../systems/items/loot-tables.md) |
-| `Equippable` | [hud-elements](../reference/hud-elements.md), [damage-and-death](../systems/entities/damage-and-death.md), [data-components](../systems/foundations/data-components.md), [VII · Items and inventories](../systems/items/README.md) |
+| `Equippable` | [hud-elements](../reference/hud-elements.md), [damage-and-death](../systems/entities/damage-and-death.md), [data-components](../systems/foundations/data-components.md), [VII · Items and inventories](../systems/items/README.md), [enchantments](../systems/items/enchantments.md) |
 | `ErrorCollector` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `EuclideanGameEventListenerRegistry` | [chunk-anatomy](../systems/world/chunk-anatomy.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
 | `Eula` | [starting-a-server](../systems/server/starting-a-server.md) |
@@ -1455,7 +1458,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `Ignite` | [enchantments](../systems/items/enchantments.md) |
 | `ImbueRecipe` | [recipes](../systems/items/recipes.md) |
 | `IMEPreeditOverlay` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md) |
-| `ImpossibleTrigger` | [advancements](../systems/commands/advancements.md) |
+| `ImpossibleTrigger` | [advancements](../systems/commands/advancements.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `ImposterProtoChunk` | [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `InactiveProfiler` | [the-client-loop](../systems/client/the-client-loop.md) |
 | `InclusiveRange` | [math-and-primitives](../reference/math-and-primitives.md) |
@@ -2172,7 +2175,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ProfilerPieChart` | [hud](../systems/client/hud.md) |
 | `Projectile` | [hierarchy](../maps/hierarchy.md), [non-living-damage](../reference/non-living-damage.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [using-an-item](../systems/items/using-an-item.md) |
 | `ProjectileUtil` | [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
-| `ProjectileWeaponItem` | [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md) |
+| `ProjectileWeaponItem` | [enchantments](../systems/items/enchantments.md), [items-and-stacks](../systems/items/items-and-stacks.md), [using-an-item](../systems/items/using-an-item.md) |
 | `Projection` | [post-processing](../systems/rendering/post-processing.md) |
 | `ProjectionMatrixBuffer` | [blaze3d](../systems/rendering/blaze3d.md), [post-processing](../systems/rendering/post-processing.md) |
 | `Property` | [blocks-and-states](../systems/blocks/blocks-and-states.md) |
@@ -2273,7 +2276,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `RegionStorageInfo` | [chunk-storage](../systems/world/chunk-storage.md) |
 | `RegionStorageUpgrader` | [chunk-storage](../systems/world/chunk-storage.md) |
 | `RegistrationInfo` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
-| `Registries` | [fanin](../maps/fanin.md), [density-function-nodes](../reference/density-function-nodes.md), [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [V · Blocks](../systems/blocks/README.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [game-tests](../systems/commands/game-tests.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [attributes](../systems/entities/attributes.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [recipes](../systems/items/recipes.md), [using-an-item](../systems/items/using-an-item.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [creating-a-world](../systems/worldgen/creating-a-world.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md), [trees](../systems/worldgen/trees.md) |
+| `Registries` | [fanin](../maps/fanin.md), [density-function-nodes](../reference/density-function-nodes.md), [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [V · Blocks](../systems/blocks/README.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [game-tests](../systems/commands/game-tests.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [attributes](../systems/entities/attributes.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [recipes](../systems/items/recipes.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [creating-a-world](../systems/worldgen/creating-a-world.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md), [trees](../systems/worldgen/trees.md) |
 | `Registry` | [entity-anatomy](../systems/entities/entity-anatomy.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md) |
 | `RegistryAccess` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `RegistryCodecs` | [naming-drift](../reference/naming-drift.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md) |
@@ -2558,7 +2561,9 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `SetEnchantmentsFunction` | [enchanting](../systems/items/enchanting.md) |
 | `SetHiddenState` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `SetItemCountFunction` | [naming-drift](../reference/naming-drift.md), [data-driven-types](../systems/foundations/data-driven-types.md) |
+| `SetItemFunction` | [loot-tables](../systems/items/loot-tables.md) |
 | `SetOnceOptionState` | [entity-selectors](../systems/commands/entity-selectors.md) |
+| `SetRandomDyesFunction` | [loot-tables](../systems/items/loot-tables.md) |
 | `Settings` | [starting-a-server](../systems/server/starting-a-server.md) |
 | `SetValue` | [enchantments](../systems/items/enchantments.md) |
 | `SetWalkTargetFromBlockMemory` | [points-of-interest](../systems/world/points-of-interest.md) |
@@ -2666,7 +2671,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `SlotSourceArgument` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `SlotSources` | [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `SmearedPerlinNoise` | [density-functions](../systems/worldgen/density-functions.md) |
-| `SmeltItemFunction` | [enchantments](../systems/items/enchantments.md) |
+| `SmeltItemFunction` | [enchantments](../systems/items/enchantments.md), [loot-tables](../systems/items/loot-tables.md) |
 | `SmithingMenu` | [recipes](../systems/items/recipes.md) |
 | `SmithingRecipeInput` | [recipes](../systems/items/recipes.md) |
 | `SmithingTransformRecipe` | [recipes](../systems/items/recipes.md) |
