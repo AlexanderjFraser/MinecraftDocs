@@ -3,35 +3,36 @@
 > Verified against **Minecraft 26.3** · Part VIII · Poison II is already on you: the server hurts you on a rhythm, and your client never runs a single one of the effect's hooks — it only counts.
 
 Poison II lands. Your health starts dropping in steps, the swirls appear,
-the icon in the corner counts down, and if the connection stutters the
-number in the corner keeps counting anyway. That last part is the whole
-page. **The client never runs a `MobEffect` hook.** It counts durations
-down, advances a blend factor, unhides a masked effect and spawns particles
+the icon appears in the corner, and if the connection stutters the timer
+beside your inventory keeps counting anyway. That last part is the whole
+page. **The client runs none of a `MobEffect`'s behaviour.** It counts
+durations down, advances a blend factor and spawns particles
 from a list the server synched. It does *read* the effects it holds — jump
 boost in `LivingEntity.getJumpBoostPower`, slow falling in
-`LivingEntity.getEffectiveGravity`, levitation inside `LivingEntity.travel`
+`LivingEntity.getEffectiveGravity`, levitation inside `LivingEntity.travelInAir`
 ([movement and
 collision](../entities/movement-and-collision.md#and-then-gravity)) — because
-that is shared movement code your own player runs unguarded, which is the one
-case in the book where the client simulates in earnest ([authority](../entities/authority.md#three-cases-read-on-both-sides)). But
+that is shared movement code your own player runs unguarded, your client
+simulating its own player in earnest ([authority](../entities/authority.md#three-cases-read-on-both-sides)). But
 every attribute modifier, every pulse of damage, every regeneration tick
-happens on the server behind an explicit server-side guard, and the client's
-copy of the duration is corrected only when the server happens to notice —
-which it does by testing whether the remaining duration **divides by six
-hundred**. For a finite effect that is once every six hundred ticks. An
-**infinite** effect's duration is −1, which divides by nothing, so it is
-never re-sent at all.
+happens on the server behind an explicit server-side guard, and apart from
+the packets an event sends — a new or changed effect, a hidden one surfacing,
+a respawn or a change of dimension — the client's copy of the duration is
+corrected only when the server happens to notice, which it does by testing
+whether the remaining duration **divides by six hundred**. For a finite effect
+that is once every six hundred ticks. An **infinite** effect's duration is −1,
+which divides by nothing, so that test never re-sends it.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
-| `MobEffect` | what the effect *does*, and on what rhythm — the singleton, shared by every holder | server main (of this class the client reads only the colour and the blend durations) |
-| `MobEffectInstance` | duration, amplifier, flags, and the masked effect underneath | both main threads |
+| `MobEffect` | what the effect *does*, and on what rhythm — the singleton, shared by every holder | Server (the client reads its colour, blend durations, name and category, and for a tooltip its attribute templates) |
+| `MobEffectInstance` | duration, amplifier, flags, and the masked effect underneath | both |
 | `MobEffects` | the forty built-in holders | — |
 | `LivingEntity` | `LivingEntity.activeEffects`, the tick, and the three server-guarded hooks | both |
-| `AttributeInstance` | where an effect's modifier actually lands | server main |
-| `ServerPlayer` | who gets told, and how often | server main |
+| `AttributeInstance` | where an effect's modifier lands | Server (a syncable attribute's base and modifiers are sent to the client) |
+| `ServerPlayer` | who gets told, and how often | Server |
 | `MobEffectUtil` | the questions the rest of the game asks about effects | both |
 
 ## What an effect is
@@ -46,13 +47,13 @@ hooks are the interesting part, because one of them is false by default.
 | `MobEffect.applyEffectTick` | on a pulse; returning false ends the effect |
 | `MobEffect.applyInstantaneousEffect` | never from the tick — only from the splash potion, the lingering cloud and the drink |
 | `MobEffect.onEffectAdded` | when it lands on an entity that did not already have it |
-| `MobEffect.onEffectStarted` | on every successful add, a refresh of an existing effect included |
+| `MobEffect.onEffectStarted` | on every `LivingEntity.addEffect` that passes `LivingEntity.canBeAffected`, whether or not it changed anything |
 | `MobEffect.onMobHurt` | when the holder takes damage |
-| `MobEffect.onMobRemoved` | when the holder goes |
+| `MobEffect.onMobRemoved` | when the holder is killed or discarded |
 
-The default *false* is why each effect has its own rhythm, and each rhythm is
-one number **right-shifted by the amplifier** — halved per level, floored at
-one tick. Poison's is 25, so Poison I pulses every 25 ticks and the Poison II
+The default *false* is why each effect has its own rhythm, and poison's,
+regeneration's and wither's are each one number **right-shifted by the
+amplifier** — halved per level, floored at one tick. Poison's is 25, so Poison I pulses every 25 ticks and the Poison II
 of this page's scenario every 12; regeneration's is 50, wither's 40, and
 hunger's override skips the arithmetic and pulses every tick.
 Attribute modifiers go on as `AttributeInstance.addPermanentModifier` with
@@ -64,7 +65,7 @@ ambient, visible and show-icon flags, a private blend state, and
 **`MobEffectInstance.hiddenEffect`**.
 
 That last one is a stack, and it is where a weaker effect goes when a
-stronger one lands on top of it. `MobEffectInstance.update` builds the chain,
+stronger but shorter one lands on top of it. `MobEffectInstance.update` builds the chain,
 so Strength I with nine minutes left survives underneath a Strength II that
 has thirty seconds, and surfaces again through
 `MobEffectInstance.downgradeToHiddenEffect` when the stronger one expires.
@@ -82,18 +83,20 @@ out.
 `MobEffectInstance.INFINITE_DURATION` is −1, and
 `MobEffectInstance.compareTo` is what orders both lists of effects a player
 sees — ambient last, infinite next, then by remaining duration, then by
-colour. The two surfaces read it in opposite directions: the HUD sorts it
-reversed and the inventory list does not, so a list of effects runs
-top-to-bottom one way beside the hotbar and the other way beside your
-inventory.
+colour, except that two ambient effects, or two with more than 32,147 ticks
+left, skip the infinite and duration steps. The two surfaces sort it in opposite
+directions — the HUD reversed, the inventory list not — and the HUD also lays
+its icons out from the right, so the two end up in the same order: left to
+right along the top of the screen, top to bottom beside your inventory.
 
 The blend state beside those flags is a **pure render quantity**: it ticks
 only on the client, is never saved and never sent, and only
 `MobEffects.NAUSEA` and `MobEffects.DARKNESS` declare blend durations to use
 it. The wire carries one bit for it, set only when an effect is *first*
-added — an update clears the bit, and the client responds by skipping the
-blend. That is why Nausea swims in when you drink it and simply resumes when
-you drink a second bottle.
+added — an update clears the bit, and a client that did not have the effect
+skips the blend, while one that did carries its blend over
+(`MobEffectInstance.copyBlendState`). That is why Nausea swims in when you eat
+a pufferfish and simply carries on when you eat a second.
 
 `LivingEntity.canBeAffected` is the veto, and it consults three entity tags
 as well as the effect itself.
@@ -116,12 +119,13 @@ modifies `Attributes.SAFE_FALL_DISTANCE`, and `MobEffects.INVISIBILITY`
 modifies `Attributes.WAYPOINT_TRANSMIT_RANGE`.
 
 Behind all of it is a fourth family the page's own hook rests on:
-`world/effect` holds one small `MobEffect` subclass per effect that needs
+`world/effect` holds a small `MobEffect` subclass for each effect that needs
 behaviour — `PoisonMobEffect`, `RegenerationMobEffect`, `WitherMobEffect`,
-`HungerMobEffect`, `AbsorptionMobEffect` and a dozen more, plus
-`InstantaneousMobEffect` for the ones that only ever fire once. Everything
-else in `MobEffects` is a plain `MobEffect` with an attribute template and no
-code. The rhythms above are those subclasses overriding two methods each; the
+`HungerMobEffect`, `AbsorptionMobEffect` and eight more, one of them serving
+both instant health and instant damage — with `InstantaneousMobEffect` the
+base of those two and saturation, which act on every tick an instance of them
+lasts. Everything else in `MobEffects` is a plain `MobEffect` with no code,
+eleven of them carrying an attribute template. The rhythms above are those subclasses overriding two methods each; the
 family is the shape, and no one member is worth a lecture.
 
 On the entity itself: `LivingEntity.activeEffects` (a plain unordered map),
@@ -130,19 +134,20 @@ On the entity itself: `LivingEntity.activeEffects` (a plain unordered map),
 `ParticleOptions`** rather than a packed colour, and
 `LivingEntity.DATA_EFFECT_AMBIENCE_ID`. The dirty flag has exactly one
 reader, and it is not this page's tick: `LivingEntity.updateDirtyEffects`
-drains it into the invisibility flag and the swirl list from inside
-`Entity.updateDataBeforeSync`, which the server's entity-sync pass calls
+drains it into the invisibility and glowing flags, the swirl list and the
+ambience value from inside `LivingEntity.updateDataBeforeSync`, which the
+server's entity-sync pass calls
 before it looks at what changed ([synched entity
 data](../entities/synched-entity-data.md#the-gate-that-holds-a-packet-back)).
 An effect that expired this tick therefore opens its own gate.
 
-That particle list is also the whole of what a *watcher* gets, and it is
+That particle list is also nearly all a *watcher* gets, and it is
 deliberately hard to see. The default particle factory bakes ambience into
 the `ParticleOptions` itself — alpha 38 of 255 instead of opaque — so an
 ambient effect really does synch a different, fainter particle; and the
 client spawns one particle from the list on a one-in-*n* roll whose *n* is
 four, fifteen if the entity is invisible, and multiplied by five again when
-**every** effect on it is ambient, which is what
+**every** visible effect on it is ambient, which is what
 `LivingEntity.DATA_EFFECT_AMBIENCE_ID` records. An invisible, wholly ambient
 entity is rolling one in seventy-five; a visible one in the same state,
 twenty.
@@ -163,7 +168,7 @@ last tick's — which for a player means inside
 tick](the-two-phase-tick.md#phase-two-what-this-player-would-do-if-it-simulated-itself),
 not the level's entity tick.
 
-On the server, that tick is four objects and two packets:
+On the server, that tick is three objects and two packets:
 
 ```mermaid
 sequenceDiagram
@@ -172,21 +177,21 @@ sequenceDiagram
     participant ME as MobEffect
     participant Wire as the network
 
-    SP->>MEI: update — masks any weaker instance as hiddenEffect
-    SP->>ME: addAttributeModifiers — from LivingEntity.onEffectAdded, server-guarded
+    SP->>MEI: update, when one is already there — a longer, weaker one goes under
+    SP->>ME: addAttributeModifiers — LivingEntity.onEffectAdded, or onEffectUpdated on a change
     SP->>Wire: ClientboundUpdateMobEffect<br/>Packet
     rect rgba(0, 0, 0, 0.04)
         Note over SP,Wire: every server tick after that
         SP->>MEI: tickServer, from LivingEntity.tickEffects
-        MEI->>ME: shouldApplyEffectTickThisTick — 25 ≫ amplifier for poison
+        MEI->>ME: shouldApplyEffectTickThisTick — 25 halved per level, for poison
         MEI->>ME: applyEffectTick — the pulse, and false here ends the effect
         SP->>Wire: ClientboundUpdateMobEffect<br/>Packet, when the duration divides by 600
     end
 ```
 
-*Two arrows leave for the client and the second is the whole of the
-correction: inside the band the duration is the server's, and the client only
-hears about it on the ticks where it divides by six hundred.*
+*Two arrows leave for the client and the second is the periodic correction:
+inside the band the duration is the server's, and unless something changes the
+client hears about it only on the ticks where it divides by six hundred.*
 
 The client's half of the same scenario is a different set of objects, and the
 first thing to notice about it is which class is not in it:
@@ -202,7 +207,7 @@ sequenceDiagram
     CPL->>LE: forceAddEffect — a fresh instance, with nothing under it
     rect rgba(0, 0, 0, 0.04)
         Note over Wire,MEI: every client tick after that
-        LE->>MEI: tickClient — count down, unhide, advance the blend
+        LE->>MEI: tickClient — count down and advance the blend
     end
 ```
 
@@ -213,7 +218,10 @@ effect does.*
 The client branch of `LivingEntity.tickEffects` never calls
 `MobEffect.applyEffectTick` and never touches an attribute. It does not even
 remove an expired effect: it keeps a zero-duration instance until told
-otherwise.
+otherwise. A client runs an effect's hooks only when shared code calls
+`LivingEntity.addEffect` on it without a guard — a meal it replays (a
+suspicious stew, an ominous bottle), a turtle helmet worn out of water, a
+cookie fed to a parrot — and none of the hooks those reach does anything there.
 
 ## What survives a save, and why the modifiers do
 
@@ -233,20 +241,21 @@ hidden-effect chain matters at all.
 
 **Why does my duration sometimes jump?** Because it was wrong and got
 corrected. The client's duration is a local countdown with nothing keeping it
-honest, and the correction has no name in the code: `LivingEntity.tickEffects`
-calls `LivingEntity.onEffectUpdated` whenever the remaining duration divides
-by six hundred, against a bare literal. The re-send only ever reaches the
+honest between corrections, and the periodic one is a divisibility test:
+`LivingEntity.tickEffects` calls `LivingEntity.onEffectUpdated` whenever the
+remaining duration divides by six hundred. The re-send only ever reaches the
 affected player or a player riding them — and never at all for an infinite
 effect, whose −1 divides by nothing.
 
 **Why can I not see how long a mob's effect has left?** Because you were
 never told. A client watching a mob it is not riding receives no
-`MobEffectInstance` at all — only the synched particle list, which is why
-other entities have swirls and no numbers.
+`MobEffectInstance` at all — only what the effects show: the synched particle
+list and flags, and any syncable attribute an effect has changed — which is
+why other entities have swirls and no numbers.
 
-**Does an effect pulse on its own clock or the world's?** Both, depending on
-whether it ends. `MobEffectInstance.tickServer` counts an infinite-duration
-effect's pulses off the entity's age and a finite one off its own countdown.
+**Does an effect pulse on its own clock or the world's?** Never the world's.
+`MobEffectInstance.tickServer` counts an infinite-duration effect's pulses off
+the entity's own age and a finite one off its own countdown.
 
 **What happens when one effect adds another?** The rest of that tick's
 effects are silently skipped. `LivingEntity.tickEffects` catches a
@@ -257,17 +266,20 @@ another quietly aborts the loop it was in.
 Everything above starts at the moment an instance exists on a
 `LivingEntity`; the machinery that puts one there — the use timer, the
 finish, the replay — is [using an
-item](../items/using-an-item.md#the-meal-tick-by-tick), and the components
-that ride on it, `PotionContents` and `SuspiciousStewEffects` and
-`ApplyStatusEffectsConsumeEffect` among them, are [hunger and
-experience](hunger-and-experience.md#eating-is-a-component-walk). What
-crosses the wire from here on is `ClientboundUpdateMobEffectPacket` and
-`ClientboundRemoveMobEffectPacket` for the effects you hold, and
+item](../items/using-an-item.md#the-meal-tick-by-tick); the components that
+ride on it, `PotionContents` and `SuspiciousStewEffects` among them, belong to
+[hunger and experience](hunger-and-experience.md#eating-is-a-component-walk),
+and the consume effects, `ApplyStatusEffectsConsumeEffect` among them, to
+[using an
+item](../items/using-an-item.md#what-the-meals-component-holds-and-what-it-does-not).
+What crosses the wire from here on is `ClientboundUpdateMobEffectPacket` and
+`ClientboundRemoveMobEffectPacket` for the effects you hold,
 `LivingEntity.DATA_EFFECT_PARTICLES` through [synched entity
-data](../entities/synched-entity-data.md) for everyone else's swirls. The
-effects themselves are code, registered into `BuiltInRegistries.MOB_EFFECT`
-by `MobEffects` with no JSON behind them; what is data-driven is the ways
-they land.
+data](../entities/synched-entity-data.md) for everyone else's swirls, and
+`ClientboundUpdateAttributesPacket` for an effect on a syncable attribute such
+as speed. The effects themselves are code, registered into
+`BuiltInRegistries.MOB_EFFECT` by `MobEffects` with no JSON behind them; what
+is data-driven is some of the ways they land.
 
 ## Where to look
 
@@ -276,7 +288,7 @@ and the client branch sit side by side in it, and the asymmetry is visible at
 a glance. Read **`MobEffectInstance`** next, for the hidden-effect chain and
 the two codecs that can carry it, then **`MobEffect`** for the seven hooks
 and the one that is false by default. **`PoisonMobEffect`** is a
-twenty-line subclass and is the cheapest way to see what an override actually
+short subclass and is the cheapest way to see what an override
 overrides; `world/effect` has a dozen more of the same shape.
 
 **`MobEffects`** is worth one pass for the two attribute targets nobody

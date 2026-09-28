@@ -310,6 +310,7 @@ two dotted arrows are the only two things that come back, and both come back
 late.*
 
 The move is `ServerGamePacketListenerImpl.handleMovePlayer` →
+`ServerGamePacketListenerImpl.handlePlayerPositionChange` →
 `ServerChunkCache.move` → `ChunkMap.move`, which updates every
 `ChunkMap.TrackedEntity` for the player and then compares
 `ServerPlayer.getLastSectionPos` with the new `SectionPos`.

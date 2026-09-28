@@ -248,7 +248,8 @@ That second branch is worth one more sentence, because the slot it names is a
 label rather than a fact. It hands `EquipmentSlot.MAINHAND` to the filter
 whatever the weapon actually is, and so does
 `EnchantmentHelper.doPostPiercingAttackEffects`; `KineticWeapon.damageEntities`
-reaches `LivingEntity.stabAttack` with whichever slot the *use* was in. An
+reaches `Player.stabAttack` (a mob's `LivingEntity.stabAttack`) with whichever
+slot the *use* was in. An
 off-hand spear's enchantments are therefore tested against the main-hand slot
 group. The slot question itself is asked two ways: the two
 `EnchantmentHelper.forEachModifier` overloads test different things — the

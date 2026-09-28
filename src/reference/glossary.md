@@ -706,8 +706,9 @@ commands to, spliced onto the *head* of the queue after it runs — which is
 what makes an `ArrayDeque` behave as a call stack. → [the execution engine](../systems/commands/the-execution-engine.md#the-queue-four-moments-apart)
 
 **Status effect** — a `MobEffect` held on a `LivingEntity` with an amplifier
-and a duration; the ones that change a number do it by attaching an attribute
-modifier rather than by being read where the number is used.
+and a duration; the ones that change a number mostly do it by attaching an
+attribute modifier, and a few — jump boost, slow falling, levitation — are read
+where the number is used.
 → [status effects](../systems/player/status-effects.md#what-an-effect-is)
 
 **StreamCodec** — the wire counterpart of a `Codec`: encodes to and decodes

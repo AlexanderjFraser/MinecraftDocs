@@ -211,8 +211,8 @@ cooked beef nor the bow overrides it, which is why **drawing a bow slows you
 by exactly as much as eating does, through exactly the same field.**
 `Item.Properties.spear` is the definition that overrides it outright, with a
 `UseEffects` that permits sprinting, suppresses vibrations and multiplies
-speed by one; the attack that ends *that* use is a different packet again
-([the spear](../player/the-spear.md#the-charge)).
+speed by one; the hits *that* use makes need no packet at all, coming from the
+server's use tick itself ([the spear](../player/the-spear.md#the-charge)).
 
 The component's remaining field is not about movement at all, and it is the half
 that runs on the server. `UseEffects.interactVibrations` is what

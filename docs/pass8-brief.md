@@ -855,7 +855,7 @@ V2, or B into A, if either runs short.
 | **E** | V · Blocks | 48+52 | 10·0·1·28 | 32·34·9·4 | 24.3k | done 2026-09-27 | **237 corrections on eight pages** (29 inside a figure or a caption; four 26.3 changes V1 and V2 missed, and three sentences the version pass left beside a fact it moved), every one re-derived in the tree; the 112 ledger entries struck; Part V's queue closed; the record audited by one agent per page, which found **73 of them, 45 in sentences the session had just written**; the write figure redrawn (D's handoff); sculk spread and four more unowned mechanisms into pass3.md §7; eight pages outside the part corrected with it; items handed to J, L, N, O and P |
 | **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | done 2026-09-27 | **307 corrections on ten pages** (44 inside a figure or a caption, twenty-one of them 26.3 changes V1 and V2 did not carry into the sentence), every one re-derived in the tree; the 109 ledger entries struck, 19 of 83 claims wrong in whole or in part; 43 queue units struck and eleven shared ones noted; the record audited by one agent per page, which found **80 of them, 54 in sentences the session had just written**; `authority`'s predicate figure redrawn for 26.3's move-simulation type (V2's handoff); seven pages outside the part corrected with it; items handed to H, I, J, O and P |
 | **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | done 2026-09-28 | **255 corrections on nine pages** (31 inside a figure or a caption; two 26.3 changes the version pass did not reach; six false headings, four of them on `enchantments`), every one re-derived in the tree; the 77 ledger entries struck, 4 wrong or wrong in part; the part's queue settled; the record audited by one agent per page, which found **71 of them, 45 in sentences the session had just written**; every caption's doubled *Figure:* gone; one probable upstream bug written as mechanism (a thrown click leaves remote updates suppressed); four pages outside the part corrected with it; items handed to H, I, J, N, O and P |
-| **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | — | |
+| **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | done 2026-09-28 | **241 corrections on eight pages** (19 inside a figure or a caption; five 26.3 changes the version pass did not reach — phase one's `Entity.commonTick`, the hurt cooldown on the two-phase tick, `ServerGamePacketListenerImpl.handlePlayerPositionChange`, the teleport acknowledgement's position, the per-client-tick position kick), every one re-derived in the tree; the 96 ledger entries struck, 8 wrong in whole or in part; the part's queue settled (34 struck, seven shared units noted); one false heading (the food bar's *pile of literals*, V6); the record audited by one agent per page, which found **50 of them, 44 in sentences the session had just written**; four pages outside the part corrected with it; items handed to I, J, L, N, O and P |
 | **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | — | |
 | **J** | X · The client — the largest ledger; may split at the GUI stack (pages 1–5, 6–12) | 118+17 | 6·3·4·27 | 59·71·10·9 | 29.6k | — | |
 | **K** | XI · Rendering, **the figures** — pass 7's session K: its runbook, its viewer brief, its gate; the part's 20 figures rendered and read against their sections; the 19 captions written; the three eight-lane traces split or folded; the 17 figure-kind queue units; recorded in [pass7-brief.md](pass7-brief.md) Part 4 as well as here | — | ·   ·17·   | — | — | — | |
@@ -1294,3 +1294,37 @@ where a correction here made them disagree: `player/the-spear`, `foundations/dat
 `gen_reference.py`'s intros for `reference/loot-context-params` (*every key is read … with `LootContext.getOptional`*, and a
 history claim) and `reference/enchantment-hooks`, which session O owns. For P: the V1 and V2 entries on these pages, and this
 session's diff.
+
+**Session H — Part VIII · The player (2026-09-28).** Eight pages, each checked under Part 2 by its own agent while the session
+read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, the V1 and V2 entries on these pages
+(V2's twelve on `the-sword-swing`, its hurt-cooldown finding and its *For the part session (H)* lines, and its note on where the
+client's movement leaves), F's three handoffs, G's two notes and session A's V6 constants. **241 corrections**, every one
+re-derived in `reference/26.3` before it was made; 19 are inside a figure or a caption. Five are 26.3 changes the version pass
+did not reach: the level runs `Entity.commonTick` on a player before `ServerPlayer.tick`, so *the first half never calls up past
+`ServerPlayer`* was false; phase one counts down the hurt cooldown, not invulnerability; the movement judgements moved into a new
+private `ServerGamePacketListenerImpl.handlePlayerPositionChange`, which the teleport acknowledgement also runs; that
+acknowledgement now carries the position and no PosRot follows it; and a second position inside one client tick is a
+disconnect, so *there is no kick for the flood itself* was false. Seven are V6, one of them a sentence session A's list missed
+(`Player.DEFAULT_*_INTERACTION_RANGE`), and the food bar's heading *four numbers and a pile of literals* rested on the same
+inference and is corrected with its three links. Ledger entries checked: the 96 on these pages (80 checked, 37 of them naming a
+neighbour this session corrected; 8 wrong in whole or in part; 4 overtaken; 4 no claim). The three worst corrections:
+`the-two-phase-tick`'s hook paragraph, whose *each of the four declares its own tick and its own aiStep* and *the first half never
+calls up past `ServerPlayer`* were both false (Avatar is a fifth rung, aiStep is two classes', and 26.3 runs `Entity.commonTick`
+first); `input-to-movement`'s release paragraph, where pass 5 session J's correction — a screen that consumes a release returns
+before it is recorded — had never reached the page and pass 5 session H had called the wrong claim sound; and the landing page's
+argument, *the player is the one object the server is not allowed to be right about*, where anything a player steers borrows its
+authority. What the whole-part read found before the reports: 37 items, 33 of them corrections, most of which the agents then
+found too — `player-anatomy` and `the-sword-swing` putting `LivingEntity` *one rung up* from `Player` four times against their own
+ladder, a flowchart node naming a `PiercingWeapon.stabAttack` that does not exist — and one they did not: `status-effects` sending
+a reader to a page for a class that page does not name. **The record's audit was again the session's finding**: eight agents re-derived every changed sentence and
+found **50 more, 44 in sentences this session had just written** — a little under one in four, the rate of C to G — most of them a
+correction still absolute (*the one time a client runs an effect's hooks* is also a turtle helmet and a parrot's cookie; *four
+packets* beside the meal's broadcast sounds; *until you release it or the spear leaves your hand* beside death and a portal), and
+one a withdrawal: the landing page's *most pages rest on authority* was wrong the other way, the spear and the food bar resting on
+client-reported movement too. The polish: the thread names in seven casts (V7), eight possessives on a link, eight em-dash chains,
+seven *actually*, four sizes (V10), and *charge* kept to the spear's right-click hold. Also: the part's queue settled (34 struck,
+seven shared units noted), so `pass5_queue.py --summary` has no Part VIII row. Corrected where a correction here made them
+disagree: `world/tickets-and-loading` (the move's call chain), `items/using-an-item` and `items/enchantments` (the charge's hits
+and its `stabAttack`), and the glossary's *Status effect*. Left for I, J, L, N, O and P: the items in the ledger's *For later
+sessions* — `rendering/entity-rendering`'s *four textures*, `reference/non-living-damage`'s *exactly three rows never reached*
+and the glossary's two live `Player` subclasses among them. For P: the V1 and V2 entries on these pages, and this session's diff.

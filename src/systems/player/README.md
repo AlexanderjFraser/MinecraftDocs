@@ -1,6 +1,6 @@
 # VIII · The player
 
-> Verified against **Minecraft 26.3** · Part VIII · The one entity a human is steering: what it is made of, when it runs, and the five things it does that the rest of the world does differently.
+> Verified against **Minecraft 26.3** · Part VIII · The entity a human plays as: what it is made of, when it runs, and the five things it does that the rest of the world does differently.
 
 Everything in Parts IV to VII happens to the world. This part is about the
 one object in it that argues back. You meet it as friction — the snap back
@@ -13,8 +13,9 @@ rule is bent for it: it is ticked twice instead of once, its inventory
 reports seven slots it does not store, its melee combat has three separate
 entry points of which the famous one is the least interesting, and the server
 simulates its movement in full every tick and then throws the answer away.
-**The player is the one object the server is not allowed to be right about**,
-and this part is the cost of that.
+**The server is not allowed to be right about the player** — nor about
+anything a player steers, which borrows the player's authority — and this part
+is the cost of that.
 
 ## The shape of the part
 
@@ -59,11 +60,11 @@ because a player is a `LivingEntity` with three rungs added on the server
 and four on the client, and this part never re-teaches the base; and
 **[authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)**,
 because every page here rests on it — a `Player` is client-authoritative on
-*both* sides, which is why the server's own answer for your movement is
-thrown away in favour of the number you sent it. If you watch one page from
+*both* sides, and the server's own answer for your movement is thrown away in
+favour of the number you sent it. If you watch one page from
 another part first, watch that one. Three more of Part VI's are assumed
 rather than re-taught: [attributes](../entities/attributes.md#forty-numbers-every-one-of-them-clamped),
-because reach and every number a hit is worth is one; [synched entity
+because the reach and base numbers of an ordinary swing are attributes; [synched entity
 data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from);
 and [movement and collision](../entities/movement-and-collision.md#the-tick),
 the pipeline *input to movement* feeds and never repeats.
@@ -92,9 +93,9 @@ is that same machinery from the eater's end.
    twice. The connection records where you are, runs the whole physics
    pipeline, and then puts you back: the server keeps the velocity and
    throws the position away.
-3. [Input to movement](input-to-movement.md) — W is pressed. A movement key
-   held for less than a tick never happened, sending move packets faster makes the
-   anti-cheat *stricter*, and the packet that reports your key presses
+3. [Input to movement](input-to-movement.md) — W is pressed. A held movement
+   key pressed and released between two ticks never happened, flooding the server
+   with move packets makes the anti-cheat *stricter*, and the packet that reports your key presses
    cannot move you but can move a minecart.
 4. [The sword swing](the-sword-swing.md) — left-click on a pig. The attack
    packet carries one integer and the server rebuilds the rest, charging the
@@ -105,17 +106,16 @@ is that same machinery from the eater's end.
    components on one item: a stab whose packet has no target in it, and a charge whose damage comes from closing speed and
    which ignores the attack cooldown entirely.
 6. [Hunger and experience](hunger-and-experience.md) — two bars the server
-   owns outright. Walking costs exactly zero exhaustion; `FoodConstants` names
-   every threshold in the system and not one of its names is read by anything,
-   because `FoodData` writes each number as a literal instead; and the
+   owns outright. Walking costs exactly zero exhaustion; a full bar with
+   saturation left heals up to eight times faster than one at eighteen; and the
    experience packet watches the *total*, so every mutation that moves only
    your level has to poison the last-sent value by hand.
-7. [Status effects](status-effects.md) — the part's closer, and the cleanest
-   statement of the server/client split in the book: the client never runs a
-   single one of an effect's hooks, only counts it down. The server corrects
-   that countdown by testing whether the remaining duration divides by six
-   hundred — so an infinite effect, whose duration is −1, is never corrected
-   at all.
+7. [Status effects](status-effects.md) — the part's closer, and its cleanest
+   statement of the server/client split: the client runs none of an effect's
+   behaviour — it counts the effect down, draws it, and reads it for its own
+   movement. The server corrects that countdown by testing whether the
+   remaining duration divides by six hundred, so the periodic correction never
+   reaches an infinite effect, whose duration is −1.
 
 Watched as lectures, one and two are the pair to keep together, and four and
 five are the other pair. Six and seven can be watched in either order, or
@@ -123,18 +123,20 @@ skipped and returned to.
 
 ## Where the part stops
 
-Part VIII is the smallest part of the book with a system in it — only Part I
-is smaller, and Part I is two pages about the program the rest run inside —
+Part VIII is the smallest part of the book with a system in it (only Part I
+is smaller, and Part I is two pages about the program the rest run inside
+and what the book leaves out) —
 {{#include ../../generated/part-player.md}} in `world/entity/player`,
-`world/food`, `ServerPlayer` and `client/player` — and it is the one part
-where the coverage question has a trivial answer:
+`world/food`, `ServerPlayer` and `client/player` — and the coverage question
+has an almost trivial answer here:
 {{#include ../../generated/coverage-player.md}}. A player is a small object
 surrounded by large ones, so the interesting borders are not the ones inside
 these packages but the ones just outside them.
 
-Upward, the part starts at `Avatar` rather than at `Entity`: what a player
-*inherits* is [Part VI](../entities/README.md)'s, including the `Mannequin` —
-the posable dummy that shares the rung, and the reason the rung exists.
+Upward, the part starts at `Avatar` rather than at `Entity`: `Avatar` sits
+in Part VI's package and is explained here, beside the `Mannequin` — the
+posable dummy that shares the rung, and the reason the rung exists — and what
+a player inherits above it belongs to [Part VI](../entities/README.md).
 Outward, it stops where the player stops being a player. How a hit is
 resolved once it lands is [damage and
 death](../entities/damage-and-death.md#the-number-the-arrow-decides) in Part
@@ -142,38 +144,38 @@ VI; what your client is *told* about everyone else is [what the client is
 told](../networking/what-the-client-is-told.md#one-entitys-tick-and-the-gates-it-does-not-pass)
 in Part IX; the ledger behind the block you already saw break is [prediction
 and acknowledgement](../client/prediction-and-acks.md#the-four-writes) in
-Part X; drawing a player, its skin and its model parts is Part XI's; and the
-chat session a `ServerPlayer` carries — the public half of message signing,
-the key itself never leaving the client — is [chat and
-signing](../networking/chat-and-signing.md#what-the-signature-covers)'s. The
+Part X; drawing a player, its skin and its model parts is Part XI's; and the chat session a `ServerPlayer` carries — the public half of message signing,
+the key itself never leaving the client — belongs to [chat and
+signing](../networking/chat-and-signing.md#what-the-signature-covers). The
 two game-mode objects, `ServerPlayerGameMode` and `MultiPlayerGameMode`, are
-the sharpest of those borders: this part says what they hold, and what they
+the sharpest border of all: this part says what they hold, and what they
 *do* with a block is Part V's two click pages.
 
-Three things inside these packages are nobody's. Two are declined:
-`Hotbar` and `HotbarManager`, the nine *saved* creative hotbars, belong to
-the creative inventory screen this book does not cover; and sleep is
+Three things a reader will look for here have no lecture. Two are declined: `Hotbar`, and the
+`HotbarManager` just outside these packages that keeps the nine *saved*
+creative hotbars, belong to the creative screen's saved hotbars, which this
+book does not cover; and sleep is
 half-explained on purpose, with [player
 anatomy](player-anatomy.md#what-player-owns) naming the fields and the
 refusals a bed answers with while the *everyone is asleep* half — the night
-skip and the weather reset — is [the level
-tick](../server/server-level-tick.md#a-freeze-stops-the-clock-and-not-the-sleep-check)'s.
+skip and the weather reset — belongs to [the level
+tick](../server/server-level-tick.md#a-freeze-stops-the-clock-and-not-the-sleep-check).
 The third is simply missing, and is the one gap this part admits rather than
 declines: nobody explains the walk between those two halves — what one player
-lying down actually does over the hundred ticks of `Player.SLEEP_DURATION`
+lying down does over the hundred ticks of `Player.SLEEP_DURATION`
 that follow, and which of the two owners is driving during them.
 
 ## Reference this part uses
 
 [Attributes](../../reference/attributes.md), because reach, attack damage,
 attack speed, sweeping ratio and knockback are all attributes — and attack
-damage and knockback, the two that decide what a hit is worth, are not
+damage and knockback, two of those that decide what a hit is worth, are not
 synced to the client at all. [Packets](../../reference/packets.md) for the
 movement, attack and health packets by name. [Data
 components](../../reference/components.md) for the components that make an
 item a weapon. [Damage outside
 `LivingEntity`](../../reference/non-living-damage.md) for what a swing meets
-when the target is not a mob. Then [game
+when the target is not a living entity. Then [game
 rules](../../reference/gamerules.md), [level data and
 rules](../../reference/level-data-and-rules.md) and [diagram
 lanes](../../reference/lanes.md).

@@ -7,33 +7,39 @@ A player is ticked twice: once from the level's entity loop, and once from
 its own connection, after every level in the game has finished. Keep the
 inheritance chain in view for the whole page, because the halves are told
 apart by how far up it they reach: a `ServerPlayer` *is* a `Player`, which is
-a `LivingEntity`, which is an `Entity`, and each of the four declares its own
-*tick* and its own *aiStep*. The first half never calls up past
-`ServerPlayer` at all, and the one block the two have in common is the
+an `Avatar`, which is a `LivingEntity`, which is an `Entity`, and every one of
+them but `Avatar` declares its own *tick*. The first half never reaches
+`Player.tick`: what the level runs besides `ServerPlayer.tick` is
+`Entity.commonTick`, the bookkeeping it gives every entity first, and for a
+rider the chain of *rideTick* overrides that ends in the `Entity.rideTick`
+calling it — `Player.rideTick` among them, which dismounts a sneaking rider
+instead. The one block the two halves have in common is the
 container-validity check — and the second half is stranger still. **The connection records where the
 player is, runs the entire physics pipeline, and then puts the player back
 where it found them.** The server simulates your movement in full, every
-tick, and deletes the result: what it keeps is the *velocity*, because that
-is the number the anti-cheat compares your reported motion against.
+tick, and deletes the result: what it keeps is the *velocity*, and that is
+the number the anti-cheat allows for when it checks your reported motion.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
-| `ServerLevel` | phase one: ticks the player in entity order, inside the level tick | server main |
-| `ServerPlayer` | both halves — `ServerPlayer.tick` and `ServerPlayer.doTick` overlap in one block only | server main |
-| `ServerGamePacketListenerImpl` | phase two: the record–simulate–snap-back bracket | server main |
-| `Player` | `Player.tick` and `Player.aiStep` — on the server, reached from phase two only; on the client, from `LocalPlayer.tick` | both |
+| `ServerLevel` | phase one: ticks the player in entity order, inside the level tick | Server |
+| `ServerPlayer` | both halves — `ServerPlayer.tick` and `ServerPlayer.doTick` overlap in one block only | Server |
+| `ServerGamePacketListenerImpl` | phase two: the record–simulate–snap-back bracket | Server |
+| `Player` | `Player.tick` and `Player.aiStep` — on the server, reached from phase two only; on the client, from `LocalPlayer.tick` (and `Player.tick` from `RemotePlayer.tick`) | both |
 | `Inventory` | the thirty-six ordinary slots' per-tick item hook | both |
-| `FoodData` | hunger, regeneration and starvation, last of the three | server main |
-| `AbstractContainerMenu` | the open window, diffed against what the client was told | server main |
-| `LocalPlayer` | the client's own single tick, gated on the level having loaded | client main |
+| `FoodData` | hunger, regeneration and starvation, ticked after the physics | Server |
+| `AbstractContainerMenu` | the open window, diffed against what the client was told | Server |
+| `LocalPlayer` | the client's own single tick, gated on the level having loaded | Render |
 
 ## Phase one: what the world does to this player
 
 `ServerPlayer.tick` is called by the level's entity loop — through
 `ServerLevel.tickNonPassenger` when the player is walking, and through
-`ServerLevel.tickPassenger` and `Entity.rideTick` when mounted — and players
+`ServerLevel.tickPassenger` and `Entity.rideTick` when mounted, each time
+after `Entity.commonTick` has counted down `Entity.invulnerableTime`, saved
+last tick's position and advanced the tick count — and players
 are ticked there whether or not their chunk is entity-ticking ([the level
 tick](../server/server-level-tick.md#every-entity-and-then-its-riders)). It runs late in `ServerLevel.tick`:
 after the block ticks and the chunk source, before the block entities.
@@ -42,10 +48,11 @@ It does **not** call `Player.tick`. What it does instead is the outside
 world's business with the player: `ServerPlayerGameMode.tick` for
 block-breaking progress and the delayed destroy ([block
 breaking](../blocks/block-breaking.md#the-button-is-not-the-switch)), the
-invulnerability countdown, `AbstractContainerMenu.broadcastChanges` on the
+countdown of `LivingEntity.damageCooldownTime`, the hurt cooldown,
+`AbstractContainerMenu.broadcastChanges` on the
 open menu followed by closing it if it is no longer valid ([containers and
 menus](../items/containers-and-menus.md#where-in-the-tick-a-broadcast-happens)),
-dragging the camera entity along when one is set, the per-tick advancement
+snapping the player to the camera entity when one is set, the per-tick advancement
 criteria and a flush of the dirty ones, the warden spawn tracker, and
 `ServerPlayer.updatePlayerAttributes`. It is not quite connection-free: its
 very first statement is the connection's client-load timeout ([players and
@@ -76,7 +83,7 @@ simulated and keeps being reported on.
 
 `Player.aiStep`, reached from inside that, is where the two item-tick calls
 happen and in which order: `Inventory.tick` over the thirty-six ordinary
-slots, immediately before `EntityEquipment.tick` covers the other seven from
+slots, before `EntityEquipment.tick` covers the other seven from
 `LivingEntity.aiStep` — why there are two of them is the forty-three slots
 ([player anatomy](player-anatomy.md#why-the-forty-three-need-two-ticking-calls)). It is also the
 item and orb pickup sweep, gated on being alive and not a spectator; what the
@@ -87,8 +94,8 @@ The division is clean enough to use as a rule while reading the rest of this
 part. If the thing you are looking for is the **world acting on the player** —
 the menu's change broadcast, the breaking timer, the spectator camera, the
 advancement criteria — it is in phase one. If it is the **player acting** —
-physics, hunger, effects, item ticking, the packets that report a changed
-number — it is in phase two.
+physics, hunger, effects, item ticking, the health, food and experience
+packets — it is in phase two.
 
 ## Both halves, in the order they run
 
@@ -106,10 +113,10 @@ sequenceDiagram
 
     rect rgba(0, 0, 0, 0.04)
         Note over SL,FD: phase 1 — the entity loop, inside the level tick
-        SL->>SP: tick, and no call up to Player.tick
+        SL->>SP: commonTick, then tick — never up to Player.tick
         SP->>SPGM: tick — the breaking timer and the delayed destroy
         SP->>ACM: broadcastChanges, then stillValid
-        SP->>SP: updatePlayerAttributes — the creative reach modifiers
+        SP->>SP: updatePlayerAttributes — the reach and waypoint modifiers
     end
     rect rgba(0, 0, 0, 0.04)
         Note over SL,FD: phase 2 — the connection tick, after every level
@@ -125,8 +132,8 @@ sequenceDiagram
 
 *The two bands are the two callers, and `ServerPlayer` is one lane in both
 because it is one object: the physics the page is about happen inside the
-second band and are undone by its last arrow, and `AbstractContainerMenu` is
-the only lane the first band and the second both touch.*
+second band and their position is undone by its last arrow, and
+`AbstractContainerMenu` is the only other lane both bands touch.*
 
 ## The bracket, and what survives it
 
@@ -141,34 +148,39 @@ anti-cheat that rides along in the same bracket: the *floating too long*
 kick, and the same record-and-check done again for the vehicle the player is
 steering. On foot the authoritative position moves in
 `ServerGamePacketListenerImpl.handleMovePlayer` or in a teleport, never here.
-Riding is the exception, and it is phase *one* that makes it one:
+Riding is one exception, and it is phase *one* that makes it one:
 `Entity.rideTick` ticks the passenger and then has the vehicle reposition it,
 so a rider's real position is written by the level's loop before the bracket
-ever opens, and the snap-back at the end of the bracket puts it back there.
+ever opens, and the snap-back at the end of the bracket puts it back there. A
+spectator looking through another entity is the other, for the same reason:
+phase one snaps them to it.
 
-What survives the snap-back is `Entity.getDeltaMovement` — exactly what the
-anti-cheat subtracts from the client's reported displacement ([input to
+What survives the snap-back is `Entity.getDeltaMovement` — the velocity the
+anti-cheat allows for when it measures the client's reported displacement ([input to
 movement](input-to-movement.md)) — plus everything non-positional the tick
 did: drowning, burning, effects, hunger, the last-sent diffs. Both halves
 run every tick whether or not a packet arrived, and packets are drained
-before either of them. Everything the client must be *told* about its own
-player is written during phase two, and it leaves at once: `Connection.tick`
-flushes the channel on the line after it has run the listener that called
+before either of them. What phase two tells the client about its own player
+leaves at once: `Connection.tick` flushes the channel right after it has run
+the listener that called
 `ServerPlayer.doTick` ([the server
 tick](../server/server-tick.md#the-two-writes-each-client-gets)).
 
-One qualification to *phase two is where a player's own state is written*,
-and it is the only one. Almost every game handler defers to the owning thread
-before it touches anything ([the server
+Not all of a player's state is written inside the two halves: the handlers
+drained before the tick write it too, on the server thread — the position
+above is one — and the chat and command handlers write one field of it off
+that thread altogether.
+Almost every game handler defers to the owning thread before it touches
+anything ([the server
 tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)
-owns the rule and counts the exceptions); the chat handlers are the ones that
-do not. `ServerGamePacketListenerImpl.tryHandleChat` reads
+owns the rule and counts the exceptions); the chat handlers are among the ten
+that do not. `ServerGamePacketListenerImpl.tryHandleChat` reads
 `ServerPlayer.getChatVisibility` and calls `ServerPlayer.resetLastActionTime`
 **on the Netty thread**, before it hands the rest over ([chat and
-signing](../networking/chat-and-signing.md)) — two fields on a `ServerPlayer`
-written outside both halves and outside the server thread.
+signing](../networking/chat-and-signing.md)) — one field on a `ServerPlayer`
+read and another written outside both halves and outside the server thread.
 
-The pairing that makes this necessary is [Part VI's
+The pairing that makes the bracket necessary is [Part VI's
 authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off):
 `Player.isClientAuthoritative` is an
 unconditional yes on **both** sides, which denies a `ServerPlayer`
@@ -179,7 +191,7 @@ pipeline runs and its answer is not believed.
 
 ## The client ticks its player once
 
-`LocalPlayer.tick` runs from `ClientLevel`'s entity tick on the main thread,
+`LocalPlayer.tick` runs from `ClientLevel`'s entity tick on the Render thread,
 with its entire body gated on the connection reporting that the level has
 loaded. `Minecraft.gameMode` is ticked separately, and *earlier* in
 `Minecraft.tick` than the entity tick. `ClientInput.tick` is called from
@@ -199,16 +211,18 @@ its first half. What stops a silent client *moving* is neither: it is the
 snap-back, which undoes every position the simulation produced.
 
 **Why does fall damage come from the packet handler?** Because the branch
-inside `Entity.move` is one of the three things gated on local-instance
-authority, which a `ServerPlayer` fails ([authority](../entities/authority.md#three-cases-read-on-both-sides)).
+inside `Entity.move` is the one gate there that reads local-instance
+authority alone, which a `ServerPlayer` fails ([authority](../entities/authority.md#three-cases-read-on-both-sides)).
 `Entity.doCheckFallDamage` on the movement-packet path does it instead, with
 the client's own reported delta — which is the two-phase split showing up as
 a damage number.
 
-**Is a mounted player different?** Not in phase two, which is unchanged, and
-not in what the bracket does. The difference is that the movement packets a
-passenger sends are judged by an almost entirely separate piece of code — see
-[input to movement](input-to-movement.md).
+**Is a mounted player different?** In phase one, where `Entity.rideTick`
+ticks the player and then has the vehicle place it; and in the bracket, which
+skips the player's floating check and, for a player steering, runs the
+vehicle's record-and-check instead. The movement packets a passenger sends are
+judged by an almost entirely separate piece of code too — see [input to
+movement](input-to-movement.md).
 
 ## Where to look
 
