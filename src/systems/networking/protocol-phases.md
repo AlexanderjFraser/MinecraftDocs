@@ -267,7 +267,7 @@ with a code of conduct reads before choosing which translation of it to send.
 
 What disconnects a login: a version mismatch, a refused transfer, a ban, a
 whitelist the player is not on, a full server, a failed session check on a
-non-singleplayer host, any custom-query or cookie answer, a malformed or
+non-singleplayer host, any `ServerboundCustomQueryAnswerPacket` or cookie answer, a malformed or
 out-of-order packet, or six hundred ticks. Either answer disconnects because
 vanilla never asks: `ServerLoginPacketListenerImpl.State.NEGOTIATING` is
 declared and never assigned, `ClientboundCustomQueryPacket` decodes every

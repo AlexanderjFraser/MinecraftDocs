@@ -8,7 +8,7 @@ a page that disagrees with it. The last rows are the exceptions — lanes that s
 thread, the process, the wire, the disk, a service or the game's own code rather than for
 one class.
 
-276 lanes are classes and 10 are not. A lane is normally the initials of
+275 lanes are classes and 10 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
 rules make about a third of them: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
@@ -234,7 +234,6 @@ read it off this table.
 | `SCC` | `ServerChunkCache` |
 | `SCD` | `SerializableChunkData` |
 | `SCL` | `ServerConnectionListener` |
-| `SConn` | `Connection` |
 | `SCPL` | `ServerConfigurationPacketListenerImpl` |
 | `Screen` | `Screen` |
 | `SDS` | `ServerDebugSubscribers` |
