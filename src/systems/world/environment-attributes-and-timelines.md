@@ -289,8 +289,8 @@ the client looks.
 Clock *state* rides
 `ClientboundSetTimePacket`: a game time plus a `ClockNetworkState` — total
 ticks, partial tick, rate — per clock in its map.
-`ServerClockManager.createFullSyncPacket` fills that map on join and on a
-`GameRules.ADVANCE_TIME` change and every mutator broadcasts a one-clock
+`ServerClockManager.createFullSyncPacket` fills that map on join, respawn
+and a change of dimension, and on a `GameRules.ADVANCE_TIME` change and every mutator broadcasts a one-clock
 update, but the routine broadcast from
 `MinecraftServer.forceGameTimeSynchronization`, once every twenty ticks,
 sends an *empty* map and nothing but the game time.

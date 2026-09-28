@@ -159,6 +159,29 @@ def classify(units: list[q.Unit]) -> dict[int, tuple[str, bool]]:
     return out
 
 
+def _later(a: int, b: int) -> int:
+    """The part whose session runs later; frame and Reference (0) are session O's, after every part."""
+    return max(a, b, key=lambda n: 99 if n == 0 else n)
+
+
+def part_of(u, pages) -> int:
+    """The part a unit is summarised under. A unit naming pages in several parts counts under the
+    part whose session runs last, since it stays open until that session settles its share; before
+    pass 8's session I it counted under whichever page a set yielded first, so the by-part rows of
+    --summary changed from run to run while the totals held."""
+    if u.pages:
+        num = None
+        for key in sorted(u.pages):
+            n = pages[key][1]
+            num = n if num is None else _later(num, n)
+        return num or 0
+    if u.owner:
+        return pages[u.owner][1] or 0
+    if u.session_parts:
+        return u.session_parts[0] or 0
+    return 0
+
+
 def probe() -> int:
     """The tool routes by tag, by section and by words, and drops a struck entry."""
     import tempfile
@@ -180,12 +203,23 @@ def probe() -> int:
                 "## Session G — Part VII · Items and inventories (pass 7)\n\n"
                 "- Every caption in this part names a method. [kind=voice]\n\n"
                 "## Session B — Parts I · Anatomy and II · Foundations (pass 6)\n\n"
-                "- Four pages say the shared worker pool. [kind=voice]\n")
+                "- Four pages say the shared worker pool. [kind=voice]\n\n"
+                "## From pass-4 session I (Part IX Networking)\n\n"
+                "- MARK-IX-FIRST, a note of the part's own. [kind=voice]\n\n"
+                "### Part XIII, after session M of pass 4\n\n"
+                "- MARK-XIII, a note of another part's under a sub-heading. [kind=voice]\n\n"
+                "### Structural findings\n\n"
+                "- MARK-IX-AFTER, the enclosing part's again. [kind=voice]\n"
+                "- `chunk-anatomy` and `the-connection` MARK-SHARED say the same thing. [kind=voice]\n")
         QUEUE = f.name
     try:
         pages, units, standing, kinds = load()
         def kinds_for(key, kind):
             return [u.line for u in units_for(units, kinds, key, pages[key][1], kind, False)[0]]
+        def line_of(mark):
+            return next(u.line for u in units if mark in u.text)
+        def partwide(num):
+            return [u.line for u in units_for(units, kinds, "", num, None, False)[1]]
         checks = [
             ("section prior routes the first bullet to book", kinds_for("world/lighting", "book") == [9]),
             ("a struck entry is dropped", 10 not in kinds_for("world/lighting", None)),
@@ -206,6 +240,15 @@ def probe() -> int:
             ("a plural heading reaches its later parts: Parts I · Anatomy and II · Foundations is I and II",
              27 in [u.line for u in units_for(units, kinds, "", 1, None, False)[1]]
              and 27 in [u.line for u in units_for(units, kinds, "", 2, None, False)[1]]),
+            ("a ### heading naming its own session and part owns its units: Part XIII inside a Part IX block",
+             line_of("MARK-XIII") in partwide(13) and line_of("MARK-XIII") not in partwide(9)
+             and line_of("MARK-IX-FIRST") in partwide(9)),
+            ("the sub-heading's part ends at the next ###, and the enclosing part returns",
+             line_of("MARK-IX-AFTER") in partwide(9) and line_of("MARK-IX-AFTER") not in partwide(13)),
+            ("a unit naming pages in two parts is summarised under the later part, every run",
+             part_of(next(u for u in units if "MARK-SHARED" in u.text), pages) == 9),
+            ("frame and Reference count as the last part, since session O runs after N",
+             _later(0, 13) == 0 and _later(4, 9) == 9),
         ]
     finally:
         QUEUE = old
@@ -283,14 +326,7 @@ def main() -> int:
         print("|---|---:|---:|---:|---:|---:|---:|---:|")
         rows = {}
         for u in content:
-            num = None
-            if u.pages:
-                num = pages[next(iter(u.pages))][1]
-            elif u.owner:
-                num = pages[u.owner][1]
-            elif u.session_parts:
-                num = u.session_parts[0]
-            num = num or 0
+            num = part_of(u, pages)
             r = rows.setdefault(num, {k: 0 for k in KINDS} | {"guess": 0})
             k, sure = kinds[u.line]
             r[k] += 1

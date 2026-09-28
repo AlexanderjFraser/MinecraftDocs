@@ -315,7 +315,8 @@ all of it — after the death check, not with the flash.
 
 Six packets carry the hit itself, beside the sound packets. `ClientboundDamageEventPacket` (type holder,
 causing and direct entity ids, optional position) and
-`ClientboundSetEntityMotionPacket` go to every tracker and the victim,
+`ClientboundSetEntityMotionPacket` go to every tracker, and to the victim
+when it is a player,
 `ClientboundHurtAnimationPacket` and `ClientboundSetHealthPacket` only ever to
 one player about themselves, `ClientboundSetEntityDataPacket` carries
 `LivingEntity.DATA_HEALTH_ID` for a mob, and `ClientboundEntityEventPacket`

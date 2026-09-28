@@ -2,17 +2,18 @@
 
 > Verified against **Minecraft 26.3** · Part IX · One socket, four languages, and everything the two halves of the game say to each other across it.
 
-Almost every part before this one had a single machine to describe. This one
-has two. A player meets the seam as a set of symptoms — the *Connection lost*
-screen with a reason string on it, the mob that freezes and then jumps a dozen
-blocks, the chest whose contents appear only when it is opened, the chat line
-that turns red and takes every line after it with it — and every one of those
-is a decision rather than a fault. Singleplayer runs the same wire, an
+Parts II to IV had a single machine to describe, and Parts V to VIII
+compared two. This one is about what passes between them. A player meets the
+seam as a set of symptoms — the *Connection lost*
+screen with a reason string on it, the world that arrives in a pause and then a flood,
+the chest whose contents appear only when it is opened, the chat line that
+turns red and takes every line after it with it — and each of those can be a
+decision rather than a fault. Singleplayer runs the same wire, an
 integrated server on its own threads talking to the client through an
 in-memory channel, so the split is not a multiplayer feature bolted on the
 side: it is the shape of the program, and **the wire is not a pipe between two
-halves of one machine but a border between two machines, each of which treats
-what arrives from the other as a claim rather than a fact.**
+halves of one machine but a border between two machines, and the server treats
+what arrives from a client as a claim rather than a fact.**
 
 ## The shape of the part
 
@@ -21,10 +22,11 @@ three lectures are all about the wire and are ordered by what they describe it
 as: bytes on a socket, then the values those bytes are, then the four
 languages the socket speaks in turn — a connection changes language as it goes
 from handshaking to playing, and the last of the three is where that happens.
-Nothing after those three is about the wire at all. The last two both sit
-inside the final language, and they are the part's two largest systems:
-everything the server chooses to tell a client about the world, and the one
-protocol in the book written against a peer that *lies*.
+After those three, the part is mostly about what the wire carries rather
+than the wire. The last two both sit inside the play language: everything the server
+chooses to tell a client about the world, and the one protocol in the book in
+which what a player sends is signed, so that the server and the players it
+reaches can check it.
 
 ```mermaid
 flowchart TD
@@ -49,9 +51,9 @@ box: its title says where the last two live, and neither needs the other or
 the lecture above it.*
 
 The spine is the first two: read them together, because the second is
-the second half of the first. The last two are where the part spends most of
-its length, and that is proportionate to the traffic — telling a client where
-the mobs are and sending it chunks is most of what a connection ever carries,
+the second half of the first. The last two could hardly differ more —
+telling a client where the mobs are and sending it chunks is most of what a
+connection ever carries,
 while chat is a handful of packets a minute with a wholly disproportionate
 amount of cryptography on it.
 
@@ -61,7 +63,7 @@ amount of cryptography on it.
 first**, for the two-loops figure. The client's frame loop and the server's
 tick loop are different clocks, and the client drains its inbound packets once
 per **frame**, not once per tick. That one fact is behind most of what looks
-like network jitter, and every page here leans on it.
+like network jitter, and the first and fourth lectures lean on it.
 
 **[Part III](../server/README.md) next, and not optionally**, because two of
 this part's claims are really facts about somebody else's loop and Part IX
@@ -70,15 +72,15 @@ tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what
 owns what happens after every level has ticked, and [the level
 tick](../server/server-level-tick.md#the-broadcast-which-is-why-entities-are-a-tick-behind)
 owns the phase in which broadcasts go out — before the entity phase, which is
-why one broadcast carries this tick's block changes but the *previous* tick's
-entity movement.
+why one broadcast carries the block changes made so far this tick but the
+*previous* tick's entity movement.
 
 **Then [Part II](../foundations/README.md)** for two objects this part assumes
 whole:
 [codecs](../foundations/codecs-nbt-json.md#one-abstraction-and-the-ops-that-are-not-formats),
 because a packet codec is the same idea specialised to a byte buffer, and
 [components](../foundations/text-components.md#a-component-is-three-things),
-because a chat message is one. **And [Part
+because what a chat line displays is one. **And [Part
 VI's authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)**,
 which is the premise under lecture four: which side of the wire is allowed to
 decide where a thing is, and therefore what the other side may be told late.
@@ -91,7 +93,7 @@ pages state the consequence and link forward to it.
 
 1. [The connection](the-connection.md) — you swing at a pig, and some
    milliseconds later a method runs on the server's game thread. The lecture
-   with the round-trip diagram, and then the whole life of the channel that
+   with the there-and-back diagram, and then the whole life of the channel that
    carried it: two threads, two codec layers, one hop.
 2. [Packets and stream codecs](packets-and-stream-codecs.md) — the second
    half of the same lecture. What the thing crossing the wire is, now that
@@ -103,9 +105,8 @@ pages state the consequence and link forward to it.
 4. [What the client is told](what-the-client-is-told.md) — a creeper walks
    into view. Not a trace but a policy: three gates a change passes before it
    becomes a packet, and the things the server decides never to say.
-5. [Chat and signing](chat-and-signing.md) — the part's closer, and the only
-   system in the book whose protocol is written against a *lying* peer rather
-   than a malformed one. What each check catches, and whether it kills the
+5. [Chat and signing](chat-and-signing.md) — the part's closer, and the one
+   system in the book whose messages are signed by the player who wrote them. What each check catches, and whether it kills the
    message, the chain, or the connection.
 
 One and two are the pair to keep together; four and five can be watched in
@@ -115,20 +116,20 @@ either order, and neither strictly needs three.
 
 Part IX's packages hold {{#include ../../generated/part-networking.md}}, and
 the count flatters it, because **this part owns the wire, not everything in
-`network/`**: two thousand of those lines are `Component`, which is [Part
-II](../foundations/text-components.md#a-component-is-three-things)'s, much of
+`network/`**: `Component` and the classes around it belong to [Part
+II](../foundations/text-components.md#a-component-is-three-things), much of
 `client/multiplayer` is the receiving end, which is Part X's, and the largest
-block is the packet classes, catalogued rather than narrated
-([packets](../../reference/packets.md)).
+block is the packet classes, catalogued in [packets](../../reference/packets.md)
+rather than narrated one by one.
 
-Three systems in those packages the book names and does not teach.
+Three systems in those packages this part names and does not teach.
 **Player reporting** is out of scope on [what this book
 skips](../anatomy/what-this-book-skips.md#player-reporting). The **server list
 screen** is one more screen for [GUI and
 screens](../client/gui-and-screens.md); only [how a typed address becomes a
 socket](the-connection.md#what-the-client-dials-is-not-what-the-player-typed)
-belongs here. The **boss-bar feed** — `ClientboundBossEventPacket` is the part's largest
-single class — belongs to its model, [scores, teams and stored
+belongs here. The **boss-bar feed** — `ClientboundBossEventPacket`, one packet with six
+operations — belongs to its model, [scores, teams and stored
 data](../commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again),
 and to [the HUD](../client/hud.md). Past those,
 {{#include ../../generated/coverage-networking.md}}.
@@ -143,8 +144,8 @@ part stops at the packet that says so.
 [Packets](../../reference/packets.md) above all — the catalogue this part
 narrates, and the page to keep open beside every lecture in it. Then [the
 threads](../../reference/threads.md), which names the Netty event loop and the
-two game threads and lists the nine client handlers that never leave the
-network thread. Behind those: [registries](../../reference/registries.md) for
+two game threads and lists the nine handlers on the client's play listener that
+never hop. Behind those: [registries](../../reference/registries.md) for
 what crosses during configuration, [components](../../reference/components.md)
 where a packet carries a stack, [level data and
 rules](../../reference/level-data-and-rules.md) for the values a server sends

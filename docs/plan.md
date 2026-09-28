@@ -50,14 +50,14 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, and G and H on 2026-09-28** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, and G, H and I on 2026-09-28** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
 and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III, and the audit of its own
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
 audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit; H found 241 on
-Part VIII, 50 of them by that audit — and I onward have not. After it, nothing more is done here except a
+Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit — and J onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -544,3 +544,16 @@ understood; recording is after the release.
   had just written**, one of them a withdrawal of the session's own *most pages*. Four pages outside the part corrected with it
   (`world/tickets-and-loading`, `items/using-an-item`, `items/enchantments`, the glossary); items handed to I, J, L, N, O and P.
   Deployed.
+
+- **2026-09-28, pass 8, session I — Part IX · Networking (Opus).** Six pages checked under Part 2, one agent per page, and the
+  part read whole: **220 corrections**, every one re-derived in the tree (15 inside a figure or a caption; 26.3 changes the version
+  pass did not reach — the passenger diff unfiltered, two new setters of the precise-position flag, the absolute-sync conjunction
+  without the delta test, one rate-kicking accept site — and three V6, one of them missed by session A's list). `the-connection`'s
+  lead figure redrawn: the swing's answer goes to the players watching, flushed at once, never back to the swinger; its heading on
+  `Connection.tick` false and corrected twice with its two links. `what-the-client-is-told`'s hook rested on the client dead-reckoning a
+  creeper, which no client does. The 103 ledger entries struck (39 wrong in whole or in part or beside a wrong sentence); the part's
+  queue settled, so `pass5_queue.py --summary` has no Part IX row. The record audited by one agent per page, which found **71 of the
+  220, 52 in sentences the session had just written** — about one in three. Two queue-router bugs fixed with probe cases (a `###`
+  heading's own part; `--summary`'s set-order routing); the lane key's `SConn` row retired. Five pages outside the part corrected with
+  it (`server/server-tick`, `lectures.md`, `entities/movement-and-collision`, `entities/damage-and-death`,
+  `world/environment-attributes-and-timelines`); items handed to N, O and P. Deployed.

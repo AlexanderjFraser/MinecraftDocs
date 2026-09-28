@@ -256,7 +256,7 @@ console reaches the Server thread. RCON does not come this way:
 `BlockableEventLoop.executeBlocking` and waits for the answer, so it runs
 wherever the queue next drains. [Players and sessions](players-and-sessions.md#the-three-kicks-that-come-from-the-tick) is
 what happens inside that phase; [the
-connection](../networking/the-connection.md#connectiontick-the-one-call-from-a-game-thread)
+connection](../networking/the-connection.md#connectiontick-the-tick-a-game-thread-gives-the-connection)
 is the channel underneath it.
 
 ### The two writes each client gets

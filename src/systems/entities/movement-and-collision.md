@@ -411,8 +411,8 @@ when its data or a push opens the gate, and more when the tracker is not
 called at all — not riding, the
 entity does not demand precision, **and `Entity.onGround` still matches what
 the last absolute sync recorded**. The last condition is the one that fails
-most often, and it is a real cost: every landing and every step off a ledge
-forces a full `ClientboundEntityPositionSyncPacket`. The bounce's
+most often, and it is a real cost: a landing or a step off a ledge that a gated call
+sees forces a full `ClientboundEntityPositionSyncPacket`. The bounce's
 `Entity.syncPosition` flag re-phases the tracker's own counter to the next
 interval boundary for an entity with no stepped interpolation, so its send
 happens at the next evaluation rather than up to an interval late; for a

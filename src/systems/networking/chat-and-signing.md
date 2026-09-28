@@ -1,16 +1,16 @@
 # Chat and signing
 
-> Verified against **Minecraft 26.3** · Part IX · A player presses T, types a line and hits enter: the message is signed on the way out, taken apart on the way in, and verified again by every client that draws it.
+> Verified against **Minecraft 26.3** · Part IX · A player presses T, types a line and hits enter: the message is signed on the way out, taken apart on the way in, and verified again by every client that holds the sender's session.
 
 A player presses T, types *hey* and hits enter. Before the line leaves the
 machine, `ChatScreen.normalizeChatMessage` has squeezed the whitespace and cut
 it to 256 characters, and `ClientPacketListener.sendChat` has taken a
-timestamp, a random salt and the signatures of the twenty messages the player
-most recently saw, and signed all of it with a key Mojang issued to that
+timestamp, a random salt and the signatures of the messages the player saw
+among the last twenty signed ones it was sent, and signed all of it with a key Mojang issued to that
 account. The server pulls the packet apart on the Netty thread, hands the
 cryptography to the Server thread, filters it, decorates it, broadcasts it —
-and every receiving client verifies the signature again before drawing a
-character. Every one of those steps can say no, and *no* does not mean the
+and every receiving client that holds the sender's session verifies the
+signature again before drawing a character. Every one of those steps can say no, and *no* does not mean the
 same thing twice. Forge a signature and you stay connected: you get a red line
 and your **chain** dies, so everything else you say this session fails too.
 Miscount which messages you have *seen* — a number nothing in the game shows
@@ -22,7 +22,7 @@ defended harder than the cryptography is**, and that is the right way round.
 | class | what it decides | thread |
 |---|---|---|
 | `ServerGamePacketListenerImpl` | the order the checks run in, and which failure closes the connection | Netty for the window, the characters and the chat-visibility refusal, Server for everything after |
-| `LastSeenMessagesValidator` | whether the client's twenty-slot acknowledgement still matches the server's mirror | Netty, inside a lock on itself |
+| `LastSeenMessagesValidator` | whether the client's twenty-slot acknowledgement still matches the server's mirror | Netty, and Server for the pending count — inside a lock on itself |
 | `SignedMessageChain.Decoder` | whether this message continues the sender's chain — and whether the chain survives the answer | Server |
 | `PlayerChatMessage` | what a signature covers: the chain link, the content, the timestamp, the salt, the window | wherever a message is built |
 | `MessageSignatureCache` | which of those signatures travel as a small index instead of 256 bytes | both sides, one 128-slot cache each |
@@ -35,7 +35,7 @@ defended harder than the cryptography is**, and that is the right way round.
 Two packets carry all of this, and the page names them once here: a line
 leaves its author in a `ServerboundChatPacket` and reaches everybody else in a
 `ClientboundPlayerChatPacket`, which is the one packet in the game whose
-contents a recipient checks a signature over before drawing.
+contents a recipient checks a player's signature over before drawing.
 
 A message on the wire is a `PlayerChatMessage`: a `SignedMessageLink` saying
 where in the sender's chain it sits, a `MessageSignature`, a
@@ -78,14 +78,14 @@ sequenceDiagram
     CPL->>SGPL: ServerboundChatPacket
     SGPL->>SGPL: Netty thread, apply the last-seen update, check the characters
     rect rgba(0, 0, 0, 0.04)
-        Note over SGPL,PL: the rest of the server's work is one task on the Server thread
+        Note over SGPL,PL: the rest of the server's work, all of it on the Server thread
         SGPL->>SGPL: SignedMessageChain.<br/>Decoder.unpack, the signature check
         SGPL->>SGPL: the filter starts, the decoration is immediate, a FutureChain joins them
         SGPL->>PL: broadcastChatMessage, bound to ChatType.CHAT
     end
-    PL->>RCPL: ClientboundPlayerChatPacket, signatures packed to cache ids
+    PL->>RCPL: ClientboundPlayerChatPacket, cached last-seen signatures sent as ids
     RCPL->>RCPL: the global index, then the cache ids, then the signature
-    RCPL->>CLis: handlePlayerChatMessage, trust level, blocklist, delay queue
+    RCPL->>CLis: handlePlayerChatMessage: the delay queue, then trust level and blocklist
     CLis->>RCPL: markMessageAsProcessed
     RCPL->>SGPL: ServerboundChatAckPacket, once the offset passes 64
 ```
@@ -93,8 +93,8 @@ sequenceDiagram
 *One line's whole journey, three machines in three boxes: the two
 `ClientPacketListener` lanes are the sender's and every recipient's, and the
 same signature is checked once in the middle box and again in the right-hand
-one. The shaded band is the only part of the server's work that is not on the
-Netty thread.*
+one. The shaded band is the server's work on the Server thread, which ends in the
+arrow that leaves it.*
 
 Five things in that picture are worth naming before the checks are.
 
@@ -115,12 +115,12 @@ delays delivery by however many ticks it takes
 ([the server tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)).
 
 **The filter is an HTTP service, and usually there is none.** `TextFilter` is
-the per-player interface every message — and every book page, sign line and
-anvil name — passes through, and `MinecraftServer.createTextFilterForPlayer`
+the per-player interface every chat line — and every signed command message,
+book page, sign line and anvil name — passes through, and `MinecraftServer.createTextFilterForPlayer`
 hands out `TextFilter.DUMMY`, which passes everything, unless the server is a
 dedicated one whose *text-filtering-config* property names an endpoint.
 `ServerTextFilter.createFromConfig` reads that property at startup ([starting a
-server](../server/starting-a-server.md#the-server-thread-wakes-up-and-can-still-fail-twice)) and
+server](../server/starting-a-server.md#minecraftserverspin-and-the-last-thing-main-does)) and
 builds either a `LegacyTextFilter` or a `PlayerSafetyServiceTextFilter`
 depending on the configured version, each a pool of *Chat-Filter-Worker*
 threads posting JSON to that endpoint. What comes back is a `FilteredText` —
@@ -133,15 +133,14 @@ frozen into saved data, a raw value beside an optional filtered one.
 future, decorates immediately and synchronously, and only then registers the
 continuation that joins the two. A decorator never sees filtered text.
 
-**Broadcast is per recipient, and gated in three places** — two before the
-message is built for that player, and `ServerPlayer.shouldFilterMessageTo`
-inside it.
+**Broadcast is per recipient, and decided in three places.**
 `PlayerList.broadcastChatMessage` logs the line — marked *Not Secure* by
 `PlayerList.verifyChatTrusted` if it has no signature or has expired — and
-then offers it to every player without testing anything. `ServerPlayer` drops
-it unless that player's setting is `ChatVisiblity.FULL`;
-`OutgoingChatMessage.Player` applies the per-recipient filter mask and skips a
-copy that was filtered away entirely, telling the *sender* so. A message whose
+then asks the sender's `ServerPlayer.shouldFilterMessageTo` of each player in
+turn. `ServerPlayer` drops the copy unless that player's setting is
+`ChatVisiblity.FULL`; `OutgoingChatMessage.Player` applies the filter mask to a
+filtered copy and skips one that was filtered away entirely, and `PlayerList`
+tells the *sender* once if any was. A message whose
 sender is `Util.NIL_UUID` is a system message and leaves as an unsigned,
 unreportable `ClientboundDisguisedChatPacket` instead.
 
@@ -162,8 +161,8 @@ flowchart TD
     S -- accepted --> OK["filter, decorate, broadcast"]:::server
 ```
 
-*The five checks on the Netty thread, in green, and the one stage on the
-Server thread, in blue, drawn so that the arrows meet at the three things a
+*The five checks on the Netty thread, in green, and the Server thread's work,
+in blue, drawn so that the arrows meet at the three things a
 refusal can kill. The middle terminal is reached from both, which is the
 picture's point: where a check runs says nothing about what it costs.*
 
@@ -176,8 +175,8 @@ merits. The **chain** dies for the session: `SignedMessageChain` clears the
 link it was going to advance, and from then on no unpack can succeed — the
 *chain broken* error if the message is otherwise well-formed, and a missing-key
 or expired-key error before that if it is not. Only a
-new session key, announced with `ServerboundChatSessionUpdatePacket`, restores
-it. The **connection** dies immediately — through the same funnel as any other
+new session key, announced with `ServerboundChatSessionUpdatePacket`, or a new
+connection restores it. The **connection** dies immediately — through the same funnel as any other
 fault ([the connection](the-connection.md#how-a-connection-dies)) — and the
 player is back at the multiplayer list.
 
@@ -200,15 +199,18 @@ The last three are the client treating the server as one — the same design
 mirrored, because a server can lie about who said what at least as easily as a
 client can.
 
-The order of the rows is the order the checks run in, and the first five run
-on the Netty thread, before the message is handed to the server at all: the
+The first nine rows are in the order a chat line meets them, and the first
+five run on the Netty thread, before the message is handed to the server at all: the
 three window checks inside
 `ServerGamePacketListenerImpl.unpackAndApplyLastSeen`, then the character
 check and the chat-visibility refusal inside
 `ServerGamePacketListenerImpl.tryHandleChat`. Four of those five close the
 connection and the fifth does not, which is the split the flowchart above
-draws; everything from the sixth row down happens inside the task
-`ServerGamePacketListenerImpl.tryHandleChat` posts to the server.
+draws; rows six to nine happen inside the task
+`ServerGamePacketListenerImpl.tryHandleChat` posts to the server, and the rate
+check in the continuation that broadcasts. The
+rest are other paths: a command, each recipient's copy, a new session key, and
+the receiving client.
 
 | the check | what it catches | what dies |
 |---|---|---|
@@ -217,14 +219,14 @@ draws; everything from the sixth row down happens inside the task
 | `LastSeenMessages.Update.verifyChecksum` | the two sides holding different signatures in slots whose bits agree — a desync the crypto would otherwise report as a bad signature | **connection**, unless the client sent `LastSeenMessages.Update.IGNORE_CHECKSUM` |
 | `ServerGamePacketListenerImpl.isChatMessageIllegal`, over `StringUtil.isAllowedChatCharacter` | section signs and control characters — formatting injected into everyone else's chat | **connection** |
 | `ServerPlayer.getChatVisibility`, non-commands only | a player who turned chat off and sent a line anyway | **message**, with a red *chat.disabled.options* back to the sender |
-| `SignedMessageChain.Decoder.unpack`, no signature present | an unsigned message once a chat session exists — unconditionally, whatever `MinecraftServer.enforceSecureProfile` says: that flag selects the decoder used *before* a session exists, and separately gates the unsigned-command refusal two rows down | **message** |
+| `SignedMessageChain.Decoder.unpack`, no signature present | an unsigned message once a chat session exists — unconditionally, whatever `MinecraftServer.enforceSecureProfile` says: that flag decides what the decoder used *before* a session exists does with an unsigned message, and separately gates the unsigned-command refusal six rows down | **message** |
 | the same, `ProfilePublicKey.Data.hasExpired` | a session key past its expiry still being used to sign | **message** |
 | the same, a timestamp before the last accepted one | a replayed or reordered message from this sender | **chain** |
 | the same, `PlayerChatMessage.verify` | content, timestamp, salt or window that do not match the signature — a forgery, or a proxy editing text in flight | **chain** |
 | `ServerGamePacketListenerImpl.collectSignedArguments`, an unknown argument name | a client signing arguments of a command the server's own parse does not have | **chain**, broken explicitly |
 | the same, a signable argument with no signature | signatures stripped from *some* arguments of a signed command | **message** — the chain is left intact |
 | `ServerGamePacketListenerImpl.performUnsignedChatCommand` | a signable command sent down the plain command packet with its signatures removed | **message**, and only when `MinecraftServer.enforceSecureProfile` is on |
-| `ServerGamePacketListenerImpl.detectRateSpam`, a `TickThrottler` per player | flooding: each message costs 20, one point decays per tick, and the ceiling is twenty per configured second — *chat-spam-threshold-seconds*, ten by default, so 200 points, or about ten messages sent faster than the decay | **connection**, except for operators and the singleplayer host |
+| `ServerGamePacketListenerImpl.detectRateSpam`, a `TickThrottler` per player | flooding: each message costs 20, one point decays per tick, and the ceiling is twenty per configured second — *chat-spam-threshold-seconds*, ten by default, so 200 points, or about ten messages sent faster than the decay | **connection**, except for operators, and on an integrated server for anyone, its threshold being zero |
 | `ServerGamePacketListenerImpl.sendPlayerChatMessage`, via `LastSeenMessagesValidator.trackedMessagesCount` | a client that is sent signed messages and never acknowledges them | **connection**, past 4,096 pending |
 | `ServerGamePacketListenerImpl.handleChatSessionUpdate` | a key that expires *earlier* than the one it replaces, or one `RemoteChatSession.Data.validate` cannot trace to Mojang's services key | **connection** |
 | `ClientPacketListener.handlePlayerChat`, the global index | a server dropping, duplicating or reordering messages beneath the player, which would falsify any report drawn from the log | **connection** |
@@ -239,17 +241,18 @@ never opts out, because `LastSeenMessagesTracker.generateAndApplyUpdate`
 always computes one. And *chain broken* is a latch on both sides: the server's
 `SignedMessageChain` and the receiving client's
 `SignedMessageValidator.KeyBased` both refuse everything afterwards, so one
-bad signature costs a sender their voice until a key rotation, not one line.
+bad signature costs a sender their voice until a new key or a new connection, not one line.
 
 ## Why losing the window is worse than losing the signature
 
 The asymmetry looks backwards until you notice what the window is *for*. The
 last-seen list — twenty `LastSeenTrackedEntry` slots on the tracker — is
-signed **in full** but sent as `MessageSignature.Packed`
-indices into a cache both sides maintain identically. If those caches ever
-diverge, the receiver reconstructs a different `SignedMessageBody`, and every
-signature after that fails for a reason no cryptographic error message can
-explain. There is no recovery from inside: the state is shared, and half of it
+signed **in full** but sent as a bitset over a window the server mirrors, and
+passed on to other clients as `MessageSignature.Packed` entries, each an index
+into a cache both ends keep in step where that cache holds the signature. If the server's mirror ever disagrees with the
+client's window, the server reconstructs a different `SignedMessageBody`, and
+every signature after that fails for a reason no cryptographic error message
+can explain. There is no recovery from inside: the state is shared, and half of it
 is wrong.
 
 So the game ends the connection at the first sign of that divergence, and
@@ -257,7 +260,7 @@ So the game ends the connection at the first sign of that divergence, and
 acknowledgement of a slot it does not hold, an *un*-acknowledgement of a slot
 it already acknowledged, a negative offset, an offset larger than the number
 of tracked messages outside the window it has
-actually sent, and a bit set wider than the window; a checksum mismatch on top
+sent, and a bit set wider than the window; a checksum mismatch on top
 of all that says *the client and server must have desynced* in as many words.
 
 A bad signature is the opposite kind of problem: local, provable and
@@ -276,8 +279,8 @@ Same input, same method, same order — which is why an index means the same
 thing at both ends, and why nothing can put them back in step once they are
 not.
 
-**Sixty-four** — the acknowledgement offset a client may accumulate before
-`ClientPacketListener.markMessageAsProcessed` sends a bare
+**Sixty-four messages** is the acknowledgement offset a client may
+accumulate before `ClientPacketListener.markMessageAsProcessed` sends a bare
 `ServerboundChatAckPacket` unprompted. That packet exists so that a player who
 only listens never reaches the server's 4,096 pending messages and gets
 dropped for saying nothing all evening.
@@ -298,8 +301,9 @@ typed and what they had seen when they typed it, and nothing else.
 
 On the receiving client all of that lands in `ChatListener`, the class the
 figure at the top of this page ends on. `ChatListener.handlePlayerChatMessage`
-acknowledges the message back to the server whether or not it is drawn, and
-puts the line in `ChatListener.delayedMessageQueue` rather than on the screen
+records a signed message in the client's window whether or not it is drawn (a
+refused one as an empty slot, never acknowledged) and puts the line, with that
+bookkeeping, in `ChatListener.delayedMessageQueue` rather than on the screen
 when the *chatDelay* option is set — a queue its own tick drains one line at a
 time, which is why the option is a client-side stagger and not a server one.
 
@@ -307,8 +311,9 @@ That gap is what `ChatTrustLevel` exists to expose, and it tests for it
 crudely on purpose. `ChatTrustLevel.evaluate` calls a message *modified* the
 moment the rendered string does not **contain** the signed string — the limb
 that catches a server rewriting what someone said. Only if that passes does it
-look at style, and only inside the unsigned copy — which vanilla does send,
-for any command message carrying a selector. A
+look at style, and only inside the unsigned copy — which vanilla sends only for
+a command message whose selector expanded, and that copy has already failed
+the *contains* test. A
 message with no signature at all, or one older than seven minutes, is *not
 secure* instead. The tag is normally all that happens; with
 `Options.onlyShowSecureChat` on, a not-secure message is discarded rather than
@@ -339,12 +344,12 @@ something does, it sends `ServerboundChatCommandSignedPacket` with
 index, all of them sharing one timestamp, salt and window. *Signable* means
 the argument type implements `SignedArgument`, and in 26.3 exactly one type
 does — `MessageArgument`, behind the message-shaped commands, and the
-enumeration of which commands register it is [brigadier and
-commands](../commands/brigadier-and-commands.md#signed-arguments-in-one-paragraph)'s.
+enumeration of which commands register it belongs to [brigadier and
+commands](../commands/brigadier-and-commands.md#signed-arguments-in-one-paragraph).
 `MessageArgument` is also the one route by which chat text has its selectors
 expanded, which is how a command message comes to carry unsigned content at
-all: the expansion itself, its permission and its parse are [text
-components](../foundations/text-components.md#resolution-what-a-server-does-to-a-component-before-it-sends-it)'s.
+all: the expansion itself, its permission and its parse belong to [text
+components](../foundations/text-components.md#resolution-what-a-server-does-to-a-component-before-it-sends-it).
 What matters here is only that the expanded string is the one the recipient
 reads and the signature does not cover it.
 
@@ -356,22 +361,22 @@ at `ArgumentSignatures.MAX_ARGUMENT_COUNT` — eight — and
 `ArgumentSignatures.MAX_ARGUMENT_NAME_LENGTH`, sixteen. Commands run against their own `TickThrottler`, separate from chat's and built
 the same way from *command-spam-threshold-seconds*, which also defaults to
 ten — so a player has two independent budgets and can spend both. A
-command message that ends up with no signed argument is broadcast as a
+command message sent down the plain command packet, where secure profiles are
+not enforced, is broadcast as a
 `ClientboundDisguisedChatPacket`: chat-type decorated, unsigned, unreportable.
 
 ## Questions players ask
 
-**What actually makes the "Not Secure" tag appear?** No signature, or a
+**What makes the "Not Secure" tag appear?** No signature, or a
 timestamp more than seven minutes old by the receiving client's clock. The
-server calls the same message stale after five, and logs it as *Not Secure*
+server calls the same message expired after five, and logs it as *Not Secure*
 there too. Two machines whose clocks are a few minutes apart will flag
 perfectly honest messages, and the server says so in its log.
 
 **Why does a custom font not flag every line on my server?** Because the style
 test only looks inside the unsigned copy, and vanilla's *decorator* never
 produces one. For ordinary chat the font check is therefore dead, and it comes
-alive on a server that decorates — or on a command message that carried a
-selector, which is the one unsigned copy vanilla does send. A player's own
+alive only on a server that decorates. A player's own
 lines on an integrated server skip both tests and are secure by definition.
 
 **Why can I report some lines and not others?** `LoggedChatMessage.canReport`
@@ -383,20 +388,21 @@ re-verified independently, with
 `ChatReportContextBuilder.collectAllContext` walking the last-seen links
 backwards for the conversation around it.
 
-**Does dying clear a broken chain?** No, and nothing short of a key rotation
-does. The chain decoder lives on `ServerGamePacketListenerImpl`, and a respawn
+**Does dying clear a broken chain?** No, and nothing short of a new key or a
+new connection does. The chain decoder lives on `ServerGamePacketListenerImpl`, and a respawn
 builds a new `ServerPlayer` while keeping the same listener —
 `PlayerList.respawn` copies the connection across and `ServerPlayer.restoreFrom`
-copies the chat session with it — so the broken link survives death, dimension
-changes and anything else that replaces the player object. Only
-`ServerGamePacketListenerImpl.handleChatSessionUpdate` installs a fresh
-decoder.
+copies the chat session with it — so the broken link survives death and the other respawn that
+replaces the player object, leaving the End. Within one connection only
+`ServerGamePacketListenerImpl.handleChatSessionUpdate`, given a different key,
+installs a fresh decoder.
 
 **And if somebody's session key fails validation?** Which side notices decides
 the cost. On the server it closes the connection. On another client,
-`ClientPacketListener.initializeChatSession` merely calls
-`PlayerInfo.clearChatSession`, and that player's lines arrive unsigned — taken
-and tagged insecure by `SignedMessageValidator.ACCEPT_UNSIGNED`, or refused
+`ClientPacketListener.initializeChatSession` calls
+`PlayerInfo.clearChatSession`, and that player's lines are treated as unsigned — the
+signature stripped by `SignedMessageValidator.ACCEPT_UNSIGNED` and the line
+tagged not secure, or refused
 by `SignedMessageValidator.REJECT_ALL` where secure profiles are enforced.
 
 ## Where to look
@@ -405,19 +411,19 @@ Follow one message, in the order it travels. **`ClientPacketListener.sendChat`**
 is where a line becomes a signed object, and
 **`LastSeenMessagesTracker.generateAndApplyUpdate`** beside it is the window
 being committed to. **`ServerGamePacketListenerImpl.handleChat`** is the
-receiving end, and it is short — the two methods it calls —
+receiving end, and it is short: the two methods it calls,
 `ServerGamePacketListenerImpl.unpackAndApplyLastSeen` and
-`ServerGamePacketListenerImpl.tryHandleChat` — are the five Netty-thread
+`ServerGamePacketListenerImpl.tryHandleChat`, are the five Netty-thread
 checks in the table, in order. Then **`PlayerList.broadcastChatMessage`** for the
 per-recipient fan-out and **`ClientPacketListener.handlePlayerChat`** for the
 far end doing it all again in reverse.
 
 Two classes are the argument rather than the route.
-**`LastSeenMessagesValidator`** is sixty lines of suspicion and is worth
+**`LastSeenMessagesValidator`** is a short file of suspicion and is worth
 reading in full, because every rejection in it is a connection close.
-**`SignedMessageChain`** is shorter still, and the one line in
+**`SignedMessageChain`** is the other, and the one line in
 `SignedMessageChain.Decoder.setChainBroken` that drops the next link is what
-*chain broken* actually means.
+*chain broken* means.
 
 Three doors this page only points at:
 **`PlayerChatMessage.updateSignature`**, the exact byte order the signature

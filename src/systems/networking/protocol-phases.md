@@ -2,13 +2,11 @@
 
 > Verified against **Minecraft 26.3** · Part IX · A login: from clicking a server in the list to standing in the world.
 
-Click a server in the multiplayer list and one TCP connection opens, and over
-the next second it speaks four different languages in turn: handshaking,
+Click a server in the multiplayer list and one TCP connection opens, and over the next few seconds it speaks four different languages in turn: handshaking,
 login, configuration, play. There is a fifth, *status*, and a login never
 touches it — it is the phase the server list uses to ask a server how many
 players it has, and it is a dead end by design. Each of the five is a
-`ConnectionProtocol`, each has its own packet set, and each hands over to the
-next by a packet marked *terminal* — a flag on the packet class that makes the
+`ConnectionProtocol`, each has its own packet set, and each that hands over to another does so by a packet marked *terminal* — a flag on the packet class that makes the
 codec which decoded it tear itself out of the pipeline as it passes ([the
 connection](the-connection.md#what-a-terminal-packet-does-to-the-codecs)). All
 but handshaking have a listener at both ends; handshaking is serverbound only,
@@ -19,7 +17,7 @@ object, its save data, its position, the chunks under it — is *prepared*
 during configuration, by `PrepareSpawnTask`, and **constructed only after the
 client has acknowledged that configuration is over**. For the seconds in
 between, a server is holding chunk tickets for a player that does not exist,
-and by the time the object is built it is already encoding play packets to it.
+and by the time the object is built, the server's side of the connection already encodes play.
 
 ## The cast
 
@@ -28,11 +26,11 @@ and by the time the object is built it is already encoding play packets to it.
 | `ConnectionProtocol` | the five phases — a bare enum of labels; the codec lives in a `ProtocolInfo`, the behaviour in a `PacketListener` | — |
 | `Connection` | one channel, and `Connection.setupInboundProtocol` / `Connection.setupOutboundProtocol` at every transition | Netty |
 | `ServerHandshakePacketListenerImpl` | the three-way switch and the version gate | Netty |
-| `ServerLoginPacketListenerImpl` | the login state machine; its handlers set a volatile state and its `ServerLoginPacketListenerImpl.tick` acts on it | Netty, ticked from Server |
+| `ServerLoginPacketListenerImpl` | the login state machine; its handlers set a volatile state and its `ServerLoginPacketListenerImpl.tick` acts on it | Netty and the authenticator thread, ticked from Server |
 | `ServerConfigurationPacketListenerImpl` | the serial task queue, and the handler that finally builds the player | mixed — see below |
-| `ClientHandshakePacketListenerImpl` · `ClientConfigurationPacketListenerImpl` | the client's two halves: the session-service call, then the registries and tags it accumulates before constructing `ClientPacketListener` | Netty, and the client's main thread for the last step |
+| `ClientHandshakePacketListenerImpl` · `ClientConfigurationPacketListenerImpl` | the client's two halves: the session-service call, then the registries and tags it accumulates before constructing `ClientPacketListener` | Netty, the IO pool for the session call, and Render for most of the second |
 | `ServerCommonPacketListenerImpl` · `CommonListenerCookie` | what configuration and play share — the packets legal in both, and the state that survives a switch between them | Netty and Server |
-| `PrepareSpawnTask` | finds a spawn, tickets its chunks, waits — and later, on request, spawns the player | Server |
+| `PrepareSpawnTask` | finds a spawn, tickets its chunks, waits — and later, on request, spawns the player | Server, but Netty for its start straight after a code of conduct |
 
 ## The five phases
 
@@ -49,17 +47,16 @@ stateDiagram-v2
     note right of HANDSHAKING : every packet named here is terminal, so the codec that decoded it is already gone
 ```
 
-*The five phases, each labelled arrow carrying the packet — or the pair of
-them — that changes one. The arrow back out of play is the only one that goes
-up, which is what makes configuration the only phase a connection can enter
-twice.*
+*The five phases, each arrow between two of them carrying the packet — or the
+pair of them — that changes one. The arrow back out of play is the only one
+that goes up, which is what makes configuration the only phase entered from two
+others.*
 
 **Seven packets in the game carry the terminal flag**, and every one of them
 labels an arrow above. `ClientIntentionPacket` labels two, which is the
 striking one: the very first packet a connection ever sends already tears out
-the codec that decoded it. Four of the remaining six are the two handshakes
-that bracket configuration, which is the only phase a connection can enter
-twice.
+the codec that decoded it. The remaining six are three pairs, and every pair
+enters or leaves configuration, the only phase entered from two others.
 
 `ConnectionProtocol` is five constants — `ConnectionProtocol.HANDSHAKING`,
 `ConnectionProtocol.STATUS`, `ConnectionProtocol.LOGIN`,
@@ -85,14 +82,15 @@ swap itself is the pipeline surgery [the
 connection](the-connection.md#a-phase-change-is-a-message-written-down-the-pipeline)
 performs; this page is what the swaps are *for*. The one thing about the
 column that is a fact about the *phases* is that play is the only row not
-pre-bound: its codecs write registry ids, so its two templates are built per
+pre-bound: its codecs write registry ids, so its two templates are bound per
 connection at the configuration-to-play switch, which is the only transition
-in a connection's life that changes what a packet number means as well as
-which packets are legal.
+in a connection's life that ties the codecs to a set of registries as well as
+changing which packets are legal.
 
 Two listeners sit under the phases. `ServerCommonPacketListenerImpl` is the
 shared base of the server's configuration and play listeners and holds
-everything legal in both — keep-alive, latency, custom payloads,
+nearly everything legal in both (each subclass handles the client information
+itself) — keep-alive, latency, custom payloads,
 resource-pack responses and the flush suspension — with
 `ClientCommonPacketListenerImpl` its client counterpart; that inheritance
 is why the *common* packets in [reference/packets.md](../../reference/packets.md)
@@ -113,12 +111,12 @@ disconnects at once if the server does not reply to status.
 and otherwise joins `ClientIntent.LOGIN` in
 `ServerHandshakePacketListenerImpl.beginLogin`, which compares the client's
 protocol version against this build's and refuses a mismatch, and the two
-refusals are not symmetric: a version **below protocol 754** — a literal in
-the source, 1.16.4's number and the oldest that can render a modern kick
-screen — is told *outdated_client*, and anything else that does not match is
-told *incompatible*. The two refusals on the login path first install the **login** clientbound
-protocol, purely so they can send `ClientboundLoginDisconnectPacket` and have
-the client render a reason. The status refusal is the exception and the
+refusals are not symmetric: a version **below protocol 754** is told *outdated_client*, and anything else that does not match is
+told *incompatible*. All three of the handshake's refusals on the login path — these two and the transfer refusal —
+go out as `ClientboundLoginDisconnectPacket` under the **login** clientbound
+protocol, so the client can render a reason:
+`ServerHandshakePacketListenerImpl.beginLogin` installs it for every login
+before its check, and the transfer refusal installs it purely to send one. The status refusal is the exception and the
 rudest: the status clientbound protocol is installed before the branch, and
 then the connection is dropped with no packet at all.
 
@@ -160,7 +158,7 @@ stateDiagram-v2
     VERIFYING --> PROTOCOL_SWITCHING : tick, ClientboundLoginFinishedPacket
     WAITING_FOR_DUPE_DISCONNECT --> PROTOCOL_SWITCHING : tick, the old one is gone
     PROTOCOL_SWITCHING --> ACCEPTED : ServerboundLoginAcknowledgedPacket
-    note right of VERIFYING : the three edges marked tick are the server thread's, and every other is a Netty handler's
+    note right of VERIFYING : the three tick edges are the server thread's, one the authenticator thread's, the rest Netty's
 ```
 
 *Seven of the eight `ServerLoginPacketListenerImpl.State` constants, and the
@@ -169,22 +167,22 @@ branches once out of the hello, on how — or whether — this login is
 authenticated, and then again on whether the profile is already playing.*
 
 No handler on `ServerLoginPacketListenerImpl` ever schedules itself onto
-another thread — there is not one `PacketUtils.ensureRunningOnSameThread` call
-in the class — and yet the login is finished on the server thread, which is
+another thread (there is not one `PacketUtils.ensureRunningOnSameThread` call
+in the class), and yet the login is finished on the server thread, which is
 why its `ServerLoginPacketListenerImpl.state` field is volatile: the packet
-handlers run on the Netty thread and set the state, and
+handlers run on the Netty thread and set the state, as the authenticator thread
+below does, and
 `ServerLoginPacketListenerImpl.tick` — reached from
 `MinecraftServer.tickConnection` through `ServerConnectionListener.tick`
-and `Connection.tick`, the one call a connection gets from a game thread ([the
-connection](the-connection.md#connectiontick-the-one-call-from-a-game-thread))
+and `Connection.tick`, the tick a game thread gives a connection ([the
+connection](the-connection.md#connectiontick-the-tick-a-game-thread-gives-the-connection))
 — reads it on the server thread and does the login.
 The tick is also where `ServerLoginPacketListenerImpl.MAX_TICKS_BEFORE_LOGIN`,
 six hundred ticks, is enforced: a client that has not reached the end of
 the phase in thirty seconds is disconnected for a slow login — a transition
-out of every state above, and the one the diagram cannot draw.
+out of every state above but the last, and the one the diagram cannot draw.
 
-The three states the tick moves through are the ones the diagram names and
-the paragraphs below do not: `ServerLoginPacketListenerImpl.State.AUTHENTICATING`
+The diagram names three states the paragraphs below do not: `ServerLoginPacketListenerImpl.State.AUTHENTICATING`
 is the wait on the session service,
 `ServerLoginPacketListenerImpl.State.PROTOCOL_SWITCHING` is the gap between
 the server sending `ClientboundLoginFinishedPacket` and the client
@@ -234,7 +232,7 @@ callback, attaching its own ciphers to the send, so the key packet itself
 travels in the clear and nothing after it does.
 
 **Authentication is a plain thread with two fallbacks.** It calls the
-session service, reports login activity and on success stores the profile
+session service and, on success, reports login activity, stores the profile
 and flips the state to `ServerLoginPacketListenerImpl.State.VERIFYING`. On
 failure it disconnects — unless the server is a singleplayer host, in which
 case both a null result and an unreachable authentication service fall back
@@ -250,7 +248,7 @@ capacity; the compression switch; and
 `PlayerList.disconnectAllPlayersWithProfile` for a duplicate login, after
 which the machine waits in
 `ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT` until the
-old connection has actually died.
+old player has left the player list.
 
 **Login ends with a terminal packet in each direction**, and the two sides
 install their codecs in mirror order. `ClientboundLoginFinishedPacket` then
@@ -267,12 +265,13 @@ volunteers two packets straight away: its own `BrandPayload` and
 view distance and skin-part settings — and is therefore the packet a server
 with a code of conduct reads before choosing which translation of it to send.
 
-What disconnects a login: a version mismatch, a ban, a full whitelist-only
-server, a failed session check on a non-singleplayer host, an unexpected
-custom-query answer (`ServerLoginPacketListenerImpl.State.NEGOTIATING` is
-declared and never assigned — `ClientboundCustomQueryPacket` decodes every
-payload as `DiscardedQueryPayload`, and a `ServerboundCustomQueryAnswerPacket`
-just disconnects), or six hundred ticks.
+What disconnects a login: a version mismatch, a refused transfer, a ban, a
+whitelist the player is not on, a full server, a failed session check on a
+non-singleplayer host, any custom-query or cookie answer, a malformed or
+out-of-order packet, or six hundred ticks. Either answer disconnects because
+vanilla never asks: `ServerLoginPacketListenerImpl.State.NEGOTIATING` is
+declared and never assigned, `ClientboundCustomQueryPacket` decodes every
+payload as `DiscardedQueryPayload`, and nothing sends a cookie request.
 
 ## Configuration
 
@@ -281,7 +280,7 @@ the next begins, and the last two exist only to get a player into a world.
 
 ```mermaid
 flowchart TD
-    S["three packets sent before any task runs"]:::server
+    S["up to three packets, sent before any task runs"]:::server
     S --> Q
     subgraph Q["the serial queue"]
       direction TB
@@ -295,19 +294,19 @@ flowchart TD
 ```
 
 *The phase as a queue of five tasks, strictly one at a time — the middle two
-only if the server has a code of conduct or a resource pack — with the three
-packets that precede the queue and the round trip that ends it. The two arrows
+only if the server has a code of conduct or a resource pack — with the packets
+that precede the queue and the round trip that ends it. The two arrows
 at the foot are the phase's oddity: between them the server is holding a
 ticket on chunks for a player that does not exist yet.*
 
 `SynchronizeRegistriesTask` is the reason configuration exists, and the
 queue around it is strictly serial. `ServerConfigurationPacketListenerImpl.startConfiguration`
-sends three things outside the queue — the server's `BrandPayload`,
+sends up to three things outside the queue — the server's `BrandPayload`,
 `ClientboundServerLinksPacket` if there are links, and
 `ClientboundUpdateEnabledFeaturesPacket` — then queues the registry task, a
-code-of-conduct task if the server has one — `ServerCodeOfConductConfigurationTask`,
+code-of-conduct task if the server has one (`ServerCodeOfConductConfigurationTask`,
 whose two packets are `ClientboundCodeOfConductPacket` and the client's
-`ServerboundAcceptCodeOfConductPacket` — and a resource-pack task if it
+`ServerboundAcceptCodeOfConductPacket`) and a resource-pack task if it
 has one, before `ServerConfigurationPacketListenerImpl.returnToWorld`
 appends `PrepareSpawnTask` and `JoinWorldTask` and starts the first. Each
 `ConfigurationTask` finishes before the next begins:
@@ -315,9 +314,9 @@ appends `PrepareSpawnTask` and `JoinWorldTask` and starts the first. Each
 completion naming the wrong task type, and an exception out of any task
 disconnects the client.
 
-**Registry and tag sync** is why this phase exists, and *what* crosses is
-[identifiers and
-registries](../foundations/identifiers-and-registries.md#when-a-world-opens)' —
+**Registry and tag sync** is why this phase exists, and *what* crosses belongs
+to [identifiers and
+registries](../foundations/identifiers-and-registries.md#when-a-world-opens) —
 the known-pack negotiation, the all-or-nothing comparison, the empty payloads
 for elements the client can re-read from its own jar, and the two layers the
 client rebuilds. What belongs to the *phase* is the order and the count: one
@@ -329,11 +328,11 @@ and the reason a tag has to land before any play traffic does
 ([tags](../foundations/tags.md#the-other-way-tags-cross-the-wire)). None of it
 is applied as it arrives: `RegistryDataCollector` accumulates the whole
 exchange and only resolves it at
-`ClientConfigurationPacketListenerImpl.handleConfigurationFinished`, which is
-the last thing before the `ClientPacketListener` is constructed.
+`ClientConfigurationPacketListenerImpl.handleConfigurationFinished`, the
+handler that goes on to construct the `ClientPacketListener`.
 
 **The seam is not where it looks.** Four of the server's configuration
-handlers hop to the main thread —
+handlers hop to the Server thread —
 `ServerConfigurationPacketListenerImpl.handleSelectKnownPacks`,
 `ServerConfigurationPacketListenerImpl.handleConfigurationFinished` and, from
 the common base, the resource-pack response and
@@ -346,18 +345,19 @@ last one is load-bearing: accepting a code of conduct finishes a task, which
 resolve a spawn position. `ServerConfigurationPacketListenerImpl.tick` runs
 each tick to drive the current task and keep the spawn chunks loaded.
 
-**`PrepareSpawnTask` is two states, and the player is born in neither.**
-Its `PrepareSpawnTask.Preparing` state finds somewhere to stand, tickets the
-chunks and then reports *not finished* from `ConfigurationTask.tick` until
-they arrive; `PrepareSpawnTask.Ready` reports finished and does nothing at
-all until it is asked to spawn. How it finds the spawn, why the ticket has
-to be re-armed every tick, and what the two whole-file reads cost are
+**`PrepareSpawnTask` is two states, and only the second builds the player, and only when asked.**
+Its `PrepareSpawnTask.Preparing` state waits for the spawn position the task's
+start resolved (a search, for a player with none saved), tickets the chunks and then reports *not finished* from
+`ConfigurationTask.tick` until they arrive; `PrepareSpawnTask.Ready` reports
+finished and does nothing but re-arm the ticket until it is asked to spawn. How it finds the spawn, why the ticket has
+to be re-armed every tick, and what the two whole-file reads cost belong to
 [players and
-sessions](../server/players-and-sessions.md#preparing-a-place-to-stand)'.
+sessions](../server/players-and-sessions.md#preparing-a-place-to-stand).
 `JoinWorldTask` then sends the terminal
 packet, and only when the *client's* `ServerboundFinishConfigurationPacket`
 arrives does `ServerConfigurationPacketListenerImpl.handleConfigurationFinished`
-swap the outbound protocol to play, run the admission gate a second time
+swap the outbound protocol to play, refuse a duplicate of the player, run the
+admission gate a second time
 ([admission is a `Component` or
 nothing](../server/players-and-sessions.md#admission-is-a-component-or-nothing)
 — a ban or a full server can arrive in the seconds a configuration takes) and
@@ -368,23 +368,30 @@ server holding a ticket on chunks for a player that does not exist** — which
 is the phase's own oddity, and the reason this page opens on it.
 
 What disconnects a configuration: a task that throws on start or on tick, a
-completion for the wrong task, a ban or a full server at the second check,
-and an exception while placing the player. **Notably not a deadline.** Login
-has one — six hundred ticks — and configuration has none, because
-`ServerConfigurationPacketListenerImpl.tick` calls the common base's
-keep-alive first and then the current task, so what kills a stuck
-configuration is a client that stops answering keep-alives rather than one
-that takes too long. That is the right way round: a slow login is the
-client's fault, and a slow configuration is usually the server still finding
-chunks for it.
+completion for the wrong task, a declined resource pack the server requires,
+a cookie answer, a duplicate at the finish or a refusal at the admission gate's
+second run (a ban, the whitelist, a full server), and an exception while
+placing the player. **Notably not a deadline on the queue.** Login has one —
+six hundred ticks — and configuration's queue has none:
+`ServerConfigurationPacketListenerImpl.tick` counts nothing, calling the
+common base's keep-alive and then the current task, so what kills a stuck
+task is a client that stops answering keep-alives rather than one that takes
+too long. Only the round trip that ends the phase has a clock, for anyone but the
+singleplayer host: the terminal
+packet closes the listener, which stops sending keep-alives and allows
+fifteen seconds for the answer ([the
+connection](the-connection.md#how-a-connection-dies)). A slow configuration
+can be the server still finding chunks for the player, and the queue lets it
+be.
 
 ## Play, and the way back
 
-The play protocol is installed from two different places on each side: the
-server swaps outbound a line into the finish handler and inbound inside
-`PlayerList.placeNewPlayer`; the client swaps inbound, sends the finish
-packet, then swaps outbound. That is why the server can be encoding play
-packets while still nominally in the configuration listener. Chat session
+The play protocol is installed in two halves on each side: the server swaps
+outbound early in the finish handler and inbound inside
+`PlayerList.placeNewPlayer`; the client, in one handler, swaps inbound, sends
+the finish packet, then swaps outbound. That is why the server's side already encodes play
+while still nominally in the configuration listener, and a refusal at the
+finish goes out as a play packet. Chat session
 keys are not part of any of this: they are negotiated in play, after the
 client learns the server's mode from `ClientboundLoginPacket`
 ([chat and signing](chat-and-signing.md#what-the-signature-covers)).
@@ -403,7 +410,8 @@ tags, feature flags or brand are re-sent, and none need to be. The player
 parks in configuration with an empty queue until
 `ServerConfigurationPacketListenerImpl.returnToWorld` re-queues the spawn
 and join tasks. Both directions are reachable in vanilla only from
-`DebugConfigCommand`.
+`DebugConfigCommand`, which only a dedicated server started with its debug
+system properties registers.
 
 ## Cookies, transfers and the chat reset are proxy hooks
 
@@ -422,17 +430,17 @@ client and unused by the server.
 
 > **For a 1.21-era reader.** The assumption that "packet handlers run on the
 > game thread" is exactly backwards for the first two phases: the handshake
-> and login listeners run to completion on the Netty thread, and the first
+> and login listeners' handlers run to completion on the Netty thread, and the first
 > `PacketUtils.ensureRunningOnSameThread` in a connection's life is in
 > configuration.
 
 ## Where to look
 
-Read the four listeners in the order a login meets them, and the whole page is
-in them. **`ServerHandshakePacketListenerImpl`** is sixty lines and one
-switch. **`ServerLoginPacketListenerImpl`** is the one to spend time on: read
-`ServerLoginPacketListenerImpl.tick` first, then the handlers above it, and
-the volatile state field between them will explain itself.
+Read the four listeners, the server's three in the order a login meets them,
+and the whole page is in them. **`ServerHandshakePacketListenerImpl`** is
+little more than one switch. **`ServerLoginPacketListenerImpl`** is the one to spend time on: read
+`ServerLoginPacketListenerImpl.tick` first, then the handlers below it, and
+the volatile state field above both will explain itself.
 **`ServerConfigurationPacketListenerImpl`** is the task queue, and
 `ServerConfigurationPacketListenerImpl.handleConfigurationFinished` is where
 the player is finally built. **`ClientHandshakePacketListenerImpl`** is the
@@ -445,7 +453,8 @@ and is Part II's subject as much as this page's.
 
 Two doors this page only points at: **`ConnectionProtocol`**, which takes ten
 seconds to read and is worth it for how little is in it, and **`Crypt`**, the
-whole of the game's cryptography in one utility class.
+key, digest, cipher and salt helpers the login and chat signing share, in one
+utility class.
 
 ---
 

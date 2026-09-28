@@ -856,7 +856,7 @@ V2, or B into A, if either runs short.
 | **F** | VI · Entities | 95+3 | 7·4·0·24 | 55·56·15·9 | 33.8k | done 2026-09-27 | **307 corrections on ten pages** (44 inside a figure or a caption, twenty-one of them 26.3 changes V1 and V2 did not carry into the sentence), every one re-derived in the tree; the 109 ledger entries struck, 19 of 83 claims wrong in whole or in part; 43 queue units struck and eleven shared ones noted; the record audited by one agent per page, which found **80 of them, 54 in sentences the session had just written**; `authority`'s predicate figure redrawn for 26.3's move-simulation type (V2's handoff); seven pages outside the part corrected with it; items handed to H, I, J, O and P |
 | **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | done 2026-09-28 | **255 corrections on nine pages** (31 inside a figure or a caption; two 26.3 changes the version pass did not reach; six false headings, four of them on `enchantments`), every one re-derived in the tree; the 77 ledger entries struck, 4 wrong or wrong in part; the part's queue settled; the record audited by one agent per page, which found **71 of them, 45 in sentences the session had just written**; every caption's doubled *Figure:* gone; one probable upstream bug written as mechanism (a thrown click leaves remote updates suppressed); four pages outside the part corrected with it; items handed to H, I, J, N, O and P |
 | **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | done 2026-09-28 | **241 corrections on eight pages** (19 inside a figure or a caption; five 26.3 changes the version pass did not reach — phase one's `Entity.commonTick`, the hurt cooldown on the two-phase tick, `ServerGamePacketListenerImpl.handlePlayerPositionChange`, the teleport acknowledgement's position, the per-client-tick position kick), every one re-derived in the tree; the 96 ledger entries struck, 8 wrong in whole or in part; the part's queue settled (34 struck, seven shared units noted); one false heading (the food bar's *pile of literals*, V6); the record audited by one agent per page, which found **50 of them, 44 in sentences the session had just written**; four pages outside the part corrected with it; items handed to I, J, L, N, O and P |
-| **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | — | |
+| **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | done 2026-09-28 | **220 corrections on six pages** (15 inside a figure or a caption; `the-connection`'s lead figure redrawn, the swing's answer going to the players watching and never back to the swinger; its false heading on `Connection.tick` corrected twice with its two links), every one re-derived in the tree; the 103 ledger entries struck, 39 wrong in whole or in part or beside a wrong sentence; the part's queue settled; the record audited by one agent per page, which found **71 of them, 52 in sentences the session had just written** — about one in three; two queue-router bugs fixed; three pages outside the part corrected with it; items handed to N, O and P |
 | **J** | X · The client — the largest ledger; may split at the GUI stack (pages 1–5, 6–12) | 118+17 | 6·3·4·27 | 59·71·10·9 | 29.6k | — | |
 | **K** | XI · Rendering, **the figures** — pass 7's session K: its runbook, its viewer brief, its gate; the part's 20 figures rendered and read against their sections; the 19 captions written; the three eight-lane traces split or folded; the 17 figure-kind queue units; recorded in [pass7-brief.md](pass7-brief.md) Part 4 as well as here | — | ·   ·17·   | — | — | — | |
 | **L** | XI · Rendering — the check and the polish, after K | 82+8 | 1·5·0·25 | 82·72·21·21 | 35.7k | — | |
@@ -1328,3 +1328,38 @@ disagree: `world/tickets-and-loading` (the move's call chain), `items/using-an-i
 and its `stabAttack`), and the glossary's *Status effect*. Left for I, J, L, N, O and P: the items in the ledger's *For later
 sessions* — `rendering/entity-rendering`'s *four textures*, `reference/non-living-damage`'s *exactly three rows never reached*
 and the glossary's two live `Player` subclasses among them. For P: the V1 and V2 entries on these pages, and this session's diff.
+
+**Session I — Part IX · Networking (2026-09-28).** Six pages, each checked under Part 2 by its own agent while the session read the
+part whole; the prompts carried the pages' pass 5–7 ledger entries and, by hand, every pass 8 entry on these pages (V2's eleven on
+`packets-and-stream-codecs` and its handoffs, V1's movement-sync note, C's three handoffs, D's, E's, F's four, G's and H's two) and
+session A's two V6 items. **220 corrections**, every one re-derived in `reference/26.3` before it was made; 15 are inside a figure or
+a caption. Ledger entries checked: the 103 on these pages (55 checked, 28 checked with a part or the sentence beside it wrong, 11 wrong
+in whole or in part, 5 overtaken, 2 no claim, 2 readers' questions answered). The three worst corrections: `the-connection`'s lead
+figure drew the swing's answer back into the swinger's own client, *written, not flushed*, where `LivingEntity.swing` sends it only to
+the players tracking you and a packet sent from the drain is flushed at once — the redraw sends it to *a player watching you* and folds
+the client's `Connection` into a note to stay at six lanes; `what-the-client-is-told`'s hook had every viewer dead-reckon the creeper
+from its last position and velocity, where a creeper is `MoveSimulationType.AUTHORITATIVE_SIDE` and no client moves it at all, and
+what makes the base matter is that each relative move is decoded against the client's copy of it (the page's *far-off mob that
+freezes and then jumps* and its *knockback is immediate on a creeper* rested on the same reading, and the landing page's symptom
+list with them); and the landing page's argument, *each of which treats what arrives from the other as a claim*, with *the one
+protocol written against a peer that lies* beside it, where the client takes the server's state as fact outside chat and the server's
+movement and reach checks are written against a lying client. What the whole-part read found before the reports: 37 items, 30 of them
+corrections, and every one of those a report found too but the landing page's broadcast sentence, which the reports passed and the
+audit caught — the part's agents were as thorough as its reader this time (the login figure's note giving the authenticator's edge
+to Netty, *the three states the tick moves through* naming two the tick never sets, and `ClientboundBossEventPacket` as *the part's
+largest single class*, fifteenth, were each on both lists). **The record's audit was
+again the session's finding**: six agents re-derived every changed sentence and found **71 of the 220, 52 in sentences this session
+had just written** — about one in three, above the one in four of C to H — among them the heading on `Connection.tick` twice (*the one
+call from a game thread*, then the session's own *the one periodic call*, while `resumeFlushing` flushes every player's connection each
+tick), a new parenthesis saying the server installs a protocol on a game thread from configuration on (its return to configuration
+swaps on Netty), a new `/kick` answer too narrow (a Netty-side kick stalls its event loop), and a redrawn chat figure whose band, moved
+to cover the broadcast, spread over the recipient's lane in the render. The polish: thirteen possessives on a link, seven em-dash
+chains, nine *actually*, two number devices (V9), seven sizes (V10), the thread names and *tick phase* (V7). Also: two queue-router
+bugs — a `###` heading naming its own session and part now owns its units (three of Part XIII's had sat under Part IX), and
+`--summary` files a unit naming pages in several parts under the part whose session runs last, which it had chosen by set order, so
+the by-part rows changed from run to run; the lane key's `SConn` row retired; the part's queue settled (25 struck, three shared units
+noted), so `pass5_queue.py --summary` has no Part IX row. Corrected where a correction here made them disagree: `server/server-tick`
+(the heading's link, twice), `lectures.md` (two), `entities/movement-and-collision`, `entities/damage-and-death` and
+`world/environment-attributes-and-timelines`. Left for N, O and P: the items in the ledger's *For later sessions*, among them a
+probable chat-window drift the audit found in the code and nobody has run (a client without a sender's session strips the signature,
+records nothing, and can fail its next checksum). For P: the V1 and V2 entries on these pages, and this session's diff.

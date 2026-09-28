@@ -74,6 +74,323 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session I — Part IX · Networking *(2026-09-28)*
+
+Six pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
+`the-connection`, `packets-and-stream-codecs`, `protocol-phases`, `what-the-client-is-told` and `chat-and-signing`. The prompts
+carried each page's pass 5–7 ledger entries and, by hand, the V1 and V2 entries on these pages (V2's eleven on
+`packets-and-stream-codecs` and its *For the part session (I)* lines, V1's movement-sync note), the handoffs of C (three), D (one),
+E (one), F (four), G (one) and H (two), and session A's two V6 items. The whole-part read, written down before any report was opened,
+listed 37 items; 30 became corrections below (one of them, the landing page's broadcast sentence, only at the audit), four were
+polish, two were confirmed on re-derivation (the two bundle senders, the sixteen debug subscriptions) and one, E's candidate
+sentence, was already met. The session re-derived every finding
+in `reference/26.3` before making it. The record was then audited by six agents, one per page, each told to re-derive every changed
+sentence against the tree, read its neighbours and grep the rest of the book: **the audit found 71 more errors, 52 of them in
+sentences this session had just written** (150–220). Page lines are the pages before this session's edits. Paths are under
+`reference/26.3/net/minecraft/`.
+
+**220 corrections**, 15 of them inside a figure or a caption (an item that corrects several clauses of one sentence counts once). Two figures redrawn (`the-connection` f1: the swing's answer goes to the
+players watching and never back to the swinger, the flush happens at once, and the client's `Connection` lane folded into a note;
+`chat-and-signing` f1's broadcast and its listener's order). One false heading corrected twice with its two inbound links
+(`the-connection`'s *`Connection.tick`, the one call from a game thread*, now *the tick a game thread gives the connection*), and one
+heading no link lands on (`packets-and-stream-codecs`' *the only extension point*). Three are V6 (session A's two and a third its list
+missed, `ServerboundContainerClickPacket.MAX_SLOT_COUNT`). 26.3 changes the version pass did not carry into a sentence: the passenger
+diff unfiltered (F's handoff), the precise-position flag's two new setters, the absolute-sync conjunction without the delta test, the
+item entity's precision sync, the new `UpdateInterval.NEVER` types, one accept site for a rate-kicking connection, and the connection's figure
+still drawing the swing's answer back to the swinger after V1 had corrected the sentence above it. Every correction that overturns an earlier session's listed claim says whose.
+
+### Corrections
+
+#### `networking/README`
+
+1. `networking/README`:5 — *Almost every part before this one had a single machine to describe* — only Parts II to IV argue from one machine; Parts I and V to VIII from two — *(the book against itself: `anatomy/README`:6, `blocks/README`:16–17, `entities/README`:9, `items/README`:18, `player/README`:16)*; the session's *Most parts* withdrawn by the audit (150)
+2. `networking/README`:7–8 — the symptom *the mob that freezes and then jumps a dozen blocks* — the owner page no longer states a freeze (a mob outside entity-ticking range is not ticked), and *a dozen blocks* was unverifiable; now *the world that arrives in a pause and then a flood*, which `what-the-client-is-told` answers (one chunk batch in flight until the client's first acknowledgement, ten after it); overturns pass 5 session I's symptom list — `server/level/ServerLevel.java`:419; `server/network/PlayerChunkSender.java`:39, :141
+3. `networking/README`:9–10 — *every one of those is a decision rather than a fault* — a socket fault puts *Internal Exception* on the same *Connection lost* screen; now *each of those can be a decision* — `network/Connection.java`:122
+4. `networking/README`:13–15 (the bold argument) — *a border between two machines, each of which treats what arrives from the other as a claim rather than a fact* — the client applies the server's state as verified and doubts it only in chat; now *the server treats what arrives from a client as a claim*; overturns pass 6 session I's — `client/multiplayer/ClientPacketListener.java`:1007, :1109; `server/network/ServerGamePacketListenerImpl.java`:1298, :1337, :1568
+5. `networking/README`:24 — *Nothing after those three is about the wire at all* — lecture five carries the signature cache that sends signatures as indices, lecture four the client-paced chunk loop; now *mostly about what the wire carries* (narrowed by the audit, 151) — `network/chat/MessageSignatureCache.java`:10; `client/multiplayer/ChunkBatchSizeCalculator.java`:6
+6. `networking/README`:25 — *inside the final language* — a server can send a play connection back to configuration; now *the play language* — `server/network/ServerGamePacketListenerImpl.java`:2067–2070, :2477
+7. `networking/README`:25 — *they are the part's two largest systems* — the packet classes are the largest block (the page's own :119–121), and lecture five is the part's shortest page by lines; removed *(page-internal)*
+8. `networking/README`:26–27, :106–108 — *the one protocol in the book written against a peer that lies* / *the only system in the book whose protocol is written against a lying peer rather than a malformed one* — the movement and reach checks are written against a lying client; what is chat's alone is that a player's sends are signed and checked by the server and the clients they reach; now *in which what a player sends is signed* (the audit's reach, 152) and *whose messages are signed by the player who wrote them*; overturns pass 5 session I's correction 15 — `server/network/ServerGamePacketListenerImpl.java`:1298, :1337, :1568; `network/chat/SignedMessageChain.java`:66–68; `client/multiplayer/ClientPacketListener.java`:1109
+9. `networking/README`:52–54 — *The last two are where the part spends most of its length* — 948 of the lectures' 2,469 lines (38%), 41% of the words; now *could hardly differ more* (the session's *the traffic at its two extremes* withdrawn by the audit, 153); overturns pass 5 session I's; settles pass5.md:1244 — *(the part's page lengths)*
+10. `networking/README`:63–64 — *every page here leans on it* (the once-per-frame drain) — only the connection and what the client is told do; now *the first and fourth lectures* *(the part against itself)*
+11. `networking/README`:81 — Part II's components *because a chat message is one* — a player's chat message is a `PlayerChatMessage` whose signed body is a String; what a chat line displays is a `Component`; now so — `network/chat/PlayerChatMessage.java`:18; `network/chat/SignedMessageBody.java`:18; `client/multiplayer/chat/GuiMessage.java`:11
+12. `networking/README`:118–119 — *two thousand of those lines are `Component`* — `Component` is 260 lines, the text-component classes 2,144 top-level or 3,351 with their sub-packages; the size dropped (V10) — `network/chat/Component.java`
+13. `networking/README`:121–122 against :143–144 — *catalogued rather than narrated* against *the catalogue this part narrates*; now *catalogued in packets rather than narrated one by one* *(page-internal)*
+14. `networking/README`:124 — *Three systems in those packages the book names and does not teach* — the boss-bar feed is taught, on scores, teams and stored data; now *this part names*; overtakes pass 5 session I's *sending side has no owner anywhere in the book* — *(the book against itself: `commands/scoreboard-and-data`)*
+15. `networking/README`:130–131 — *`ClientboundBossEventPacket` is the part's largest single class* — 309 lines, fifteenth of the part's 490 files (`ClientPacketListener` 3,090; among packets `ClientboundCommandsPacket` 400); now *one packet with six operations*; overturns pass 6 session I's — `network/protocol/game/ClientboundBossEventPacket.java`:118–122
+16. `networking/README`:146–147 — *the nine client handlers that never leave the network thread* — nine is the play listener's count, and one of the nine posts to the Render thread; now *the nine handlers on the client's play listener that never hop* — `client/multiplayer/ClientPacketListener.java`:1931, :1934, :2655, :2660, :2666, :2671, :2728; `client/multiplayer/ClientCommonPacketListenerImpl.java`:151, :373; `client/Minecraft.java`:1615–1618
+
+#### `networking/the-connection`
+
+17. `networking/the-connection`:9–11 — *What comes back is `ClientboundSwingAnimationPacket`*, unconditionally — the server sends it only when `LivingEntity.SwingState.startIfAble` starts a swing, which it refuses in the first half of the last one; now says so (V1's entry, its nuance) — `world/entity/LivingEntity.java`:2156–2170, :4407–4414; `server/network/ServerGamePacketListenerImpl.java`:1970–1976
+18. `networking/the-connection`:17–18 — *the value your click produced is rebuilt from bytes* — the punch's unit codec reads nothing and returns the shared instance; now *what reaches the server is what the decoder made of the bytes* — `network/protocol/game/ServerboundPunchPacket.java`:10–11; `network/codec/StreamCodec.java`:53–58
+19. `networking/the-connection`:36 (cast) — `ServerConnectionListener` on *server main* — its accept code runs on a Netty loop and its tick on the Server thread; now *Netty for the accept, Server for the tick* — `server/network/ServerConnectionListener.java`:73–93, :168–181
+20. `networking/the-connection`:58 (f1) — *one whole frame: a VarInt id, then the fields* — the punch has no fields; now *and no fields at all* — `network/protocol/game/ServerboundPunchPacket.java`:11; `network/codec/IdDispatchCodec.java`:54
+21. `networking/the-connection`:66, :68 (f1) — *the reply — written, not flushed*, then *Connection.tick flushes the channel* — the drain runs before `MinecraftServer.tickChildren` opens the flush bracket, so the answer is flushed at once; the arrow says so and the note is gone; overturns pass 7 session I's figure — `server/MinecraftServer.java`:1101, :1189, :1260; `server/network/ServerCommonPacketListenerImpl.java`:171
+22. `networking/the-connection`:69–73 (f1) and the caption :77–80 — the answer drawn back into the swinger's own client (the caption's *return leg*) — `LivingEntity.swing` from `handlePunch` sends to the tracking players only, and a tracked entity's audience never holds its own player; the answer now goes to a third box, *a player watching you*, whose `ClientPacketListener` hops and drains, and the caption says *never back to you*; the client's `Connection` lane folded into a note to keep six lanes; overturns pass 7 session I's figure and caption — `world/entity/LivingEntity.java`:2166–2170; `server/level/ChunkMap.java`:1548–1556, :1604–1605
+23. `networking/the-connection`:73 (f1) — *a frame later at the earliest* — the client drains at the top of every frame, so a frame is the longest a packet waits, not the shortest; now *by the next frame* — `client/Minecraft.java`:1233–1238
+24. `networking/the-connection`:99 — *the `PacketProcessor` closed because the game is shutting down* — only the server's is ever closed; now *the server's* — `server/MinecraftServer.java`:668–669
+25. `networking/the-connection`:108 — *a handler method must do nothing observable before that line* — the client's transfer handler sets its transferring flag before its hop, deliberately, for `ClientCommonPacketListenerImpl.shouldHandleMessage`; now *unless it means to*, with that example — `client/multiplayer/ClientCommonPacketListenerImpl.java`:146–148, :357–359
+26. `networking/the-connection`:113–115 — *the unknown-custom-payload fallback … runs on the main thread* — every clientbound payload but the brand decodes as `DiscardedPayload`, dropped on the Netty thread before the hop; now says so — `network/protocol/common/ClientboundCustomPayloadPacket.java`:18–24; `client/multiplayer/ClientCommonPacketListenerImpl.java`:164–168
+27. `networking/the-connection`:157 — *five of the nine have an outbound mirror and the rest are inbound-only* — the table beside it fills six rows; now six, and three inbound-only; overturns pass 7 session I's — *(page-internal)*; `network/Connection.java`:248, :493, :509, :555, :599
+28. `networking/the-connection`:185–186 — *a bare `UnconfiguredPipelineHandler`* — the placeholders are its nested `.Inbound` and `.Outbound`; now names both — `network/Connection.java`:509
+29. `networking/the-connection`:188–191 — V6: `HandlerNames` *nothing references it … every name above is a string literal … drifted … one for a local-pipeline-only debug handler* — its sixteen names are compile-time constants javac writes in, so the decompile cannot say whether they are read, and *latency* names a real handler; now *holds most of those names as constants, the local pipeline's latency among them, and none for hackfix* (session A's V6 list) — `network/HandlerNames.java`:5–20; `server/network/ServerConnectionListener.java`:116–117
+30. `networking/the-connection`:199–200 — *the server property of the same name* — the key is *use-native-transport* — `server/dedicated/DedicatedServerProperties.java`:144
+31. `networking/the-connection`:201–204 — *`ConnectScreen` and the server list — `ServerList`, a saved file of `ServerData` entries — ask for a group* — the asker is the multiplayer screen's `ServerSelectionList`, and `RealmsConnect` asks too; overturns pass 5 session I's clause — `client/gui/screens/multiplayer/ServerSelectionList.java`:231; `realms/RealmsConnect.java`:59; `client/gui/screens/ConnectScreen.java`:127
+32. `networking/the-connection`:223–224 — `LocalFrameDecoder` and `LocalFrameEncoder` doing *`HiddenByteBuf.pack` and `HiddenByteBuf.unpack`*, the pair crossed — the decoder unpacks, the encoder packs — `network/LocalFrameDecoder.java`:11; `network/LocalFrameEncoder.java`:12
+33. `networking/the-connection`:279 (heading) — *`Connection.tick`, the one call from a game thread* — game threads also send, disconnect, flush and handle the disconnection; the session's *the one periodic call* was still too wide (158); now *the tick a game thread gives the connection*, its two inbound links (`networking/protocol-phases`, `server/server-tick`) repointed each time — `server/network/ServerCommonPacketListenerImpl.java`:159, :191–199; `server/MinecraftServer.java`:1256–1260
+34. `networking/the-connection`:294–295 — *every state transition and the encryption setup happen on the event loop* — the login steps on its authenticator thread and in its tick on the Server thread; now *every protocol swap* (a handler makes, 166) — `server/network/ServerLoginPacketListenerImpl.java`:76–79, :192–230
+35. `networking/the-connection`:304–310 — *The client has three* callers, `Minecraft.pendingConnection` *the one that drives a login* — six call sites; `Minecraft.pendingConnection` is the singleplayer world's only, and the client's login listener is not tickable; now six, all at tick rate — `client/gui/screens/ConnectScreen.java`:213; `client/gui/screens/multiplayer/ServerReconfigScreen.java`:60; `realms/RealmsConnect.java`:123; `client/Minecraft.java`:2109, :2324, :2497; `client/multiplayer/MultiPlayerGameMode.java`:328; `client/multiplayer/ServerStatusPinger.java`:230; `client/multiplayer/ClientHandshakePacketListenerImpl.java`:58
+36. `networking/the-connection`:314 — *catches a throw out of `Connection.tick`* — the catch takes an `Exception`; an error passes through (C's handoff) — `server/network/ServerConnectionListener.java`:182
+37. `networking/the-connection`:334–335 — *The pipeline is reconfigured by writing through it* — compression and encryption edit it directly; only the codec swap writes through; now *The codecs are swapped by writing through the pipeline* — `network/Connection.java`:233, :254, :554–555, :590, :599
+38. `networking/the-connection`:366 — *the game thread installs the new protocol* — in the early phases the terminal packet's handler installs it on the event loop; now says who and where (widened by the audit, 168) — `server/network/ServerHandshakePacketListenerImpl.java`:36–74; `server/network/ServerLoginPacketListenerImpl.java`:261–267
+39. `networking/the-connection`:392–395 — *the server validates … and the client does not; the frame ceilings the two handlers enforce* — the 8 MiB ceiling sits behind the same switch, off on the client, so the client checks neither — `network/CompressionDecoder.java`:32–40; `client/multiplayer/ClientHandshakePacketListenerImpl.java`:211
+40. `networking/the-connection`:421–423 — `Connection.setReadOnly` *on both branches the moment the write is handed over* — the receiving branch writes nothing and calls it after `Connection.disconnect`; now scoped — `network/Connection.java`:132–144, :436
+41. `networking/the-connection`:425–426 — a double fault *skips all of that* — it still asks for the disconnection details; it skips the message — `network/Connection.java`:123–130, :145–147
+42. `networking/the-connection`:430–434 — `Connection.handleDisconnection` *runs from `Connection.tick`*, *exactly once* — the tickers call it when they find the connection dead, a disconnect calls it straight after, and its guard makes it at most once — `network/Connection.java`:393–395, :613–631; `server/network/ServerConnectionListener.java`:195–197; `server/network/ServerCommonPacketListenerImpl.java`:199
+43. `networking/the-connection`:442–443 — a wrong-id answer *takes the same branch* — a separate check with the same message — `server/network/ServerCommonPacketListenerImpl.java`:84–93
+44. `networking/the-connection`:452–455 — *the only one of the three kicks a tick can deliver that the host is spared* — the host is spared all three; now *the one kick of the game listener's three that could reach the host*, as `server/players-and-sessions` has it (C's handoff) — `server/MinecraftServer.java`:1505–1507; `server/network/ServerGamePacketListenerImpl.java`:320, :1348
+45. `networking/the-connection`:461–462 — *backpressure is Netty's water marks* — nothing in the game sets one or asks whether a channel is writable; now *nothing in the game asks whether that buffer is full* *(no water mark or writability test anywhere in the tree)*
+46. `networking/the-connection`:466–471 — the kick answer: *What stalls the kicking tick is … `MinecraftServer.executeBlocking` running `Connection.handleDisconnection`* — `/kick` runs on the Server thread, where `BlockableEventLoop.executeBlocking` runs in place and `Connection.handleDisconnection` returns at once while the channel is open; now says what does stall (widened by the audit, 169) — `util/thread/BlockableEventLoop.java`:84–90; `network/Connection.java`:436, :614; `server/network/ServerLoginPacketListenerImpl.java`:96–101
+47. `networking/the-connection`:476–477 — *the two accept sites build one* — only the socket site builds a `RateKickingConnection`; the in-memory one never does (a 26.3 change: 26.2's second site is gone) — `server/network/ServerConnectionListener.java`:87–88, :109
+48. `networking/the-connection`:509–510 — `ProtocolSwapHandler` *the phase change as a pair of handlers* — an interface of two static helpers the codecs call; now so — `network/ProtocolSwapHandler.java`:6–23; `network/PacketDecoder.java`:51; `network/PacketEncoder.java`:41
+
+#### `networking/packets-and-stream-codecs`
+
+49. `networking/packets-and-stream-codecs`:13–14 — *Swap two of those lines and the whole protocol renumbers* — a swap exchanges two ids; inserting or removing a line renumbers everything after it — `network/codec/IdDispatchCodec.java`:110–112
+50. `networking/packets-and-stream-codecs`:14 — *a handful of packet types are registered into several phases* — twenty-four (22 in two phases, the cookie pair in three); now *two dozen* (V2's handoff) — the nine templates' `addPacket` chains
+51. `networking/packets-and-stream-codecs`:25 (cast) — *every packet codec is built from* `ByteBufCodecs` — the old shape writes its own buffer; now *the packet codecs* — `network/protocol/game/ClientboundSetHealthPacket.java`:10
+52. `networking/packets-and-stream-codecs`:43 (the table) — *True for the chat-shaped packets* — five, one the tag query, which the page's own :52 says is not chat; now *five packets* *(page-internal)*
+53. `networking/packets-and-stream-codecs`:58 — `ClientboundTagQueryPacket` *answers `/data get`* — it answers the debug key that copies a targeted block or entity with its data; overturns pass 6 session I's — `server/network/ServerGamePacketListenerImpl.java`:1174, :1218; `client/KeyboardHandler.java`:373–407
+54. `networking/packets-and-stream-codecs`:73, :77–78 — *the play pair is four hundred lines of signatures*; *Nothing in them decides anything* — 394 lines, 186 method declarations (a size, now *nearly two hundred methods*); `ServerPacketListener` sets the error policy and each phase interface names its protocol for `Connection.validateListener` (the roots' direction added by the audit, 171); overturns pass 5 session I's — `network/protocol/game/ServerPacketListener.java`:14–16; `network/Connection.java`:185–199
+55. `networking/packets-and-stream-codecs`:99–100 — *`CustomPacketPayload` is its one other client* — `DisplayInfo` and `TrackedWaypoint` call `StreamCodec.ofMember` too (V2's handoff) — `advancements/DisplayInfo.java`:19; `world/waypoints/TrackedWaypoint.java`:25
+56. `networking/packets-and-stream-codecs`:101 — *a singleton whose codec is `StreamCodec.unit`, fifteen of them* — fourteen singletons and one empty record, `ServerboundPlayerLoadedPacket`, sent fresh (the session's widening to *a packet* let the bundle delimiter in, 172) — `network/protocol/game/ServerboundPlayerLoadedPacket.java`:10; `client/multiplayer/ClientPacketListener.java`:2994
+57. `networking/packets-and-stream-codecs`:148–149 — *An under-read corrupts nothing visible until much later* — rests on Netty's decoder, which the tree does not hold; now *The check sits where the frame's length is still known* — `network/PacketDecoder.java`:24, :41–44
+58. `networking/packets-and-stream-codecs`:202–204 — *its six NBT entry points all pass `NbtOps`*, *almost always means a compound tag* — three reach the combinator and three read registries on their own over a registry view of `NbtOps` (worded by the audit, 173); `tagCodec` carries any tag; now *an NBT tag* — `network/codec/ByteBufCodecs.java`:341–361, :375–439
+59. `networking/packets-and-stream-codecs`:211–214 — the JSON packets *read … one before a connection exists at all … the reason to spend a format nothing else on the wire uses* — the status ping is a `Connection`, and the reason is not in the code; now *a client that may speak another version … both write against no registries*; overturns pass 6 session I's inference — `client/multiplayer/ServerStatusPinger.java`:66; `network/protocol/status/ClientboundStatusResponsePacket.java`:16; `network/protocol/login/ClientboundLoginDisconnectPacket.java`:18
+60. `networking/packets-and-stream-codecs`:241–242 — *a hundred and forty-six readers and writers*, a count with two readings — every overload and static twin (98 by name); now says so (V3; worded by the audit, 174) — `network/FriendlyByteBuf.java`
+61. `networking/packets-and-stream-codecs`:253–254 — *item number 37 is only an item relative to the registry set the server sent* — the item registry is never sent; enchantments are; now *enchantment number 3* — `resources/RegistryDataLoader.java`:101
+62. `networking/packets-and-stream-codecs`:256–260 — *Every codec that writes a registry id needs one* — the trusted bridge was missing (V2's handoff), and `ByteBufCodecs.idMapper` needs none; now both said (the lead-in worded by the audit, 175) — `network/codec/ByteBufCodecs.java`:409–411; `core/particles/BlockParticleOption.java`:27
+63. `networking/packets-and-stream-codecs`:280 — `LpVec3`, *the quantised position* — mostly velocities; now so — `network/protocol/game/ClientboundAddEntityPacket.java`:65, :79; `network/protocol/game/ClientboundSetEntityMotionPacket.java`:13
+64. `networking/packets-and-stream-codecs`:295 — *knows everything except which buffer type* — the context protocol also lacks its context — `network/protocol/UnboundProtocol.java`:10
+65. `networking/packets-and-stream-codecs`:301–302 — *literally its position in the `ProtocolInfoBuilder.addPacket` chain* — in clientbound play the bundle delimiter takes id 0; now counted — `network/protocol/ProtocolInfoBuilder.java`:41–48; `network/protocol/game/GameProtocols.java`:68
+66. `networking/packets-and-stream-codecs`:425–426 — a `HashedStack` *a hash per component* — the item and count travel too (G's handoff; *per added component* and the removed set by the audit, 176) — `network/HashedStack.java`:24; `network/HashedPatchMap.java`:17
+67. `networking/packets-and-stream-codecs`:436 (the table) — *compressed frame 2 MiB, `CompressionDecoder.MAXIMUM_COMPRESSED_LENGTH`* — the decoder compares no compressed length; the bound is the three-byte frame prefix — `network/Varint21FrameDecoder.java`:25–39; `network/CompressionDecoder.java`:26–48
+68. `networking/packets-and-stream-codecs`:437 (the table) — *decompressed frame 8 MiB* — every sender refuses above it, and on receipt only the server checks — `network/CompressionEncoder.java`:22–23; `network/CompressionDecoder.java`:32–39
+69. `networking/packets-and-stream-codecs`:443 (the table) — V6: `ServerboundContainerClickPacket.MAX_SLOT_COUNT` *(named, but the codec passes the literal)* — a `private static final int` javac inlines; the parenthesis cut (a V6 sentence session A's list missed) — `network/protocol/game/ServerboundContainerClickPacket.java`:16–17
+70. `networking/packets-and-stream-codecs`:449, :541 — *The one seam is `CustomPacketPayload`*, *the one seam a modded packet can go through* — the login phase has its own (the page's :462); now *the seam after login* *(page-internal)*
+71. `networking/packets-and-stream-codecs`:452–453 — `CustomPacketPayload.FallbackProvider` *the codec handed to the dispatch as the map miss* — a factory the dispatch asks for an unregistered id — `network/protocol/common/custom/CustomPacketPayload.java`:31–35, :60–63
+72. `networking/packets-and-stream-codecs`:465–466 — *answers nothing, which is why an unexpected answer is a disconnect* — the client answers every query with a null payload; any answer disconnects because vanilla never asks — `client/multiplayer/ClientHandshakePacketListenerImpl.java`:219; `server/network/ServerLoginPacketListenerImpl.java`:256–257
+73. `networking/packets-and-stream-codecs`:472–473 — *the one place in the codec layer where an error is a decision* — three skip paths (the skippable encoder path, the creative-slot modifier, the command suggestion's chat-only codec); overturns pass 6 session I's — `network/PacketEncoder.java`:35–36; `network/protocol/game/GameProtocols.java`:47, :55; `network/protocol/game/ServerboundCommandSuggestionPacket.java`:14–22
+74. `networking/packets-and-stream-codecs`:477–479 — the drain *only satisfies Netty's bookkeeping* — rests on Netty; the clause cut; overturns pass 6 session I's — `network/PacketDecoder.java`:30–35
+75. `networking/packets-and-stream-codecs`:493–494, :501–502 — *two packets prove it*; *written differently depending on whether a `RegistryAccess` exists* — `ServerboundCommandSuggestionPacket` is a third, and the custom payload's two codecs write the same bytes; now three, and only the dialog's differ; overturns pass 6 session I's — `network/protocol/game/ServerboundCommandSuggestionPacket.java`:13–14; `network/protocol/common/ClientboundCustomPayloadPacket.java`:18–24; `server/dialog/Dialog.java`:26–27
+
+#### `networking/protocol-phases`
+
+76. `networking/protocol-phases`:5 — *over the next second* — the join waits on chunk loading, and the page's own :20 says *seconds*; now *the next few seconds* *(page-internal)*
+77. `networking/protocol-phases`:10 — *each hands over to the next by a packet marked terminal* — status hands over to nothing; now *each that hands over to another* — `server/network/ServerStatusPacketListenerImpl.java`:45–46
+78. `networking/protocol-phases`:22 — *by the time the object is built it is already encoding play packets to it* — the outbound codec is play before the player exists, but no play packet goes before it on the success path; now *the server's side already encodes play* — `server/network/ServerConfigurationPacketListenerImpl.java`:169, :186; `server/players/PlayerList.java`:160, :167
+79. `networking/protocol-phases`:33 (cast) — the client row's *Netty, and the client's main thread for the last step* — the session call runs on the IO pool, and the configuration listener hops for five handlers; now *Netty, the IO pool for the session call, and Render for most of the second*; overturns pass 6 session I's cell — `client/multiplayer/ClientHandshakePacketListenerImpl.java`:130; `client/multiplayer/ClientConfigurationPacketListenerImpl.java`:83, :89, :100, :147, :175
+80. `networking/protocol-phases`:35 (cast) — `PrepareSpawnTask` on *Server* — accepting a code of conduct does not hop, so the next task starts on Netty (C's handoff; *straight after* by the audit, 181) — `server/network/ServerConfigurationPacketListenerImpl.java`:161–163, :226, :236–246
+81. `networking/protocol-phases`:52–55 (f1 caption), :60–62 — *each labelled arrow carrying the packet*; *configuration the only phase a connection can enter twice*; *Four of the remaining six are the two handshakes that bracket configuration* — three labels carry no packet; play is entered again after a reconfigure; all six pair up into three that enter or leave configuration; now *each arrow between two of them* and *three pairs* (the audit's *entered from two others*, 182) — `server/network/ServerConfigurationPacketListenerImpl.java`:104–108; `server/network/config/JoinWorldTask.java`:16
+82. `networking/protocol-phases`:88–91 — *its two templates are built per connection … the only transition … that changes what a packet number means* — the templates are bound per connection, and every transition installs its own id table; what only configuration-to-play does is tie the codecs to a set of registries; overturns pass 5 session I's — `network/protocol/game/GameProtocols.java`:62, :67; `server/network/ServerConfigurationPacketListenerImpl.java`:169; `server/players/PlayerList.java`:160
+83. `networking/protocol-phases`:93–95 — the common base *holds everything legal in both* — each subclass handles the client information; now *nearly everything* with the exception named — `server/network/ServerConfigurationPacketListenerImpl.java`:136; `server/network/ServerGamePacketListenerImpl.java`:2408
+84. `networking/protocol-phases`:116–118 — V6 the other way: *below protocol 754 — a literal in the source, 1.16.4's number and the oldest that can render a modern kick screen* — the compiled comparison cannot show what the source wrote, nothing in the tree maps 754 to a release, and both refusal keys read the same in English; the aside cut (session A's V6 list; withdraws pass 6 session I's 1.16.4 as unverifiable) — `server/network/ServerHandshakePacketListenerImpl.java`:65–68
+85. `networking/protocol-phases`:119–121 — *The two refusals on the login path first install the login clientbound protocol, purely so they can send* — `beginLogin` installs it for every login, and the transfer refusal is a third that installs it purely to send (the audit's *of the handshake's*, 183) — `server/network/ServerHandshakePacketListenerImpl.java`:44–49, :61–62
+86. `networking/protocol-phases`:163 (f2 note) — *every other is a Netty handler's* — `AUTHENTICATING → VERIFYING` is the authenticator thread's; now says so — `server/network/ServerLoginPacketListenerImpl.java`:201, :210–217
+87. `networking/protocol-phases`:175 — *the packet handlers run on the Netty thread and set the state* — the authenticator thread writes it too; now said — `server/network/ServerLoginPacketListenerImpl.java`:217, :220, :228
+88. `networking/protocol-phases`:178 — `Connection.tick`, *the one call a connection gets from a game thread* — as `the-connection`'s heading (33); now *the tick a game thread gives a connection*, the link repointed — `server/network/ServerConfigurationPacketListenerImpl.java`:169
+89. `networking/protocol-phases`:184 — *a transition out of every state above* — not from `ACCEPTED`, whose listener is no longer ticked; now *but the last* — `server/network/ServerLoginPacketListenerImpl.java`:267, :269; `network/Connection.java`:385–390
+90. `networking/protocol-phases`:186 — *The three states the tick moves through* — the tick sets neither `AUTHENTICATING` nor `ACCEPTED`; now *The diagram names three states the paragraphs below do not* — `server/network/ServerLoginPacketListenerImpl.java`:163, :172, :192, :269
+91. `networking/protocol-phases`:237 — *reports login activity and on success stores the profile* — activity is reported only on success — `server/network/ServerLoginPacketListenerImpl.java`:212–217
+92. `networking/protocol-phases`:253 — *until the old connection has actually died* — until the old player has left the player list — `server/network/ServerLoginPacketListenerImpl.java`:81, :107–108
+93. `networking/protocol-phases`:270–275 — the login's disconnects, *a full whitelist-only server* — the whitelist and a full server are separate, a refused transfer was missing, and every custom-query answer disconnects (the cookie answer and a malformed packet added by the audit, 184); the parenthesis its own sentence (pass5.md:5986) — `server/players/PlayerList.java`:354–375; `server/network/ServerHandshakePacketListenerImpl.java`:44–49; `server/network/ServerLoginPacketListenerImpl.java`:256–258
+94. `networking/protocol-phases`:284 (f4), :298, :305 — *three packets* before the queue — the server-links packet goes only when there are links; now *up to three*; overturns pass 7 session I's figure assertion — `server/network/ServerConfigurationPacketListenerImpl.java`:85, :88–90, :97
+95. `networking/protocol-phases`:332–333 — the resolve *the last thing before the `ClientPacketListener` is constructed* — the local server's registry filter runs between; now *the handler that goes on to construct it* — `client/multiplayer/ClientConfigurationPacketListenerImpl.java`:176–185
+96. `networking/protocol-phases`:349–353 — *the player is born in neither*; `Preparing` *finds somewhere to stand*; `Ready` *does nothing at all until it is asked* — the search is started by the task's start, `Ready` re-arms the ticket every tick, and `Ready.spawn` builds the player (the bold and the search's population worded by the audit, 185) — `server/network/config/PrepareSpawnTask.java`:68–70, :178–196, :221–229
+97. `networking/protocol-phases`:360 — the finish handler *swap[s] … run[s] the admission gate a second time* — between the two it refuses a duplicate; now said — `server/network/ServerConfigurationPacketListenerImpl.java`:174–177
+98. `networking/protocol-phases`:370–379 — configuration's disconnects; **Notably not a deadline**; *a slow login is the client's fault* — the list lacked a declined required pack and the duplicate; the terminal packet closes the listener, which stops keep-alives and times out fifteen seconds later; login's six hundred ticks run through the server's own session call too; the list, the bold and the reading corrected (the gate, the cookie and the host's exemption by the audit, 186, 187); overturns pass 6 session I's *configuration has no deadline* in part — `server/network/ServerCommonPacketListenerImpl.java`:111–114, :127–151, :167–168; `server/network/ServerLoginPacketListenerImpl.java`:201–252
+99. `networking/protocol-phases`:383–386 — *installed from two different places on each side* — the client's is one handler; now *in two halves on each side* — `client/multiplayer/ClientConfigurationPacketListenerImpl.java`:185–187
+100. `networking/protocol-phases`:405–406 — *reachable in vanilla only from `DebugConfigCommand`* — registered only under the debug properties (and, the audit found, only on a dedicated server, 189) — `commands/Commands.java`:283, :291; `SharedConstants.java`:51, :103
+101. `networking/protocol-phases`:425 (blockquote) — *the handshake and login listeners run to completion on the Netty thread* — their handlers do; the login's work runs from its tick — `server/network/ServerLoginPacketListenerImpl.java`:76–89
+102. `networking/protocol-phases`:431, :434–435 — *in the order a login meets them*; *the handlers above it, and the volatile state field between them* — the client's listener comes before configuration, and the file has the state field above `tick` and the handlers below — `server/network/ServerLoginPacketListenerImpl.java`:58, :76, :123
+103. `networking/protocol-phases`:448 — `Crypt`, *the whole of the game's cryptography* — `Signer`, `SignatureValidator` and the cipher handlers are outside it (and the audit found the session's *the login's keys* too narrow, 190) — `util/Signer.java`:9; `util/SignatureValidator.java`:15; `network/CipherBase.java`:8
+
+#### `networking/what-the-client-is-told`
+
+104. `networking/what-the-client-is-told`:5–13 (the hook) — *inside that tick the server decides*; *stale by at least the entity's update interval … stale by no bounded amount*; *Between packets every viewer moves the creeper itself … dead reckoning* — the tracking sweep runs before the entity loop, so a section change is seen by the next tick's; the base lags by one tick to an interval; a creeper is `MoveSimulationType.AUTHORITATIVE_SIDE`, so no client moves it by its velocity, and each relative move is decoded against the client's copy of the base; the hook rewritten on that, *dead-reckoning* gone from the cast and *Where to look* (three clauses narrowed by the audit, 191, 192, 193); overturns pass 6 session I's gloss and pass 5 session I's *dead-reckoning base* — `server/level/ServerChunkCache.java`:333–336; `server/level/ServerLevel.java`:387, :412–433; `world/entity/Entity.java`:3984–3999; `world/entity/LivingEntity.java`:3217, :3317–3318; `client/multiplayer/ClientPacketListener.java`:774–783
+105. `networking/what-the-client-is-told`:23, :26 (cast) — `ChunkMap` *owns both maps*; `ChunkTrackingView` *which chunks a player has been sent* — the view lives on the player and is what it is owed; now so — `server/level/ChunkMap.java`:149, :216–218; `server/level/ServerPlayer.java`:269
+106. `networking/what-the-client-is-told`:48 (f1), :52–56 (caption) — node *one to three packets, and a new baseline*; caption *the two ways out that are not a packet*, three sentences — an open gate 3 sends zero to five, the base moving only on a position packet, so there is a third way out; now *zero to five packets* and a two-sentence caption; overturns pass 7 session I's figure — `server/level/ServerEntity.java`:221, :223, :229, :231–233, :250, :416, :425
+107. `networking/what-the-client-is-told`:70–71 — `ChunkMap.move` *the moment a player crosses a boundary* — it re-tests every tracked entity against the player on every move — `server/level/ChunkMap.java`:1171–1209
+108. `networking/what-the-client-is-told`:82 — *the whole vehicle stack* — the entity and what rides it, never its vehicle — `server/level/ChunkMap.java`:1634–1647
+109. `networking/what-the-client-is-told`:93–94 — the spectator override *to make spectators see only what they are spectating* — it keeps a spectator from non-spectators, and from a fellow spectator looking through something else's eyes — `server/level/ServerPlayer.java`:1356–1357
+110. `networking/what-the-client-is-told`:101–105 — *three verbs and not one* — the paragraph explains the self verb, and `ServerEntity` no longer calls the filtered one — `server/level/ServerEntity.java`:104–106, :433–440
+111. `networking/what-the-client-is-told`:146–148 — *bypassing `ServerEntity` entirely — three of the four `BlockAttachedEntity` subclasses* — they bypass its baseline, and it is every concrete one but the cushion — `server/level/ServerEntity.java`:337; `world/entity/decoration/Cushion.java`:43
+112. `networking/what-the-client-is-told`:162 — *a couple of dozen classes* — twenty-one files besides `Entity`; now counted (the audit's *over twenty*, 194)
+113. `networking/what-the-client-is-told`:170–171 — *thirty types override it* — thirty give another number and eight never open (F's handoff) — `world/entity/EntityTypes.java`; `server/level/ChunkMap.java`:1287
+114. `networking/what-the-client-is-told`:186–190 — *a far-off mob can freeze … and then correct itself in one jump* — a mob outside entity-ticking range is not ticked, by gate 2's own test (the audit's *itself* and *usually*, 195) — `server/level/ServerLevel.java`:419; `server/level/ChunkMap.java`:1366
+115. `networking/what-the-client-is-told`:194–196, :200–203 (the table) — *the rows are in the source's own order … a single conjunction* — 26.3's conjunction is precision, the teleport count, riding and the ground flag; the delta test runs after it and the passenger branch before; rows reordered, the lead-in rewritten (its four terms by the audit, 196); overturns pass 6 session I's (true of 26.2) — `server/level/ServerEntity.java`:152, :266–270
+116. `networking/what-the-client-is-told`:201 (the table) — the dropped item missing — an item colliding with a delta the encoding would round forces a full sync (V1's note) — `server/level/ServerEntity.java`:270, :281–293
+117. `networking/what-the-client-is-told`:203, :207 (the table) — *every landing and every step off a ledge*; *the next call that opens gate 3* for a passenger — only a flip a gated call sees; the first gated call after it dismounts — `server/level/ServerEntity.java`:152, :162, :266, :275
+118. `networking/what-the-client-is-told`:210–213 — *shearing a sheep sends that sheep's position delta*; *three sections down* — it runs the position branch; one section down — `server/level/ServerEntity.java`:189–192
+119. `networking/what-the-client-is-told`:219–222, :227–228 — the base *advances only when something was actually sent*; the minecart's *list of steps rather than one position* — a passenger and a new-behaviour minecart re-set the server's base without a send, and 26.3's movement packets carry stepped paths too (the base's sentence reworded by the audit, 199) — `server/level/ServerEntity.java`:160, :181, :305, :314
+120. `networking/what-the-client-is-told`:230–233 — *exactly one caller … a happy ghast … by nothing else* — three setters: the ghast, a falling block and lit TNT (26.2 had the ghast alone; *while touching a block* by the audit, 201) — `world/entity/animal/happyghast/HappyGhast.java`:448; `world/entity/item/FallingBlockEntity.java`:276; `world/entity/item/PrimedTnt.java`:127
+121. `networking/what-the-client-is-told`:256–263 — the motion packet *to the trackers and the entity itself*; the passenger diff *filtered* — to itself only for a player; unfiltered in 26.3 (F's handoffs) — `server/level/ChunkMap.java`:1560–1566; `server/level/ServerEntity.java`:104–106
+122. `networking/what-the-client-is-told`:263–265 — the item frame *iterates every player … to flush its synched data* — it flushes once, and walks the players only with a map that has saved data (F's handoff) — `server/level/ServerEntity.java`:111–136
+123. `networking/what-the-client-is-told`:331–332 — *already measured* — half measurement — `client/multiplayer/ChunkBatchSizeCalculator.java`:20–28
+124. `networking/what-the-client-is-told`:343–344 — *carries only* — each section's counts too — `world/level/chunk/LevelChunkSection.java`:193–198
+125. `networking/what-the-client-is-told`:358–364 — *only on a tick that ticks chunks at all*; *this tick's block changes and the previous tick's entity-driven ones* — a frozen tick still broadcasts (D's handoff); block events change blocks after it too (widened by the audit, 204); overturns pass 5 session I's gloss — `server/level/ServerChunkCache.java`:344–358; `server/level/ServerLevel.java`:387–391
+126. `networking/what-the-client-is-told`:366, :370, :375–376 — *strictly smaller*; *the one feed on this page*; *at most one packet per section* — a subset; the level feeds have radii of their own; in this flush — `server/level/ChunkMap.java`:220–233; `server/level/ServerLevel.java`:1103–1109; `world/entity/item/FallingBlockEntity.java`:209
+127. `networking/what-the-client-is-told`:419–420 — clock state *only when a clock is changed or a player joins* — also on respawn, a dimension change and the time rule's change; overturns pass 5 session D's — `server/players/PlayerList.java`:458, :716; `server/level/ServerPlayer.java`:1320; `server/MinecraftServer.java`:2404–2405
+128. `networking/what-the-client-is-told`:436 — the debug feed *the only exception to the next section* — the table has others; overturns pass 6 session I's *(page-internal)*
+129. `networking/what-the-client-is-told`:448, :453–455, :457 (the table) — *all AI*; the block-entity row; *raids and the dragon fight*; game rules *only on request*; *the disc* — the aggressive flag, an opened container, the boss bars, three pushed rules, and a view that is neither disc nor square (more exceptions by the audit, 205, 206, 207) — `world/entity/Mob.java`:1434–1437; `world/entity/raid/Raid.java`:135; `server/players/PlayerList.java`:162–165
+130. `networking/what-the-client-is-told`:486–490 (blockquote) — *`PlayerChunkSender` is in `server/network`, not `server/level`* — already so in 1.21.11; dropped, and the passenger drift added (1.21.11 filtered it) — the 1.21.11 tree's `server/network/PlayerChunkSender.java` and `server/level/ServerEntity.java`:96–98
+131. `networking/what-the-client-is-told`:494–496, :501, :509, :511 (*Where to look*) — *the three gates … all visible in it*; *four lines*; *one packet per position*; `VecDeltaCodec` *forty lines* — gates 1 and 2 live in `ChunkMap`, the conjunction in `ServerEntity.createMovePacket`; one state per position; the sizes dropped (146 lines) — `server/level/ChunkMap.java`:1366, :1605–1628; `server/level/ServerEntity.java`:265–279
+
+#### `networking/chat-and-signing`
+
+132. `networking/chat-and-signing`:8, :12 — *the twenty messages the player most recently saw*; *every receiving client verifies* — the window is twenty signed slots, an unshown one empty; only a client holding the sender's session verifies (the audit's *signed ones it was sent*, 209) — `network/chat/LastSeenMessagesTracker.java`:20–25; `network/chat/SignedMessageValidator.java`:13–17
+133. `networking/chat-and-signing`:25 (cast) — `LastSeenMessagesValidator` on *Netty* — the Server thread takes the same lock for the pending count — `server/network/ServerGamePacketListenerImpl.java`:2044–2050
+134. `networking/chat-and-signing`:37 — *the one packet … a recipient checks a signature over* — a client also checks Mojang's signatures on skins and session keys; now *a player's signature* — `client/multiplayer/PlayerInfo.java`:34–38; `client/multiplayer/ClientPacketListener.java`:2196
+135. `networking/chat-and-signing`:81, :86, :88 (f1) — the band's *one task*; *signatures packed to cache ids*; *trust level, blocklist, delay queue* — with a real filter the continuation is a second task; only cached last-seen signatures go as ids; the delay queue comes first (the arrow moved into the band and back out again by the audit, 211) — `util/FutureChain.java`:23–29; `network/chat/MessageSignature.java`:82–85; `client/multiplayer/chat/ChatListener.java`:89–95, :104, :166–170
+136. `networking/chat-and-signing`:118 — *every message … passes through* the filter — a command message its sender did not sign skips it — `commands/arguments/MessageArgument.java`:80–84
+137. `networking/chat-and-signing`:123 — the citation *the Server thread wakes up* — the filter is built on *ServerMain* before that thread; repointed — `server/dedicated/DedicatedServer.java`:99
+138. `networking/chat-and-signing`:136–144 — *gated in three places … `ServerPlayer.shouldFilterMessageTo` inside it*; *offers it … without testing anything*; `OutgoingChatMessage.Player` *telling the sender* — `PlayerList` asks the filter question per player, and tells the sender once after its loop — `server/players/PlayerList.java`:815–829; `network/chat/OutgoingChatMessage.java`:31–37
+139. `networking/chat-and-signing`:165 (f2 caption) — *the one stage on the Server thread* — two nodes are blue *(page-internal)*
+140. `networking/chat-and-signing`:178, :386, :390–391 — *Only a new session key … restores it*; *nothing short of a key rotation*; *survives death, dimension changes*; *Only `handleChatSessionUpdate` installs a fresh decoder* — a new connection clears it too; a portal keeps the player object; within one connection and only for a different key — `server/players/PlayerList.java`:158; `server/level/ServerPlayer.java`:1271–1329; `server/network/ServerGamePacketListenerImpl.java`:302, :2194, :2203, :2453
+141. `networking/chat-and-signing`:203, :210 — *The order of the rows is the order the checks run in*; *everything from the sixth row down happens inside the task* — rows 1–9 are a chat line's order; the rest are other paths (the rate check's place by the audit, 212) — `server/network/ServerGamePacketListenerImpl.java`:1934–1935, :2038–2053, :2448
+142. `networking/chat-and-signing`:220 — *that flag selects the decoder used before a session exists … two rows down* — the same decoder is always installed and the flag decides what it does; six rows down; overturns pass 6 session I's row — `network/chat/SignedMessageChain.java`:115–121
+143. `networking/chat-and-signing`:227 — the rate check exempting *operators and the singleplayer host* — an integrated server's threshold is zero, so it throttles nobody — `client/server/IntegratedServer.java`:223–230; `util/TickThrottler.java`:25–27
+144. `networking/chat-and-signing`:248–255 — the window *sent as `MessageSignature.Packed` indices*; *If those caches ever diverge* — the client sends a bitset over the server's mirror, which the validator checks; the cache carries signatures on to other clients (the Packed entries worded by the audit, 214) — `network/chat/LastSeenMessagesValidator.java`:34–80; `client/multiplayer/ClientPacketListener.java`:1082–1086
+145. `networking/chat-and-signing`:301 — *acknowledges the message back to the server whether or not it is drawn* — it records it, an undrawn one as an empty slot, and sends nothing until the offset passes 64 — `network/chat/LastSeenMessagesTracker.java`:20–25; `client/multiplayer/chat/ChatListener.java`:104–110
+146. `networking/chat-and-signing`:310, :373 — the unsigned copy *for any command message carrying a selector*; the font check *alive … on a command message that carried a selector* — only when the selector expanded, and that copy fails the *contains* test first — `commands/arguments/MessageArgument.java`:101, :105–129; `client/multiplayer/chat/ChatTrustLevel.java`:28–34
+147. `networking/chat-and-signing`:359 — *A command message that ends up with no signed argument is broadcast as a `ClientboundDisguisedChatPacket`* — the disguised packet is the plain command packet's (where secure profiles are not enforced, by the audit, 215) — `commands/arguments/MessageArgument.java`:50–56; `network/chat/OutgoingChatMessage.java`:11–12
+148. `networking/chat-and-signing`:398 — *that player's lines arrive unsigned* — they arrive signed, and this client strips the signature (its tag attributed by the audit, 217) — `network/chat/SignedMessageValidator.java`:13
+149. `networking/chat-and-signing`:416–418 — `LastSeenMessagesValidator` *sixty lines*, `SignedMessageChain` *shorter still* — 89 and 129 lines; the sizes gone
+
+#### Found by the record's audit
+
+Each item names the sentence as the session left it; *(own)* marks a sentence the session had just written.
+
+150. `networking/README`:5 *(own)* — *Most parts before this one had a single machine to describe* — three of the eight; now *Parts II to IV had a single machine to describe, and Parts V to VIII compared two* *(the book against itself)*
+151. `networking/README`:24 *(own)* — *the part is about what the wire carries rather than the wire* — the signature cache and the chunk loop are the wire's own; now *mostly* — `network/chat/MessageSignatureCache.java`:10
+152. `networking/README`:27–28 *(own)* — *so that the server and every other player can check it* — a whisper reaches one player, a team message the team, a player with chat hidden none, and only a client holding the sender's session checks; now *the players it reaches* — `server/commands/MsgCommand.java`:50–52; `server/level/ServerPlayer.java`:2017–2018
+153. `networking/README`:53 *(own)* — *the traffic at its two extremes* — unverifiable, and chat is not the least traffic (the keep-alive); now *could hardly differ more* — `server/network/ServerCommonPacketListenerImpl.java`:127
+154. `networking/README`:72–74 — *one broadcast carries this tick's block changes* — block events, entities and block entities change blocks after it; now *the block changes made so far this tick*, as the session had written on `what-the-client-is-told` — `server/level/ServerLevel.java`:375–377, :387, :390, :419
+155. `networking/README`:94–95 — *the lecture with the round-trip diagram* — the answer goes to the watchers; now *the there-and-back diagram* *(the redrawn figure)*
+156. `lectures.md`:453 — Part II's components as *what a chat message … [is]* — the claim the session corrected on the landing page (its :81); now *a chat line*
+157. `lectures.md`:224 — *the last of those languages* — play can return to configuration; now *the play language* — `server/network/ServerGamePacketListenerImpl.java`:2477
+158. `networking/the-connection`:281 (heading) *(own)* — *the one periodic call from a game thread* — `resumeFlushing` calls `Connection.flushChannel` every server tick for every player, and the client sends its tick-end packet every tick; now *the tick a game thread gives the connection*, the two links repointed again — `server/MinecraftServer.java`:1256–1260; `client/Minecraft.java`:2102–2105
+159. `networking/the-connection`:30 (cast) — *plus one call a tick from a game thread* — as the heading; now *its tick, its sends and its flushes*
+160. `networking/the-connection`:508 *(own)* — *the only one a game thread calls every tick* — as the heading; now *the one whose job is the tick*
+161. `networking/the-connection`:3 (verified line), :20 — *one round trip*, *That round trip* — the answer never comes back to the swinger; now *one packet up and its answer out to the players watching*, *That crossing* — `world/entity/LivingEntity.java`:2168
+162. `networking/the-connection`:49, :61–62 (f1) *(own)* — the lane `SConn` kept after the redraw folded the client's `Connection` — the lane key justified `SConn` by the two ends; now the ordinary `Conn`, and `SConn`'s key row retired in `TEMPLATE.md` *(the lane key)*
+163. `networking/the-connection`:58 (f1) *(own)* — *write, or write and flush* — the punch is always written and flushed; now *write and flush* — `network/Connection.java`:295–301, :342–343
+164. `networking/the-connection`:69, :78–79 (f1 and caption) *(own)* — the watcher's hop under no thread note, and *the watcher's own `Connection`* — it runs on that client's Netty loop, and the arrow folds a `Connection` at each end; now a note and *the `Connection` at each end of the watcher's link* — `client/multiplayer/ClientPacketListener.java`:1173–1174
+165. `networking/the-connection`:204–205 *(own)* — `ServerSelectionList` *the rows of `ServerData`* — it lists LAN servers too; now *whose saved-server rows* — `client/gui/screens/multiplayer/ServerSelectionList.java`:109–137
+166. `networking/the-connection`:296–297 *(own)* — *every protocol swap … on the event loop* — the client's first swap is made by the thread that dials; now *a handler makes* — `network/Connection.java`:282–293, :315–322
+167. `networking/the-connection`:306–309 *(own)* — *more than one screen that waits on one*, counting `RealmsConnect` — it is not a screen; now *thing* — `com/mojang/realmsclient/util/task/ConnectTask.java`:42
+168. `networking/the-connection`:369–370 *(own)* — *(on the event loop in the early phases, on a game thread from configuration on)* — the server's return to configuration swaps on Netty; now named — `server/network/ServerGamePacketListenerImpl.java`:2476–2482
+169. `networking/the-connection`:476–478 *(own)* — *A login refusal is what stalls* — a kick made on the Netty thread (a wrong keep-alive id) waits in `BlockableEventLoop.executeBlocking` for the Server thread too; now both — `server/network/ServerCommonPacketListenerImpl.java`:84–91, :199; `util/thread/BlockableEventLoop.java`:85–86
+170. `networking/packets-and-stream-codecs`:60 — *the five a connection can survive losing* — the session's own new sentence names two more skip paths; now *the five whose failure to encode a connection survives* — `network/protocol/game/GameProtocols.java`:47, :55
+171. `networking/packets-and-stream-codecs`:76–78 *(own)* — *each interface naming its own protocol* — only the phase interfaces do, and the two roots decide the direction; now both — `network/protocol/ClientboundPacketListener.java`:8; `network/Connection.java`:186–199
+172. `networking/packets-and-stream-codecs`:100–102 *(own)* — *a packet whose codec is `StreamCodec.unit`, fifteen of them* — the bundle delimiter has one too; now *fifteen packet classes that declare* one, the delimiter named — `network/protocol/ProtocolInfoBuilder.java`:42, :45
+173. `networking/packets-and-stream-codecs`:203–205 *(own)* — *or … do the same over a registry view* — the three never reach the combinator; now *do its work themselves* — `network/codec/ByteBufCodecs.java`:406, :417–439
+174. `networking/packets-and-stream-codecs`:243 *(own)* — *counting each overload once* — reads two ways; now *every overload and static twin separately*
+175. `networking/packets-and-stream-codecs`:257 *(own)* — *looks an id up in a `RegistryAccess`* — two of the list pass the access to a codec and one re-wraps a slice; now *reads the `RegistryAccess`* — `network/codec/ByteBufCodecs.java`:421, :430, :664–667
+176. `networking/packets-and-stream-codecs`:430–431 *(own)* — *a hash per component* — per component the patch adds, the removed ones by type; now so — `network/HashedPatchMap.java`:17, :21–28
+177. `networking/packets-and-stream-codecs`:450 (heading) — *Custom payloads, the only extension point* — the login family and the custom click action are seams too; now *a seam in a fixed packet set* (no link lands on it) — `network/protocol/game/GameProtocols.java`:65
+178. `networking/packets-and-stream-codecs`:503–504 — *In each case the same `PacketType` is registered with the first in `GameProtocols`* — the session's third packet is play-only; now *For the other two* — `network/protocol/game/GameProtocols.java`:63–64
+179. `networking/protocol-phases`:177 *(own)* — *the one periodic call a connection gets from a game thread* — as 158; now *the tick a game thread gives a connection*
+180. `networking/protocol-phases`:29 (cast) — `ServerLoginPacketListenerImpl` on *Netty, ticked from Server* — the authenticator thread sets the state too; now named — `server/network/ServerLoginPacketListenerImpl.java`:217, :220, :228
+181. `networking/protocol-phases`:33 (cast) *(own)* — *Netty for its start after a code of conduct* — only straight after one; a resource-pack task between hops — `server/network/ServerCommonPacketListenerImpl.java`:110
+182. `networking/protocol-phases`:52–53, :59 (f1 caption and text) *(own)* — *the only phase with two ways in* — login has two intents in; now *entered from two others* — `server/network/ServerHandshakePacketListenerImpl.java`:30–31, :43–51
+183. `networking/protocol-phases`:115 *(own)* — *All three refusals on the login path* — the login phase's own refusals travel the same way; now *of the handshake's* — `server/network/ServerLoginPacketListenerImpl.java`:96–100
+184. `networking/protocol-phases`:268–275 *(own)* — the login's disconnects — a cookie answer and a malformed or out-of-order packet were missing; now added — `server/network/ServerLoginPacketListenerImpl.java`:124, :178, :185, :280–282
+185. `networking/protocol-phases`:349–351 *(own)* — *neither builds the player until asked*; *the spawn search the task's start launched* — `Ready.spawn` builds it, and a player with a saved position gets no search; now *only the second builds the player* and *the spawn position the task's start resolved* — `server/network/config/PrepareSpawnTask.java`:68–70, :123–130, :225–229
+186. `networking/protocol-phases`:371–373 *(own)* — *a ban or a full server at the finish* — the gate's second run refuses the whitelist and an IP ban too, and a cookie answer disconnects; now so — `server/players/PlayerList.java`:363–373; `server/network/ServerCommonPacketListenerImpl.java`:118–121
+187. `networking/protocol-phases`:379 *(own)* — *Only the round trip that ends the phase has a clock* — not for the singleplayer host; now said — `server/network/ServerCommonPacketListenerImpl.java`:127–130
+188. `networking/protocol-phases`:391–392 — *the server can be encoding play packets while still nominally in the configuration listener* — the hook's claim the session had removed; now *the server's side already encodes play … and a refusal at the finish goes out as a play packet* — `server/players/PlayerList.java`:160, :167; `server/network/ServerConfigurationPacketListenerImpl.java`:175
+189. `networking/protocol-phases`:411 *(own)* — `DebugConfigCommand` *which the game registers only when it is started with its debug system properties* — and only on a dedicated server; now so — `commands/Commands.java`:290–291, :591
+190. `networking/protocol-phases`:454 *(own)* — `Crypt`, *the login's keys, digest and ciphers* — it carries chat signing's salt and key codecs too; now *the key, digest, cipher and salt helpers the login and chat signing share* — `client/multiplayer/ClientPacketListener.java`:2855, :2869
+191. `networking/what-the-client-is-told`:5–6 *(own)* — *at the next tick's tracking sweep* — a player's move can pair first; now *unless the player moves first* — `server/level/ChunkMap.java`:1171–1182
+192. `networking/what-the-client-is-told`:9–11 *(own)* — *Every move the viewer is sent after it is a difference* — absolute syncs are positions; now *Every relative move* — `server/level/ServerEntity.java`:270, :274–277
+193. `networking/what-the-client-is-told`:12–13 *(own)* — *wrong by the gap for as long as it watched* — every absolute sync re-sets the client's base; now *until the next absolute position reset it* — `client/multiplayer/ClientPacketListener.java`:683
+194. `networking/what-the-client-is-told`:162–163 *(own)* — *twenty-one other classes* — twenty-one files, twenty-two classes with a nested goal; now *over twenty* — `world/entity/monster/Guardian.java`:390, :424
+195. `networking/what-the-client-is-told`:187–188 *(own)* — *so it does not move, and the gate spares a call that would send nothing* — a piston in the block-ticking ring moves it; now *does not move itself … usually* — `world/level/block/piston/PistonMovingBlockEntity.java`:191
+196. `networking/what-the-client-is-told`:194–196 *(own)* — *a relative packet must pass all three … the order matters* — four terms in three rows, and the order that matters is the delta test's, after them; now so — `server/level/ServerEntity.java`:266–277
+197. `networking/what-the-client-is-told`:204 (the table) *(own)* — *the last absolute sync's* ground flag — a delta-sized sync records none; now *the one the conjunction last recorded* — `server/level/ServerEntity.java`:275–276
+198. `networking/what-the-client-is-told`:205 (the table) *(own)* — *against a wall or floor* — or ceiling — `server/level/ServerEntity.java`:283
+199. `networking/what-the-client-is-told`:220–224 *(own)* — the base *advances … otherwise only where a passenger or a minecart re-sets it … that is what keeps the two sides' arithmetic identical* — the silent re-sets are exactly where the bases part, each repaired by a whole position, and an old minecart takes the ordinary branch; now so — `server/level/ServerEntity.java`:160, :162, :168–176, :314; `client/multiplayer/ClientPacketListener.java`:764–806
+200. `networking/what-the-client-is-told`:232 *(own)* — *That first term has three callers* — the getter has one, the setter three; now *is set by three classes*
+201. `networking/what-the-client-is-told`:235 *(own)* — *a falling block or lit TNT that has just collided* — every tick it touches a block; now *while it is touching a block* — `world/entity/item/PrimedTnt.java`:127
+202. `networking/what-the-client-is-told`:255–256 — the three feeds *most of what still feels responsive about a distant mob* — none moves a mob on a client; the clause cut *(and `world/entity/LivingEntity.java`:3317–3318)*
+203. `networking/what-the-client-is-told`:258–261 *(own)* — *knockback is immediate on a creeper whose position otherwise updates slowly* — the client never integrates a creeper's velocity; its knockback shows with its next position packet, and a player's own client moves it at once — `client/multiplayer/ClientPacketListener.java`:654–660; `world/entity/LivingEntity.java`:1751, :3217, :3317–3318
+204. `networking/what-the-client-is-told`:368–369 *(own)* — *the ones that entities and block events made the tick before* — block entities and players' actions too; now *the rest since the last broadcast* — `server/level/ServerLevel.java`:437–438; `server/MinecraftServer.java`:1233–1234
+205. `networking/what-the-client-is-told`:454 *(own)* — *bar the aggressive flag* — a guardian's beam target and the wither's head targets are synched too; now named — `world/entity/monster/Guardian.java`:51, :116
+206. `networking/what-the-client-is-told`:459 *(own)* — the block-entity row — a creative player's pick-block copies block-entity data; added — `server/network/ServerGamePacketListenerImpl.java`:739–764
+207. `networking/what-the-client-is-told`:460 *(own)* — *raids … beyond their boss bars* — and through the debug channel; added — `util/debug/DebugSubscriptions.java`:27
+208. `networking/what-the-client-is-told`:458 — the worldgen row — structures cross through the debug channel; added — `util/debug/DebugSubscriptions.java`:28
+209. `networking/chat-and-signing`:8–9 *(own)* — *the messages the player saw among the last twenty* — of what; now *among the last twenty signed ones it was sent* — `network/chat/LastSeenMessagesTracker.java`:20–36
+210. `networking/chat-and-signing`:3 (verified line) — *verified again by every client that draws it* — as the session's own :12; now *that holds the sender's session* — `network/chat/SignedMessageValidator.java`:13
+211. `networking/chat-and-signing`:85 (f1) *(own)* — the broadcast arrow moved inside the band widened the band over the recipient's lane; moved back out, and the caption now says the band *ends in the arrow that leaves it* *(the render)*
+212. `networking/chat-and-signing`:209–210 *(own)* — *and the rate check after the broadcast, happen inside the task* — with a real filter it runs in the continuation, a second task; now so — `util/FutureChain.java`:23–29
+213. `networking/chat-and-signing`:243 — *until a key rotation* — as the session's own :178 and :386; now *until a new key or a new connection* — `server/players/PlayerList.java`:158
+214. `networking/chat-and-signing`:250–251 *(own)* — *`MessageSignature.Packed` indices into a cache* — an index only where the recipient's cache holds the signature; now so — `network/chat/MessageSignature.java`:82–85
+215. `networking/chat-and-signing`:363 *(own)* — *A command message sent down the plain command packet is broadcast* — refused where secure profiles are enforced, a dedicated online server's default; now scoped — `server/network/ServerGamePacketListenerImpl.java`:1770–1775; `server/dedicated/DedicatedServerProperties.java`:175
+216. `networking/chat-and-signing`:400 — `ClientPacketListener.initializeChatSession` *merely calls* `PlayerInfo.clearChatSession` — what follows is not mere (a probable window drift, below); *merely* cut
+217. `networking/chat-and-signing`:402–403 *(own)* — *tagged insecure by `SignedMessageValidator.ACCEPT_UNSIGNED`* — it only strips; the tag is `ChatTrustLevel.evaluate`'s; now so — `client/multiplayer/chat/ChatTrustLevel.java`:25
+218. `entities/movement-and-collision`:412–415 — *every landing and every step off a ledge forces a full `ClientboundEntityPositionSyncPacket`* — as 115's table row; now *that a gated call sees*
+219. `world/environment-attributes-and-timelines`:292–293 — the full clock sync *on join and on a `GameRules.ADVANCE_TIME` change* — also on respawn and a change of dimension, as 127 — `server/players/PlayerList.java`:716
+220. `entities/damage-and-death`:318 — the damage event and motion packet *to every tracker and the victim* — to the victim when it is a player, as 121 — `server/level/ChunkMap.java`:1560–1566
+
+Held, with the reason: `networking/README`:139, *This part stops at the packet that says so* — vague rather than false (it points at `ClientboundLoginPacket` without naming it), and a heading-adjacent close the polish does not rewrite. `networking/protocol-phases`:140–143, *a status connection is expected to be thrown away, which is why…* — intent the code does not show, and harmless.
+
+### Figures changed
+
+- `networking/the-connection` f1 — redrawn, six lanes in three boxes: *your client* (`CPL`, `PEnc`), *the server* (`PDec`, `Conn`, `SGPL`), *a player watching you* (`RCPL`). Its order: a Render-thread note over `CPL`; a note that `Connection.send` and then `Connection.sendPacket` join the client's Netty loop; `CPL` → `PEnc` *write and flush*; `PEnc` → `PDec` one frame, a VarInt id and no fields; the server's Netty loop; `PDec` → `Conn` `channelRead0`; `Conn` → `SGPL` `shouldHandleMessage`, then `Packet.handle`; `SGPL` self, the hop queues and aborts; a Server-thread band, the drain before the tick — `SGPL` self, the handler from the top, and `SGPL` → `RCPL` the swing through each watcher's own `Connection`, flushed at once; a note, that client's Netty loop; `RCPL` self, the hop; a Render-thread band, the drain once per frame — `RCPL` self, the handler by the next frame. Rendered at 12.4px (seven lanes had been 10.6px). The lane key's `SConn` row retired.
+- `networking/chat-and-signing` f1 — the band's note *all of it on the Server thread*; `PL` → `RCPL` relabelled *cached last-seen signatures sent as ids*, left after the band (moved in and back out, 211); `RCPL` → `CLis` *the delay queue, then trust level and blocklist*. No arrow reordered.
+- `networking/protocol-phases` f2 — the note: the three tick edges the Server thread's, one the authenticator thread's, the rest Netty's. f4 — node *up to three packets, sent before any task runs*. No arrow changed.
+- `networking/what-the-client-is-told` f1 — node D *zero to five packets*. No arrow changed.
+- Rendered (`render_figures.js --pages systems/networking`): 11 figures, the smallest type 12.3px, no overlap or clipping.
+
+### Captions changed
+
+Five rewritten, word for word:
+
+- `networking/the-connection` f1: *The punch and its answer, one machine to a box: the server's answer goes to the players watching you and never back to you, and the one arrow into their client folds away its encoding, its decoding and the `Connection` at each end of the watcher's link. Watch for each handler body being entered twice.*
+- `networking/chat-and-signing` f1: *One line's whole journey, three machines in three boxes: the two `ClientPacketListener` lanes are the sender's and every recipient's, and the same signature is checked once in the middle box and again in the right-hand one. The shaded band is the server's work on the Server thread, which ends in the arrow that leaves it.*
+- `networking/chat-and-signing` f2: *The five checks on the Netty thread, in green, and the Server thread's work, in blue, drawn so that the arrows meet at the three things a refusal can kill. The middle terminal is reached from both, which is the picture's point: where a check runs says nothing about what it costs.*
+- `networking/protocol-phases` f1: *The five phases, each arrow between two of them carrying the packet — or the pair of them — that changes one. The arrow back out of play is the only one that goes up, which is what makes configuration the only phase entered from two others.*
+- `networking/protocol-phases` f4: *The phase as a queue of five tasks, strictly one at a time — the middle two only if the server has a code of conduct or a resource pack — with the packets that precede the queue and the round trip that ends it. The two arrows at the foot are the phase's oddity: between them the server is holding a ticket on chunks for a player that does not exist yet.*
+- `networking/what-the-client-is-told` f1: *The three gates, each a three-term test: gate 1 is a conjunction and gates 2 and 3 are disjunctions. That is the asymmetry to carry away — one wrong answer at gate 1 keeps a viewer from seeing the entity at all, and one right answer at either of the others lets it speak, if it has anything to say.*
+
+The other five are unchanged; `python tools/pass7/captions.py src/systems/networking` lists them. All eleven are at most two sentences.
+
+### Polished
+
+Sentences whose meaning could have moved, each re-read against the tree:
+
+- Thread names (V7): `the-connection`:6 and f1's notes *Render thread* and *Server thread*; `packets-and-stream-codecs`:347 *the Render thread*; `protocol-phases`:336 *the Server thread*; no *main thread* is left in the part (pass5.md:4389)
+- *Tick phase* (V7): `the-connection`:82, :119, the drain's; the page's other *phase*s are protocol phases (pass5.md:4713)
+- `the-connection`:97, :129 — *a listener that does not implement the packet's listener interface is a failed class cast*; *the tasks posted to a game thread* (pass5.md:5970); `packets-and-stream-codecs`:80 *the failed class cast* (pass5.md:5974)
+- `chat-and-signing`:366 — the server's five minutes *expired*, one word with :140 (pass5.md:4705)
+- Number devices (V9): `chat-and-signing`:279 *Sixty-four messages is …*; `what-the-client-is-told`:326 *Seven milliseconds of client time per tick is …*
+- Sizes (V10): `protocol-phases`:432 *little more than one switch*; `packets-and-stream-codecs`:539 *a short data generator*; `the-connection`:505, :513 *one test*, *which defines*; `what-the-client-is-told`:501, :511; `chat-and-signing`:416
+
+By kind: possessive on a link 13 (`packets-and-stream-codecs` 4, `what-the-client-is-told` 3, `chat-and-signing` 2, `protocol-phases` 2, `the-connection` 1, `README` 1), em-dash chain 7, *actually* cut 9, number device 2, size 7, thread name 5.
+
+### The queue
+
+The 103 pass 5–7 ledger entries on these pages are all struck by this session (99 naming a page, 4 part-wide); `pass8_queue.py --part IX` lists none open. Part IX's units in [pass5.md](pass5.md) settled: 25 struck (done 9, ruled 5, record 9, overtaken 2) and a share note on the three units other parts still hold (82, 3277, 4389); `pass5_queue.py --summary` has no Part IX row. The three Part XIII units the router had filed under Part IX (3774, 3819, 3839, a `###` heading inside a Part IX block) are N's: `pass4_queue.py` now lets a `###` heading that names its own session and part own its units until the next `###`, and `pass5_queue.py --summary` files a unit naming several pages under the part whose session runs last, which it had chosen by set order, so the by-part rows changed from run to run (a probe case each).
+
+### For later sessions
+
+- **N** — the three units at pass5.md:3774, :3819, :3839, now routed to Part XIII.
+- **O** — `reference/threads`:132 says the chat handler advances the window *under the listener's lock*; the lock is the `LastSeenMessagesValidator`'s (`server/network/ServerGamePacketListenerImpl.java`:1898–1900). `reference/threads`:143 says *User Authenticator* is *one per login*; offline, memory and singleplayer-profile logins start none (`server/network/ServerLoginPacketListenerImpl.java`:129–136). `server/players-and-sessions`:85–86 *until the old connection is really gone* could say *until the old player has left the player list*, as `protocol-phases` now does.
+- **O or the second edition** — a probable window drift, found by the audit from the code and not run: when a client holds no session for a sender, `SignedMessageValidator.ACCEPT_UNSIGNED` strips the signature, `ChatListener` then records nothing, and the server had recorded the message as pending, so that client's next acknowledgement can fail the checksum and disconnect it (`client/multiplayer/chat/ChatListener.java`:108; `server/network/ServerGamePacketListenerImpl.java`:2041–2049; `network/chat/LastSeenMessagesValidator.java`:34–38, :53–76). Not written on the page (R10); worth a look in game.
+- **P** — the V1 and V2 entries on these pages (checked as claims in the prompts, not struck here), and this session's diff.
+
 ## Pass 8, session H — Part VIII · The player *(2026-09-28)*
 
 Eight pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
@@ -4837,11 +5154,11 @@ The gaps pass 9 has to work around:
 
 ### Landing figures and their captions — the set read as one
 
-- `networking/README` f1: **arrow removed** — lecture 3 into the box holding 4
+- ~~`networking/README` f1: **arrow removed** — lecture 3 into the box holding 4
   and 5 — because `networking/README`'s own watch list says neither needs 3; an
   invisible link keeps the box below. Caption: *nothing points into the bottom
   box: its title says where the last two live, and neither needs the other or
-  the lecture above it.*
+  the lecture above it.*~~ *(checked (`networking/README`:40–42: the invisible link is the only edge into the bottom box) — pass 8, session I)*
 - `worldgen/README` f1: **arrow retargeted** — density functions now point at
   2 · Biomes, labelled *is sampled by*, instead of *is made of* into the
   structure box; the reading paragraph says the biome step is the first status
@@ -4873,10 +5190,10 @@ The gaps pass 9 has to work around:
   *Figure:* dropped from the caption. `player/README` node 5 shortened.
   `commands/README`: floor titles lower-cased, ids renumbered to match, caption
   now says its arrows are the one set that points down, and why.~~ *(checked (the figure's subgraph says *the engines*); :39 counted three without naming them — see *Pass 8, session G*, correction 4 — pass 8, session G)*
-- `networking/chat-and-signing`:150: *Five of the checks* run before the server
+- ~~`networking/chat-and-signing`:150: *Five of the checks* run before the server
   thread, not four — **correction** (page-internal against its own :204 and
   figure; `server/network/ServerGamePacketListenerImpl.java`:1679–1683,
-  `unpackAndApplyLastSeen` then `tryHandleChat`).
+  `unpackAndApplyLastSeen` then `tryHandleChat`).~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:1737, :1886–1893) — pass 8, session I)*
 - ~~`foundations/data-driven-types` f2 gained its caption, the one figure outside
   Part XI without one: *One loot function's whole life, in two stretches:
   parsed once at reload, where the registered type supplies the codec and the
@@ -5725,7 +6042,7 @@ line is worth checking before any label is shortened.
 
 ### The figures redrawn, and what each asserts
 
-- **`networking/README`, figure 1** — the two subgraph titles were being
+- ~~**`networking/README`, figure 1** — the two subgraph titles were being
   clipped on screen (mermaid draws only the first wrapped line of a title), so
   the figure's whole argument — the 3 + 2 split — was the only thing a reader
   could not read. Titles shortened to *the wire, three times* and *inside the
@@ -5734,8 +6051,8 @@ line is worth checking before any label is shortened.
   and the arrow re-anchored from the group `W` to lecture **3**, which is what
   the prose says ("the last two both sit inside the final language").
   **Asserts**: lectures 1 → 2 → 3 in that order, and that 4 and 5 run inside
-  the phase lecture 3 ends on.
-- **`the-connection`, figure 1** — redrawn. Six lanes in **two `box` groups**,
+  the phase lecture 3 ends on.~~ *(checked (the node titles match the watch list); the prose's *final language* was loose — see *Pass 8, session I*, correction 6 — pass 8, session I)*
+- ~~**`the-connection`, figure 1** — redrawn. Six lanes in **two `box` groups**,
   one per machine; the `Wire` relay lane removed and the crossing drawn
   encoder → decoder; the return leg drawn right-to-left as one labelled arrow;
   the two drains marked with `rect` bands (F8). 16 messages → 11, 1,580px →
@@ -5745,13 +6062,13 @@ line is worth checking before any label is shortened.
   of the pipeline; `shouldHandleMessage` then `Packet.handle`;
   `ensureRunningOnSameThread` queuing and aborting; the second
   `shouldHandleMessage` inside the drain; the reply written and not flushed;
-  `Connection.tick` flushing; the client's drain once per frame.
-- **`the-connection`, the pipeline table** — not a figure, but the figure's
+  `Connection.tick` flushing; the client's drain once per frame.~~ *(checked but for the answer, which the figure wrote unflushed and drew back to the swinger — see *Pass 8, session I*, corrections 21 and 22 (`network/Connection.java`:155–179, :325–335; `network/protocol/PacketUtils.java`:20–29) — pass 8, session I)*
+- ~~**`the-connection`, the pipeline table** — not a figure, but the figure's
   removed note went here: a fourth column, *its outbound mirror*, so the
   reverse order is read off the table instead of out of an eight-item
   sentence. **Asserts**: five of the nine inbound handlers have an outbound
-  mirror and four do not.
-- **`packets-and-stream-codecs`, figure 1** — the build chain cut at the
+  mirror and four do not.~~ *(wrong: the table fills six mirror cells — see *Pass 8, session I*, correction 27 — pass 8, session I)*
+- ~~**`packets-and-stream-codecs`, figure 1** — the build chain cut at the
   `ProtocolInfoBuilder.addPacket` line, one subgraph either side, named for
   what each half knows (*knows chat, not ids* / *knows ids, not chat*) — which
   is the sentence directly under the figure. 1,900px → 902px. **Asserts**: the
@@ -5760,59 +6077,59 @@ line is worth checking before any label is shortened.
   the `IdDispatchCodec` holds the wrapped entry — **and the caption states
   that this is build order and that at send time the dispatch codec runs
   outermost**, which is what `IdDispatchCodec.encode` does
-  (`net/minecraft/network/codec/IdDispatchCodec.java:47`).
-- **`packets-and-stream-codecs`, figure 2** — cut, replaced by a three-row
+  (`net/minecraft/network/codec/IdDispatchCodec.java:47`).~~ *(checked (`network/protocol/game/ClientboundSystemChatPacket.java`:13; `network/protocol/game/GameProtocols.java`:68; `network/protocol/ProtocolInfoBuilder.java`:172–174; `network/codec/IdDispatchCodec.java`:54–60) — pass 8, session I)*
+- ~~**`packets-and-stream-codecs`, figure 2** — cut, replaced by a three-row
   table. **Asserts**: status serverbound binds the identity function, four
   phases bind `FriendlyByteBuf` at class-load, play binds
-  `RegistryFriendlyByteBuf` per connection at the switch into play.
-- **`protocol-phases`, figure 1** — `direction LR` removed; 0.54 → 1.00.
-  **Asserts**: unchanged from the figure it replaces.
-- **`protocol-phases`, figure 2** — `direction LR` removed, labels cut to the
+  `RegistryFriendlyByteBuf` per connection at the switch into play.~~ *(checked (`network/protocol/status/StatusProtocols.java`:18–24; `server/network/ServerConfigurationPacketListenerImpl.java`:169) — pass 8, session I)*
+- ~~**`protocol-phases`, figure 1** — `direction LR` removed; 0.54 → 1.00.
+  **Asserts**: unchanged from the figure it replaces.~~ *(checked (every arrow; `server/network/ServerHandshakePacketListenerImpl.java`:29–53) — pass 8, session I)*
+- ~~**`protocol-phases`, figure 2** — `direction LR` removed, labels cut to the
   packet that causes each transition, and `NEGOTIATING` taken out. 0.38 → 1.00.
   **Asserts**: the same ten transitions as before, none added, removed or
-  reversed.
-- **`protocol-phases`, figure 3** — the `Auth` lane, which was labelled *User
+  reversed.~~ *(checked (the ten transitions, `server/network/ServerLoginPacketListenerImpl.java`:66, :129–136, :163, :172, :192, :217, :269); the note's thread for one edge was wrong — see *Pass 8, session I*, correction 86 — pass 8, session I)*
+- ~~**`protocol-phases`, figure 3** — the `Auth` lane, which was labelled *User
   Authenticator thread* and yet received the **client's** `joinServer` call,
   is now a `Sess` lane for the session service both machines call, with the
   thread named in each message instead; the two listeners are in a `box` each.
   **Asserts**: the client calls `joinServer` before it sends the key packet;
   the server installs both ciphers on receiving it; the server calls
-  `hasJoinedServer` after that.
-- **`protocol-phases`, figure 4** — redrawn `TD` with the five queued tasks in
+  `hasJoinedServer` after that.~~ *(checked (`client/multiplayer/ClientHandshakePacketListenerImpl.java`:129–154; `server/network/ServerLoginPacketListenerImpl.java`:193–196, :201–252) — pass 8, session I)*
+- ~~**`protocol-phases`, figure 4** — redrawn `TD` with the five queued tasks in
   a `the serial queue` subgraph, the three out-of-queue packets above it, and
   the **client round trip** that ends the phase drawn as two arrows.
   0.42 → 1.00. **Asserts**: the three packets precede the queue;
   `SynchronizeRegistriesTask` is first and the two optional tasks follow it;
   `PrepareSpawnTask` then `JoinWorldTask`; `ClientboundFinishConfigurationPacket`
   out and `ServerboundFinishConfigurationPacket` back before the player is
-  built.
-- **`chat-and-signing`, figure 1** — three `box` groups (the sender's client,
+  built.~~ *(checked but for *the three packets*, which are up to three — see *Pass 8, session I*, correction 94 — pass 8, session I)*
+- ~~**`chat-and-signing`, figure 1** — three `box` groups (the sender's client,
   the server, every recipient's client), the normalisation moved to a
   self-message on `ChatScreen`, `sendChat` on the arrow to the listener, and
   the Server-thread note replaced by a `rect` band bounded to the two server
   lanes. **Asserts**: `ChatScreen.normalizeChatMessage` is the sender's own
   work, not the listener's; the band covers the unpack, the filter-and-decorate
-  and the broadcast and nothing on the recipient's machine.
-- **`chat-and-signing`, figure 2** — redrawn **by outcome** rather than by
+  and the broadcast and nothing on the recipient's machine.~~ *(checked (`client/gui/screens/ChatScreen.java`:347, :355, :362); the band's note and the broadcast arrow reworded — see *Pass 8, session I*, correction 135 — pass 8, session I)*
+- ~~**`chat-and-signing`, figure 2** — redrawn **by outcome** rather than by
   order: all five Netty-thread checks in one diamond, the Server-thread unpack
   in another, and three terminals, with *the message dies* reached from both.
   **Asserts**: the window checks and the character check close the connection;
   the chat-visibility refusal kills the message only; no signature or an
   expired key kills the message; out of order or an invalid signature kills the
-  chain.
-- **`what-the-client-is-told`, figure 1** — the tail below gate 3 cut (it is
+  chain.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:1888–1890, :1909; `network/chat/SignedMessageChain.java`:50–68) — pass 8, session I)*
+- ~~**`what-the-client-is-told`, figure 1** — the tail below gate 3 cut (it is
   the table's job, and see the correction below), the labels cut to the
   budget, and the three gates left as the cascade. 18 nodes → 13, 2,644px →
   1,740px. **Asserts**: `ChunkMap.tick` walks every tracked entity; a section
   change re-tests every player; gate 1 is a conjunction and gates 2 and 3 are
-  disjunctions; three feeds skip gate 3.
-- **`what-the-client-is-told`, figure 2** — captioned, and the word *veto*
+  disjunctions; three feeds skip gate 3.~~ *(checked but for the node after gate 3 — see *Pass 8, session I*, correction 106 — pass 8, session I)*
+- ~~**`what-the-client-is-told`, figure 2** — captioned, and the word *veto*
   removed from the self-message, because the paragraph 30 lines below exists
-  to say `Entity.broadcastToPlayer` is **not** a hiding hook.
+  to say `Entity.broadcastToPlayer` is **not** a hiding hook.~~ *(checked (`world/entity/Entity.java`:3797; `server/level/ServerPlayer.java`:1356) — pass 8, session I)*
 
 ### Corrections — re-derived against the decompile before the fix
 
-- **`protocol-phases`, the terminal-packet count.** The page said "Seven
+- ~~**`protocol-phases`, the terminal-packet count.** The page said "Seven
   packets in the game carry the terminal flag, and **six of them are on this
   diagram**; `ClientIntentionPacket` is the seventh." `ClientIntentionPacket`
   labels **two** of the diagram's arrows. The seven classes that override
@@ -5822,23 +6139,23 @@ line is worth checking before any label is shortened.
   `ClientboundStartConfigurationPacket` and
   `ServerboundConfigurationAcknowledgedPacket` — every one of them on the
   figure. Now reads "every one of them labels an arrow above.
-  `ClientIntentionPacket` labels two".
-- **`protocol-phases`, `returnToWorld` drawn as a queue entry.** The figure had
+  `ClientIntentionPacket` labels two".~~ *(checked (the seven `isTerminal` overrides); *Four of the remaining six* was wrong — see *Pass 8, session I*, correction 81 — pass 8, session I)*
+- ~~**`protocol-phases`, `returnToWorld` drawn as a queue entry.** The figure had
   `returnToWorld appends the last two` as the **fifth step** of the chain,
   after the resource-pack task. `ServerConfigurationPacketListenerImpl.returnToWorld`
   (`net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java:104`)
   appends `PrepareSpawnTask` and `JoinWorldTask` and calls `startNextTask`, and
   it is called from the **last line of `startConfiguration`** (:101), before
   any task has run. A queue-building call drawn as a queue entry; the box is
-  gone and the queue is a subgraph.
-- **`protocol-phases`, the unlabelled arrow at the end of configuration.** The
+  gone and the queue is a subgraph.~~ *(checked (`server/network/ServerConfigurationPacketListenerImpl.java`:101, :104–108) — pass 8, session I)*
+- ~~**`protocol-phases`, the unlabelled arrow at the end of configuration.** The
   `JoinWorldTask → handleConfigurationFinished` arrow looked like the six
   before it. `handleConfigurationFinished` (:166) runs on the client's
   `ServerboundFinishConfigurationPacket`, so the arrow was a round trip drawn
   as a step — and the page's own hook, the server holding a ticket on chunks
   for a player that does not exist, lives in exactly that gap. Now two arrows
-  through a client node, and the gap is the caption's subject.
-- **`chat-and-signing`, "two of those five close the connection".** Four do:
+  through a client node, and the gap is the caption's subject.~~ *(checked (`server/network/ServerConfigurationPacketListenerImpl.java`:166–169; `client/multiplayer/ClientConfigurationPacketListenerImpl.java`:186) — pass 8, session I)*
+- ~~**`chat-and-signing`, "two of those five close the connection".** Four do:
   the three window checks and the character check
   (`ServerGamePacketListenerImpl.tryHandleChat`,
   `net/minecraft/server/network/ServerGamePacketListenerImpl.java:1829`,
@@ -5846,38 +6163,38 @@ line is worth checking before any label is shortened.
   three window rows **connection**); the chat-visibility refusal is the only
   one of the five that does not, and it sends a red system line instead
   (:1832). The sentence was counting the old figure's *diamonds*, which
-  collapsed the three window checks into one.
-- **`chat-and-signing`, the caller's method on the callee's arrow.** The
+  collapsed the three window checks into one.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:1888, :1909) — pass 8, session I)*
+- ~~**`chat-and-signing`, the caller's method on the callee's arrow.** The
   `ChatScreen → ClientPacketListener` arrow was labelled "whitespace squeezed,
   cut to 256 characters", which is `ChatScreen.normalizeChatMessage`'s own work
   (`net/minecraft/client/gui/screens/ChatScreen.java:359`, called at :344
   before `connection.sendChat` at :353). The eighth part of eight to carry this
-  fault. Now a self-message on `ChatScreen`, and the arrow says `sendChat`.
-- **`chat-and-signing`, the Server-thread note's reach.** "everything below is
+  fault. Now a self-message on `ChatScreen`, and the arrow says `sendChat`.~~ *(checked (`client/gui/screens/ChatScreen.java`:347, :355, :362) — pass 8, session I)*
+- ~~**`chat-and-signing`, the Server-thread note's reach.** "everything below is
   a task queued on the Server thread" spanned the rest of the diagram,
   including the recipient client's own work, which the page's cast table puts
-  on the Render thread. The band now covers the server's two lanes only.
-- **`what-the-client-is-told`, position drawn as a binary.** The figure's `D1`
+  on the Render thread. The band now covers the server's two lanes only.~~ *(checked; the band's note since reworded — see *Pass 8, session I*, correction 135 — pass 8, session I)*
+- ~~**`what-the-client-is-told`, position drawn as a binary.** The figure's `D1`
   node made every opened gate 3 send either a relative or an absolute position
   packet. The page's own table names two further outcomes: **nothing sent**
   inside `ServerEntity.TOLERANCE_LEVEL_POSITION` and
   `ServerEntity.TOLERANCE_LEVEL_ROTATION`, and **rotation only** for a
   passenger. An omission the drawing turned into a claim; the tail is cut and
-  the table owns the outcomes.
-- **`the-connection`, "the connection phase flushes the channel".** The page
+  the table owns the outcomes.~~ *(checked; the node that replaced the tail was wrong in its turn — see *Pass 8, session I*, correction 106 — pass 8, session I)*
+- ~~**`the-connection`, "the connection phase flushes the channel".** The page
   has no such term. `Connection.tick`
   (`net/minecraft/network/Connection.java`, `public void tick()`) calls
   `flushQueue`, ticks a `TickablePacketListener`, and then calls
   `channel.flush()`. The note names `Connection.tick`, which the page does
-  define, 235 lines below.
-- **`the-connection`, `processQueuedPackets` in a note.** A real method
+  define, 235 lines below.~~ *(checked (`network/Connection.java`:397–399); the note went with the redraw — see *Pass 8, session I*, correction 21 — pass 8, session I)*
+- ~~**`the-connection`, `processQueuedPackets` in a note.** A real method
   (`net/minecraft/network/PacketProcessor.java:35`) and a spelling the page's
   prose never uses — it says `PacketProcessor` and *the drain*. The note now
-  says both of those.
+  says both of those.~~ *(checked (`network/PacketProcessor.java`:35; `server/MinecraftServer.java`:1101) — pass 8, session I)*
 
 ### The tool blindnesses — the eighth and ninth of this pass
 
-- **`check_figure_names.py` read only the first 20,000 characters of a class
+- ~~**`check_figure_names.py` read only the first 20,000 characters of a class
   file to find what it extends.** Exactly one class in the decompile declares
   itself past that mark — `ClientPacketListener`, at byte 21,133, behind three
   hundred import lines — and it is one of the most-used lanes in the book. So
@@ -5887,8 +6204,8 @@ line is worth checking before any label is shortened.
   (`net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl.java:145`),
   was reported as a bad name on a figure that was right. Fixed by reading the
   whole file, with a probe case that is exactly this class and this member.
-  Corpus failures 31 → 30.
-- **A `<br/>` between a name and the next word welded them.** Sessions B and D
+  Corpus failures 31 → 30.~~ *(no claim — a tool note; `check_figure_names.py --probe` passes — pass 8, session I)*
+- ~~**A `<br/>` between a name and the next word welded them.** Sessions B and D
   taught the gate to close up a break *inside* a name and to split one *after
   punctuation*; nobody had told it that `ensureRunningOnSameThread<br/>queues
   the pair` is a name meeting a word. It read `ensureRunningOnSameThreadqueues`
@@ -5896,7 +6213,7 @@ line is worth checking before any label is shortened.
   The rule is now F17's own wording: **a name break is at a CamelCase boundary
   or at a dot, and nowhere else**, so a break followed by a lower-case letter,
   or one whose preceding word is all lower-case, is a line break. Three probe
-  cases; corpus **notes 166 → 148** and no previously-clean part moved.
+  cases; corpus **notes 166 → 148** and no previously-clean part moved.~~ *(no claim — a tool note — pass 8, session I)*
 
 ## Pass 7, session H — Part VIII · The player: the figures *(2026-09-15)*
 
@@ -8559,7 +8876,7 @@ every one was re-derived against `reference/26.2` before the fix.
 
 ### Corrections — decompile open
 
-- `what-the-client-is-told`:415 — *"Everything in the next section is
+- ~~`what-the-client-is-told`:415 — *"Everything in the next section is
   invisible **except** through that channel"*, of the debug feed. **False, and
   by a wide margin.** `DebugSubscriptions` registers sixteen subscriptions
   (`net/minecraft/util/debug/DebugSubscriptions.java`:16-31) — brains, goal
@@ -8569,48 +8886,48 @@ every one was re-derived against `reference/26.2` before the fix.
   tick time. Nothing in that list exposes the world seed, loot tables, game
   rules, scheduled ticks, the ticket graph, non-syncable attributes or the
   creeper's swell counter, all of which the *never told* table lists. Now
-  stated with its scope and its count.
-- `what-the-client-is-told`:211 — *"The first term in that decision"*, of
+  stated with its scope and its count.~~ *(checked (`util/debug/DebugSubscriptions.java`:16–31); *the only exception* was wrong — see *Pass 8, session I*, correction 128 — pass 8, session I)*
+- ~~`what-the-client-is-told`:211 — *"The first term in that decision"*, of
   `Entity.getRequiresPrecisePosition`. The **prose was right and the figure and
   the table were both wrong**: `ServerEntity.java`:182 tests
   `!getRequiresPrecisePosition() && !deltaTooBig && teleportDelay <= 400 &&
   !wasRiding && wasOnGround == onGround()`, so precision is the first
   conjunct. The figure's edge label listed it second and the table listed it
   seventh; both are now in the source's order, and the table gained a sentence
-  saying the order is the source's and why that matters.
-- `what-the-client-is-told`, the gate-3 table — *"every
+  saying the order is the source's and why that matters.~~ *(overtaken: 26.3's conjunction no longer holds the delta test — see *Pass 8, session I*, correction 115 — pass 8, session I)*
+- ~~`what-the-client-is-told`, the gate-3 table — *"every
   `ServerEntity.FORCED_POS_UPDATE_PERIOD` calls, gated or not | a position
   packet regardless"*. The counter advances on every call
   (`ServerEntity.java`:265) but the packet is built inside the gate
   (`ServerEntity.java`:138 and :174), so a forced position packet still needs
-  an open gate. Row rewritten.
-- `chat-and-signing`:172 — `MinecraftServer.enforceSecureProfile` *"governs
+  an open gate. Row rewritten.~~ *(checked (`server/level/ServerEntity.java`:190, :257) — pass 8, session I)*
+- ~~`chat-and-signing`:172 — `MinecraftServer.enforceSecureProfile` *"governs
   only the decoder used before one does"*. **False, and the page's own table
   said so six rows later**: besides selecting the pre-session decoder
   (`ServerGamePacketListenerImpl.java`:295), the flag gates
   `ServerGamePacketListenerImpl.performUnsignedChatCommand` (:1716). Row
-  rewritten to name both.
-- `chat-and-signing`:80 — *"Four things in that picture are worth naming"*
-  over five bolded paragraphs. Counted; now five.
-- `the-connection`:69 — *"Four things in that picture are worth stopping on:
+  rewritten to name both.~~ *(checked in substance; *selects the decoder* and *two rows down* were wrong — see *Pass 8, session I*, correction 142 — pass 8, session I)*
+- ~~`chat-and-signing`:80 — *"Four things in that picture are worth naming"*
+  over five bolded paragraphs. Counted; now five.~~ *(checked (five bold paragraphs) — pass 8, session I)*
+- ~~`the-connection`:69 — *"Four things in that picture are worth stopping on:
   the framing, the hop, the drain, and the fact that `Connection` appears once
   but exists twice"*, over six bolded paragraphs, **the fourth of which the
   page never delivered at all**. The lead-in now names the six and states the
-  two-`Connection` fact in place.
-- `packets-and-stream-codecs`:56 — *"the five chat-shaped packets"*.
+  two-`Connection` fact in place.~~ *(checked (six bold paragraphs) — pass 8, session I)*
+- ~~`packets-and-stream-codecs`:56 — *"the five chat-shaped packets"*.
   `ClientboundTagQueryPacket` carries a `CompoundTag` and answers `/data get`
   (`ClientboundTagQueryPacket.java`:14); it is not chat-shaped. What the five
   share is a payload composed at run time rather than assembled from fixed
   fields. Rewritten. *(Also a self-correction: the session's first fix claimed
-  all five carry a `Component`, which is true of four.)*
-- `packets-and-stream-codecs`:336 — *"The frame limit does most of the work,
+  all five carry a `Component`, which is true of four.)*~~ *(wrong: the tag query answers the debug key, not `/data get` — see *Pass 8, session I*, correction 53 — pass 8, session I)*
+- ~~`packets-and-stream-codecs`:336 — *"The frame limit does most of the work,
   and it is not on this page"*, three paragraphs above a limits table with the
   frame limit in it. Rewritten to say whose the limit is and why the table
-  carries it anyway.
+  carries it anyway.~~ *(checked (`network/Varint21FrameDecoder.java`:13, :26, :39) — pass 8, session I)*
 
 ### Claims introduced
 
-- `the-connection`, the opening: the swing is now cashed.
+- ~~`the-connection`, the opening: the swing is now cashed.
   **`ServerboundSwingPacket` carries the hand and nothing else;
   `ServerGamePacketListenerImpl.handleAnimate` calls `Player.swing(hand)`;
   `LivingEntity.swing`'s one-argument form passes `sendToSwingingEntity =
@@ -8618,93 +8935,93 @@ every one was re-derived against `reference/26.2` before the fix.
   swinger** (`LivingEntity.java`:2141-2155,
   `ServerGamePacketListenerImpl.java`:1913). Also the new last paragraph of
   the opening, which declares the page's second movement — a structural
-  claim, not a factual one.
-- `the-connection`, new section *A throw out of `Connection.tick`, and why the
+  claim, not a factual one.~~ *(overtaken by 26.3's punch (V1); the half-swing condition added — see *Pass 8, session I*, correction 17 — pass 8, session I)*
+- ~~`the-connection`, new section *A throw out of `Connection.tick`, and why the
   channel decides what it costs* — promoted out of the closer, same content.
   New sections *What a terminal packet does to the codecs* (renamed from
   *Getting back to unconfigured, which nobody asks for*), *The first listener,
   and who is allowed to install it* (split out of it), and *What the client
   dials is not what the player typed* (split out of *The threads underneath
   it*). The gloss on *auto-read* — "Netty's own switch for whether a channel
-  keeps pulling bytes off the socket without being asked" — is new.
-- `protocol-phases`, the opening: **status is the fifth phase and a login
+  keeps pulling bytes off the socket without being asked" — is new.~~ *(checked but for the throw (an exception) and the dials section's `ServerList` — see *Pass 8, session I*, corrections 36 and 31 — pass 8, session I)*
+- ~~`protocol-phases`, the opening: **status is the fifth phase and a login
   never enters it** — reconciling *four languages* against *five phases*,
-  which the page previously left to a section a hundred lines down.
-- `protocol-phases`: **configuration has no deadline, and that is
+  which the page previously left to a section a hundred lines down.~~ *(checked (`server/network/ServerHandshakePacketListenerImpl.java`:29–53) — pass 8, session I)*
+- ~~`protocol-phases`: **configuration has no deadline, and that is
   deliberate.** `ServerConfigurationPacketListenerImpl.tick` (:195-196) calls
   the common base's `keepConnectionAlive` before the current task, so a stuck
   configuration is closed by an unanswered keep-alive rather than by a
   phase-specific timeout — unlike login's six hundred ticks. New paragraph,
   and the sentence explaining *why* ("a slow login is the client's fault, and
   a slow configuration is usually the server still finding chunks") is the
-  session's reading, not the source's.
-- `protocol-phases`: **protocol 754 is 1.16.4's number** and the two refusals
+  session's reading, not the source's.~~ *(wrong in part: the round trip that ends the phase has a clock, and *a slow login is the client's fault* is cut — see *Pass 8, session I*, correction 98 — pass 8, session I)*
+- ~~`protocol-phases`: **protocol 754 is 1.16.4's number** and the two refusals
   are asymmetric (`ServerHandshakePacketListenerImpl.java`:65). The clause
   "the oldest that can render a modern kick screen" is an inference from the
-  two branches' behaviour and should be checked.
-- `protocol-phases`, the login figure: `HELLO --> VERIFYING` split into two
-  edges, because the prose promises three branches and the figure drew two.
-- `protocol-phases`, cast: two rows folded into one and a new row for
+  two branches' behaviour and should be checked.~~ *(the asymmetry checked (`server/network/ServerHandshakePacketListenerImpl.java`:65–68); *1.16.4's number* and *the oldest that can render* unverifiable and cut — see *Pass 8, session I*, correction 84 — pass 8, session I)*
+- ~~`protocol-phases`, the login figure: `HELLO --> VERIFYING` split into two
+  edges, because the prose promises three branches and the figure drew two.~~ *(checked (`server/network/ServerLoginPacketListenerImpl.java`:129–136) — pass 8, session I)*
+- ~~`protocol-phases`, cast: two rows folded into one and a new row for
   `ServerCommonPacketListenerImpl` · `CommonListenerCookie`; the client row's
   thread cell now reads "the client's main thread for the last step" where it
-  read "Render".
-- `protocol-phases`: **`ServerboundClientInformationPacket` carries language,
-  view distance and skin-part settings** (`ClientInformation.java`:8).
-- `what-the-client-is-told`: **`EntityType.updateInterval` defaults to three
+  read "Render".~~ *(wrong: the client's configuration listener hops for most of its handlers — see *Pass 8, session I*, correction 79 — pass 8, session I)*
+- ~~`protocol-phases`: **`ServerboundClientInformationPacket` carries language,
+  view distance and skin-part settings** (`ClientInformation.java`:8).~~ *(checked (`server/level/ClientInformation.java`:8) — pass 8, session I)*
+- ~~`what-the-client-is-told`: **`EntityType.updateInterval` defaults to three
   and thirty types override it — one for the three `Display` entities, twenty
   for arrows, experience orbs, dropped items, falling blocks, tridents and
   spectral arrows** (`EntityType.java`:505 for the default; thirty call sites,
   15 at 10, 6 at 20, 4 at 2, 3 at 1, one each at 4 and 5). The reading — "the
   thing moving fastest is told least often, because a ballistic path is
-  something the client can extrapolate exactly" — is the session's.
-- `what-the-client-is-told`: **`PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`
+  something the client can extrapolate exactly" — is the session's.~~ *(checked as a count of finite overrides; eight never open — see *Pass 8, session I*, correction 113 — pass 8, session I)*
+- ~~`what-the-client-is-told`: **`PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`
   is ten** (`PlayerChunkSender.java`:33), moved into the body from the
   dissolved closer, which was the only place the page ever gave the number.
-  The gloss on *dead reckoning* is new.
-- `chat-and-signing`: **the first five rows of the check table run on the
+  The gloss on *dead reckoning* is new.~~ *(ten checked (`server/network/PlayerChunkSender.java`:33); the dead-reckoning gloss was wrong for a creeper — see *Pass 8, session I*, correction 104 — pass 8, session I)*
+- ~~`chat-and-signing`: **the first five rows of the check table run on the
   Netty thread, in that order** — three inside
   `ServerGamePacketListenerImpl.unpackAndApplyLastSeen` (the offset, the
   acknowledged-bits walk, then `verifyChecksum` at
   `LastSeenMessagesValidator.java`:74), then the character check and the
   chat-visibility refusal inside `tryHandleChat` (:1830-1833), which posts to
-  the server only after both.
-- `chat-and-signing`: **`MessageSignatureCache.push` has exactly two call
+  the server only after both.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:1737, :1886–1893, :1897–1915) — pass 8, session I)*
+- ~~`chat-and-signing`: **`MessageSignatureCache.push` has exactly two call
   sites and they are the two ends of one connection** —
   `ServerGamePacketListenerImpl.java`:1983 and
   `ClientPacketListener.java`:1082 — and it inserts the last-seen list with
   the new signature behind it, newest-first, shuffling back displaced entries
-  the batch did not contain (`MessageSignatureCache.java`:38-66).
-- `chat-and-signing`: **a broken chain survives death.**
+  the batch did not contain (`MessageSignatureCache.java`:38-66).~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:2043; `client/multiplayer/ClientPacketListener.java`:1090) — pass 8, session I)*
+- ~~`chat-and-signing`: **a broken chain survives death.**
   `signedMessageDecoder` is assigned in the constructor and in
   `resetPlayerChatState` only (`ServerGamePacketListenerImpl.java`:295,
   :2437); `PlayerList.respawn` reuses the listener (`PlayerList.java`:413)
   and `ServerPlayer.restoreFrom` copies the chat session
-  (`ServerPlayer.java`:1729). New closer answer.
-- `chat-and-signing`: **the chat throttler's ceiling is twenty per configured
+  (`ServerPlayer.java`:1729). New closer answer.~~ *(checked; *dimension changes* and *a key rotation* were wrong — see *Pass 8, session I*, correction 140 — pass 8, session I)*
+- ~~`chat-and-signing`: **the chat throttler's ceiling is twenty per configured
   second** — `TickThrottler(20, 20 * getChatSpamThresholdSeconds())` (:286) —
   and *chat-spam-threshold-seconds* defaults to ten
   (`DedicatedServerProperties.java`:152), so 200 points; commands have an
   independent budget from *command-spam-threshold-seconds*, also ten (:151).
   "About ten messages sent faster than the decay" is arithmetic, not a source
-  claim.
-- `chat-and-signing`, the heading *Three ways to say no* → *Three ways to say
+  claim.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:292–293; `server/dedicated/DedicatedServerProperties.java`:151–152); an integrated server throttles nobody — see *Pass 8, session I*, correction 143 — pass 8, session I)*
+- ~~`chat-and-signing`, the heading *Three ways to say no* → *Three ways to say
   no, and one way not to ask*, with a new paragraph making `ChatAbilities` the
-  fourth. Two citations repointed.
-- `packets-and-stream-codecs`: **`ClientboundBundleDelimiterPacket` is the one
+  fourth. Two citations repointed.~~ *(checked — pass 8, session I)*
+- ~~`packets-and-stream-codecs`: **`ClientboundBundleDelimiterPacket` is the one
   subclass of the abstract `BundleDelimiterPacket`** — the page named both and
   never related them. The reading of the two `JsonOps` packets ("both are read
   by a client that may not share this build's registries") is an inference the
-  session drew and should be checked.
-- `packets-and-stream-codecs`, two new sections out of the dissolved closer:
+  session drew and should be checked.~~ *(the subclass checked (`network/protocol/game/ClientboundBundleDelimiterPacket.java`:6); the JSON reading wrong in part — see *Pass 8, session I*, correction 59 — pass 8, session I)*
+- ~~`packets-and-stream-codecs`, two new sections out of the dissolved closer:
   *What a skippable packet actually costs* and *One type, several encodings*.
   The latter's closing clause — "the same message, written differently
   depending on whether a `RegistryAccess` exists yet to write it against" — is
-  a new claim about *why* the two codecs differ.
-- `networking/README`: the part's argument now ends on a claim rather than on
+  a new claim about *why* the two codecs differ.~~ *(*the one place … a decision* and *written differently* were wrong — see *Pass 8, session I*, corrections 73 and 75 — pass 8, session I)*
+- ~~`networking/README`: the part's argument now ends on a claim rather than on
   the symptom list — **"the wire is not a pipe between two halves of one
   machine but a border between two machines, each of which treats what arrives
-  from the other as a claim rather than a fact."**
-- **Six *Where to look* lists became prose reading routes** under A12, and
+  from the other as a claim rather than a fact."**~~ *(wrong: the client takes the server's state as fact outside chat — see *Pass 8, session I*, correction 4 — pass 8, session I)*
+- ~~**Six *Where to look* lists became prose reading routes** under A12, and
   each carries claims about what a file is like to read: `Connection` "in
   three sittings", `LastSeenMessagesValidator` "sixty lines of suspicion",
   `ServerHandshakePacketListenerImpl` "sixty lines and one switch",
@@ -8719,7 +9036,7 @@ every one was re-derived against `reference/26.2` before the fix.
   it. The five released on purpose (`ChatListener`, `CipherBase`,
   `GamePacketTypes`, `KnownPack` and `RegistrySynchronization`, plus
   `ProtocolInfoBuilder` losing `protocol-phases`) were each in a list and in no
-  sentence, and each has a home page that still carries it.
+  sentence, and each has a home page that still carries it.~~ *(checked: `Connection` in three sittings, `ConfigurationTask` three methods and `Packet` four stand; the sixty, sixty, thirty and forty lines were sizes, wrong (89, 86, 61, 146), and are gone — see *Pass 8, session I*, corrections 149 and 131; *the part's largest single class* was false — see *Pass 8, session I*, correction 15 — pass 8, session I)*
 
 ### Anchors and citations
 
@@ -8739,18 +9056,18 @@ no link landed on either anchor.
 
 ### For pass 9's attention, found and not fixed
 
-- `packets-and-stream-codecs`: a reader asked what happens to a packet already
+- ~~`packets-and-stream-codecs`: a reader asked what happens to a packet already
   queued or already on the wire at the configuration-to-play switch — which
   chain numbers it. Not answered on the page and not re-derived; a genuine
-  gap.
-- `what-the-client-is-told`: the page says the client runs `Creeper.tick`
+  gap.~~ *(a question: a packet written before the new protocol's configuration message fails (`network/UnconfiguredPipelineHandler.java`:71–73); no page change (R10) — pass 8, session I)*
+- ~~`what-the-client-is-told`: the page says the client runs `Creeper.tick`
   locally "swell counter and all" and that neither the fuse nor the counter is
-  ever sent. A reader asked what makes the explosion line up. Not answered.
-- `the-connection`: "the nine handlers that never hop" is a count whose
-  population lives on `reference/threads.md`; not re-counted this session.
-- `chat-and-signing`: the cast row calls `SignedMessageValidator.KeyBased` and
+  ever sent. A reader asked what makes the explosion line up. Not answered.~~ *(answered: the swell and the fuse are never sent, each side runs the swell from the synched direction, and a creeper with a non-default fuse drifts (`world/entity/monster/Creeper.java`:48–57, :121, :130–151, :237–240); no page change (R10) — pass 8, session I)*
+- ~~`the-connection`: "the nine handlers that never hop" is a count whose
+  population lives on `reference/threads.md`; not re-counted this session.~~ *(checked: nine (`client/multiplayer/ClientPacketListener.java`:1931, :1934, :2655, :2660, :2666, :2671, :2728; `client/multiplayer/ClientCommonPacketListenerImpl.java`:151, :373) — pass 8, session I)*
+- ~~`chat-and-signing`: the cast row calls `SignedMessageValidator.KeyBased` and
   `ChatTrustLevel` "Render" thread. Two readers flagged *Render* as a term the
-  page never glosses; whether it is the right thread name was not checked.
+  page never glosses; whether it is the right thread name was not checked.~~ *(checked (`client/main/Main.java`:263; `client/Minecraft.java`:747) — pass 8, session I)*
 
 ## Pass 6, session H — Part VIII · The player *(2026-09-13)*
 
@@ -10544,11 +10861,11 @@ come first.*
    420 classes and 53,000 lines for the whole of `net/minecraft/server`, was
    re-derived and is right: 420 files, 52,720 lines.)
 
-7. **`networking/README`:125 — "the whole of `net/minecraft/network`".**
+7. ~~**`networking/README`:125 — "the whole of `net/minecraft/network`".**
    `map_source.py`'s Part IX subtracts `net/minecraft/network/syncher` and gives
    it to Part VI, which `entities/README`:21 states from its side. "Whole" is
    what made it false rather than loose; now "less `network/syncher`, which is
-   Part VI's".
+   Part VI's".~~ *(overtaken: the phrase is gone, and the count excludes `network/syncher` (`tools/map_source.py`:114) — pass 8, session I)*
 
 8. **`commands/README`:126 — "Most of this part by line is the catalogue".**
    The catalogue the page sizes four lines earlier is 102 files and 12,781 lines
@@ -12024,7 +12341,7 @@ correction it made with the decompile open; the corrections come first.*
 
 ### Corrections — what the page said, what the decompile says
 
-1. **`networking/the-connection`:236 — the flush bracket's scope.** The page
+1. ~~**`networking/the-connection`:236 — the flush bracket's scope.** The page
    said "The bracket is opened around the whole server tick".
    `MinecraftServer.suspendFlushing` is called at the top of
    `MinecraftServer.tickChildren` (`MinecraftServer.java`:1209-1211) and
@@ -12032,8 +12349,8 @@ correction it made with the decompile open; the corrections come first.*
    `tickChildren` is **outside** the bracket — which is what
    `server-tick`:215 and `players-and-sessions`:212-213 both turn on. Page
    against two other pages. The section is now cut to a citation and says the
-   bracket opens at the top of `tickChildren`.
-2. **`networking/the-connection`:122-124 — `PacketListener.onPacketError`.**
+   bracket opens at the top of `tickChildren`.~~ *(checked (`server/MinecraftServer.java`:1101, :1188–1190, :1260); the figure's *written, not flushed* contradicted it — see *Pass 8, session I*, correction 21 — pass 8, session I)*
+2. ~~**`networking/the-connection`:122-124 — `PacketListener.onPacketError`.**
    The page said it "by default raises a reported crash", which is the
    interface default (`PacketListener.java`:19-21) and is reached by **no
    listener a drained packet arrives at**: `ServerPacketListener`
@@ -12043,7 +12360,7 @@ correction it made with the decompile open; the corrections come first.*
    `ClientCommonPacketListenerImpl` (:113-120) overrides it the other way,
    storing a disconnection report and calling `Connection.disconnect`. A
    reader of the page alone concluded a bad packet crashes the server. Page
-   against `server-tick`:122-126.
+   against `server-tick`:122-126.~~ *(checked (`network/PacketListener.java`:19–21; `network/protocol/game/ServerPacketListener.java`:13–16; `client/multiplayer/ClientCommonPacketListenerImpl.java`:114–121) — pass 8, session I)*
 3. ~~**`server/server-tick`:221-222 — where `Connection.tick` flushes.** The
    page said "at the end of the connection phase". `Connection.tick`
    (`Connection.java`:387-411) flushes fourth of six steps, after the
@@ -12057,7 +12374,7 @@ correction it made with the decompile open; the corrections come first.*
    `Connection` holds no outbound packet queue at all, which is
    `the-connection`:406-408's own claim. The step is now named for what it
    drains.~~ *(checked: `network/Connection.java`:76, :370–383 — pass 8, session C)*
-5. **`networking/what-the-client-is-told`:213 — "**Four** feeds ignore gate
+5. ~~**`networking/what-the-client-is-told`:213 — "**Four** feeds ignore gate
    3".** Outside the gate-3 block of `ServerEntity.sendChanges`
    (`ServerEntity.java`:92-271) there are **three** sends — the passenger diff
    (:96-101), the `ItemFrame` tenth-call branch (:105-131) and
@@ -12065,73 +12382,73 @@ correction it made with the decompile open; the corrections come first.*
    which is a hook and not a feed. The page's own figure named three and
    `synched-entity-data`:281-283 counts the sends as two with the item frame
    called out separately. Corrected to three, with
-   `Entity.updateDataBeforeSync` named in front of them.
-6. **`networking/what-the-client-is-told`:346 — the block-entity hop.** The
+   `Entity.updateDataBeforeSync` named in front of them.~~ *(checked as three; two of them wrong in 26.3 — see *Pass 8, session I*, corrections 121 and 122 — pass 8, session I)*
+6. ~~**`networking/what-the-client-is-told`:346 — the block-entity hop.** The
    page had `ChunkHolder.broadcastBlockEntityIfNeeded` calling
    `BlockEntity.getUpdatePacket`. `ChunkHolder.java`:240-245 has *IfNeeded*
    testing `BlockState.hasBlockEntity` and delegating to
    `ChunkHolder.broadcastBlockEntity` (:247-258), which is the one call site
    of `getUpdatePacket`. `block-entities` named the inner one and was right.
-   Page against page.
-7. **`networking/what-the-client-is-told`:317 — "Once a tick".**
+   Page against page.~~ *(checked (`server/level/ChunkHolder.java`:240–258); one of two callers since 26.3 (session E's 162) — pass 8, session I)*
+7. ~~**`networking/what-the-client-is-told`:317 — "Once a tick".**
    `ServerChunkCache.broadcastChangedChunks` is called from
    `ServerChunkCache.tickChunks` (`ServerChunkCache.java`:345-362), inside the
    `!level.isDebug()` guard and only when the caller passed `tickChunks`, so
    it is once per *chunk-ticking* tick and never in a debug world — which
    `lighting`:293-295 and `server-level-tick`:86 both carry and this page did
-   not. Page against two pages.
-8. **`networking/what-the-client-is-told`:214-215 — "none of them helps a mob
+   not. Page against two pages.~~ *(wrong in part: a frozen tick still broadcasts — see *Pass 8, session I*, correction 125 — pass 8, session I)*
+8. ~~**`networking/what-the-client-is-told`:214-215 — "none of them helps a mob
    outside entity-ticking range".** Gate 2 is a disjunction, so a mob out of
    entity-ticking range still passes it on a section change or with
    `Entity.needsSync` set — which the page states twice below (:167-170,
    :430-432). Page against itself; the sentence now names the mob that fails
-   *all three* disjuncts.
-9. **`networking/chat-and-signing`:266-268 — "vanilla never sends one".** The
+   *all three* disjuncts.~~ *(checked; the paragraph after it was wrong — see *Pass 8, session I*, correction 114 — pass 8, session I)*
+9. ~~**`networking/chat-and-signing`:266-268 — "vanilla never sends one".** The
    Q&A said no unsigned copy is ever sent, contradicting the page's own
    :44-46 and :219-220. `MessageArgument.resolveChatMessage`
    (`MessageArgument.java`:46-58) calls `PlayerChatMessage.withUnsignedContent`
    with the resolved component on every message-argument command. Page against
-   itself; the claim is now that the *decorator* never produces one.
-10. **`networking/chat-and-signing`:44-46 — "sets it on every message it
+   itself; the claim is now that the *decorator* never produces one.~~ *(checked (`server/MinecraftServer.java`:2328–2330; `commands/arguments/MessageArgument.java`:54, :56); the font answer's second clause was wrong — see *Pass 8, session I*, correction 146 — pass 8, session I)*
+10. ~~**`networking/chat-and-signing`:44-46 — "sets it on every message it
     resolves".** `PlayerChatMessage.withUnsignedContent`
     (`PlayerChatMessage.java`:44-48) keeps the copy only when it differs from
     `Component.literal(signedContent)`, so a command message with no selector
     in it carries none. Corrected to "differs exactly when a selector
-    expanded".
+    expanded".~~ *(checked (`network/chat/PlayerChatMessage.java`:44–48; `commands/arguments/MessageArgument.java`:101, :129) — pass 8, session I)*
 11. ~~**`player/player-anatomy`:245 — `ProfileKeyPair` on a `ServerPlayer`.**
     There is no `ProfileKeyPair` anywhere under `net/minecraft/server`; what
     `ServerPlayer` holds is `ServerPlayer.chatSession`, a `RemoteChatSession`
     (`ServerPlayer.java`:281), and the key pair lives on the client inside a
     `LocalChatSession`. Page against `chat-and-signing`:286-290.
     `player/README`:143 said the same thing and is corrected with it.~~ *(checked (`server/level/ServerPlayer.java`:286; `network/chat/RemoteChatSession.java`:12) — pass 8, session H)*
-12. **`networking/packets-and-stream-codecs`:367-375 — an absolute "never".**
+12. ~~**`networking/packets-and-stream-codecs`:367-375 — an absolute "never".**
     "Client-supplied component *contents* never cross the wire at all" is
     falsified twenty lines above by the creative slot, which the same page
     calls the one packet that carries an arbitrary item. Scoped to the
-    container click.
-13. **`networking/packets-and-stream-codecs`:302-305 — a broken sentence** on
+    container click.~~ *(checked (`network/protocol/game/ServerboundContainerClickPacket.java`:14–18); what a `HashedStack` holds now said — see *Pass 8, session I*, correction 66 — pass 8, session I)*
+13. ~~**`networking/packets-and-stream-codecs`:302-305 — a broken sentence** on
     a numeric claim ("with `BundlerInfo.BUNDLE_SIZE_LIMIT` caps a bundle at
     4,096"). Rewritten; 4,096 re-derived (`BundlerInfo.java`:13), and
     `BundlePacket`'s relation to `ClientboundBundlePacket` stated (abstract
-    class and its one subclass, `ClientboundBundlePacket.java`:7).
-14. **`networking/packets-and-stream-codecs`:335-344 — trust and direction.**
+    class and its one subclass, `ClientboundBundlePacket.java`:7).~~ *(checked (`network/protocol/BundlerInfo.java`:13, :45) — pass 8, session I)*
+14. ~~**`networking/packets-and-stream-codecs`:335-344 — trust and direction.**
     The paragraph said trust is "about the read budget rather than about
     direction" and then "The rule is direction". Both halves are true of
     different things and the page asserted and denied one claim; now the
-    *mechanism* is a budget and the *rule for choosing* is direction.
-15. **`networking/README`:84-86 — "the only system in the book designed
+    *mechanism* is a budget and the *rule for choosing* is direction.~~ *(checked (`network/codec/ByteBufCodecs.java`:375–381; `nbt/NbtAccounter.java`:24–26) — pass 8, session I)*
+15. ~~**`networking/README`:84-86 — "the only system in the book designed
     against an adversary".** False against page two of its own part, which has
     a section headed *What stops a hostile sender*. Narrowed to a *lying*
-    peer against a malformed one, which is the real difference.
-16. **`networking/README`:78-80 against :106-108 — an internal
+    peer against a malformed one, which is the real difference.~~ *(wrong: the movement and reach checks are written against a lying client — see *Pass 8, session I*, correction 8 — pass 8, session I)*
+16. ~~**`networking/README`:78-80 against :106-108 — an internal
     contradiction.** The watch-order line said the player object is built in
     this part; *where the part stops* said how a `ServerPlayer` comes to exist
-    is Part III's. Both now say the same thing.
-17. **`networking/protocol-phases`:60 — a table cell naming the wrong kind of
+    is Part III's. Both now say the same thing.~~ *(checked (`server/network/ServerConfigurationPacketListenerImpl.java`:105, :166–186) — pass 8, session I)*
+17. ~~**`networking/protocol-phases`:60 — a table cell naming the wrong kind of
     thing.** The status row's clientbound listener was "reached from
     `ServerStatusPinger`" where every other cell names a listener; it is an
     anonymous `ClientStatusPacketListener` inside that class
-    (`ServerStatusPinger.java`:71).
+    (`ServerStatusPinger.java`:71).~~ *(checked (`client/multiplayer/ServerStatusPinger.java`:71) — pass 8, session I)*
 
 **Four suspicions re-derived and found sound**, recorded because a strike is a
 claim: `IdDispatchCodec`'s "not a table the encoder walks" (it is a
@@ -12148,26 +12465,26 @@ name it the same way.
 ### Claims introduced
 
 **`networking/README` (rewritten to the role).**
-- The part's shape sentence is now "**the wire three times, and two things it
+- ~~The part's shape sentence is now "**the wire three times, and two things it
   carries**", replacing "one wire and three passengers", which the page
   contradicted twenty lines below and which `lectures.md` carried in its
   un-softened form. The claim is that lectures 1–3 are all descriptions of the
-  wire and 4–5 are applications of the play phase.
-- **The figure is redrawn** to two subgraphs — *the wire, described three
+  wire and 4–5 are applications of the play phase.~~ *(checked; *Nothing after those three is about the wire* was wrong — see *Pass 8, session I*, correction 5 — pass 8, session I)*
+- ~~**The figure is redrawn** to two subgraphs — *the wire, described three
   ways* over the chain `TC → PSC → PP`, and *what it carries* over `WCT` and
   `CS` — with one labelled edge between them replacing the two unlabelled
   arrows `PP --> WCT` and `PP --> CS`, which asserted a dependency the page's
   own :88-91 denies. Verified before redrawing that neither target page names
-  `protocol-phases`, `ConnectionProtocol` or `ProtocolInfo`.
-- The opening's four player-visible failures are replaced: two of the old four
+  `protocol-phases`, `ConnectionProtocol` or `ProtocolInfo`.~~ *(overtaken by pass 7's redraw, checked there — pass 8, session I)*
+- ~~The opening's four player-visible failures are replaced: two of the old four
   (the rubber-band, the block that comes back) are paid off only in Parts VIII
   and X, and one (the grey bar) nowhere in the book. The new four —
   *Connection lost*, the mob that freezes and jumps, the chest that says
   nothing until opened, the red chat line that takes the rest of the session
-  with it — are each answered on a page of this part.
-- The traffic-volume clause is kept and re-purposed as the reason two of five
-  lectures take most of the part's length.
-- **A new *Where the part stops* section** with the size through
+  with it — are each answered on a page of this part.~~ *(wrong in part: the frozen mob rested on a mechanism the owner page no longer states — see *Pass 8, session I*, correction 2 — pass 8, session I)*
+- ~~The traffic-volume clause is kept and re-purposed as the reason two of five
+  lectures take most of the part's length.~~ *(wrong: the last two are 38% of the part's lines — see *Pass 8, session I*, correction 9 — pass 8, session I)*
+- ~~**A new *Where the part stops* section** with the size through
   `{{#include ../../generated/part-networking.md}}`, and the coverage
   argument: **this part owns the wire, not everything in `network/`** —
   `network/chat` is Part II's, much of `client/multiplayer` is Part X's, and
@@ -12175,95 +12492,95 @@ name it the same way.
   narrated. Three systems are named and declined with a reason: player
   reporting (already out of scope on `what-this-book-skips`), the server list
   and its screen (Part XI's to draw), and the boss-bar feed, whose sending
-  side has no owner anywhere in the book.
+  side has no owner anywhere in the book.~~ *(checked (490 classes, 38,711 lines; `network/protocol` the largest block); the boss-bar feed is taught on scores, teams and stored data — see *Pass 8, session I*, correction 14 — pass 8, session I)*
 - *Reference this part uses* now lists `level-data-and-rules`, which a page of
   the part actually cites, and drops nothing.
 
 **`networking/the-connection`.**
-- Keep-alive is stated as the *common* listener's, so it runs in
+- ~~Keep-alive is stated as the *common* listener's, so it runs in
   configuration, and takes in two facts from `players-and-sessions`: that a
   wrong-id answer disconnects immediately rather than being ignored, and that
   the round trip is smoothed three parts old to one part new, so a tab list
-  lags a real latency change by several pings.
-- The memory-connection crash answer takes both disconnect strings in from
-  `server-tick` and states them as one catch with two branches.
-- **New coverage passage**: `client/multiplayer/resolver` —
+  lags a real latency change by several pings.~~ *(checked (`server/network/ServerCommonPacketListenerImpl.java`:85–91, :88); *takes the same branch* was loose — see *Pass 8, session I*, correction 43 — pass 8, session I)*
+- ~~The memory-connection crash answer takes both disconnect strings in from
+  `server-tick` and states them as one catch with two branches.~~ *(checked (`server/network/ServerConnectionListener.java`:180–194); *a throw* was an exception — see *Pass 8, session I*, correction 36 — pass 8, session I)*
+- ~~**New coverage passage**: `client/multiplayer/resolver` —
   `ServerAddress.parseString`, `ServerNameResolver`, `ServerRedirectHandler`'s
   `_minecraft._tcp` SRV lookup, `AddressCheck` and `ResolvedServerAddress` —
   written from `ServerNameResolver.java`:21-38 and
   `ServerRedirectHandler.java`:42. Plus `ServerList`/`ServerData` named in the
   clause that already described them, `LegacyServerPinger` as the client half
   of the legacy-query row, and `Varint21LengthFieldPrepender` named in the
-  outbound pipeline list where only the string `"prepender"` stood.
+  outbound pipeline list where only the string `"prepender"` stood.~~ *(checked (`client/multiplayer/resolver/ServerNameResolver.java`:21–38; `client/multiplayer/resolver/ServerRedirectHandler.java`:42); `ServerList` was wrong — see *Pass 8, session I*, correction 31 — pass 8, session I)*
 
 **`networking/packets-and-stream-codecs`.**
-- **New passage on the per-phase listener interfaces** —
+- ~~**New passage on the per-phase listener interfaces** —
   `ClientGamePacketListener` and `ServerGamePacketListener` (390 lines
   between them), the common pair, the six phase pairs and the two roots — as
   what `Packet.handle` targets, which the page asserted and never named. The
   claim that a listener of the wrong shape is the cast failure
-  `the-connection` describes.
-- **New clause on the login-phase payload family** (`CustomQueryPayload`,
+  `the-connection` describes.~~ *(checked; the four hundred lines and *nothing in them decides* were wrong — see *Pass 8, session I*, correction 54 — pass 8, session I)*
+- ~~**New clause on the login-phase payload family** (`CustomQueryPayload`,
   `CustomQueryAnswerPayload` and the discarding forms), because the section
-  called `CustomPacketPayload` "the one seam" and the login twin exists.
-- The trusted pairs now carry their call-site counts, moved in from
+  called `CustomPacketPayload` "the one seam" and the login twin exists.~~ *(checked; *answers nothing* was wrong — see *Pass 8, session I*, correction 72 — pass 8, session I)*
+- ~~The trusted pairs now carry their call-site counts, moved in from
   `codecs-nbt-json`: `TRUSTED_COMPOUND_TAG` has exactly one
   (`ClientboundBlockEntityDataPacket`), `TRUSTED_TAG` none at all, and
   `ComponentSerialization.TRUSTED_STREAM_CODEC` is used by every clientbound
   chat packet — which pays off `text-components`:236's inbound promise and is
   the codec the page's own figure draws (verified against
   `ClientboundSystemChatPacket.java`:13 and
-  `ClientboundPlayerChatPacket.java`:22).
+  `ClientboundPlayerChatPacket.java`:22).~~ *(checked (`network/protocol/game/ClientboundBlockEntityDataPacket.java`:18; `network/codec/ByteBufCodecs.java`:190; `network/protocol/game/ClientboundSystemChatPacket.java`:13) — pass 8, session I)*
 - ~~The three-layer serverbound defence, moved in from `codecs-nbt-json`, and
   `ItemStack.CODEC` named as what the validating re-encode runs;
   `ServerGamePacketListenerImpl` named as the server's creative context.~~ *(checked: `world/item/ItemStack.java`:178, `server/network/ServerGamePacketListenerImpl.java`:233, :2530–2531, `network/protocol/game/GameProtocols.java`:43; the three fences stand on `networking/packets-and-stream-codecs`, which this page links twice — pass 8, session B)*
-- **"the other *eight* templates — nine in all"** stated once here, where the
-  page had "every other template" and `protocol-phases` had a bare correction.
+- ~~**"the other *eight* templates — nine in all"** stated once here, where the
+  page had "every other template" and `protocol-phases` had a bare correction.~~ *(checked (the nine templates) — pass 8, session I)*
 
 **`networking/protocol-phases`.**
-- The registry-and-tag-sync passage is cut to what belongs to a *phase* — the
+- ~~The registry-and-tag-sync passage is cut to what belongs to a *phase* — the
   order and the count of packets — with the mechanism cited to
   `identifiers-and-registries#when-a-world-opens`. The claim retained here is
-  that nothing is applied as it arrives.
-- The play-binding paragraph is cut to one sentence whose claim is new in this
+  that nothing is applied as it arrives.~~ *(checked (`client/multiplayer/ClientConfigurationPacketListenerImpl.java`:84, :90, :176–185) — pass 8, session I)*
+- ~~The play-binding paragraph is cut to one sentence whose claim is new in this
   form: the configuration-to-play switch is **the only transition in a
   connection's life that changes what a packet number means as well as which
-  packets are legal**.
-- `PrepareSpawnTask`'s internals are cut to the two states and the hook, with
+  packets are legal**.~~ *(wrong: every transition swaps the id table — see *Pass 8, session I*, correction 82 — pass 8, session I)*
+- ~~`PrepareSpawnTask`'s internals are cut to the two states and the hook, with
   the page keeping "everything between the join task and that handler is a
   server holding a ticket on chunks for a player that does not exist" as its
-  own.
-- `ClientboundCodeOfConductPacket` and `ServerboundAcceptCodeOfConductPacket`
+  own.~~ *(checked (`server/network/config/PrepareSpawnTask.java`:205); *does nothing at all* was wrong — see *Pass 8, session I*, correction 96 — pass 8, session I)*
+- ~~`ClientboundCodeOfConductPacket` and `ServerboundAcceptCodeOfConductPacket`
   named, and `ServerboundCustomQueryAnswerPacket` named where the page had
-  only the request side.
-- The creative filter and the compression asymmetry are cut to one clause and
-  a citation each.
+  only the request side.~~ *(checked (`server/network/config/ServerCodeOfConductConfigurationTask.java`:20; `server/network/ServerConfigurationPacketListenerImpl.java`:161–163) — pass 8, session I)*
+- ~~The creative filter and the compression asymmetry are cut to one clause and
+  a citation each.~~ *(checked (`server/network/ServerLoginPacketListenerImpl.java`:154–158) — pass 8, session I)*
 
 **`networking/what-the-client-is-told`.**
-- **`Entity.updateDataBeforeSync` added to the prose and the figure**, ahead
+- ~~**`Entity.updateDataBeforeSync` added to the prose and the figure**, ahead
   of the gate-3 branch, with the claim that an effect expiring this tick can
-  dirty the container and open its own gate in the same call.
-- **New paragraph after the gate-3 table**: the interval gate covers the
+  dirty the container and open its own gate in the same call.~~ *(checked (`server/level/ServerEntity.java`:101; `world/entity/LivingEntity.java`:863–866) — pass 8, session I)*
+- ~~**New paragraph after the gate-3 table**: the interval gate covers the
   synched-data flush as well as the position block; the `ItemFrame` branch is
   the *only* path to that flush which skips the interval test; and
   `ServerEntity.handleMinecartPosRot` reaches it from inside the gate. All
-  three moved from `synched-entity-data` (session F's routed list, discharged).
+  three moved from `synched-entity-data` (session F's routed list, discharged).~~ *(checked (`server/level/ServerEntity.java`:135, :161, :230, :240, :296); the sheep's position and *three sections down* were wrong — see *Pass 8, session I*, correction 118 — pass 8, session I)*
 - ~~Two table rows gain the numbers `movement-and-collision` had and this page
   did not: `FORCED_TELEPORT_PERIOD` as four hundred *gated* calls, "at least
   1,200 ticks on the default interval", and that the ground-flag row is the
   common case.~~ *(wrong in part: 400 gated calls is about 1,200 ticks for an entity tracked every tick, and fewer when data or a push opens the gate, not at least — see *Pass 8, session F*, corrections 154 and 280, and `networking/what-the-client-is-told` under *Elsewhere* — pass 8, session F)*
-- `VecDeltaCodec` named in the prose as the object holding the dead-reckoning
+- ~~`VecDeltaCodec` named in the prose as the object holding the dead-reckoning
   base, where it had appeared only in *Where to look*;
   `ClientboundSetPassengersPacket` and `ClientboundSetEntityLinkPacket` named
-  in the feeds and the pairing bundle.
-- The chunk enter/leave section and the view's shape are cut to two sentences
+  in the feeds and the pairing bundle.~~ *(checked; the *dead-reckoning base* wording went with the hook — see *Pass 8, session I*, correction 104 — pass 8, session I)*
+- ~~The chunk enter/leave section and the view's shape are cut to two sentences
   citing `tickets-and-loading`, keeping only `ChunkTrackingView.Positioned`,
   which no other page names; the light audience is cut to one sentence citing
   `lighting`; both block-entity default statements are cut to the consequence
-  citing `block-entities`.
+  citing `block-entities`.~~ *(checked (`server/level/ChunkTrackingView.java`:91–105) — pass 8, session I)*
 
 **`networking/chat-and-signing`.**
-- **New passage on the text filter** — `TextFilter`, `TextFilter.DUMMY`,
+- ~~**New passage on the text filter** — `TextFilter`, `TextFilter.DUMMY`,
   `MinecraftServer.createTextFilterForPlayer`,
   `ServerTextFilter.createFromConfig` and its two implementations,
   `FilteredText` and `Filterable` — with the claim that a vanilla server has
@@ -12271,18 +12588,18 @@ name it the same way.
   `FilterMask` travels with the message and is applied per recipient. Written
   from `ServerTextFilter.java`:72-108, `TextFilter.java`:9-19,
   `FilteredText.java`, `Filterable.java`:11 and `MinecraftServer.java`:2290
-  against `DedicatedServer.java`:826-828.
-- `ChatTypeDecoration` named as the translation key and argument list behind
+  against `DedicatedServer.java`:826-828.~~ *(checked (`server/network/TextFilter.java`:9–19; `server/network/ServerTextFilter.java`:72–93); *every message* and the citation were wrong — see *Pass 8, session I*, corrections 136 and 137 — pass 8, session I)*
+- ~~`ChatTypeDecoration` named as the translation key and argument list behind
   the *someone said* wrapper, with the claim that the phrasing around a line
-  is data and the line is not.
-- `LastSeenTrackedEntry` named as the twenty slots, and `LocalChatSession` as
-  what holds the key pair on the client.
-- The selector-expansion fact is given one home on the page — the *Commands*
+  is data and the line is not.~~ *(checked (`network/chat/ChatTypeDecoration.java`:15) — pass 8, session I)*
+- ~~`LastSeenTrackedEntry` named as the twenty slots, and `LocalChatSession` as
+  what holds the key pair on the client.~~ *(checked (`network/chat/LastSeenTrackedEntry.java`:3; `network/chat/LocalChatSession.java`:7) — pass 8, session I)*
+- ~~The selector-expansion fact is given one home on the page — the *Commands*
   section — with the mechanism cited to `text-components` and the enumeration
   of which commands to `brigadier-and-commands`; the opening keeps only the
-  security consequence.
-- The `ChatAbilities` paragraph is cut to a sentence and a link, with the four
-  atoms' effects moved to `commands/permissions`.
+  security consequence.~~ *(checked — pass 8, session I)*
+- ~~The `ChatAbilities` paragraph is cut to a sentence and a link, with the four
+  atoms' effects moved to `commands/permissions`.~~ *(checked (`client/Minecraft.java`:2644–2664) — pass 8, session I)*
 
 **Pages in other parts, edited because they held or contradicted Part IX
 material.**
@@ -12338,17 +12655,17 @@ answer; `check_links.py` proves only that the heading exists.
   implementations [of `Packet`] are records", which no page supports; it now
   says "three shapes", which the owner page does support but does not count.
   A count either page could state and neither does.
-- `chat-and-signing`:139-140 counts "the first fifteen rows" of its check
-  table by hand; correct as it stands, and wrong the moment a row is added.
-- `chat-and-signing`:100-101 uses "expired" for `hasExpiredServer`, which is
+- ~~`chat-and-signing`:139-140 counts "the first fifteen rows" of its check
+  table by hand; correct as it stands, and wrong the moment a row is added.~~ *(checked (eighteen rows, fifteen and three) — pass 8, session I)*
+- ~~`chat-and-signing`:100-101 uses "expired" for `hasExpiredServer`, which is
   five minutes; the number appears only in the Q&A at :262-263. True but
-  stated in two places in two vocabularies.
-- Whether a respawn clears a broken chat chain. `ServerPlayer.restoreFrom`
+  stated in two places in two vocabularies.~~ *(checked (`network/chat/PlayerChatMessage.java`:30); one word now (pass5.md:4705) — pass 8, session I)*
+- ~~Whether a respawn clears a broken chat chain. `ServerPlayer.restoreFrom`
   copies `chatSession` (`ServerPlayer.java`:1729) but the chain decoder lives
   on `ServerGamePacketListenerImpl` (:274), which survives a respawn — so a
   broken chain almost certainly survives dying. Not written, because it is a
   new claim and the page did not raise it; logged in
-  [pass5.md](pass5.md) for pass 6.
+  [pass5.md](pass5.md) for pass 6.~~ *(overtaken: the page answers it, now scoped — see *Pass 8, session I*, correction 140 — pass 8, session I)*
 - ~~`foundations/text-components` tells the `/say @a` punchline twice on its own
   page (:274-275 body and :425-432 Q&A). Part II's, and a page-shape finding;
   logged for pass 6.~~ *(overtaken: pass 6 session B cut the Q&A's telling; the one left, in the resolution section, is checked — `commands/arguments/MessageArgument.java`:100–113, `server/commands/SayCommand.java`:17 — pass 8, session B)*
@@ -13241,11 +13558,11 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   sets it; and `Block.UPDATE_LIMIT`'s paragraph now names the distinction from
   the chain budget. Its opener stops enumerating three of the seven pages that
   spend a flag word.
-- **`networking/what-the-client-is-told`** receives the fact that
+- ~~**`networking/what-the-client-is-told`** receives the fact that
   `ChunkHolder.broadcastChanges` "reads the level again when it builds the
   packet", so the set holds positions and not values and a whole cascade is
   broadcast as one state per position — moved from `signal-and-dust`, which
-  stated it twice and now cites it once.
+  stated it twice and now cites it once.~~ *(checked (`server/level/ChunkHolder.java`:130–147, :218); *Where to look*'s *one packet per position* now says one state — pass 8, session I)*
 - ~~**`world/scheduled-ticks`** now claims "a booking cannot be called off:
   nothing in the game cancels a single scheduled tick, the only removals being
   the bulk area operations" — `LevelTicks.clearArea`/`copyAreaFrom`, which the
@@ -13337,13 +13654,13 @@ tool bug, and it had been hiding broken links.
   `ARGB.srgbLerp(0.22F, …)`, so the owner page is right. **Now:** the rendering
   page's whole duplicate paragraph is one clause and a link, so the number is
   stated once.
-- `networking/what-the-client-is-told`:368 said the once-a-second time sync
+- ~~`networking/what-the-client-is-told`:368 said the once-a-second time sync
   "carries a game time plus **a map of clock updates**".
   `MinecraftServer.java:1299-1305` broadcasts
   `new ClientboundSetTimePacket(this.overworld().getGameTime(), Map.of())` — an
   **empty** map, which is what `environment-attributes-and-timelines`:221 says.
   **Now:** the networking page says the map is empty and that clock state travels
-  only on a change or a join, with the owner's anchor.
+  only on a change or a join, with the owner's anchor.~~ *(checked (`server/MinecraftServer.java`:1282); *only when a clock is changed or a player joins* was wrong — see *Pass 8, session I*, correction 127 — pass 8, session I)*
 - `reference/level-data-and-rules`:47 sent the reader to `server/server-tick`
   for day time; that page does not own it, `environment-attributes-and-timelines`
   does, and the environment page was claiming this Reference page pointed at it.

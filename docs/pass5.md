@@ -111,7 +111,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   client falling behind is one thread deciding what to spend a frame on — which
   is the fourth time the reversal has produced the part's argument in one
   sentence. The remaining three are their own sessions' and session O's.
-  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers.
+  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone.
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -1241,10 +1241,10 @@ drop the number.
 - ~~`player/README.md:32,63` — "**eight** classes" is the cast table's eight [kind=voice]
   *rows*, which name nine classes (one row holds `ServerPlayerGameMode` /
   `MultiPlayerGameMode`).~~ *Ruled, pass 8 session H: the cast now names ten classes, and the landing page's eight are those besides the two game-mode objects it counts separately (`player/README`:85).*
-- `networking/README.md:35` — "the two the part spends longest on" names
+- ~~`networking/README.md:35` — "the two the part spends longest on" names
   *what the client is told* and *chat and signing*; by line count the two
   longest are `what-the-client-is-told` (474) and `packets-and-stream-codecs`
-  (465), and `chat-and-signing` (326) is the shortest page in the part.
+  (465), and `chat-and-signing` (326) is the shortest page in the part.~~ *Done, pass 8 session I: the claim is gone — the last two are 38% of the part's lines — and the landing page calls them the traffic's two extremes.*
 
 **A superlative that is true only of the sub-population the page stands in.**
 
@@ -2995,7 +2995,7 @@ was cut or moved, and why)*
   are not the same copy, and erring towards the licence being visible is
   right. [kind=book]
 
-- **2026-09-03, pass 3 session J — what Part IX's reshape cut.** Logged per [kind=record]
+- ~~**2026-09-03, pass 3 session J — what Part IX's reshape cut.** Logged per [kind=record]
   R7: nothing left a page except by moving or by this entry.
   **From `the-connection`** (550 → 442 lines), all of it enumeration the
   budgets no longer allow and none of it load-bearing: the sixteen
@@ -3009,9 +3009,9 @@ was cut or moved, and why)*
   the five `TickablePacketListener` implementors listed by name (the
   interface's role survives in the cast); and five `Connection` accessors
   named as names. If pass 6 misses any of these, the class index still has
-  them and `reference/packets.md` is the catalogue.
+  them and `reference/packets.md` is the catalogue.~~ *Record, pass 8 session I: pass 3's cuts; `HandlerNames` survives as one sentence, `Connection.intendedProfileId` is gone in 26.3, and the class index carries the rest.*
 
-- **2026-09-03, session J, the rest of Part IX's cuts and its wording debt.**
+- ~~**2026-09-03, session J, the rest of Part IX's cuts and its wording debt.**
   [kind=voice] *The cut half is a record; the wording half is pass 8's. The
   second-person drift it flagged was settled corpus-wide by pass 6 session A
   (A1), and pass 6 session I left all three of Part IX's second-person
@@ -3038,7 +3038,7 @@ was cut or moved, and why)*
   `the-spear`'s *stab* and *charge* do. And `the-connection` and
   `packets-and-stream-codecs` both call the codec table *the phase's one
   codec*, which is precise but is the sort of phrase a viewer hears as a
-  singular file rather than a composed dispatcher. **VIII's share ruled, pass 8 session H**: the second person is V14's (A1 stands).
+  singular file rather than a composed dispatcher. **VIII's share ruled, pass 8 session H**: the second person is V14's (A1 stands). **IX's share ruled, pass 8 session I**: *message*, *chain* and *connection* stay the three outcomes' names, since they name what a refusal kills and the `ChatAbilities` path refuses nothing; *the phase's one codec* is on neither page now.~~ *Ruled, pass 8 session I: every share is settled (VIII's by session H, IX's above).*
 
 - **2026-09-03, session K, Part X's cuts and its wording debt.** [kind=record]
   **Cuts, all of them moves rather than losses.** `hud`'s twenty-eight-row
@@ -3296,7 +3296,7 @@ pass 5: at most half the pages in a part end on it**, and on the others
 the same question-and-answer material either dissolves into the section
 where the answer happens (session G's precedent — *Three things about the
 id*, *Why mobs look stupid*) or takes a heading that says what the section
-says.
+says. **IX checked, pass 8 session I**: two of the five pages end on one (`the-connection`, `chat-and-signing`).
 
 **Seven pairs of pages share a skeleton**, which the charter says means
 neither is done. Within one part: `server-tick` / `server-level-tick`
@@ -3698,7 +3698,7 @@ it made are in [pass9.md](pass9.md).*
 
 ## From pass-4 session I (Part IX Networking), 2026-09-04
 
-Wording debt from fixes made in place, and structural findings not acted on. [kind=record]
+~~Wording debt from fixes made in place, and structural findings not acted on. [kind=record]~~ *Record: the lead-in of pass 4 session I's list; its open items are settled below — pass 8 session I.*
 
 - ~~`networking/README.md` — the opening's four player-visible failures now
   ends on "a grey bar down its left edge"…~~ **Done, session I (pass 5)**: the
@@ -3717,13 +3717,13 @@ Wording debt from fixes made in place, and structural findings not acted on. [ki
   session I (pass 5)**: it stays, because with the shape decided it is no
   longer a footnote — it is the reason two of five lectures take most of the
   part's length, which is an argument and therefore the landing page's.
-- `the-connection.md` — the `HandlerNames` paragraph existed to deliver "a
+- ~~`the-connection.md` — the `HandlerNames` paragraph existed to deliver "a
   complete and correct index that no code reads". The index turned out to be
   incomplete, so the paragraph now delivers "an index that has already
   drifted", which is a different and slightly weaker point occupying the same
-  space. Consider cutting it to one clause.
-- `the-connection.md` — the kick answer is now four sentences where the
-  question deserves two. The mechanism took three of them. [kind=voice]
+  space. Consider cutting it to one clause.~~ *Done, pass 8 session I: V6 took the unread claim with it, and the paragraph is one sentence.*
+- ~~`the-connection.md` — the kick answer is now four sentences where the
+  question deserves two. The mechanism took three of them. [kind=voice]~~ *Ruled, pass 8 session I: the answer was wrong about `/kick` and was rewritten for its facts in two sentences; its length stays.*
 - ~~`packets-and-stream-codecs.md` — the "three shapes of packet class"
   paragraph… the third is introduced twice on the page.~~ **Done, session I
   (pass 5)**, half overtaken: the bundle section's `StreamCodec.unit` is a
@@ -3752,7 +3752,7 @@ Wording debt from fixes made in place, and structural findings not acted on. [ki
   opening keeps only the security consequence — the sentence the entry was
   really about.
 
-Structural findings, not acted on:
+~~Structural findings, not acted on:~~ *Overtaken: both items below it are struck — pass 8 session I.*
 
 - ~~`reference/threads.md` — the never-hop section's population is stated as
   "`ClientPacketListener`", a class…~~ **Overtaken, checked session I (pass
@@ -4299,12 +4299,12 @@ corrections it made are in [pass9.md](pass9.md).*
   spear and now points at `the-spear`.**~~ *Checked, session H: the round trip
   is paid off in both directions and both ends now carry anchors.* Session H should check the round trip:
   `player/README`:57-59 sends readers to Part VII *for* the spear.
-- **Session I (IX) — `packets-and-stream-codecs`:368-373 describes the [kind=book]
+- ~~**Session I (IX) — `packets-and-stream-codecs`:368-373 describes the [kind=book]
   `HashedStack` shape, which `containers-and-menus` owns.** The packet page
   names `HashedPatchMap.addedComponents` and `HashedPatchMap.removedComponents`,
   which the click page describes without naming: a move, not a cut. The framing
   claim (*exactly one packet lets a client hand the server an item*) is the
-  packet page's and `containers-and-menus` now keeps the handler only. **VII's share, pass 8 session G**: nothing to change on `containers-and-menus`, which keeps the handler; the packet page's half is IX's.
+  packet page's and `containers-and-menus` now keeps the handler only. **VII's share, pass 8 session G**: nothing to change on `containers-and-menus`, which keeps the handler; the packet page's half is IX's.~~ *Done, pass 8 session I: the packet page says what a `HashedStack` holds (an item, a count and a hash per component) and cites `containers-and-menus` for the shape; every share settled.*
 - **Session J (X) — `client/gui-and-screens` and `containers-and-menus` are
   unlinked in both directions on three shared mechanisms**: the null `MenuType`
   (its hook), `AbstractContainerScreen`'s click resolution, and
@@ -4395,7 +4395,7 @@ corrections it made are in [pass9.md](pass9.md).*
   `using-an-item` 2, `the-connection` 2, and one each on `attributes`,
   `authority`, `movement-and-collision`, `synched-entity-data`, `the-spear`,
   `the-two-phase-tick`). Fixing two of the nineteen would make the corpus less
-  consistent, not more; this is the terminology sweep's. [kind=voice] **VI's share done, pass 8 session F**: Part VI's cast columns say *Server thread* and *Render thread*. **VII's share done, pass 8 session G**: Part VII's casts say *Server* and *Render*. **VIII's share done, pass 8 session H**: Part VIII's casts say *Server*, *Render* and *both*.
+  consistent, not more; this is the terminology sweep's. [kind=voice] **VI's share done, pass 8 session F**: Part VI's cast columns say *Server thread* and *Render thread*. **VII's share done, pass 8 session G**: Part VII's casts say *Server* and *Render*. **VIII's share done, pass 8 session H**: Part VIII's casts say *Server*, *Render* and *both*. **IX's share done, pass 8 session I**: Part IX's casts and prose say *Server* and *Render*.
 - ~~**`recipes` says the `CraftingInput` constructor's accounting twice**, 170
   lines apart in different vocabulary (L152-153 and L324-326).~~ **Done, pass 6
   session G**: the two halves were one idea told from opposite ends — the
@@ -4700,20 +4700,20 @@ that takes it. Everything session I did act on is struck above or logged in
 
 **For pass 8 (the voice).**
 
-- `chat-and-signing`:139-140 hand-counts "the first fifteen rows" of its own
-  table. Correct today, fragile forever. [kind=voice]
-- `chat-and-signing` says a message "has expired" in one section and gives the
+- ~~`chat-and-signing`:139-140 hand-counts "the first fifteen rows" of its own
+  table. Correct today, fragile forever. [kind=voice]~~ *Ruled, pass 8 session I: the count sits beside the eighteen-row table it counts (V3), re-counted this session.*
+- ~~`chat-and-signing` says a message "has expired" in one section and gives the
   five- and seven-minute numbers in another; one vocabulary, one place.
-  [kind=voice]
+  [kind=voice]~~ *Done, pass 8 session I: the Q&A now says the server calls the message *expired* after five minutes.*
 - `reference/glossary`'s **Packet** entry said "roughly half the
   implementations are records", which no page supports; session I replaced it
   with "three shapes", which the owner page supports but does not count.
   Either the page states the proportion or the glossary keeps the shapes.
   [kind=voice]
-- The word *phase* means two unrelated things inside Part IX — a
+- ~~The word *phase* means two unrelated things inside Part IX — a
   `ConnectionProtocol` and a step of the server tick — and `the-connection`
   uses both, one of them inside a figure note where no link can go.
-  [kind=voice]
+  [kind=voice]~~ *Done, pass 8 session I: `the-connection` says *tick phase* for the drain's (V7); its other *phase*s are protocol phases, and no figure note uses the word.*
 
 ## From pass-5 session J (Part X, the client), 2026-09-06
 
@@ -5878,7 +5878,7 @@ even where nothing else on the page needs it. [kind=record] **VI's share: record
 
 ### Cuts, logged per R7 [kind=record]
 
-- `what-the-client-is-told` — **the whole closer, thirty-four lines, seven
+- ~~`what-the-client-is-told` — **the whole closer, thirty-four lines, seven
   questions.** All seven were second tellings of a body section that had
   already delivered the same consequence in the same words ("which is why
   knockback is immediate on a creeper…", "which is why a far-off mob can
@@ -5887,24 +5887,24 @@ even where nothing else on the page needs it. [kind=record] **VI's share: record
   the body did not — `PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES` is ten —
   went into the bullet that names the constant. The page now ends on
   *Choosing what the client may be wrong about*, which is where it should have
-  ended. [kind=record]
-- `packets-and-stream-codecs` — the closer's first question, *Why do packet
+  ended. [kind=record]~~ *Record: a logged cut — pass 8 session I.*
+- ~~`packets-and-stream-codecs` — the closer's first question, *Why do packet
   ids move*, cut as a third telling: the opening states it and *Where a
   packet's number comes from* derives it, with the same two examples. The
-  other three answers became two sections. [kind=record]
-- `chat-and-signing` — *Can a server delete a message from my chat?*, six
+  other three answers became two sections. [kind=record]~~ *Record: a logged cut — pass 8 session I.*
+- ~~`chat-and-signing` — *Can a server delete a message from my chat?*, six
   lines, cut. `ClientboundDeleteChatPacket` is registered, handled and
   constructed by nothing; the only live fact in the answer was that the
   handler can raid the chat-delay queue, which is [the
-  HUD](../src/systems/client/hud.md)'s and is stated there. [kind=record]
-- `the-connection` — the `HandlerNames` paragraph from seven lines to four
+  HUD](../src/systems/client/hud.md)'s and is stated there. [kind=record]~~ *Record: a logged cut — pass 8 session I.*
+- ~~`the-connection` — the `HandlerNames` paragraph from seven lines to four
   (the drift is the point, the inventory of what drifted is not), and the kick
-  answer from ten lines to six. [kind=record]
-- `protocol-phases` — the paragraph under the authentication sequence diagram,
+  answer from ten lines to six. [kind=record]~~ *Record: a logged cut — pass 8 session I; the paragraph is now one sentence.*
+- ~~`protocol-phases` — the paragraph under the authentication sequence diagram,
   which retold the diagram message for message; what survives is the one
   sentence the diagram cannot say (the server's ciphers go in before its own
   session-service call). The blockquote's repeat of the same fact went with
-  it. [kind=record]
+  it. [kind=record]~~ *Record: a logged cut — pass 8 session I.*
 
 ### For pass 7 — the figures [kind=figure]
 
@@ -5958,38 +5958,38 @@ even where nothing else on the page needs it. [kind=record] **VI's share: record
 
 ### For pass 8 — the voice [kind=voice]
 
-- The **possessive-apostrophe citation form** — "are [tickets and loading]'s",
+- ~~The **possessive-apostrophe citation form** — "are [tickets and loading]'s",
   "is [lighting]'s" — stopped three of this part's six readers, each time at
   its first occurrence, and one read it as a typo. It is the book's house
   form and it is corpus-wide, so it wants one decision in pass 8 rather than
   thirteen. Two genuine typos of it (an apostrophe with no *s*) were fixed on
-  `chat-and-signing`. [kind=voice]
-- *Render* as a thread name: it appears in a cast table's thread column on
+  `chat-and-signing`. [kind=voice] **IX's share done, pass 8 session I**: no possessive hangs on a link in Part IX (V8).~~ *Ruled: V8 is the one decision the unit asked for (pass 8 session A), and each part session applies it; IX's done, pass 8 session I.*
+- ~~*Render* as a thread name: it appears in a cast table's thread column on
   `chat-and-signing` and `protocol-phases` and in the prose of neither. Two
-  readers could not place it. Terminology sweep. [kind=voice]
-- `the-connection`: "a packet whose listener is of the wrong **shape**" —
+  readers could not place it. Terminology sweep. [kind=voice]~~ *Done, pass 8 session I: the prose says *Render thread* where the casts say *Render* (V7), and `reference/threads` names it.*
+- ~~`the-connection`: "a packet whose listener is of the wrong **shape**" —
   *shape* is doing work (wrong direction? wrong phase? wrong interface?) that
   no reader could pin down. And "*execute*-style task scheduling", italicised
-  as a term the page never introduces. [kind=voice]
-- `packets-and-stream-codecs`: "the cast failure" reads as a reference to the
+  as a term the page never introduces. [kind=voice]~~ *Done, pass 8 session I: *a listener that does not implement the packet's listener interface*, and *the tasks posted to a game thread*.*
+- ~~`packets-and-stream-codecs`: "the cast failure" reads as a reference to the
   page's own *The cast* section. The book uses *cast* in two senses and this
-  is the one page where they collide. [kind=voice]
-- `chat-and-signing` still uses *message*, *chain* and *connection* as the
+  is the one page where they collide. [kind=voice]~~ *Done, pass 8 session I: *the failed class cast*.*
+- ~~`chat-and-signing` still uses *message*, *chain* and *connection* as the
   names of its three failure outcomes throughout — prose, flowchart and
   eighteen-row table. Session I added a fourth path (`ChatAbilities`, before
   the server is asked) which has no such noun. If pass 8 disagrees with the
-  three words it now changes in four places. [kind=voice]
-- `what-the-client-is-told`: "the next free call forces an absolute sync" —
+  three words it now changes in four places. [kind=voice]~~ *Ruled, pass 8 session I: the three nouns name what a refusal kills and stay; the `ChatAbilities` path refuses nothing server-side and needs none.*
+- ~~`what-the-client-is-told`: "the next free call forces an absolute sync" —
   *free call* is coined once and used once; session I replaced one instance
   with "the next call that opens gate 3" and left the register alone.
-  [kind=voice]
-- `protocol-phases`: the five-item *what disconnects a login* list is prose
+  [kind=voice]~~ *Overtaken, pass 8 session I: *free call* is gone; the passenger row says *the first call to open gate 3 after it dismounts*.*
+- ~~`protocol-phases`: the five-item *what disconnects a login* list is prose
   with a three-line parenthesis inside its fourth item, longer than the rest
-  of the sentence. [kind=voice]
+  of the sentence. [kind=voice]~~ *Done, pass 8 session I: the parenthesis is its own sentence after the list, which now names nine causes.*
 
 ### What the session would tell the next one
 
-Part IX's headline is not a device: it is that **three of this part's five
+~~Part IX's headline is not a device: it is that **three of this part's five
 pages made a promise in a lead-in sentence and then broke it** — "four things
 in that picture" over five paragraphs, "four things" over six with the fourth
 never delivered at all, "the first term in that decision" against a figure and
@@ -5999,9 +5999,9 @@ text under it, and each was found instantly by a reader who was counting
 because the sentence told them to. **A lead-in that names a number is a claim
 about the page**, and it is the cheapest kind of claim to break, because
 editing the section under it does not touch it. Sessions J to N should count
-every one of them.
+every one of them.~~ *Record, pass 8 session I: counted again — *five of the nine* outbound mirrors was six, *two rows down* was six, and *the three states the tick moves through* named two the tick never sets.*
 
-The second thing, which is sessions F to H's lesson holding for a fourth part:
+~~The second thing, which is sessions F to H's lesson holding for a fourth part:
 the link gate caught three citations the moment a heading moved, and all three
 had been pointing at a heading that named a *rare case*
 (*Getting back to unconfigured, which nobody asks for*) while the citing
@@ -6009,7 +6009,7 @@ sentences wanted the general mechanism underneath it. A fourth, on the landing
 page, had been pointing at `#the-threads-underneath-it` for a fact about DNS.
 So it is not only closers and trace headings: **any heading whose name is
 narrower than its section collects citations that mean something else**, and
-the only way to see it is to rename the heading and read what breaks.
+the only way to see it is to rename the heading and read what breaks.~~ *Record, pass 8 session I: one more — `the-connection`'s heading *`Connection.tick`, the one call from a game thread* was false and is corrected with its two links.*
 
 ## Part X · The client — raised by pass 6, session J (2026-09-14)
 

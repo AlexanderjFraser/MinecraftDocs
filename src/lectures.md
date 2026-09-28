@@ -221,7 +221,7 @@ it.
 Part IX is the wire three times, and two things it carries. The first two
 lectures are one lecture in two halves and should be watched together; the
 third finishes the wire's own story by showing the connection changing
-language, and the last two both sit inside the last of those languages and
+language, and the last two both sit inside the play language and
 need neither it nor each other.
 
 1. [The connection](systems/networking/the-connection.md)
@@ -450,7 +450,7 @@ find a later part's first surprise unexplained.
 | [The connection](systems/networking/the-connection.md) | IX | X, XIII — the thread boundary every packet crosses |
 | [Tickets and loading](systems/world/tickets-and-loading.md) | IV | III, VI — what *entity-ticking* means |
 | [The data-driven type pattern](systems/foundations/data-driven-types.md) | II | XII, XIII — the *type* field in a data-pack file and the registry it dispatches on; these two parts own most of its instances |
-| [Text components](systems/foundations/text-components.md) | II | IX, X — what a chat message and a screen's label are before anything draws them |
+| [Text components](systems/foundations/text-components.md) | II | IX, X — what a chat line and a screen's label are before anything draws them |
 
 A dozen or so other pages are named by exactly one landing page, and each
 belongs in that part's *before you start* rather than in this table. Three are

@@ -160,15 +160,28 @@ def read_units() -> tuple[list[Unit], list[str]]:
     # paragraphs of one long bullet (the style sessions H and I used). `cur` is reset by a
     # blank line, so without this a struck bullet's later paragraphs lose the strike.
     owner: Unit | None = None
+    # A ### heading that names its own session and part ("### Part XIII, after session M of pass 4",
+    # inside a Part IX block) owns its units until the next heading of its level or higher; before
+    # pass 8's session I only ## headings set the session, so those units routed to the enclosing
+    # part. `pre_sub` is the session to return to when the sub-heading's block ends.
+    pre_sub = None
     for i, raw in enumerate(lines, 1):
         h = HEADING_RE.match(raw)
         b = BULLET_RE.match(raw)
         if h:
             title = h.group(2)
             in_standing = title.strip().lower().startswith("standing items")
+            if len(h.group(1)) <= 3 and pre_sub is not None:
+                session, session_parts = pre_sub
+                pre_sub = None
             if len(h.group(1)) <= 2:
                 m = SESSION_RE.search(title)
                 if m:
+                    session, session_parts = m.group(1), parts_in(title)
+            elif len(h.group(1)) == 3:
+                m = SESSION_RE.search(title)
+                if m and parts_in(title):
+                    pre_sub = (session, session_parts)
                     session, session_parts = m.group(1), parts_in(title)
             cur = Unit(i, len(h.group(1)), raw, bool(STRUCK_RE.match(raw)), session, session_parts)
             units.append(cur)

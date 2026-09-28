@@ -10,8 +10,8 @@ leaving the server is a `ClientboundSystemChatPacket` — a record of a
 its own, and no number. The number that goes on the wire in front of it is
 written down nowhere in the game: not on the packet, not on its
 `PacketType`, not in any table a human maintains. **A packet's id is the
-position of one line in a chain of registration calls.** Swap two of those
-lines and the whole protocol renumbers — and because a handful of packet
+position of one line in a chain of registration calls.** Insert or remove one of
+those lines and every packet after it renumbers — and because two dozen packet
 types are registered into several phases, *the same packet type is a
 different number in each phase it appears in*.
 
@@ -22,7 +22,7 @@ different number in each phase it appears in*.
 | `Packet` | that a message is a value with a type, one handler method and two flags — and nothing at all about bytes | any |
 | `PacketType` | which message this is: a direction and a name, and no number | — |
 | `StreamCodec` | one value's bytes — an encoder and a decoder over a `ByteBuf`, composed out of its fields' codecs | Netty |
-| `ByteBufCodecs` | the primitive vocabulary every packet codec is built from, and where the read limits sit | Netty |
+| `ByteBufCodecs` | the primitive vocabulary the packet codecs are built from, and where the read limits sit | Netty |
 | `IdDispatchCodec` | one codec for a whole phase: a var-int id, then delegate to the entry that id names | Netty |
 | `ProtocolInfo` | what a configured connection holds — the phase, the direction, that one codec, and the bundler | Netty |
 | `ProtocolInfoBuilder` | the registration chain, and therefore every packet number in the game | class-load, or the configuration-to-play swap |
@@ -40,7 +40,7 @@ types across the eight `*PacketTypes` classes that declare them.
 |---|---|
 | `Packet.type` | the `PacketType`, always a constant from one of the eight `*PacketTypes` classes |
 | `Packet.handle` | hands this packet to one named method on the phase's listener interface — see below |
-| `Packet.isSkippable` | default false. True for the chat-shaped packets, so a failure to encode one is dropped rather than fatal |
+| `Packet.isSkippable` | default false. True for five packets, so a failure to encode one is dropped rather than fatal |
 | `Packet.isTerminal` | default false. True for the seven packets that end a protocol phase |
 | `Packet.codec` | a static convenience: `StreamCodec.ofMember` under a friendlier name |
 
@@ -55,14 +55,13 @@ fixed fields — a `Component` in four of them
 (`ClientboundSystemChatPacket`, `ClientboundPlayerChatPacket`,
 `ClientboundDisguisedChatPacket` and `ClientboundPlayerCombatKillPacket`, the
 death message) and an arbitrary `CompoundTag` in the fifth,
-`ClientboundTagQueryPacket`, which answers `/data get`. Those are the payloads
-likeliest to fail to encode, and the five a connection can survive losing. The
+`ClientboundTagQueryPacket`, which answers the debug key that copies a
+targeted block or entity with its data. Those are the payloads
+likeliest to fail to encode, and the five whose failure to encode a connection survives. The
 terminal set is exactly the seven transition packets drawn on
 [protocol phases](protocol-phases.md#the-five-phases) and no others; what the
-flag *does*
-to the pipeline is [the
-connection](the-connection.md#what-a-terminal-packet-does-to-the-codecs)'s
-business. Beware
+flag *does* to the pipeline is the business of [the
+connection](the-connection.md#what-a-terminal-packet-does-to-the-codecs). Beware
 the namesake: `ServerboundResourcePackPacket.Action.isTerminal` asks
 whether a resource-pack *response* is a final answer, and that packet is
 not terminal.
@@ -70,14 +69,15 @@ not terminal.
 **The interface `Packet.handle` targets is per phase and per direction**, and
 those interfaces are the quietest large family in the part: `ClientGamePacketListener`
 and `ServerGamePacketListener` are the two big ones — one method per packet,
-which is why the play pair is four hundred lines of signatures — with
+which is why the play pair declares nearly two hundred methods — with
 `ClientCommonPacketListener` and `ServerCommonPacketListener` above them and a
 pair each for status, login, configuration, cookie and ping. Handshake has only
 a serverbound one, and every phase's interface is rooted in
-`ClientboundPacketListener` or `ServerboundPacketListener`. Nothing
-in them decides anything: they are the vocabulary a phase's `*Impl` class
+`ClientboundPacketListener` or `ServerboundPacketListener`. Beyond
+`ServerPacketListener`'s error policy, each phase's interface naming its
+protocol and the two roots their direction, nothing in them decides anything: they are the vocabulary a phase's `*Impl` class
 promises to implement, and a packet arriving at a listener that implements the
-wrong one is the cast failure and *invalid_packet* kick
+wrong one is the failed class cast and *invalid_packet* kick
 [the connection](the-connection.md#one-packet-there-and-one-back) describes
 ([protocol phases](protocol-phases.md#the-five-phases) tabulates which `*Impl`
 serves which phase).
@@ -96,9 +96,11 @@ a plain class with a private buffer constructor and a private write method,
 joined into a codec by `Packet.codec`; `ClientboundKeepAlivePacket` and
 `ClientboundSetHealthPacket` are these,
 and `StreamMemberEncoder` exists chiefly so that second form can bind a
-member reference as its encoder half — `CustomPacketPayload` is its one
-other client. The third shape is the one with no fields to serialise at all:
-a singleton whose codec is `StreamCodec.unit`, fifteen of them, of which
+member reference as its encoder half — `CustomPacketPayload`, `DisplayInfo` and
+`TrackedWaypoint` bind one too. The third shape is the one with no fields to serialise at all:
+fifteen packet classes that declare a `StreamCodec.unit` codec, every one but
+`ServerboundPlayerLoadedPacket` a singleton (the bundle delimiter is handed
+one by `ProtocolInfoBuilder.withBundlePacket`), of which
 `ServerboundFinishConfigurationPacket` is the one this part's login trace
 turns on.
 
@@ -145,12 +147,12 @@ in *this* protocol is an encoder error naming the unknown packet, which is
 how a configuration-phase packet sent during play fails. Decoding reads the
 id, bounds-checks it and delegates — and then **must have consumed the
 frame exactly**, or `PacketDecoder` raises an error naming how many bytes
-were left over. An under-read corrupts nothing visible until much later, so
-it is caught at the one point where the answer is still knowable. All of
+were left over. The check sits where the frame's length is still
+known. All of
 that runs on the Netty event loop, inside `PacketEncoder` and
 `PacketDecoder`, never on a game thread; the framing, the compression, the
-ciphers and the later hop to the game thread are
-[the connection](the-connection.md#the-pipeline-in-both-directions)'s.
+ciphers and the later hop to the game thread belong to
+[the connection](the-connection.md#the-pipeline-in-both-directions).
 
 ## The codec layer is small, and composition is all of it
 
@@ -161,8 +163,8 @@ named below. `StreamCodec` is one interface extending `StreamEncoder` and
 `StreamDecoder.decode` takes a buffer and returns one. It is deliberately
 *not* a `Codec`: a packet is written once, read once and must be small, so
 it gets hand-laid bytes rather than a document in some format — the
-distinction is [codecs, NBT and
-JSON](../foundations/codecs-nbt-json.md#one-abstraction-and-the-ops-that-are-not-formats)'s.
+distinction belongs to [codecs, NBT and
+JSON](../foundations/codecs-nbt-json.md#one-abstraction-and-the-ops-that-are-not-formats).
 
 The constructors and combinators are `StreamCodec.of`,
 `StreamCodec.ofMember`, `StreamCodec.unit`, `StreamCodec.map`,
@@ -199,19 +201,19 @@ absent and value-plus-one otherwise.
 The bridge to the disk-and-JSON codecs of Part II is
 `ByteBufCodecs.fromCodec` and its relatives, which run an ordinary `Codec`
 into a carrier format and put the result on the wire. The combinator
-underneath takes the ops as an argument and is format-agnostic, and its six
-NBT entry points all pass `NbtOps`, so **a `Codec` on the wire almost always
-means a compound tag**. Beneath it, `ByteBufCodecs.tagCodec` takes an
+underneath takes the ops as an argument and is format-agnostic, and the six
+NBT entry points either reach it with `NbtOps` or, the three that read
+registries, do its work themselves over a registry view of `NbtOps`, so **a `Codec` on the wire
+almost always means an NBT tag**. Beneath it, `ByteBufCodecs.tagCodec` takes an
 `NbtAccounter` supplier — which is exactly what *trusted* turns out to mean,
 below.
 
 *Almost* always, because the combinator is public and exactly two packets call
 it with `JsonOps` and carry JSON strings instead: the server-list response,
 `ClientboundStatusResponsePacket`, and the login kick,
-`ClientboundLoginDisconnectPacket`. Both are read by a client that may not
-share this build's registries — one before a connection exists at all, the
-other by a client the server has just refused — which is the reason to spend a
-format nothing else on the wire uses. They are also the two a player is
+`ClientboundLoginDisconnectPacket`. Both are read by a client that may speak
+another version — the server list's ping, and a client the server has just
+refused — and both write against no registries at all. They are also the two a player is
 likeliest to have seen.
 
 `IdDispatchCodec` is the class that makes a protocol out of a pile of
@@ -239,7 +241,7 @@ row is not the second one wrapped again, it is a subclass of it, and every one
 of the three is built round the raw buffer.
 
 `FriendlyByteBuf` is a `ByteBuf` decorator declaring a hundred and forty-six
-readers and writers, eighty-eight of which add a wire format the
+readers and writers, counting every overload and static twin separately, eighty-eight of which add a wire format the
 plain buffer knows nothing about — `FriendlyByteBuf.readVarInt`,
 `FriendlyByteBuf.writeUtf`, `FriendlyByteBuf.readIdentifier`,
 `FriendlyByteBuf.writeResourceKey`, `FriendlyByteBuf.readNbt`,
@@ -250,14 +252,16 @@ constants `FriendlyByteBuf.MAX_STRING_LENGTH` and
 
 **`RegistryFriendlyByteBuf` extends it and adds exactly one field**, a
 `RegistryAccess`, behind `RegistryFriendlyByteBuf.registryAccess`. It
-exists because a numeric registry id means nothing on its own — item number
-37 is only an item relative to the registry set the server sent during
-configuration ([identifiers and
+exists because a numeric registry id means nothing on its own — enchantment
+number 3 is only an enchantment relative to the registry set the server sent
+during configuration ([identifiers and
 registries](../foundations/identifiers-and-registries.md#what-crosses-the-wire-and-where-the-files-are)). Every codec
-that writes a registry id needs one: `ByteBufCodecs.registry`,
+that reads the `RegistryAccess` needs one: `ByteBufCodecs.registry`,
 `ByteBufCodecs.holderRegistry`, `ByteBufCodecs.holder`,
-`ByteBufCodecs.holderSet`, `ByteBufCodecs.fromCodecWithRegistries` and
-`ByteBufCodecs.registryFriendlyLengthPrefixed` — and therefore
+`ByteBufCodecs.holderSet`, `ByteBufCodecs.fromCodecWithRegistries`,
+`ByteBufCodecs.fromCodecWithRegistriesTrusted` and
+`ByteBufCodecs.registryFriendlyLengthPrefixed` (`ByteBufCodecs.idMapper`, over
+a fixed map such as the block states, needs none) — and therefore
 `ItemStack.STREAM_CODEC`, `DataComponentPatch.STREAM_CODEC`
 ([data components](../foundations/data-components.md#the-patch-on-the-wire-and-on-disk)),
 `ComponentSerialization.STREAM_CODEC` and `HashedStack.STREAM_CODEC`. The
@@ -277,29 +281,31 @@ registries have been loaded since startup, and the rebind happens because the
 protocol changed rather than because the registries arrived.
 
 Below all of it the actual encodings live in `VarInt`, `VarLong`,
-`Utf8String` and `LpVec3`, the quantised position behind
-`Vec3.LP_STREAM_CODEC`. Two everyday values are worth naming because they
+`Utf8String` and `LpVec3`, the low-precision vector behind
+`Vec3.LP_STREAM_CODEC`, mostly velocities. Two everyday values are worth naming because they
 are *not* special-cased: `Identifier.STREAM_CODEC` is a plain UTF-8 string
 under the ordinary 32,767-character cap — an identifier on the wire is
 text, never an interned number — and `UUIDUtil.STREAM_CODEC` is two longs.
 
 ## Where a packet's number comes from
 
-`ProtocolInfo` is what a configured connection actually holds:
+`ProtocolInfo` is what a configured connection holds:
 `ProtocolInfo.id` (a `ConnectionProtocol`), `ProtocolInfo.flow`,
 `ProtocolInfo.codec` — the single phase-wide `StreamCodec` — and a nullable
 `ProtocolInfo.bundlerInfo`. It is built by `ProtocolInfoBuilder`, whose
 `ProtocolInfoBuilder.addPacket` and `ProtocolInfoBuilder.withBundlePacket`
 are the registration calls and whose `ProtocolInfoBuilder.buildUnbound`
 yields an `UnboundProtocol` or a `SimpleUnboundProtocol` — a protocol that
-knows everything except which buffer type to wrap the bytes in.
+knows everything except which buffer type to wrap the bytes in (and, for the
+one context protocol, its context).
 `UnboundProtocol.bind` supplies that. Underneath it, `ProtocolCodecBuilder`
 is the layer that talks to `IdDispatchCodec`.
 
 **The id is a registration index.** `ProtocolCodecBuilder.add` appends to a
 list and `IdDispatchCodec.Builder.build` walks that list assigning 0, 1, 2
-in call order, so a packet's wire number is literally its position in the
-`ProtocolInfoBuilder.addPacket` chain in `GameProtocols`,
+in call order, so a packet's wire number is its position in the chain of
+`ProtocolInfoBuilder.addPacket` calls — `ProtocolInfoBuilder.withBundlePacket`'s
+delimiter counting, in the one protocol that has one — in `GameProtocols`,
 `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols` or
 `HandshakeProtocols`. `ProtocolCodecBuilder.add` also asserts that the
 type's `PacketFlow` matches the protocol's, so a clientbound type cannot be
@@ -344,7 +350,7 @@ incoming, and `BundlerInfo.BUNDLE_SIZE_LIMIT` caps a bundle at 4,096
 sub-packets. Only the clientbound play protocol declares a bundle at all.
 
 **What a bundle buys is atomicity against the client's tick.**
-`ClientPacketListener.handleBundlePacket` hops to the main thread once for
+`ClientPacketListener.handleBundlePacket` hops to the Render thread once for
 the whole bundle and then handles the sub-packets inline, so the client can
 never tick or render with half a bundle applied. There are only two
 senders, both in `ServerEntity`: `ServerEntity.addPairing`, which collects
@@ -422,35 +428,34 @@ click's tag is bounded rather than checked. And the third is the strongest,
 because there is nothing to check.
 
 The ordinary container click is defended by carrying nothing to validate.
-`ServerboundContainerClickPacket` sends a `HashedStack`, which is a hash per
-component rather than a component, so on *that* packet no client-supplied
-component content crosses the wire at all. What the shape is and what the
-server does with the claim is [containers and
-menus](../items/containers-and-menus.md#why-hashes-and-why-only-in-one-direction)'s.
+`ServerboundContainerClickPacket` sends a `HashedStack`, which is an item, a count
+and a hash per component its patch adds (the removed ones by type alone), so on *that* packet no client-supplied
+component content crosses the wire at all. What the shape is and what the server does with the claim belong to [containers
+and menus](../items/containers-and-menus.md#why-hashes-and-why-only-in-one-direction).
 
 The limits in one table:
 
 | limit | value | where |
 |---|---|---|
 | frame length prefix | three var-int bytes | `Varint21FrameDecoder` |
-| compressed frame | 2 MiB | `CompressionDecoder.MAXIMUM_COMPRESSED_LENGTH` |
-| decompressed frame | 8 MiB | `CompressionDecoder.MAXIMUM_UNCOMPRESSED_LENGTH` |
+| compressed frame | just under 2 MiB, all a three-byte prefix can count | `Varint21FrameDecoder` |
+| decompressed frame | 8 MiB, for every sender, and on receipt for the server only | `CompressionDecoder.MAXIMUM_UNCOMPRESSED_LENGTH` |
 | default string | 32,767 chars | `FriendlyByteBuf.MAX_STRING_LENGTH` |
 | component as string | 262,144 | `FriendlyByteBuf.MAX_COMPONENT_STRING_LENGTH` |
 | player name | 16 | `ByteBufCodecs.PLAYER_NAME` |
 | collection allocation | 65,536 | `ByteBufCodecs.MAX_INITIAL_COLLECTION_SIZE` |
 | sub-packets in a bundle | 4,096 | `BundlerInfo.BUNDLE_SIZE_LIMIT` |
-| slots in one click | 128 | `ServerboundContainerClickPacket.MAX_SLOT_COUNT` (named, but the codec passes the literal) |
+| slots in one click | 128 | `ServerboundContainerClickPacket.MAX_SLOT_COUNT` |
 | var-int / var-long | 5 / 10 bytes | `VarInt.read`, `VarLong.read` |
 
-## Custom payloads, the only extension point
+## Custom payloads, a seam in a fixed packet set
 
 The packet set is code, fixed at compile time, and no data pack adds to it.
-The one seam is `CustomPacketPayload`, with `CustomPacketPayload.Type`,
+The seam after login is `CustomPacketPayload`, with `CustomPacketPayload.Type`,
 `CustomPacketPayload.createType` and `CustomPacketPayload.codec`, carried
 by `ClientboundCustomPayloadPacket` and `ServerboundCustomPayloadPacket`.
-The route in is `CustomPacketPayload.FallbackProvider`, the codec handed to
-the dispatch as the map miss, with `CustomPacketPayload.TypeAndCodec` as
+The route in for an id nobody registered is
+`CustomPacketPayload.FallbackProvider`, the factory the dispatch asks for one, with `CustomPacketPayload.TypeAndCodec` as
 the registration pair; `BrandPayload` is vanilla's own use of the
 mechanism.
 
@@ -462,21 +467,20 @@ writes nothing. The payload is discarded, not held.
 The login phase has its own parallel set — `CustomQueryPayload`,
 `CustomQueryAnswerPayload` and the discarding implementations of each — because
 the play-phase seam does not exist yet when a login is negotiated. Vanilla
-decodes every one of them to the discarding form and answers nothing, which is
-why an unexpected answer is a disconnect ([protocol
+decodes every one of them to the discarding form and never sends a query,
+which is why any answer is a disconnect ([protocol
 phases](protocol-phases.md#login)).
 
 ## What a skippable packet actually costs
 
 A chat line that fails to encode does not end your connection, and the reason
-is worth following because it is the one place in the codec layer where an
-error is a decision rather than a fault. `SkipPacketException` is a bare
+is worth following because it is the codec layer deciding that an error is not
+a fault — as it also does in the creative-slot fence above and in the
+command-suggestion packet's chat-only cap. `SkipPacketException` is a bare
 marker; `SkipPacketEncoderException` and `SkipPacketDecoderException`
 implement it and `IdDispatchCodec.DontDecorateException`. `PacketEncoder`
 turns a failure on a `Packet.isSkippable` packet into one. `PacketDecoder`
-drains the rest of the frame and **rethrows**, because the frame was already
-delimited and nothing was ever misaligned, so the drain only satisfies Netty's
-bookkeeping. What keeps the connection alive is
+drains the rest of the frame and **rethrows**. What keeps the connection alive is
 `Connection.exceptionCaught`, which logs the marker and returns ([the
 connection](the-connection.md#how-a-connection-dies)).
 
@@ -490,19 +494,21 @@ decoded count with nothing of its own bounding it.
 
 ## One type, several encodings
 
-Type and encoding are separate objects, and two packets prove it by having
-two encodings each. `ClientboundCustomPayloadPacket` declares
+Type and encoding are separate objects, and three packets prove it by having
+two encodings each — `ServerboundCommandSuggestionPacket`'s are the protocol
+context's choice, above. `ClientboundCustomPayloadPacket` declares
 `ClientboundCustomPayloadPacket.GAMEPLAY_STREAM_CODEC` and
 `ClientboundCustomPayloadPacket.CONFIG_STREAM_CODEC`;
 `ClientboundShowDialogPacket` declares
 `ClientboundShowDialogPacket.STREAM_CODEC` and
-`ClientboundShowDialogPacket.CONTEXT_FREE_STREAM_CODEC`. In each case the same
+`ClientboundShowDialogPacket.CONTEXT_FREE_STREAM_CODEC`. For the other two, the same
 `PacketType` is registered with the first in `GameProtocols` and with the
-second in `ConfigurationProtocols` — the same message, written differently
-depending on whether a `RegistryAccess` exists yet to write it against.
+second in `ConfigurationProtocols` — the same message, typed against the
+buffer each phase has, and for the dialog written differently, since only play
+has a `RegistryAccess` to write a registry reference against.
 
 Which packets a phase registers, and in what order, is therefore the whole
-definition of that phase — so the next page is [protocol
+definition of that phase, so the next page is [protocol
 phases](protocol-phases.md#the-five-phases), where nine codec tables — one per direction per
 phase, bar handshaking's serverbound-only one — become the four languages a
 joining connection speaks in turn.
@@ -536,9 +542,9 @@ know how one kind of value is written, and read `ByteBufCodecs.readCount` and
 `ByteBufCodecs.lengthPrefixed` whatever else you skip, since between them they
 are most of the defence. **`FriendlyByteBuf`** is the same for the old shape.
 
-Two doors this page only points at: **`PacketReport`**, thirty lines of data
+Two doors this page only points at: **`PacketReport`**, a short data
 generator and the only place a packet number is ever written down, and
-**`CustomPacketPayload`**, the one seam a modded packet can go through.
+**`CustomPacketPayload`**, the seam a modded packet goes through after login.
 
 ---
 

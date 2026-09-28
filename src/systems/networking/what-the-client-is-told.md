@@ -2,16 +2,16 @@
 
 > Verified against **Minecraft 26.3** · Part IX · a creeper walks into view: everything the server decides to say, in order, and everything it decides not to.
 
-A creeper three chunks away steps across a section boundary, and inside that
-tick the server decides a player may know about it. One bundled packet goes
-out, and the position in that packet is not where the creeper is. It is where
-the creeper's tracker last *said* it was — stale by at least the entity's
-update interval and, for an entity sitting in a chunk that is loaded but not
-ticking, stale by no bounded amount at all. That is not a bug being
-tolerated. Between packets every viewer moves the creeper itself, stepping it
-along from the last position it was told and the last velocity — dead
-reckoning — and two viewers only agree if they started from the same place.
-So **the server sends the base rather than the truth**, and the rest of this
+A creeper three chunks away steps across a section boundary, and at the next
+tick's tracking sweep, unless the player moves first, the server decides a player may know about it. One
+bundled packet goes out, and the position in that packet is not where the
+creeper is. It is where the creeper's tracker last *said* it was — up to an
+update interval out of date. That is not a bug being tolerated. Every relative
+move the viewer is sent after it is a difference from the last position it was told,
+not a position, and the viewer adds each difference to its own copy of that
+base — so a viewer that started from anywhere else would be wrong by the gap
+until the next absolute position reset it. So **the server sends the base rather than the
+truth**, and the rest of this
 page is that trade made over and over: which chunks a player is sent and how
 fast, which entities they are told about, and what counts as a change worth
 a packet.
@@ -20,10 +20,10 @@ a packet.
 
 | class | what it decides | thread |
 |---|---|---|
-| `ChunkMap` | which players can see which chunks and which entities — it owns both maps | Server |
+| `ChunkMap` | which players can see which chunks and which entities — it keeps the tracked entities and moves each player's chunk view | Server |
 | `ChunkMap.TrackedEntity` | one entity's audience, `ChunkMap.TrackedEntity.seenBy`, and the range test that fills it | Server |
-| `ServerEntity` | the change detector: the dead-reckoning baseline, the interval gate, the packet shape | Server |
-| `ChunkTrackingView` | which chunks a player has been sent, and what a movement turns into | Server |
+| `ServerEntity` | the change detector: the baseline, the interval gate, the packet shape | Server |
+| `ChunkTrackingView` | which chunks a player is owed, and what a movement turns into | Server |
 | `PlayerChunkSender` | how many chunks leave for one player this tick | Server |
 | `ChunkHolder` | the per-chunk block-change batch, one flush a tick | Server |
 | `EntityType` | the per-type tracking range, update interval and delta exclusion | static, from the builder |
@@ -45,15 +45,14 @@ flowchart TD
     G2 -- "none of the three" --> MUTE["nothing, and the counter does not advance"]:::server
     SC --> FREE["three feeds that skip gate 3"]:::server
     SC --> G3{"gate 3: interval, flag, or dirty data"}
-    G3 -- "any one is enough" --> D["one to three packets, and a new baseline"]:::server
+    G3 -- "any one is enough" --> D["zero to five packets"]:::server
     G3 -- "none of the three" --> WAIT["wait for a later call"]:::server
 ```
 
-*The three gates, each a three-term test, and the two ways out that are not a
-packet. Gate 1 is a conjunction and gates 2 and 3 are disjunctions, which is
-the asymmetry to carry away: at gate 1 one wrong answer keeps a viewer from
-seeing the entity at all, and at the other two one right answer is enough to
-make it speak. The three terms of each are the three sections below.*
+*The three gates, each a three-term test: gate 1 is a conjunction and gates 2
+and 3 are disjunctions. That is the asymmetry to carry away — one wrong answer
+at gate 1 keeps a viewer from seeing the entity at all, and one right answer
+at either of the others lets it speak, if it has anything to say.*
 
 The figure is the page. Three gates stand between an entity moving and a
 player hearing about it, and each is a three-term test: gate 1 is a
@@ -67,9 +66,10 @@ per feed that does not go through them at all.
 
 `ChunkMap.tick` re-tests visibility only when something moved between
 sections — the entity's own section against the tracker's last, and, for
-players who changed section, every entity against that player. `ChunkMap.move`
-does the same eagerly the moment a player crosses a boundary
-([tickets and
+players who changed section, every entity against that player. `ChunkMap.move`,
+which runs on every move a player makes, re-tests every entity against that
+player at once, and moves its chunk view when it crosses a boundary ([tickets
+and
 loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)).
 The test itself is
 three conjuncts.
@@ -79,7 +79,7 @@ squared *x/z* distance against the smaller of the entity's effective range and
 the player's view distance in blocks. **Y is ignored entirely** — an entity
 directly above you, at any height, is in range.
 
-**The range is the maximum over the whole vehicle stack.**
+**The range is the maximum over the entity and everything riding it.**
 `ChunkMap.TrackedEntity.getEffectiveRange` takes the largest
 `EntityType.clientTrackingRange` among the entity and all its indirect
 passengers, then scales it by `MinecraftServer.getScaledTrackingDistance`,
@@ -90,23 +90,24 @@ slider decides how far away mobs are tracked.
 
 **And the chunk must already be there.** `Entity.broadcastToPlayer` looks like
 a per-entity hiding hook and is not: it defaults to true and is overridden
-exactly once, by `ServerPlayer`, to make spectators see only what they are
-spectating and to keep a spectator out of everyone else's view. And
+exactly once, by `ServerPlayer`, to keep a spectator out of every
+non-spectator's view — and out of a fellow spectator's while it is looking
+through something else's eyes. And
 `ChunkMap.isChunkTracked` is false while the chunk is still queued in
 `PlayerChunkSender`, so an entity is never sent before the ground it stands
 on — the ordering is guaranteed rather than hoped for.
 
 One case never reaches the test at all: `ChunkMap.TrackedEntity.updatePlayer`
 returns immediately for the player's own entity. **You never track yourself.**
-That is why `ServerEntity.Synchronizer` has three verbs and not one —
-`ServerEntity.Synchronizer.sendToTrackingPlayers`,
-`ServerEntity.Synchronizer.sendToTrackingPlayersAndSelf` and
-`ServerEntity.Synchronizer.sendToTrackingPlayersFiltered` — and why damage,
-knockback and synched data must all reach for the self-directed one.
+That is why `ServerEntity.Synchronizer` has a self-directed verb,
+`ServerEntity.Synchronizer.sendToTrackingPlayersAndSelf`, beside
+`ServerEntity.Synchronizer.sendToTrackingPlayers` and
+`ServerEntity.Synchronizer.sendToTrackingPlayersFiltered`, and why damage,
+knockback and synched data must all reach for it.
 
 ### The introduction is one bundle
 
-What gate 1 opening actually costs, in packets, is one:
+What gate 1 opening costs, in packets, is one:
 
 ```mermaid
 sequenceDiagram
@@ -143,9 +144,9 @@ passengers and leash links go only if there are any.
 That bundle is where the page's claim first bites: what it carries is the
 tracker's baseline, not the creeper. It has three exceptions and two refusals. Paintings, item frames and leash knots build their own
 `ClientboundAddEntityPacket` from their real position, bypassing
-`ServerEntity` entirely — three of the four `BlockAttachedEntity` subclasses,
-the cushion taking the default, and a block-attached entity has no dead
-reckoning to agree about.
+`ServerEntity`'s baseline — every concrete `BlockAttachedEntity` but the
+cushion, which takes the default, and a block-attached entity has no moves
+to add up.
 `EnderDragonPart` refuses outright, and `ChunkMap` never asks it. `Marker` throws
 outright if anyone asks — which nobody does, because its tracking range is
 zero and `ChunkMap` never tracks it. Everything else reads its position from
@@ -159,17 +160,17 @@ true: the entity changed section, `Entity.needsSync` is set, or its chunk is in
 entity-ticking range. Two public fields on `Entity` do the forcing.
 `Entity.needsSync` appears at this gate, again at gate 3 and again in the
 velocity decision — three of the cascade's terms are the same flag — and is
-set by being pushed, by being loaded from disk, and by a couple of dozen
+set by being pushed, by being loaded from disk, and by over twenty other
 classes for their own reasons. `Entity.syncPosition` is subtler: it re-phases the call
 counter to the next interval boundary, so a bounced entity syncs at once
 rather than up to an interval late, unless it is a living entity other than a
 shulker, whose `SteppedInterpolationTracker` takes the flag first and records
 the bounce as a step.
 
-The interval itself is per type and the page leans on it twice below, so it
-is worth a number: `EntityType.updateInterval` defaults to **three** ticks and
-thirty types override it — and the direction is the opposite of the obvious
-one. The three `Display` entities get **one**, because they move by
+The interval itself is per type and the page leans on it below, so it is
+worth a number: `EntityType.updateInterval` defaults to **three** ticks, thirty
+types give it another number and eight never let it open at all — and the
+direction is the opposite of the obvious one. The three `Display` entities get **one**, because they move by
 interpolation and a missed tick shows; an arrow, an experience orb, a dropped
 item and a falling block get **twenty**, because a ballistic path is something
 the client can extrapolate exactly. The thing moving fastest is told least
@@ -183,54 +184,57 @@ The two counters inside `ServerEntity` are deliberately out of step.
 absolute sync is rarer than the forced position packet by however long the
 interval gate stays shut.
 
-This is also where a distant entity goes quiet, and the silence is
-conditional. Being out of entity-ticking range only suppresses the detector
-while the entity *also* stays inside its section and leaves `Entity.needsSync`
-clear. Either of those breaks it, which is why a far-off mob can freeze for a
-long time and then correct itself in one jump.
+This is also where a distant entity goes quiet, and it has nothing to say: a
+mob outside entity-ticking range is not ticked either, so it does not move
+itself, and the gate spares a call that would usually send nothing. A push from outside sets
+`Entity.needsSync` and opens it again.
 
 ### Gate 3, and the position it chooses
 
-The rows are in the source's own order, which matters: the absolute-sync test
-is a single conjunction and `Entity.getRequiresPrecisePosition` is its first
-term, not its last.
+The first three rows are the four terms of the source's one conjunction, in
+its order, `Entity.getRequiresPrecisePosition` first. A relative packet must
+pass all four, and only then is the delta's size tested, which is why the
+fourth row's absolute sync, unlike the others, resets neither the teleport
+count nor the ground flag. A passenger, the last row, is branched off before
+any of them.
 
 | condition | result |
 |---|---|
 | `Entity.getRequiresPrecisePosition` | absolute sync |
-| delta beyond what a short can hold — about eight blocks | absolute sync |
 | `ServerEntity.teleportDelay` past `ServerEntity.FORCED_TELEPORT_PERIOD` — four hundred *gated* calls, so about 1,200 ticks for an entity tracked every tick on the three-tick default interval, fewer when data or a push opens the gate | absolute sync |
-| the entity just dismounted, or its ground flag flipped — the common case, so every landing and every step off a ledge costs a full packet | absolute sync |
+| the entity just dismounted, or its ground flag differs from the one the conjunction last recorded — so a landing or a step off a ledge that a gated call sees costs a full packet | absolute sync |
+| delta beyond what a short can hold — about eight blocks — or, for a dropped item against a wall, floor or ceiling, one the encoding would round | absolute sync |
 | none of those, and the squared position delta is below `ServerEntity.TOLERANCE_LEVEL_POSITION` with rotation within `ServerEntity.TOLERANCE_LEVEL_ROTATION` | nothing sent |
 | none of those, and something moved | `ClientboundMoveEntityPacket.Pos`, `.Rot` or `.PosRot` |
 | the call count is a multiple of `ServerEntity.FORCED_POS_UPDATE_PERIOD` | a position packet even if nothing moved — but only on a call that got through gate 3 |
-| the entity is a passenger | rotation only — the base is silently re-set, and the next call that opens gate 3 forces an absolute sync |
+| the entity is a passenger | rotation only — the base is silently re-set, and the first call to open gate 3 after it dismounts forces an absolute sync |
 
 The gate covers more than the position. The same test that opens the table
-above also opens the synched-data flush, which is why shearing a sheep sends
-that sheep's position delta in the same call ([synched entity
+above also opens the synched-data flush, which is why shearing a sheep runs
+that sheep's position branch in the same call ([synched entity
 data](../entities/synched-entity-data.md#the-gate-that-holds-a-packet-back) has
-the data channel's half); the `ItemFrame` branch — three sections down, under the feeds that skip gate
+the data channel's half); the `ItemFrame` branch — one section down, under the feeds that skip gate
 3 — is the **only** path to that flush which skips the interval test, and
 `ServerEntity.handleMinecartPosRot` reaches it from *inside* the gate rather
 than around it.
 
 Rotations are single bytes, so one unit is a little over a degree, and the
-dead-reckoning base — a `VecDeltaCodec`, which is the object holding the
-last-sent position the whole page's opening rests on — advances only when
-something was actually sent: that is
-what keeps the two sides' arithmetic identical. An arrow never takes a partial
+base — a `VecDeltaCodec`, which is the object holding the last-sent position
+the whole page's opening rests on — advances only when a position is sent, on
+both sides alike: that is what keeps the two sides' arithmetic identical, and
+the two places that re-set the server's without one, a passenger's and a
+new-behaviour minecart's, are the two whose next position goes whole. An arrow never takes a partial
 path — `AbstractArrow` is excluded from the position-only and rotation-only
 branches, so every open gate sends it a full position-and-rotation packet. A
 minecart on the new movement behaviour skips the table altogether:
 `ServerEntity.handleMinecartPosRot` diverts it into
-`ClientboundMoveMinecartPacket`, which carries a list of steps rather than one
-position.
+`ClientboundMoveMinecartPacket`, which carries the minecart's own list of
+steps.
 
-That first term has exactly one caller in the whole game, and it is a happy
-ghast. `Entity.setRequiresPrecisePosition` is asked for by a
-ghast on its still timeout and by nothing else — a large ridable platform is
-the one entity whose rounding error a player has to stand on.
+That first term is set by three classes in the whole game.
+`Entity.setRequiresPrecisePosition` is asked for by a happy ghast on its still
+timeout — a large ridable platform, whose rounding error a player has to stand
+on — and by a falling block or lit TNT while it is touching a block.
 
 Velocity is the third decision and a separate channel. When the entity wants
 deltas — it is in the `EntityType.trackDeltas` set, `Entity.needsSync` is set,
@@ -250,19 +254,19 @@ and cushions are out, everything else is in.
 expired this tick can dirty the synched container and open gate 3 in the same
 call that goes on to read it ([synched entity
 data](../entities/synched-entity-data.md#the-gate-that-holds-a-packet-back)).
-Below it, **three feeds ignore gate 3** — which is most of what still feels
-responsive about a distant mob, and is a smaller exemption than it sounds:
+Below it, **three feeds ignore gate 3**, a smaller exemption than it sounds:
 all three live *inside* `ServerEntity.sendChanges`, so a mob that fails gate 2
 gets none of them either. `Entity.syncVelocity`
-sends a motion packet to the trackers *and* the entity itself, which is why
-knockback is immediate on a creeper whose position otherwise updates slowly. A
-changed passenger list is diffed on every call and goes out as a
-`ClientboundSetPassengersPacket`, *filtered*, and
-the filter is the surprise: it excludes the player whose own passenger status
-changed, because that player has already been told directly by
-`ServerPlayer.startRiding` or `ServerPlayer.removeVehicle`. An `ItemFrame`
-iterates *every player in the level* — not its trackers — every tenth
-call, to flush its synched data and, if it holds a map, push map updates.
+sends a motion packet to the trackers, and to the entity itself when it is a
+player, which is why a player feels knockback at once, its own client moving
+it; a creeper, which a client only interpolates, shows its knockback with its
+next position packet. A changed passenger list is diffed on every call and
+goes out as a `ClientboundSetPassengersPacket` to every tracker, a riding
+player included, though `ServerPlayer.startRiding` or
+`ServerPlayer.removeVehicle` has already told that player directly. An
+`ItemFrame` flushes its synched data every tenth call, and if it holds a map
+with saved data it walks *every player in the level* — not its trackers — to
+push map updates.
 
 Equipment *changes* do not pass through `ServerEntity`.
 `ClientboundSetEquipmentPacket` comes from
@@ -287,8 +291,8 @@ supplies.
 a run of `ClientboundForgetLevelChunkPacket`s. Which chunks are in that view,
 what shape the view is — neither a disc nor a square, because
 `ChunkTrackingView.isWithinDistance` shrinks each axis before it squares — and
-what makes a chunk eligible to leave at all are [tickets and
-loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s.
+what makes a chunk eligible to leave at all belong to [tickets and
+loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible).
 The one class the iteration needs and no other page names is
 `ChunkTrackingView.Positioned`, which walks one chunk beyond the view distance
 for exactly that reason.
@@ -323,13 +327,14 @@ folds it into a weighted mean against
 `PlayerChunkSender.MAX_CHUNKS_PER_TICK` and uses it as next tick's budget. It
 is a closed control loop, and it is the client that sets the set point.
 
-**Seven milliseconds** — the client time per tick that
+**Seven milliseconds** of client time per tick is what
 `ChunkBatchSizeCalculator.getDesiredChunksPerTick` divides by its running
 estimate of nanoseconds per chunk. It starts pessimistic, at two milliseconds
 a chunk — three and a half chunks a tick against
 `PlayerChunkSender.START_CHUNKS_PER_TICK`, nine. That opening figure is never
-actually sent: the client folds the first real batch into the average before
-it answers, so the first number the server hears is already measured.
+sent as it stands: the client folds the first real batch into the average
+before it answers, so the first number the server hears is already half
+measurement.
 
 What is being measured is narrower than it looks.
 `ClientPacketListener.handleChunkBatchStart` and
@@ -340,8 +345,9 @@ loop is timing packet decode, not mesh building (the nine are listed in
 
 ### What a chunk packet carries
 
-A chunk packet — `ClientboundLevelChunkWithLightPacket` — carries only the
-client-facing heightmaps, every section's paletted block states and biomes, a
+A chunk packet — `ClientboundLevelChunkWithLightPacket` — carries the
+client-facing heightmaps, every section's counts, paletted block states and
+biomes, a
 block-entity entry per block entity holding `BlockEntity.getUpdateTag` rather
 than its save data, and the light layers. See
 [chunk anatomy](../world/chunk-anatomy.md#sections-and-their-four-counters) and
@@ -355,25 +361,27 @@ section — and adds the holder to a set on `ServerChunkCache`, unless the chunk
 is loaded but not ticking, in which case nothing is recorded and the change is
 never broadcast to anyone. `ServerChunkCache.broadcastChangedChunks` drains
 that set through
-`ChunkHolder.broadcastChanges` once per level tick — inside
-`ServerChunkCache.tickChunks`, so only on a tick that ticks chunks at all and
-never in a debug world — early in the tick and before entities
+`ChunkHolder.broadcastChanges` once per level tick, inside
+`ServerChunkCache.tickChunks` (on a frozen tick too, though never in a debug
+world), early in the tick and before entities
 move ([the level
 tick](../server/server-level-tick.md#the-broadcast-which-is-why-entities-are-a-tick-behind))
 — so one broadcast
-carries this tick's block changes and the previous tick's entity-driven ones.
+carries the block changes made so far this tick and the rest since the last
+broadcast: the previous tick's block events, entities and block entities, and
+players' actions.
 
-**Light goes first, and to a strictly smaller audience** — the border of each
+**Light goes first, and to a narrower audience** — the border of each
 player's sent region rather than everyone tracking the chunk, through
 `ChunkMap.isChunkOnTrackedBorder`. Why the border player needs it and the
-player in the middle does not is [lighting](../world/lighting.md#off-the-server-thread-and-onto-the-wire)'s,
-and it is the one feed on this page whose audience is *smaller* than the
+player in the middle does not belongs to [lighting](../world/lighting.md#off-the-server-thread-and-onto-the-wire),
+and it is the one feed of this flush whose audience is *narrower* than the
 chunk's trackers.
 
 **Then blocks, to everyone tracking the chunk.** Exactly one changed block in
 a section becomes a `ClientboundBlockUpdatePacket`, two or more become a
 `ClientboundSectionBlocksUpdatePacket`, and every change within the tick
-collapses into at most one packet per section. What collapses them is that the
+collapses into at most one packet per section in this flush. What collapses them is that the
 set holds *positions*, not values: `ChunkHolder.broadcastChanges` reads the
 level again when it builds the packet, so a position written five times in one
 tick is sent once, carrying the value it ended on and none of the four it
@@ -390,8 +398,8 @@ two places in the game that ask `BlockEntity.getUpdatePacket` (the other
 resends the blocks under a player the server thinks is standing on air). Only overriding types produce one here, and the fallback is not "it
 rides the chunk packet instead" — which is why chest contents are invisible
 until the chest is opened. What the two sync hooks default to, and which types
-override which, is [block
-entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything)'.
+override which, belong to [block
+entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything).
 
 ### The rest of the block-shaped traffic
 
@@ -417,7 +425,8 @@ though time comes from `MinecraftServer` and the view distances from
 - **Time**, once a second. `MinecraftServer.forceGameTimeSynchronization` runs
   every twentieth tick, and the packet it broadcasts carries the overworld's
   game time and an **empty** clock map: clock state travels only when a clock
-  is changed or a player joins
+  is changed, a player joins, respawns or changes dimension, or the rule that
+  advances time changes
   ([what crosses the wire](../world/environment-attributes-and-timelines.md#what-crosses-the-wire)).
 - **Weather**, on change. `ServerLevel.advanceWeatherCycle` broadcasts rain-
   and thunder-level changes and the start/stop pair as
@@ -433,8 +442,8 @@ though time comes from `MinecraftServer` and the view distances from
   client's entire knowledge of the ticket system, and the only feed here the
   receiver acts on structurally rather than by storing a value: the first one
   rebuilds the client's chunk storage array.
-- **The debug feed**, which is the only exception to the next section and is a
-  narrow one. `ServerLevel` owns a set of per-subscriber debug synchronizers
+- **The debug feed**, which the next section's table names as an exception
+  more than once, and a narrow one. `ServerLevel` owns a set of per-subscriber debug synchronizers
   that push neighbour updates, POI state, chunk sends and entity tracking to a
   client that has opted in — sixteen subscriptions in all, registered in
   `DebugSubscriptions`, covering brains, goal selectors and paths among them.
@@ -445,16 +454,16 @@ though time comes from `MinecraftServer` and the view distances from
 
 | what never crosses | the server-side owner | where it is explained |
 |---|---|---|
-| all AI — targets, goals, brains, paths | `Mob.goalSelector`, `Mob.targetSelector`, `Mob.getTarget`, `Brain`, `Mob.navigation` | [AI, goals and brains](../entities/ai-goals-and-brains.md#what-holds-the-state) |
+| all AI — targets, goals, brains, paths — bar a few synched flags and target ids (the aggressive flag, a guardian's beam target, the wither's head targets), except through the debug channel | `Mob.goalSelector`, `Mob.targetSelector`, `Mob.getTarget`, `Brain`, `Mob.navigation` | [AI, goals and brains](../entities/ai-goals-and-brains.md#what-holds-the-state) |
 | scheduled block and fluid ticks — the client's equivalents are empty | `ServerLevel.blockTicks`, `ServerLevel.fluidTicks` | [scheduled ticks](../world/scheduled-ticks.md#where-an-appointment-waits) |
 | points of interest, except through the debug channel | `ChunkMap.poiManager` | [points of interest](../world/points-of-interest.md#where-the-index-lives-and-how-it-repairs-itself) |
 | the ticket graph — the client gets a radius and a simulation distance, as two integers | `TicketStorage`, `DistanceManager`, `ChunkHolder.ticketLevel`, `FullChunkStatus` | [tickets and loading](../world/tickets-and-loading.md#two-graphs-one-store) |
-| worldgen, and **the world seed** — `ClientLevel` gets only a biome zoom seed | `ChunkGenerator`, `RandomState`, `ServerLevel.structureManager`, `StructureStart` | [the generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn) |
-| the worldgen heightmaps, and any block-entity field outside `BlockEntity.getUpdateTag`, bar an operator's query and a command block's screen | `BlockEntity` | [block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything) |
-| non-syncable attributes, loot tables and loot seeds, the natural spawn state, raids and the dragon fight | `AttributeMap`, `LootTable`, `NaturalSpawner` | [attributes](../entities/attributes.md#four-objects-two-dirty-sets-and-one-list-that-is-neither) |
-| game rules — they reach the client only on request, and only for a player with the command permission | `GameRules` | [level data and rules](../../reference/level-data-and-rules.md#what-the-client-hears) |
+| worldgen, and **the world seed** — `ClientLevel` gets only a biome zoom seed; structures only through the debug channel | `ChunkGenerator`, `RandomState`, `ServerLevel.structureManager`, `StructureStart` | [the generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn) |
+| the worldgen heightmaps, and any block-entity field outside `BlockEntity.getUpdateTag`, bar an operator's query, a command block's screen, a creative player's pick-block and an opened container's slots | `BlockEntity` | [block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything) |
+| non-syncable attributes, loot tables and loot seeds, the natural spawn state, raids and the dragon fight beyond their boss bars, except through the debug channel | `AttributeMap`, `LootTable`, `NaturalSpawner` | [attributes](../entities/attributes.md#four-objects-two-dirty-sets-and-one-list-that-is-neither) |
+| game rules — the full set reaches the client only on request, and only for a player with the command permission; the few that change how the client behaves are pushed | `GameRules` | [level data and rules](../../reference/level-data-and-rules.md#what-the-client-hears) |
 | the creeper's fuse length and its swell counter — of its three synched values, none is the counter | `Creeper` | [synched entity data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from) |
-| everything outside the disc: entities past tracking range, chunks past the view, and every other level on the server | `ChunkMap`, `MinecraftServer.levels` | — |
+| everything out of range: entities past tracking range, chunks past the view, and every other level on the server | `ChunkMap`, `MinecraftServer.levels` | — |
 
 ## Choosing what the client may be wrong about
 
@@ -483,22 +492,23 @@ happily simulate in the absence of data, **the server's job is not to keep the
 client correct — it is to choose what the client is allowed to be wrong
 about.**
 
-> **For a 1.21-era reader.** `PlayerChunkSender` is in `server/network`, not
-> `server/level`. And routine movement no longer travels as
+> **For a 1.21-era reader.** Routine movement no longer travels as
 > `ClientboundTeleportEntityPacket`: that packet survives, but `ServerEntity`
 > never touches it, and an absolute position is
-> `ClientboundEntityPositionSyncPacket`.
+> `ClientboundEntityPositionSyncPacket`. And in 26.3 the passenger list goes
+> to every tracker, where 1.21 skipped a player whose own riding had changed.
 
 ## Where to look
 
-**`ServerEntity.sendChanges`** is the page. It is one long method and the
-three gates, the relative-or-absolute conjunction, the head-yaw branch and the
-velocity branch are all visible in it at once; read it before anything else
+**`ServerEntity.sendChanges`** is the page. It is one long method, and gate 3,
+the head-yaw branch and the velocity branch are all visible in it at once,
+with the relative-or-absolute conjunction one call away in
+`ServerEntity.createMovePacket`; read it before anything else
 here, and read it twice.
 
 Then the two callers that decide who hears it: **`ChunkMap.tick`** for the
 sweep that runs it, and **`ChunkMap.TrackedEntity.updatePlayer`** for gate 1,
-which is four lines and the whole visibility policy. **`ServerEntity.addPairing`**
+which is short and the whole visibility policy. **`ServerEntity.addPairing`**
 and **`ServerEntity.sendPairingData`** are the introduction bundle, in the
 order it is built.
 
@@ -506,10 +516,10 @@ For the other two feeds: **`PlayerChunkSender.sendNextChunks`** is the control
 loop from the server's end and **`ChunkBatchSizeCalculator`** is the client's
 half of it — open them together or neither. **`ChunkHolder.broadcastChanges`**
 is the block flush, and the line in it that re-reads the level is why a
-redstone cascade costs one packet per position.
+redstone cascade costs one state per position.
 
-One door this page only points at: **`VecDeltaCodec`**, forty lines that are
-the dead-reckoning base itself and the reason the whole policy works.
+One door this page only points at: **`VecDeltaCodec`**, the base itself and
+the reason the whole policy works.
 
 ---
 
