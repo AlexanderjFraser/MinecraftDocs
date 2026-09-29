@@ -4,11 +4,11 @@
 
 A zombie shuffles out of the dark towards you, you hit it, and for a moment it
 flashes red. Between that zombie and those pixels stand four stages, each
-handing the next a value object rather than a shared one: the live mob is read
+handing the next what the stage before made of it, never the live mob: the live mob is read
 into a fresh render state, the state is described as things that *ought* to be
-drawn, the descriptions are sorted and batched, and only then does anything
-write a vertex. Which is why `EntityRenderer` has no *render* method — nothing
-on this page draws anything — and why the zombie is posed **at least twice**
+drawn, the descriptions are grouped and the translucent ones sorted, and only then
+does anything write a vertex. Which is why `EntityRenderer` has no *render*
+method — nothing on this page draws until the last stage — and why the zombie is posed **at least twice**
 in the frame you are looking at, three times if it is glowing, an
 arrangement that is only sound because `Model.setupAnim` resets every part to
 its baked pose before it starts.
@@ -68,7 +68,7 @@ list](../client/the-client-level.md), drops what
 `LevelExtractor.isEntityVisible` rejects, and hands each survivor to
 `EntityRenderDispatcher.extractEntity`. That call finds the renderer for the
 entity's `EntityType` through `EntityRenderDispatcher.getRenderer` — a map
-the dispatcher builds once from `EntityRenderers`, the static table that
+the dispatcher rebuilds on every resource reload from `EntityRenderers`, the static table that
 files one `EntityRendererProvider` per type and is the reason a renderer is
 shared rather than per-entity — allocates a state with
 `EntityRenderer.createRenderState`, fills it by running
@@ -80,20 +80,22 @@ Visibility is **three tests in two places**. `EntityRenderer.shouldRender`
 runs two of them, in this order: first `Entity.shouldRender` (which is the
 distance test, its limit scaling with the entity's own bounding box), and
 only then the frustum. The third — "is the section this entity stands in
-actually compiled and visible" — belongs to `LevelExtractor`, which is [the reachability walk](visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)
-deciding one more thing on its way past. Block entities keep the distance half
-and drop the frustum, which is [block-entity
-rendering](block-entity-rendering.md#culling-by-section-not-by-frustum)'s
-first difference. Several things escape the frustum entirely: anything indirectly carrying
+compiled and faded at least a third of the way in" — belongs to `LevelExtractor`, which asks `LevelRenderer`
+to look the section up: a question the [reachability walk](visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)
+never answers, since an entity is not tested against its list. Block entities keep the distance half
+and meet the frustum only with their section, the few drawn off screen not at all, which is [the first difference
+block-entity rendering](block-entity-rendering.md#frustum-culled-by-section-not-one-by-one)
+makes. Several things escape the frustum entirely: anything indirectly carrying
 the local player, the three renderers that declare themselves unculled, a
-`Display` that sets its own no-culling flag — `DisplayRenderer` is the largest
-file in the package for the same reason the entity is unusual: one abstract
+`Display` that sets its own no-culling flag — `DisplayRenderer` is large for the
+same reason the entity is unusual: one abstract
 base carrying the interpolation and billboarding every display shares, with a
 nested renderer each for a block, an item and a line of text — and, the ones
 nobody expects,
 an entity on the other end of a visible leash, an end crystal with a beam
-target and a guardian firing one, each of which is drawn because something
-*else* in view is attached to it.
+target and a guardian firing one, each of which is drawn for what it is attached
+to: the leash and the beam when they are in view, the crystal whenever it has a
+target at all.
 
 One zombie through this stage, from the three tests to a finished state:
 
@@ -119,10 +121,10 @@ happens inside the renderer, which builds a new state object and fills it.*
 Light is not read at draw time. It comes from
 `EntityRenderer.getPackedLightCoords` during extract — the dispatcher has a
 method of the same name, and nothing calls it — and
-that method returns full brightness for a burning entity. Shadows are sampled here too,
+that method returns full block light for a burning entity. Shadows are sampled here too,
 and never past sixteen blocks: the renderer walks the blocks under the entity,
 computes an alpha for each, and stores the shapes and alphas in the state, so
-that the feature renderer three stages later only has to turn them into quads.
+that the feature renderer two stages later only has to turn them into quads.
 The strength falls to nothing at sixteen blocks, so a distant mob has no
 shadow at any settings, and an invisible entity skips the sampling entirely.
 
@@ -142,14 +144,15 @@ The tree is a ladder, each rung adding what the rung below could not assume.
 `LivingEntityRenderState.walkAnimationPos`,
 `LivingEntityRenderState.deathTime`, `LivingEntityRenderState.isBaby` and
 `LivingEntityRenderState.hasRedOverlay`. `ArmedEntityRenderState` adds hands,
-`HumanoidRenderState` a pose and equipment, `UndeadRenderState` what the undead
-share, `ZombieRenderState` two flags of its own. The player sits off the ladder
-in `AvatarRenderState`.
+`HumanoidRenderState` a pose and equipment, `UndeadRenderState` one overridden rule,
+which the zombies share with the illagers and not the skeletons, `ZombieRenderState` two flags of its own. The player's
+`AvatarRenderState` branches off the humanoid rung beside them.
 
 Nothing in any of them holds an `Entity` or a `Level` — verified across every
 class in the tree. The one member that looks live, an `AnimationState` on the
 eleven states that carry one, is a single-int tick counter copied by value,
-not a handle back into the world.
+not a handle back into the world. The one real handle is a falling block's: its
+moving-block state carries the level's light engine, which lights it at prepare.
 
 ### The red flash is not a colour
 
@@ -157,10 +160,9 @@ It starts as `LivingEntity.hurtTime` — or `LivingEntity.deathTime` — and
 becomes the boolean `LivingEntityRenderState.hasRedOverlay` here, at extract.
 At submit, `LivingEntityRenderer.getOverlayCoords` packs that boolean into an
 `OverlayTexture` coordinate alongside a separate white-flash axis, the one
-the creeper's fuse uses — and, besides the creeper, only a primed TNT minecart
-and the sulfur cube's inner layer. The wither is not on that list: it flashes
+the creeper's fuse uses — and, besides the creeper, only primed TNT, a primed TNT minecart and the sulfur cube's inner layer. The wither is not on that list: it flashes
 by swapping to a second texture. That packed integer rides through the submit node
-untouched and lands, at execute, as a **per-vertex attribute**. Nothing along
+untouched and lands, at prepare, as a **per-vertex attribute**. Nothing along
 the way is ever tinted red.
 
 ## Submit: describing a draw without making one
@@ -203,10 +205,10 @@ methods a renderer is likely to call are
 `OrderedSubmitNodeCollector.submitModel`, `.submitItem`, `.submitText`,
 `.submitNameTag`, `.submitShadow`, `.submitFlame`, `.submitLeash`,
 `.submitBlockModel` and `.submitCustomGeometry`, plus
-`SubmitNodeCollector.order` to choose a bucket — nine of the thirteen kinds
-of node the storage can hold, the other four being moving blocks, breaking
-overlays, shape outlines and the gizmo and particle groups nothing on this
-page submits. `SubmitNodeStorage` keeps one
+`SubmitNodeCollector.order` to choose a bucket — between them eight of the
+twelve kinds of node the storage can hold, since text and name tags make the
+same kind, the other four being moving blocks (a falling block's among them), shape
+outlines, gizmos and particle groups, which the zombie never submits. `SubmitNodeStorage` keeps one
 `SubmitNodeCollection` per order, and each collection files what it is given
 into one of fifteen named phases — `SubmitNodeCollection.solid`,
 `.translucentModels`, `.breakingOverlay`, `.outline` and eleven more, all
@@ -226,9 +228,9 @@ everything: `SulfurCubeInnerLayer`, which has to sit inside the shell it is
 drawn with.
 
 The pose stack is transient, and half of it is dropped. A submit *copies* the
-current pose; nothing downstream ever sees the stack. Models, items and block
-models copy the full pose, while shadows, name tags, text and leashes copy
-only the 4×4, so no normal matrix crosses for those. A leaked push is fatal,
+current pose; nothing downstream ever sees the stack. Models, items, block
+models, flames, shape outlines and custom geometry copy the full pose, while
+shadows, name tags, text, leashes and moving blocks copy only the 4×4, so no normal matrix crosses for those. A leaked push is fatal,
 but the check happens at the end of the *submit phase*, on a local stack, not
 at the end of the frame. Avatars differ in one small way: the crouch offset is
 removed *before* the shadow is submitted for a player and *after* it for
@@ -240,7 +242,7 @@ ground.
 Renderers and models are **shared and mutable**; render states are not. One
 `ZombieRenderer` serves every zombie in the world — though it holds an adult
 model, a baby model and two baked armour sets — and safety comes entirely from
-the fresh per-entity state and from replaying the animation at draw time. The
+the fresh per-entity state and from replaying the animation at prepare time. The
 chain is `EntityRenderer` → `LivingEntityRenderer` → `MobRenderer` →
 `AgeableMobRenderer` → `HumanoidMobRenderer` → `AbstractZombieRenderer` →
 `ZombieRenderer`. `AgeableMobRenderer` is deprecated and is not the base of
@@ -248,8 +250,8 @@ every humanoid: the enderman and the giant extend `MobRenderer` directly, the
 armour stand and the avatar extend `LivingEntityRenderer`, all four while
 using humanoid models. Players are served by `AvatarRenderer`, keyed by **skin
 model rather than entity type** — the type map has no entry for the player or
-the mannequin, and the dispatcher keeps two avatar maps, wide and slim,
-falling back to wide.
+the mannequin, and the dispatcher keeps two avatar maps, one for players and
+one for mannequins, each keyed wide and slim and falling back to wide.
 
 Geometry is `Model` → `EntityModel` → `HumanoidModel`, built out of
 `ModelPart`s. A model is baked once from a `LayerDefinition` /
@@ -267,25 +269,26 @@ Armour and trims funnel through `EquipmentLayerRenderer`, dressed by
 `EquipmentAssetManager` and `EquipmentClientInfo` out of the resource packs,
 and a renderer holds a whole `ArmorModelSet` per body size rather than one
 armour model. Held or worn items come through `ItemModelResolver` and
-`ItemStackRenderState`, [models and
-atlases](models-and-atlases.md#how-an-item-picks-its-model)'s business.
+`ItemStackRenderState`, which [models and
+atlases](models-and-atlases.md#how-an-item-picks-its-model) covers.
 
 ### A player is a skin record and seven booleans
 
 [Player anatomy](../player/player-anatomy.md#what-player-owns) leaves the drawing
 here, and the answer is that all of it becomes render state at extract like
 everything else. `AvatarRenderState` carries the whole `PlayerSkin` record by
-value — the four textures, the arm width and the secure flag — read off the
-tab-list entry rather than off the entity, which is why a skin change needs
-no entity packet. Beside it sit seven booleans, one per `PlayerModelPart`:
+value — three textures, the arm width and the secure flag — read, for a
+player, off the tab-list entry rather than off the entity, which is why a skin
+change needs no entity packet; a mannequin carries its own. Beside it sit seven booleans, one per `PlayerModelPart`:
 the hat, the jacket, the two sleeves, the two trouser legs and the cape, each
 copied from `Avatar.isModelPartShown` once per frame, so a customisation
 toggle is a part the model is told not to draw rather than a different model.
-`PlayerModelType` is the one piece that never reaches the state, because the
-dispatcher used it earlier — it is the key into the wide and slim avatar maps
-that chose the renderer in the first place. The textures themselves arrive by
-a road of their own, `SkinManager` and `SkinTextureDownloader` through a
-`PlayerSkinRenderCache`, with `DefaultPlayerSkin` standing in until one does.
+`PlayerModelType` is the arm width inside that record, and the dispatcher reads
+it back out of the state at submit as the key into the players' avatar map,
+whichever avatar the state came from. The textures themselves arrive by
+a road of their own, `SkinManager` and `SkinTextureDownloader`, with a
+`PlayerSkinRenderCache` in front for the profiles a mannequin or a head names
+and `DefaultPlayerSkin` standing in until one does.
 
 ## Prepare: sorting, batching, and the vertices
 
@@ -294,7 +297,7 @@ a road of their own, `SkinManager` and `SkinTextureDownloader` through a
 **Decided:** how few draws this can be.
 
 `FeatureRenderDispatcher.prepareFrame` drains every phase of every order
-bucket, groups the nodes, and lets the thirteen feature renderers build
+bucket, groups the nodes, and lets the twelve feature renderers build
 geometry — `ModelFeatureRenderer` being where a `ModelPart` tree finally
 becomes vertices, as it does here for one zombie:
 
@@ -318,17 +321,18 @@ carried the state but not a pose for every part. The vertices exist before
 any of the frame graph's passes has run.*
 
 The phases come in two kinds and the kind decides how hard the grouping is
-allowed to try. Twelve are a `SimpleFeatureRenderPhase`, which groups by
-feature type and then by *batch key* — and **only two of the thirteen kinds
-of submit have a batch key at all**, a model and a piece of custom geometry.
-Everything else groups by adjacency, keeping the order it was submitted in
-and merging only with its immediate neighbour. Where the zombies of the world
-do collapse into one draw, that is a batch key finding they all want the same
-`RenderType`, and `RenderTypeFeatureRenderer.Group` then being free to fold a
-node's geometry into **any** earlier draw of that type rather than only the
-adjacent one.
+allowed to try. With improved transparency off, as a new client
+starts, twelve are a `SimpleFeatureRenderPhase`, which groups by feature type
+and then by *batch key* — and **only two of the twelve kinds of submit have a
+batch key at all**, a model and a piece of custom geometry. Everything else
+keeps the order it was submitted in. Either way, a simple phase's
+`RenderTypeFeatureRenderer.Group` is free to fold a node's geometry into
+**any** earlier draw of the same `RenderType` rather than only the adjacent
+one, which is how the zombies of the world collapse into one draw.
 
-The other three phases are a `TranslucentFeatureRenderPhase`. That one keeps
+The other three phases are a `TranslucentFeatureRenderPhase` (with improved
+transparency on, ten of the fifteen names share one simple phase, and only the
+see-through phase sorts). That one keeps
 every node, sorts them back to front by squared distance to the camera, and
 marks the group strictly ordered — which switches off exactly one of the
 group's two merges. Consecutive submits of one render type still share a
@@ -344,7 +348,7 @@ feature renderers](../../reference/submit-phases.md).
 ### Why the zombie is animated more than once
 
 Once during **submit** — but only because it has layers, and
-`ItemInHandLayer`, `CustomHeadLayer` and half a dozen others need posed
+`ItemInHandLayer`, `CustomHeadLayer` and several others need posed
 `ModelPart`s to hang things off. Once again, per model submission, at
 **prepare** time, because the submit node carried the model and the state but
 not a pose for every part. A glowing zombie is animated three times, since the
@@ -362,17 +366,19 @@ model is stateless, which it emphatically is not.
 
 **In:** the prepared frame.
 **Out:** draws.
-**Decided:** almost nothing — the ordering was fixed two stages ago.
+**Decided:** almost nothing — the ordering was fixed at submit and prepare.
 
 `FeatureRenderDispatcher.PreparedFrame` exposes eight drains, each handed the
-render pass to draw into, and the frame graph's main pass calls every one:
-`.executeSolid` and `.executeOutline` always, `.executeTranslucent` and
-`.executeTranslucentAfterTerrain` for classic transparency, `.executeWaterMask`
-and `.executeOit` for improved transparency, and `.executeSeeThrough` and
-`.executeAlwaysOnTop` each in a render pass of its own that the main pass
-opens, the always-on-top one clearing depth first. Where those passes sit
-relative to terrain, sky and post-processing is [visibility and the frame
-graph](visibility-and-the-frame-graph.md)'s subject; the draws go out through
+render pass to draw into, and the frame graph's main pass is where each is called:
+`.executeSolid` always, `.executeOutline` when something glows,
+`.executeTranslucent` and `.executeTranslucentAfterTerrain` for classic
+transparency, `.executeWaterMask` and `.executeOit` for improved transparency,
+and `.executeSeeThrough` and `.executeAlwaysOnTop` when something needs them.
+Only the solid and classic translucent drains share the main render pass; the
+others each get a render pass the main pass opens, the always-on-top one
+clearing depth first. Where those passes sit
+relative to terrain, sky and post-processing is the subject of [visibility and
+the frame graph](visibility-and-the-frame-graph.md); the draws go out through
 [blaze3d](blaze3d.md).
 
 ## What borrows this pipeline without being it
@@ -384,7 +390,8 @@ difference.
 
 **The first-person hand** is a second pipeline from submit on: its state is
 extracted with the player's (`FirstPersonHandsAndItems`), then
-`FirstPersonHandsAndItemsRenderer` submits into its own `SubmitNodeStorage`,
+`FirstPersonHandsAndItemsRenderer` submits into a `SubmitNodeStorage` it shares
+with the screen effects,
 which is drawn by `FeatureRenderDispatcher.renderAllFeatures` outside the frame graph — see
 [the frame](the-frame.md).
 
@@ -392,24 +399,17 @@ which is drawn by `FeatureRenderDispatcher.renderAllFeatures` outside the frame 
 separate debug renderer that emits gizmo primitives, suppressed under reduced
 debug info, and the old hitbox render state record is dead code with exactly
 two references, both inside its own file. Name tags borrow in the same way:
-the submit node carries only a `Component`, and every glyph in it is resolved
-by [text and fonts](../client/text-and-fonts.md), not here.
+the submit node carries the text already laid out and measured, and every
+glyph in it is resolved by [text and fonts](../client/text-and-fonts.md), not
+here.
 
-> **For a 1.21-era reader.** `EntityRenderer` has no *render* method, and
-> neither does anything else on this page: the pair is
-> `EntityRenderer.extractRenderState`, which reads the live entity, and
-> `EntityRenderer.submit`, which describes what should be drawn without
-> touching a vertex. *MultiBufferSource* does not exist anywhere in the game,
-> nor any other buffer source. The rest of the names to stop hunting for:
-> *PlayerRenderer* (now `AvatarRenderer`, for players and mannequins alike),
-> every *render* method on `EntityRenderer` and `RenderLayer` (now *submit*),
-> *EntityRenderDispatcher.renderHitbox* and *renderLeash*,
-> *LivingEntityRenderer.getBob*, *MobRenderer.prepareMobModel*,
-> *RenderType.entityCutoutNoCull* (the polarity flipped — the culled variant
-> is now the one that says so), *ItemBlockRenderTypes*, and *ElytraLayer*
-> (now `WingsLayer`). `RenderLayerParent` survives in name only: it is now a
-> single-method interface, and the texture lookup that used to live on it is
-> gone. `PoseStack` and `ModelPart` are unchanged.
+> **For a 1.21-era reader.** *MultiBufferSource* does not exist anywhere in
+> the game, nor any other buffer source: a renderer submits, and the feature
+> renderers write the vertices. *RenderTypes.entityCutoutNoCull* is now
+> `RenderTypes.entityCutout`, the polarity flipped so that the culled variant,
+> `RenderTypes.entityCutoutCull`, is the one that says so. And
+> *ItemBlockRenderTypes* is gone: a quad's layer is [read out of its
+> sprite](models-and-atlases.md#a-quads-chunk-layer-is-read-out-of-the-sprites-pixels).
 
 ## Where to look
 

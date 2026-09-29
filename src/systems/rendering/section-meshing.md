@@ -2,14 +2,16 @@
 
 > Verified against **Minecraft 26.3** · Part XI · a block is placed, and the section it lives in is re-meshed, uploaded and drawn.
 
-You right-click a block into place and it is simply *there* — no shimmer, no
-gap, no frame in which the wall you just built has a hole in it. Behind that
-instant there is a worker thread rebuilding a cube of world sixteen blocks on
-a side from scratch, a snapshot of twenty-seven sections taken so that it may,
-a scratch buffer it had to queue for, and a swap that waits until every last
-byte has landed on the GPU. All of which is why the *other* half of the
-story is the surprising one: place a block behind you and none of it happens
-at all. Only sections the frame is already drawing are swept for dirtiness,
+You right-click a block into place and within a frame or two it is simply
+*there*, with no shimmer and no fade. Behind that wait, on a client left at its
+default graphics preset, the Render thread itself rebuilds a cube of world
+sixteen blocks on a side from scratch, from a snapshot of twenty-seven
+sections, just after the next frame has drawn its terrain from the old mesh,
+and swaps the new one in before that frame ends. A block the server changes
+takes the slower road: a worker thread, a scratch buffer it has to queue for,
+and a swap that can wait a frame or more until every layer has been uploaded. All of which is why the *other* half of the story is the
+surprising one: let a block change behind you, farther back than the few blocks the
+visible list reaches behind the camera, and none of it happens at all. Only sections the frame is already drawing are swept for dirtiness,
 so the flag on a section at your back is set and then simply waits — for a
 second, for an hour, for as long as you keep your back turned.
 
@@ -23,8 +25,8 @@ second, for an hour, for as long as you keep your back turned.
 | `RenderRegionCache` | the snapshot a mesher is allowed to read, and how much of it is shared | Render thread |
 | `SectionRenderDispatcher` | queue order, scratch buffers, the GPU arenas, and the moment a new mesh becomes the drawn one | Render thread, workers |
 | `SectionTaskDynamicQueue` | which section a free worker takes next | any |
-| `SectionCompiler` | the block-by-block walk that turns a snapshot into vertices | `Util.backgroundExecutor` |
-| `BlockModelLighter` | smooth lighting and ambient occlusion, per quad, as the walk goes | `Util.backgroundExecutor` |
+| `SectionCompiler` | the block-by-block walk that turns a snapshot into vertices | the worker pool, or the Render thread for a synchronous compile |
+| `BlockModelLighter` | smooth lighting and ambient occlusion, per quad, as the walk goes | the worker pool, or the Render thread for a synchronous compile |
 
 ## The whole trip, in one figure
 
@@ -42,7 +44,7 @@ sequenceDiagram
     CL->>CL: setBlock, from BlockItem.placeBlock in the placement prediction
     CL->>LX: setBlockDirty, which asks whether a model cares
     CL->>LX: blockChanged, the player-changed bit read off the flags
-    LX->>SUT: dirty over a 3x3x3 block halo, one to eight sections
+    LX->>SUT: setDirty over a 3x3x3 block halo, one to eight sections
     end
     rect rgba(0, 0, 0, 0.04)
     Note over CL,SectC: the frame after that tick
@@ -58,31 +60,32 @@ sequenceDiagram
         SRD->>SectC: on a worker, nearest-first, once a buffer pack is free
     end
     SectC-->>SRD: at most three layers, into the staging buffer
-    LR->>SRD: uploadTerrainBuffersToGpu, whose callback swaps in each fully staged mesh
+    LR->>SRD: uploadTerrainBuffersToGpu, whose callback swaps in each fully uploaded mesh
     end
 ```
 
 *The trip from a placed block to a drawn mesh: a tick sets flags, and the
 frame after it sweeps only visible sections and compiles or queues the dirty
 ones after its own terrain is drawn. A synchronous compile is swapped in at the
-end of that frame, an asynchronous one at the end of whichever frame's upload
-finds all of it staged.*
+end of that frame, an asynchronous one at the end of whichever frame uploads
+the last of it.*
 
 Read it in three beats: a change makes a flag, a frame turns some flags into
 work, and the end of that frame or a later one publishes the result. The middle beat is the one
 that leaves the Render thread, and it does not always — a synchronous rebuild
-compiles inline where it stands, and an empty mesh is published by the worker
-that found it empty.
+compiles inline where it stands, and an empty mesh is published by whichever
+thread compiled it.
 
 ## A click, and the flag it leaves behind
 
-The first arrow hides who starts it. `MultiPlayerGameMode` owns the
-prediction sequence — the client places the block itself and remembers what
-it assumed — but the `Level.setBlock` that actually changes the world happens
-down inside `BlockItem.placeBlock`. From the renderer's side it makes no
-difference whether the change came from your own hand or from the server;
-[what the client is told](../networking/what-the-client-is-told.md) is the
-other door into the same call, by way of `ClientLevel.sendBlockUpdated`.
+The first arrow hides who starts it. `MultiPlayerGameMode` starts the
+prediction — the client places the block itself, and its level remembers the
+state the server last confirmed, to put back if the server disagrees — but the `Level.setBlock` that actually changes the world happens
+down inside `BlockItem.placeBlock`. From the renderer's side the one
+difference is a flag: your own write carries the player-changed bit and the
+server's does not. [What the client is told](../networking/what-the-client-is-told.md)
+is the other door into the same call, by way of
+`ClientLevel.setServerVerifiedBlockState`.
 
 Dirtiness is a small API on `LevelExtractor`, and the calls differ mostly in
 how much of the world they condemn.
@@ -97,16 +100,16 @@ how much of the world they condemn.
 | `LevelExtractor.setSectionRangeDirty` | a range of sections |
 | `LevelExtractor.allChanged` | everything at once |
 
-**27** — the size of the halo a single block change marks, in *block
-positions*, not sections. This is the number to keep straight. A 3×3×3
+**Twenty-seven block positions** make the halo a single block change marks,
+and they are positions, not sections. This is the number to keep straight. A 3×3×3
 neighbourhood of blocks maps to exactly **one** section for any block that is
 not on a section boundary, and to at most eight when it is — a corner block
 touching seven neighbours plus its own. Only the mesher's *read* region,
 much later on, is genuinely twenty-seven sections. There *is* a gate on one
 of the two doors — `ModelManager.requiresRender` guards
 `LevelExtractor.setBlockDirty`, so a state change no model reacts to marks
-nothing through that route — but it is not the route a placed block takes.
-`Level.setBlock` goes through both, and the second,
+nothing through that route — but it cannot stop a placed block.
+`Level.setBlock` goes through both doors, and the second,
 `LevelExtractor.blockChanged`, marks the halo whatever the models say.
 
 ### The flag belongs to a slot, not to a section
@@ -142,7 +145,7 @@ already may always build a new one.
 
 ## What a mesher is allowed to read
 
-A compile runs for an unbounded time on a worker while the Render thread
+A compile on a worker runs for an unbounded time while the Render thread
 keeps applying block updates, so it cannot be allowed near the live world.
 `RenderRegionCache` builds it a `RenderSectionRegion` instead: a 3×3×3 grid
 of `SectionCopy`, each holding a genuine *copy* of one section's
@@ -162,7 +165,7 @@ live, through the region's references to `ClientLevel` and the light engine —
 so for those two the mesher is looking at the world as it is when it asks, not
 at the world as it was when the snapshot was taken.
 
-## The queue, and the scratch buffer that is the real throttle
+## The queue, and the scratch buffer every compile must hold
 
 `SectionRenderDispatcher` takes the sections the extract collected and either
 queues them (`SectionRenderDispatcher.RenderSection.compileAsync`) or compiles
@@ -181,7 +184,7 @@ nearer. With no first-time compile queued at all, a recompile wins outright.
 So terrain you have never seen is never starved by a stream of rebuilds to
 terrain you have.
 
-The throttle is not the thread count. Each task-runner must acquire a
+A thread is not enough. Each task-runner must also acquire a
 `SectionBufferBuilderPack` — the scratch vertex buffers a compile writes into
 — from `SectionBufferBuilderPool` before it can do anything, and the pool is
 sized to the processor count *or* to a share of the heap, whichever is
@@ -191,12 +194,14 @@ and gives up its turn — the *task* is requeued, not the flag, which was
 cleared when the work was taken, so the only symptom of an exhausted pool is
 terrain arriving more slowly.
 
-That requeue is a null check, and it is worth knowing how wide it is: the
-catch that implements it covers the whole compile, so *any* null-pointer
-failure inside the mesher quietly requeues the section rather than reporting
-it. A section that fails this way forever will re-mesh forever, silently.
+That requeue is a null check, and it is worth knowing how wide it is: the catch that implements it covers the whole compile. A failure while one
+block is being tesselated is reported, as a crash; a null-pointer failure
+anywhere else in the compile quietly requeues the section, and the pack it
+had acquired is never given back. A section that fails that way every time
+takes one more pack from the pool each time a worker tries it, until the pool is
+empty and no compile on a worker ever finishes again.
 
-The ceiling on how many meshes exist at once is therefore the pool **plus
+The ceiling on how many compiles run at once is therefore the pool **plus
 one**: the synchronous path uses `RenderBuffers.fixedBufferPack`, which is not
 in the pool at all. And because the pool is usually larger than the
 background pool, the constraint you actually hit is normally the thread
@@ -221,13 +226,13 @@ Lighting is not a separate stage: `BlockModelLighter` computes smooth
 lighting and ambient occlusion as the walk goes, with a thread-local cache
 bracketed around each compile.
 
-**Three** — the chunk section layers, and there are only three:
+**Three chunk section layers** exist, and only three:
 `ChunkSectionLayer.SOLID`, `ChunkSectionLayer.CUTOUT` and
 `ChunkSectionLayer.TRANSLUCENT`. A quad's layer is normally decided at bake
 time and simply carried into the compile — see [models and
 atlases](models-and-atlases.md) for the `BlockStateModelSet` the compiler
 reads and the reload that invalidates every mesh in the world. But the mesher
-can overrule it in two places. Every leaf quad is redirected to
+overrules it in one place, and fluids take a road of their own. Every leaf quad is redirected to
 `ChunkSectionLayer.SOLID` when the *cutout leaves* option is off — that is
 `ModelBlockRenderer.forceOpaque`, tested per block, and it picks which of the
 compiler's two callbacks the renderer is handed — so the setting is baked
@@ -256,8 +261,8 @@ buffer growing to fit it. The Render thread drains it in
 `SectionRenderDispatcher.uploadTerrainBuffersToGpu`, and each completed
 upload fires the callback that publishes the new mesh. The result of a
 compile therefore arrives back on the Render thread, always, with exactly one
-exception: a section that compiled to nothing at all is published directly on
-the worker, because there is nothing to upload.
+exception: a section that compiled to no geometry is published directly by
+the thread that compiled it, because there is nothing to upload.
 
 The destination is not one buffer per layer but an *arena* per layer. Each
 `ChunkSectionLayer` has an `UberGpuBuffer` pair owning a growing list of
@@ -271,8 +276,8 @@ empties. Sections are tenants in a shared allocation, not owners of buffers;
 And now the second fact this page exists to place. `SectionRenderDispatcher.RenderSection.sectionMesh` keeps pointing at
 the *old* mesh until every layer's vertex and index buffer has reported
 uploaded. There is no frame in which a rebuilt section is missing, no flicker
-and no hole — the price being that the section you can see is, for a few
-frames, deliberately out of date. `SectionRenderDispatcher.RenderSection.reset`
+and no hole — the price being that the section you can see is, for a frame
+or more, deliberately out of date. `SectionRenderDispatcher.RenderSection.reset`
 is the other end of that lifecycle, and
 `SectionRenderDispatcher.RenderSection.getVisibility` is not part of it at
 all despite the name — it is a fade, an alpha that climbs from nothing to one
@@ -286,18 +291,14 @@ that reorders an existing translucent mesh without recompiling anything;
 [visibility and the frame graph](visibility-and-the-frame-graph.md) owns the
 budget that decides when it runs.
 
-> **For a 1.21-era reader.** The whole dirty API moved. Every
-> *setBlockDirty*-shaped method that used to live on `LevelRenderer` is now on
-> `LevelExtractor`, in *client/renderer/extract*, and the flags themselves
-> live in `SectionUpdateTracker`. Below that: *ChunkRenderDispatcher* and
-> *RenderChunk* are now `SectionRenderDispatcher` and its nested
-> `SectionRenderDispatcher.RenderSection`, *CompiledChunk* is
-> `CompiledSectionMesh`, *RenderChunkRegion* is `RenderSectionRegion`, and
-> *LiquidBlockRenderer* is `FluidRenderer`. *RenderType.chunkBufferLayers* and
-> its five chunk render types are three `ChunkSectionLayer`s.
-> *BlockRenderDispatcher* is gone as a name and `ModelBlockRenderer` is what
-> does its tesselating, while *BlockAndTintGetter.getShade* has no successor
-> at all.
+> **For a 1.21-era reader.** The whole dirty API moved: every
+> *setBlockDirty*-shaped method on `LevelRenderer` is now on `LevelExtractor`,
+> in *client/renderer/extract*, and the flags live in `SectionUpdateTracker`.
+> *LiquidBlockRenderer* is now `FluidRenderer`; *BlockRenderDispatcher* is gone
+> and `ModelBlockRenderer` does its tesselating; *BlockAndTintGetter.getShade*
+> is gone, and `BlockAndTintGetter.cardinalLighting` answers with a
+> `CardinalLighting`. There are three chunk section layers, not four:
+> *ChunkSectionLayer.TRIPWIRE* is gone.
 
 ## Where to look
 

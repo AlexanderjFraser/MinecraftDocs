@@ -20,13 +20,13 @@ That loop is the first half of the page. The second is what the window
 turns into once it exists: **this is Part XI's platform layer, not
 just its window** — the nineteen kinds of event the window answers, the
 three sizes every GUI element is placed against, and `NativeImage`, the CPU
-image type every texture, screenshot, skin and glyph in the game passes
-through on its way to or from a file. They share a package and a role rather
+image type every texture, screenshot and skin, and every glyph but the
+unihex font's, passes through on its way to or from a file. They share a package and a role rather
 than a scenario, and the role is *everything between the game and the
 machine it is running on*.
 
 [The frame](the-frame.md) is the lecture you watch first, and it opens on a
-surface that has already been acquired. This page is what acquired it.
+surface that has already been acquired. This page is what created it.
 [Input and keybinds](../client/input-and-keybinds.md) opens on an event that
 has already arrived, and [blaze3d](blaze3d.md) on a `GpuDevice` that already
 exists. All three of them start here.
@@ -49,16 +49,20 @@ six in it: `Minecraft` is the game's own, and `GpuBackend` sits in
 *renderpearl/api* with
 [the façades](blaze3d.md#four-objects-the-game-only-touches-through-a-façade).
 None of the package exists on the server — `server-classes.txt` has no entry
-under *com/mojang/blaze3d* at all — and all of it runs on the Render thread,
-which is [one of the four](../anatomy/anatomy.md#four-threads-worth-memorising).
+under *com/mojang/blaze3d* at all — and most of it runs on the Render thread,
+which is [one of the four](../anatomy/anatomy.md#four-threads-worth-memorising):
+images are decoded and mipmapped on reload workers (a downloaded skin on the
+download pool) and written on the IO pool,
+and the shutdown watchdog waits on a thread of its own.
 
 ## Trying backends until one of them makes a device
 
 The startup path is a retry loop, and it is drawn as a flowchart rather than a
 conversation because the shape *is* the fact: the loop encloses the device
-and leaves the window outside it. A backend that cannot load its library and
-a backend that cannot make a device fail identically, and both hand the next
-candidate a clean slate.
+and leaves the window outside it. A backend that cannot load its library
+and a backend that cannot make a device land in the same handler, which unloads
+the library only in the second case, and both hand the next candidate a clean
+slate.
 
 ```mermaid
 flowchart TD
@@ -96,21 +100,24 @@ loop, and a window that fails is a crash rather than a retry.*
 **The list is never one candidate long.** `PreferredGraphicsApi.getBackendsToTry`
 returns an ordered *pair*: every setting has the other API behind it as a
 fallback, the default is OpenGL-first, and `GlBackend` and `VulkanBackend` are
-the two things the loop above is choosing between. A previous unclean shutdown
-downgrades twice over — a Vulkan preference becomes the default, and the
-default becomes OpenGL — so a client that crashed on boot comes back on the
-safest option it has, and stays there until you set it again. That is why
+the two things the loop above is choosing between. A start that ended before it
+finished loading, by a crash or otherwise, downgrades the preference one step on the next start — a
+Vulkan preference becomes the default, and the default becomes OpenGL — so a
+client that keeps crashing on boot comes down to the safest option it has, and
+stays there until you set it again. That is why
 asking for Vulkan does not always get it.
 
 What the window is asked for is a `DisplayData`: a size, an optional
 fullscreen size and a fullscreen flag, with `DisplayData.withSize` and
-`DisplayData.withFullscreen` for the transitions that change them later. What
+`DisplayData.withFullscreen` applying the saved size and fullscreen options,
+or, after a start that never finished loading, forcing windowed, before the
+window is made. What
 comes back is a `Window` holding a `Window.handle` — and neither a
 `GpuDevice` nor the backend that made it. The window uses the backend once,
 to be created, and the device meets the window only afterwards, when
 `GpuDevice.createSurface` is handed its handle.
 
-SDL and STB, reached through LWJGL, are what the package sits on, and it
+SDL, STB and FreeType, reached through LWJGL, are most of what the package sits on, and it
 calls almost nothing else in the game on its way down. The exceptions are
 about passing something upward, an event or a failure: `SDLEventHandler`
 hands the input up, and a failure goes to `Minecraft`, `CrashReport`, and the
@@ -140,8 +147,9 @@ shows if nobody survives, and keeps one exception in
 `Minecraft.backendCreationException` for the crash report and the telemetry,
 where an OpenGL-missing failure never displaces an earlier one.
 
-Errors are read where they happen: the game checks an SDL call's result
-where it makes the call and reads *SDL_GetError* there and then, and what SDL
+Errors are read where they happen: where the game checks an SDL call's result
+it mostly reads *SDL_GetError* there and then, or once in the method that made
+the call, and what SDL
 logs of its own accord goes to the game's log through `SdlDebug`, which
 `RenderSystem.initBackendSystem` installs before SDL starts.
 `Window.setErrorSection` writes a label for the crash report — *Startup* from the
@@ -214,8 +222,9 @@ frame](the-frame.md#what-a-minimized-client-actually-stops-doing).
 
 The fourth method on the interface is the odd one.
 `WindowEventHandler.resizeGui` is never called by `Window` at all: its callers
-are `Minecraft` and `Options`, which is to say the game calling itself when
-the GUI scale option changes. And `WindowEventHandler.framebufferSizeChanged`
+are `Minecraft` and `Options`, which is to say the game calling itself — at
+startup, after every new framebuffer size, and when the GUI scale or a font
+option changes. And `WindowEventHandler.framebufferSizeChanged`
 is not only an event's answer — `Window.updateFullscreenIfChanged`,
 `Window.changeFullscreenVideoMode` and `Window.setExclusiveFullscreen` all
 raise it directly, which is how F11 and a video-mode switch reach the renderer
@@ -236,8 +245,8 @@ the nineteen events, and `Window` answers it by setting `Window.shouldClose`
 and running the callback. It is registered late because what it does is not
 the window's business at all — it is one of the two places
 `ClientShutdownWatchdog` is armed, and it is the one live through the teardown that follows a close from the
-window, which the other arming, after `Minecraft.exitWorldAndClose` returns, never sees. That is why the game
-sometimes leaves a crash report behind after you close it. [The two armings
+window, which the other arming, after `Minecraft.exitWorldAndClose` returns, never sees. That is one reason the
+game sometimes leaves a crash report behind after you close it. [The two armings
 and what each may
 do](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping) are
 the client loop's.
@@ -246,7 +255,7 @@ the client loop's.
 
 | the size | how it is asked for | what it is |
 |---|---|---|
-| framebuffer | `Window.getWidth`, `Window.getHeight` | the pixels the renderer actually targets |
+| framebuffer | `Window.getWidth`, `Window.getHeight` | the pixels the renderer targets |
 | screen | `Window.getScreenWidth`, `Window.getScreenHeight` | the window as the operating system reports it, which under DPI scaling is not the framebuffer |
 | GUI-scaled | `Window.getGuiScaledWidth`, `Window.getGuiScaledHeight` | the framebuffer divided by an integer scale |
 
@@ -273,8 +282,8 @@ window's involvement in getting a picture onto the screen. Everything else
 the window does is answering an event.
 
 `Window.updateFullscreenIfChanged` is where F11 lands.
-`Window.setFullscreen`, which the fullscreen option calls, and
-`Window.setWindowed` set the request, `WindowEventHandler.fullscreenStateChanged`
+`Window.setFullscreen`, which the fullscreen option calls, sets the request,
+`Window.setWindowed` applies one at once, `WindowEventHandler.fullscreenStateChanged`
 reports the outcome back to the option, and `Window.changeFullscreenVideoMode`
 with `Window.getPreferredFullscreenVideoMode` and
 `Window.setPreferredFullscreenVideoMode` negotiate what exclusive fullscreen
@@ -291,20 +300,22 @@ A `Monitor` is a record — a name, an SDL display id, its list of
 debug screen's refresh rate comes from.
 
 The one policy on this page that runs continuously is
-`FramerateLimitTracker`, and what it watches is the window: iconification and
-idle time, and focus only in exclusive fullscreen, where an unfocused window
-is throttled as if it were iconified — anywhere else, losing focus is a
-different mechanism with a different effect. What it does with that, and the
-four limits it substitutes, is [the client
-loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;
+`FramerateLimitTracker`, and what it watches is the window's iconification, and
+its focus only in exclusive fullscreen, where an unfocused window is throttled
+as if it were iconified — anywhere else, losing focus is a
+different mechanism with a different effect. Beside the window it watches the
+idle time since the last input, when the inactivity option asks it to, and
+whether a menu is up with no world. What it does with that, and the
+four limits it caps or substitutes, belongs to [the client
+loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not);
 [the frame](the-frame.md#blit-submit-and-present)
 is where the limit gets spent.
 
 ## `NativeImage`, the seam between a file and a texture
 
 `NativeImage` is a `NativeImage.Format`, a width, a height and a pointer into
-native memory. It is where every image in the game briefly is, and it is not
-only textures. `NativeImage.read` is an STB decode from a stream, a byte array
+native memory. It is where every image the game reads from or writes to a file briefly is,
+the unihex font's glyphs aside, and it is not only textures. `NativeImage.read` is an STB decode from a stream, a byte array
 or an NIO buffer — that is the PNG path. `NativeImage.copyFromFont` receives a
 rasterised FreeType glyph. `NativeImage.copyRect` and `NativeImage.fillRect`
 are how one image is cut out of or patched into another — an `Unstitcher`
@@ -316,8 +327,9 @@ and `NativeImage.setPixel` are the rest of the vocabulary. A downloaded skin
 sits in one while it is being validated, and a screenshot arrives in one read
 back off the GPU on its way to `NativeImage.writeToFile`. What it is *not* is
 where an atlas is built: an atlas is assembled on the GPU, sprite by sprite,
-which is [models and
-atlases](models-and-atlases.md#the-barrier-and-how-a-sprite-reaches-the-gpu)'.
+as [models and
+atlases](models-and-atlases.md#the-barrier-and-how-a-sprite-reaches-the-gpu)
+explains.
 
 `NativeImage.computeTransparency` is what a stitched sprite's contents are
 scanned with, and it is the reason [a quad's chunk layer is read out of its
@@ -326,8 +338,8 @@ pixels](models-and-atlases.md#a-quads-chunk-layer-is-read-out-of-the-sprites-pix
 — a rendering decision made by looking at the pixels of a file.
 
 Because the memory is native, ownership is explicit: `NativeImage.close`
-frees it, and `NativeImage.untrack` exists for the cases where something else
-has taken the pointer over.
+frees it, and `NativeImage.untrack` only takes an image out of LWJGL's leak
+tracking, for the few special glyphs kept for the life of the process.
 
 ## The corners the story does not pass through
 
@@ -340,16 +352,18 @@ takes a fallback for the shapes a given system does not provide. And
 `TextureUtil`, the odd one out because nothing about it is a window, is why a
 mipmapped texture's edges do not bleed:
 before `MipmapGenerator` builds a sprite's mip chain it runs one of two
-repairs over it, `TextureUtil.solidify` flooding the nearest opaque colour
-outward into every fully transparent pixel or
-`TextureUtil.fillEmptyAreasWithDarkColor` filling them with the image's
-darkest colour instead. Either way the transparent texels stop being an
-arbitrary colour, so that averaging four of them down a mip level cannot bleed
-something that was never in the texture into its edges.
+repairs over it, when the sprite is not an item's and its mipmap strategy
+asks for one:
+`TextureUtil.solidify` floods the nearest opaque colour outward into every
+fully transparent pixel, and `TextureUtil.fillEmptyAreasWithDarkColor` fills
+them with a darkened copy of the image's darkest colour instead. The first is
+the one that stops the bleed, since a plain average of four texels down a mip
+level would otherwise pull in whatever colour the transparent ones held.
 
 The rest of the package is genuinely a list, and the class index is where a
 list belongs: clipboard and IME text, the cursor shapes, the window icon set,
-the macOS and memory-tracking helpers, and `InputConstants`, the key and
+the macOS and memory-tracking helpers, `Lighting`'s buffer of diffuse-light
+directions, and `InputConstants`, the key and
 mouse-button vocabulary every `KeyMapping` is written in. `Transparency`,
 which sits here too, is the answer `NativeImage.computeTransparency` gives,
 not pipeline state — that belongs to
@@ -358,10 +372,9 @@ not pipeline state — that belongs to
 
 > **For a 1.21-era reader.** GLFW is gone; SDL3 does its work, and *GLX* went
 > with it. The window no longer presents anything: *Window.updateDisplay* and
-> *Window.setVsync* are gone, presentation is the `GpuSurface` protocol
-> ([blaze3d](blaze3d.md)) and vsync is a `GpuSurface.PresentMode`. Also gone:
-> *Window.setupGuiState*; and if you are reaching for *ScreenManager*, monitor
-> handling is `MonitorManager`, in the same package ([naming
+> *Window.updateVsync* are gone, presentation is the `GpuSurface` protocol ([blaze3d](blaze3d.md)) and
+> vsync is a `GpuSurface.PresentMode`. *ScreenManager* is now `MonitorManager`,
+> in the same package ([naming
 > drift](../../reference/naming-drift.md#part-xi--rendering)). The constructor
 > now takes the `GpuBackend` that makes the window.
 
@@ -370,8 +383,8 @@ not pipeline state — that belongs to
 `Minecraft`'s constructor for the candidate loop, what happens when it runs
 out of candidates, and the one window made after it.
 `SDLEventHandler.pollEvents` and `Window.handleEvent` for where each event
-goes, then `Window.updateFullscreenIfChanged` for the only thing the window
-does per frame. `MonitorManager.findBestMonitor` and
+goes, then `Window.updateFullscreenIfChanged` for the one call the window
+gets on every frame. `MonitorManager.findBestMonitor` and
 `Monitor.getPreferredVideoMode` for the fullscreen negotiation.
 `NativeImage.read` and `NativeImage.computeTransparency` for the image type
 the rest of Part XI is built on.

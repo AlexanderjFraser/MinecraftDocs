@@ -889,7 +889,7 @@ the corrections it made are in [pass9.md](pass9.md).*
 
 ### From pass 7, session F (Part VI · Entities)
 
-- **A flowchart or state-diagram label that begins a markdown block is erased on
+- ~~**A flowchart or state-diagram label that begins a markdown block is erased on
   screen.** Mermaid runs a markdown tokenizer over those labels and renders only
   text, strong, em, paragraph, space, html and escape; anything else becomes the
   literal string `Unsupported markdown: <type>` **in place of the label**. A label
@@ -899,7 +899,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   `rendering/visibility-and-the-frame-graph`'s. Both fixed, and `check_mermaid.js`
   gates it with a nine-case probe measured in Chrome (a sequence message is *not*
   erased; a digit-dot with no space after it is not; a digit-dot not at the start is
-  not). Nothing left in the corpus. [kind=record] **VI's share: record, pass 8 session F** (the lead figure's labels render).
+  not). Nothing left in the corpus. [kind=record] **VI's share: record, pass 8 session F** (the lead figure's labels render).~~ **record** (pass 8 session L) — both shares settled: VI's by session F, and `visibility-and-the-frame-graph`'s lead figure labels open `N · `, which renders.
 - ~~**`entity-lifecycle`'s spawn-loop figure draws neither of the two rejections that
   end a group attempt.** The prose under it names them — the empty species list and
   the group filling up — and `NaturalSpawner` line 207 and line 233 are both
@@ -1015,7 +1015,7 @@ create, routed by kind.*
   Xoroshiro sources the argument rests on, which are Reference's. **Both
   landing pages settled; entry closed.**~~
   **Session O's audit (pass 5's close): settled and never struck** — both landing pages now `{{#include}}` their size; no landing page hand-counts a part's size.
-- **Two landing pages are over the measured budget** — everything but the
+- ~~**Two landing pages are over the measured budget** — everything but the
   watch order: `rendering/README` 124 lines and `worldgen/README` 144,
   against a corpus median of 90. Sessions K and L judge; the fix is the
   argument, not the trim. [kind=book] **Part XI judged, session K:** the
@@ -1027,7 +1027,7 @@ create, routed by kind.*
   once, the closer became an instruction, and the space went into a *Where the
   part stops* section carrying the part's coverage answer. The page is longer
   than it was, not shorter, and the lines it gained are the ones the charter
-  asked for. **Entry closed: the budget is a measurement, not a target.**
+  asked for. **Entry closed: the budget is a measurement, not a target.**~~ **ruled** (pass 8 session L) — closed in the entry itself: the budget is a measurement, not a target.
 - ~~**`lectures.md`:296 and `rendering/README`:140 were near-verbatim**, and~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session K, as the entry's own *Done* says.
   session A shortened the first under the summariser rule. ~~Session K reads
   the pair once to check nothing was lost.~~ **Done, session K:** nothing was
@@ -1041,10 +1041,10 @@ create, routed by kind.*
   the bottom of a tick, and a loose metaphor on `items/loot-tables` and
   `items/contexts-and-predicates`. The through-line owns the first; the other
   two want a different word or an explicit one. [kind=voice] **`server-tick`'s half done, pass 8 session C** — it now closes with *three pieces of bookkeeping*; the items half is session G's.~~ *Done: `server-tick`'s half by session C; `loot-tables` now says *a list of everything seen* and `contexts-and-predicates` *a stack, not a history* — pass 8, session G.*
-- **`rendering/README`:140 says "they were one page until pass 3".** A
+- ~~**`rendering/README`:140 says "they were one page until pass 3".** A
   published page naming a pass number a reader cannot resolve; the same
   sentence in `lectures.md` was fixed this session ("two pages that were
-  one"). [kind=voice]
+  one"). [kind=voice]~~ **overtaken** (pass 8 session L) — the sentence is gone; the landing page says *Four and five are a pair*.
 - **The data-driven type pattern's terms are ordinary words**, so
   `pass5_dups.py --terms` gives it 11 pages where the other six through-lines
   get 18 to 72. Eleven is a floor, not a count, and no session should quote it
@@ -1159,7 +1159,7 @@ entry": [kind=voice]
   *blend_alpha*.
 - **Staging buffer** — used once outside the glossary, on its owner page, and [kind=voice]
   once elsewhere for an unrelated thing (`section-meshing`'s worker buffer).
-  The class-shaped headword is `ExecutionContext.newTopCommands`.
+  The class-shaped headword is `ExecutionContext.newTopCommands`. **XI's share, pass 8 session L**: `section-meshing`'s staging buffer is the class `StagingBuffer`, named in code; the glossary's headword is session O's.
 - **Flat level generator preset** — the lowercase phrase appears nowhere; the [kind=record]
   corpus names only the plural bootstrap class, twice, on one page.
 - **Batch** — claimed for the game-test meaning, while a reader is likelier to [kind=voice]
@@ -1334,33 +1334,33 @@ drop the number.
   line ("One socket, four languages") and in Part IX's watch order, which is
   session I's. [kind=book]
 
-- `rendering/post-processing.md:204` — "every chain this game will ever load is
+- ~~`rendering/post-processing.md:204` — "every chain this game will ever load is
   named by a **constant** in Java, and there are only six of those". Six ids is
   right; only three are `static final` fields
   (`GameRenderer.BLUR_POST_CHAIN_ID`,
   `LevelRenderer.ENTITY_OUTLINE_POST_CHAIN_ID`,
   `LevelRenderer.TRANSPARENCY_POST_CHAIN_ID`) and the other three are inline
   literals in `GameRenderer.checkEntityPostEffect`'s switch. The count holds;
-  *constant* does not. [kind=fact]
+  *constant* does not. [kind=fact]~~ **overtaken** (pass 8 session L) — the page now says the set of chains is open (`end_of_frame`, `/posteffect`), and names no constant.
 - ~~`rendering/the-window.md:244` — "(**both** reached from `KeyboardHandler`)".~~
   **Done, session K:** the parenthetical is cut; two other pages contradicted
   it independently.
   `ClipboardManager` is a `KeyboardHandler` field; `TextInputManager` is
   `Minecraft.textInputManager` and is reached from `Gui`,
   `AbstractSignEditScreen` and `IMEPreeditOverlay` as well.
-- `rendering/entity-rendering.md:189,255` — "half" and "4x4" are right but the [kind=voice]
+- ~~`rendering/entity-rendering.md:189,255` — "half" and "4x4" are right but the [kind=voice]
   enumeration is short (`SubmitNodeCollector.submitMovingBlock` also copies only
   the `Matrix4f`; `submitFlame`, `submitShapeOutline` and `submitCustomGeometry`
   also copy the full pose); and "half a dozen others" is seven layers that hang
   something off a posed part, thirteen that call `RenderLayer.getParentModel`
-  at all.
-- **Carried to pass 9, session K** (it is a count assertion, so it is a
+  at all.~~ **done** (pass 8 session L) — the full-pose and 4×4 lists are now complete (`client/renderer/SubmitNodeCollection.java`:106-333), and *half a dozen others* is *several others*.
+- ~~**Carried to pass 9, session K** (it is a count assertion, so it is a
   fact-check's rather than a wording pass's).
   `rendering/models-and-atlases.md:191` — "**twelve** separate layers" of
   fallback: the prose names eleven distinct failure kinds, and twelve only if
-  "bakes that throw" counts as its two `ModelBakery` catches.
-- `rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
-  (`ClientLevel.java:274`), stated as a fraction rather than hedged. [kind=voice]
+  "bakes that throw" counts as its two `ModelBakery` catches.~~ **overtaken** (pass 8 session L) — the soft-failure table has ten rows and no numeral.
+- ~~`rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
+  (`ClientLevel.java:274`), stated as a fraction rather than hedged. [kind=voice]~~ **overtaken** (pass 8 session L) — the page links the lerp and gives no fraction.
 
 - ~~`commands/functions-and-macros.md:158` — "**three** lines apart" is three~~ **Struck by the pass-6 planning session (2026-09-07):** overtaken, as the entry's own last line says (session M).
   lines *between* the two declarations (`CommandSourceStack.java` 124 and 128),
@@ -1545,25 +1545,25 @@ typeset is worth one pass-5 sweep.
 
 ## Session K — Part XI Rendering (pass 4) *(2026-09-04)*
 
-**Hooks and openings rewritten around a corrected fact — re-read all of
+~~**Hooks and openings rewritten around a corrected fact — re-read all of
 these for voice.** Six paragraphs were rewritten because the fact under them
-fell, and none has had a wording pass:
+fell, and none has had a wording pass:~~ **done** (pass 8 session L) — its five items settled below.
 
-- `the-frame`'s acquire-failure paragraph and its minimize Q&A (the answer
+- ~~`the-frame`'s acquire-failure paragraph and its minimize Q&A (the answer
   went from "three calls' worth" to a paragraph about the ten-frame limiter,
-  and it is now the longest Q&A on the page). [kind=lecture]
-- `the-frame`'s partial-tick table gained a sixth row and lost the "five [kind=voice]
+  and it is now the longest Q&A on the page). [kind=lecture]~~ **done** (pass 8 session L) — the minimize answer is a subsection now, read for voice and corrected twice (the LAN vote, the limiter's reason).
+- ~~`the-frame`'s partial-tick table gained a sixth row and lost the "five [kind=voice]
   partial ticks" heading; the section is now called *six clocks in one frame*,
-  which is accurate and may not be the best title.
-- `models-and-atlases`' chunk-layer hook, which now carries a nine-line
+  which is accurate and may not be the best title.~~ **ruled** (pass 8 session L) — a heading is an anchor (V15), and *six clocks* is accurate.
+- ~~`models-and-atlases`' chunk-layer hook, which now carries a nine-line
   qualifier about `force_translucent` where the point is one sentence long.
-  **This is the clearest over-long fix in the session.**
-- `models-and-atlases`' water-animation Q&A, whose *question* changed — it [kind=voice]
+  **This is the clearest over-long fix in the session.**~~ **overtaken** (pass 8 session L) — the `force_translucent` qualifier is its own five-line paragraph.
+- ~~`models-and-atlases`' water-animation Q&A, whose *question* changed — it [kind=voice]
   now asks two things at once ("why does lag slow it but the pause menu not
-  stop it"), which is a compound question in a slot that wants a simple one.
-- `lightmap-fog-and-sky`'s opening, where "only two still read the raw world
+  stop it"), which is a compound question in a slot that wants a simple one.~~ **ruled** (pass 8 session L) — the pair is the point (one guard answers both), and a closer's question is not restructured by the polish (V16).
+- ~~`lightmap-fog-and-sky`'s opening, where "only two still read the raw world
   clock" became "only one… and the weather does not ask anybody". The new
-  clause is true and the rhythm of the sentence is worse.
+  clause is true and the rhythm of the sentence is worse.~~ **done** (pass 8 session L) — the opening's clauses were rewritten: four renderers ask the probe, two read the level's game time, the weather asks nothing.
 - ~~`visibility-and-the-frame-graph`'s opening, which no longer resolves to one
   method and now has to say "not quite at one method" — an admission in a
   position that wants a promise.~~ **Done, session K:** fixed from both ends.
@@ -1605,16 +1605,16 @@ fell, and none has had a wording pass:
   four examples from" framing the Reference page used was already generous.
   Pass 5 should decide whether the lecture wants more of the catalogue or the
   catalogue wants less of a preamble.
-- `post-processing`'s per-chain table has a *what a player sees* column that
+- ~~`post-processing`'s per-chain table has a *what a player sees* column that
   is interpretation of GLSL the book does not quote. It survived the
   fact-check because it is not falsifiable from the sources the book uses.
   Pass 5 should decide whether to keep it, and if so to say in the caption
-  that it is a reading rather than a citation. [kind=book]
+  that it is a reading rather than a citation. [kind=book]~~ **done** (pass 8 session L) — the column is introduced as a reading of the shaders, and the readings were checked against the GLSL.
 - ~~The landing page's pipeline figure no longer claims to be frame order, and
   the paragraph under it now spends four lines saying what the arrows are
   *not*. That is honest and it is also the longest caption in the part.~~ *Done, pass 8 session K: the figure has an italic caption of one sentence, and the paragraph under it says what the order is and why the fourth and fifth lectures feed each other.*
 
-**Smaller misleading items, verified but left as they are** (each is true as [kind=voice]
+~~**Smaller misleading items, verified but left as they are** (each is true as [kind=voice]
 written and imprecise in a way that costs a reader nothing at this pass):
 `the-frame`'s "all of this is one thread" against a client that has several;
 `models-and-atlases`' "twelve separate layers" where the prose enumerates
@@ -1631,7 +1631,7 @@ list, which omits `LevelRenderer.resize` and `ViewArea.repositionCamera`;
 `block-entity-rendering`'s "the two gates every extraction passes", where
 there is a third at `BlockEntityRenderDispatcher.java:67`, and its "nothing
 reaches back into the world", which `SignRenderState`'s live `SignText`
-references break.
+references break.~~ **done** (pass 8 session L) — each item corrected this session or overtaken: the coordinates, the bound pipeline, the downgrade, the drawing classes, the draw that escapes, the walk triggers, the three gates and the live handles.
 
 ~~**On-spec material pass 5 may cut**~~ **All four ruled, session K, and none
 cut:** `the-window` stays (the landing page argues its place and three pages
@@ -2430,7 +2430,7 @@ correction):
     the structure block, which `blocks/README` had been handing to a part that
     never named it.
 
-- **2026-09-03, session L — Part XI.** Eleven system pages plus a landing
+- ~~**2026-09-03, session L — Part XI.** Eleven system pages plus a landing
   page and a Reference page. **Every page landed inside the 260–340 brief**
   — 256 to 339, with the landing page at 150 and the Reference page at 81 —
   which is the first part to need no length note at all, and the brief was
@@ -2440,7 +2440,7 @@ correction):
   invariant wall, and none of that survives. The material is in cast tables,
   decision tables, *Questions players ask* sections and the sentences that
   use each name. `lightmap-fog-and-sky` came *down* from 447 to 339 by
-  dissolving the twenty-four-attribute enumeration Part IV already owns.
+  dissolving the twenty-four-attribute enumeration Part IV already owns.~~ **record** (pass 8 session L) — pass 5's drafting record; nothing to act on.
 
   ~~The one shape note pass 5 might revisit: **`models-and-atlases` carries a
   single figure over 330 lines.** Its drafter cut a sequence diagram that
@@ -2449,7 +2449,7 @@ correction):
   section is where two forward links from Part VII land and it is now the
   page's longest stretch of unbroken prose.~~ *Second edition, pass 8 session K: the item-model path is the section K's viewer named as wanting a figure, and pass 8 adds none; the page's one figure was redrawn.*
 
-  **Cuts made, all field inventories, no behaviour:** `the-frame` dropped the
+  ~~**Cuts made, all field inventories, no behaviour:** `the-frame` dropped the
   `GameRenderer` field roll-call (eleven fields), most of the `GameRenderState`
   and `CameraRenderState` field lists, and the `CrossFrameResourcePool`
   mention, which asserted only that the pool exists and is three frames deep;
@@ -2480,9 +2480,9 @@ correction):
   with its field inventories: `FogRenderer.endFrame` and
   `CloudRenderer.endFrame` rotating their ring buffers at the close of a
   frame. Worth restoring if a line becomes available, since it is the only
-  mention of what ends those two buffers' frames.
+  mention of what ends those two buffers' frames.~~ **ruled** (pass 8 session L) — the block-atlas rule is stated where it is enforced (`models-and-atlases`, *How an item picks its model*), and the output-override members are gone in 26.3.
 
-  **Wording debt.** The *headline for a 1.21-era reader* formula that opened [kind=lecture]
+  ~~**Wording debt.** The *headline for a 1.21-era reader* formula that opened [kind=lecture]
   eight of eight Part XI pages is gone as an opening and survives as one
   blockquote at the foot of each — the same move session K made, so the
   device is now consistent across two parts and pass 5 should check it reads
@@ -2492,7 +2492,7 @@ correction):
   which is the strongest opening in the part and also, at three, the point at
   which it becomes a pattern. `particles`' *Where to look* is a
   middle-dot list where every other page's is a sentence; it reads fine and it
-  is the only one, so it is either a deliberate variation or a fix.
+  is the only one, so it is either a deliberate variation or a fix.~~ **done** (pass 8 session L) — the blockquote is the ratified device (V13), the second-person openings stand (V14), and `particles`' *Where to look* is prose.
 
 - ~~**2026-09-02, session F — Part V.** Seven pages at 243–388 lines, which is
   the first part to land inside the 260–340 brief rather than over it — the
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands.
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands. **XI's share, pass 8 session L**: second edition — a page's skeleton is structure, which pass 8 does not change (R9).
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -3465,7 +3465,7 @@ the paragraph after the sequence diagram ("Three details in that order are
 worth stopping on") is a list in prose clothing and could be three
 bold-led paragraphs. All four use the *For a 1.21-era reader* blockquote;
 none uses the myth table; three carry a *Questions* closer, so the
-session's own pages score 3 of 4 on the device it just flagged.
+session's own pages score 3 of 4 on the device it just flagged. **XI's share, pass 8 session L**: `block-entity-rendering`'s *why* column stays, its numbers checked and its reasons readings; the second edition decides whether a table cell may carry an inferred reason.
 
 ## From pass-4 session H — Part VIII The player *(2026-09-04)*
 
@@ -4926,26 +4926,26 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 8 (the voice)
 
-- **Part XI says "client thread" and "Render thread" for the same thread.**
+- ~~**Part XI says "client thread" and "Render thread" for the same thread.**
   `visibility-and-the-frame-graph` and `section-meshing` — a declared pair —
   use "the client thread" in prose while their own cast tables say **Render
   thread**, which is `reference/threads`' name for it. `particles` does the
-  same. Fix all of them or none. [kind=voice]
-- **Two different thirteens three lines apart** on `entity-rendering`: "the
+  same. Fix all of them or none. [kind=voice]~~ **done** (pass 8 session L) — the part's last two *client thread* and nine lower-case *render thread* are *Render thread*.
+- ~~**Two different thirteens three lines apart** on `entity-rendering`: "the
   thirteen feature renderers" and "the thirteen kinds of submit". Both counts
-  are right and the sentence is not. [kind=voice]
-- **`post-processing`:8 says a chain is "run by the same three classes"** over
+  are right and the sentence is not. [kind=voice]~~ **done** (pass 8 session L) — both are twelve in 26.3, and each kind of submit has its feature renderer.
+- ~~**`post-processing`:8 says a chain is "run by the same three classes"** over
   a cast table of eight. The three are presumably `ShaderManager`, `PostChain`
   and `PostPass`; the sentence should name them or drop the count.
-  [kind=voice]
-- **`blaze3d`'s *For a 1.21-era reader* table restates six of `naming-drift`'s
+  [kind=voice]~~ **done** (pass 8 session L) — the sentence names the two, `PostChain` and `PostPass`.
+- ~~**`blaze3d`'s *For a 1.21-era reader* table restates six of `naming-drift`'s
   own rows.** The per-page drift box is the template's device, so this is not a
   straight cut, but a table of seven where six are duplicated is the wrong
   shape. The queue's older charge against the page's two *sections* is
   overtaken — both carry material three pages depend on — and this is where it
-  actually lands. [kind=voice]
-- **`the-window` and `blaze3d` carry the same *Window.updateDisplay / setVsync*
-  drift row twice inside one part.** [kind=voice]
+  actually lands. [kind=voice]~~ **done** (pass 8 session L) — the table is folded into an eight-line blockquote of names 1.21.11 had.
+- ~~**`the-window` and `blaze3d` carry the same *Window.updateDisplay / setVsync*
+  drift row twice inside one part.** [kind=voice]~~ **ruled** (pass 8 session L) — both pages' mechanisms turn on it (presentation left the window for `GpuSurface`), so each keeps *Window.updateDisplay*; *setVsync*, not a 1.21.11 name, went from both.
 
 ## Session M — Part XIII, commands and data packs (pass 5) *(2026-09-07)*
 
@@ -5071,13 +5071,13 @@ for other passes and the cuts it logged.*
   inside one paragraph whose point was `AttributeType.checkAllowedModifier`
   at the far end of it. The counts survive per type family; the four class
   names and the two helper types do not. [kind=record]
-- **The six `EnvironmentAttributeProbe` consumers by class name** — same
+- ~~**The six `EnvironmentAttributeProbe` consumers by class name** — same
   page. `SkyRenderer` stays (it is a lane in the figure);
   `LightmapRenderStateExtractor`, `AtmosphericFogEnvironment`,
   `WaterFogEnvironment` and `LevelExtractor` are now *"the lightmap, the two
   fog environments, the clouds"*, with the link to
   [lightmap, fog and sky](../src/systems/rendering/lightmap-fog-and-sky.md)
-  in the same sentence. [kind=record]
+  in the same sentence. [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
 - **`TimeCommand`'s subtree shape** — same page: that the whole subtree is
   registered twice, the six subcommand names, and `/time query gametime`
   sitting outside the clock nodes. What survives is that everything is
@@ -6112,7 +6112,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   is used unglossed on `options`, `hud`, `gui-and-screens` and
   `the-gui-render-tree`, and its owner is `the-frame` in Part XI. It is the
   clearest case in the part of a term the book allows and no page in the part
-  introduces. For session O, against the glossary. **X's share, pass 8 session J**: nothing on Part X's pages; the glossary's *extract* is session O's.
+  introduces. For session O, against the glossary. **X's share, pass 8 session J**: nothing on Part X's pages; the glossary's *extract* is session O's. **XI's share, pass 8 session L**: `the-frame` introduces the *extract* zone and the wall; the glossary's line is session O's.
 - ~~`client/README`'s *before you start* opens on Part IX *"and not [kind=record]
   optionally"* and the reader skipped the three per-page prerequisites as
   something to read later. That is probably right and probably fine; noting it
@@ -6122,7 +6122,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 ### Cuts logged (nothing dropped except by moving it or logging it)
 
-- `the-window`'s *What is the rest of the package?* closer answer: the
+- ~~`the-window`'s *What is the rest of the package?* closer answer: the
   twenty-line roll-call went, and with it the bare names `ClipboardManager`,
   `TextInputManager`, `CursorType`, `CursorTypes`, `IconSet`, `MacosUtil`,
   `DebugMemoryUntracker`, `GLX._getCpuInfo`, `GLX._getLWJGLVersion`,
@@ -6130,30 +6130,30 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   behaviour, which is the field inventory A12 rules out, and the class index is
   where a list of them belongs. The two things in that section that *were*
   doing work — the cursor option and `TextureUtil`'s two mip repairs — were
-  kept and given prose. [kind=record]
-- `blaze3d`'s closer answer *Why did that draw produce nothing, and say
+  kept and given prose. [kind=record]~~ **record** (pass 8 session L) — nothing to act on; *GLX* is gone in 26.3 and named only in the blockquote.
+- ~~`blaze3d`'s closer answer *Why did that draw produce nothing, and say
   nothing?* was a second telling of *Who checks what* forty lines above; its
   one new clause (the shipped game returns silently) was folded into that
-  section and the question went. [kind=record]
-- `particles`' explosion trace lost its blow-by-blow (the per-sample
+  section and the question went. [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
+- ~~`particles`' explosion trace lost its blow-by-blow (the per-sample
   bookkeeping) and kept the budget, which is what the section is for.
   `ClientExplosionTracker.tick` and `ClientLevel.trackExplosionEffects` are now
   named on no page; `ServerLevel.explode`, `ClientPacketListener.handleExplosion`
   and `ClientExplosionTracker` are, so the route is still followable.
-  [kind=record]
-- `models-and-atlases`' closer answer *Why do some block updates cost nothing to
+  [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
+- ~~`models-and-atlases`' closer answer *Why do some block updates cost nothing to
   draw?* dissolved into the `ModelGroupCollector` sentence that introduces the
-  mechanism; nothing was dropped. [kind=record]
-- `section-meshing`'s closer answer *What happens when the buffer pool runs
+  mechanism; nothing was dropped. [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
+- ~~`section-meshing`'s closer answer *What happens when the buffer pool runs
   out?* was a near-verbatim second telling of the pool paragraph; its one live
   clause (the *task* is requeued, not the flag) went into that paragraph and the
-  question went. [kind=record]
-- `post-processing`'s closer answer *Can a resource pack add a post effect?*
+  question went. [kind=record]~~ **record** (pass 8 session L) — nothing to act on; the paragraph was corrected this session (compiles, not meshes).
+- ~~`post-processing`'s closer answer *Can a resource pack add a post effect?*
   restated the opening; the closed-set mechanism it held moved **up** into the
-  opening, which is where the claim is made. [kind=record]
-- `rendering/README` lost the *read that number with two corrections* paragraph
+  opening, which is where the claim is made. [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
+- ~~`rendering/README` lost the *read that number with two corrections* paragraph
   from the argument; both corrections are now in *Where the part stops*, which
-  is the section A6 gives them. [kind=record]
+  is the section A6 gives them. [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
 
 ### For pass 7 (the figures)
 
@@ -6193,7 +6193,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 ### For pass 8 (the voice)
 
-- **The cast table's `thread` column is dead on four of this part's eleven
+- ~~**The cast table's `thread` column is dead on four of this part's eleven
   pages** — seven or eight identical *Render thread* cells on `the-window`,
   `entity-rendering`, `lightmap-fog-and-sky` and `the-frame`, each of which
   also states the thread in prose within twenty lines. Four readers skipped it
@@ -6202,32 +6202,32 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   `visibility-and-the-frame-graph`) are the ones with real workers in them.
   This is a corpus-wide question about the cast device, not a Part XI one, and
   it belongs to whoever owns `TEMPLATE.md`'s cast row after pass 8.
-  [kind=voice]
-- **`the-window`'s unglossed platform vocabulary**: GLFW, GLFW *hints*, STB and
+  [kind=voice]~~ **second edition** (pass 8 session L) — the cast device is `TEMPLATE.md`'s, and a column is not re-budgeted by the polish (R9).
+- ~~**`the-window`'s unglossed platform vocabulary**: GLFW, GLFW *hints*, STB and
   LWJGL are load-bearing from the first paragraph and never introduced — the
   opening argument rests on hints being window-creation parameters fixed before
-  the window exists, which the page never says. [kind=voice]
-- **`blaze3d` uses `GpuTexture` usage bits, `ColorTargetState`, `GpuFormat`,
+  the window exists, which the page never says. [kind=voice]~~ **overtaken** (pass 8 session L) — GLFW and its hints are gone; the page sits on SDL, STB and FreeType through LWJGL.
+- ~~**`blaze3d` uses `GpuTexture` usage bits, `ColorTargetState`, `GpuFormat`,
   `GpuBufferSlice` and `BindGroupLayout` in *Who checks what*, sixty to a
   hundred lines before the section that introduces them.** The page is a
-  vocabulary page whose vocabulary arrives after its first use. [kind=voice]
-- **`models-and-atlases` never introduces `ModelState` or `BlockStateModelSet`**,
+  vocabulary page whose vocabulary arrives after its first use. [kind=voice]~~ **second edition** (pass 8 session L) — introducing the vocabulary first is a restructure (R9).
+- ~~**`models-and-atlases` never introduces `ModelState` or `BlockStateModelSet`**,
   both of which carry load: the first is what geometry is cached per, the
-  second is what the mesher reads. [kind=voice]
-- **`particles`' four *override*-shaped things are never tied together**: the
+  second is what the mesher reads. [kind=voice]~~ **second edition** (pass 8 session L) — `ModelState` needs a sentence of its own, which is new material (R10).
+- ~~**`particles`' four *override*-shaped things are never tied together**: the
   packet's two override flags, `ParticleType.getOverrideLimiter`, the caller's
   boolean and the always-show flag. Two of the four are reconciled; the other
-  two are not. [kind=voice]
-- **`section-meshing`'s *mesh* means two things** — the finished per-section
+  two are not. [kind=voice]~~ **done** (pass 8 session L) — the server's flag is now tied to the client's (the packet carries it down as an override), and the always-show flag sits in the setting table.
+- ~~**`section-meshing`'s *mesh* means two things** — the finished per-section
   product, and the scratch a worker is building — which is why *the ceiling on
   how many meshes exist at once* reads as a contradiction of the swap being
-  atomic. [kind=voice]
-- **`post-processing` uses two units for compilation on one page**: *two shader
+  atomic. [kind=voice]~~ **done** (pass 8 session L) — the ceiling now counts compiles, not meshes.
+- ~~**`post-processing` uses two units for compilation on one page**: *two shader
   programs* in the prose and *four freshly compiled pipelines* in a figure
-  note, for the same kind of event. [kind=voice]
-- **`lightmap-fog-and-sky` names the same roster three times in seventy lines**
+  note, for the same kind of event. [kind=voice]~~ **overtaken** (pass 8 session L) — the figure note is gone; the page counts compiled programs once.
+- ~~**`lightmap-fog-and-sky` names the same roster three times in seventy lines**
   — the opening, the cast table and *The five askers* — and the third is the
-  only one with a column a reader can use. [kind=voice]
+  only one with a column a reader can use. [kind=voice]~~ **ruled** (pass 8 session L) — the opening, the cast and the askers table each do a different job, and the polish cuts no device (V16).
 
 ### Notes for session O
 
@@ -6239,15 +6239,15 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   shape. The budget in `TEMPLATE.md` was written before A6 existed and session
   O should decide whether *about a hundred* still means what it meant.
   **[Pass 6's session O did not run; this is pass 7's session O, which reads the
-  thirteen landing pages' figures as a set, or pass 10's.]** [kind=book]
-- **A2's inbound-link clause fired four times in this part and all four links
+  thirteen landing pages' figures as a set, or pass 10's.]** [kind=book] **XI's share, pass 8 session L**: judged in pass5.md:1018 (closed); `TEMPLATE.md`'s budget is session O's.
+- ~~**A2's inbound-link clause fired four times in this part and all four links
   were within it** — `lightmap` → `the-frame`'s closer, `the-window` →
   `the-frame`'s closer, `visibility` → `section-meshing`'s closer, `the-frame`
   → `post-processing`'s closer. One of the four was a **loop**: `lightmap`
   cited `the-frame`'s closer for the HUD lightmap while that closer's answer
   pointed back at `lightmap`. A link that resolves cannot see a cycle, and
   `check_links.py` will not either. Worth a `--cycles` question for whoever
-  builds pass 7's tools.
+  builds pass 7's tools.~~ **ruled** (pass 8 session L) — the `lightmap-fog-and-sky` ↔ `the-frame` pair carries two halves (the zone; the two textures), not an empty loop, and pass 8 builds no tool (R10).
 
 
 ---

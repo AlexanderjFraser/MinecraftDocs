@@ -859,7 +859,7 @@ V2, or B into A, if either runs short.
 | **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | done 2026-09-28 | **220 corrections on six pages** (15 inside a figure or a caption; `the-connection`'s lead figure redrawn, the swing's answer going to the players watching and never back to the swinger; its false heading on `Connection.tick` corrected twice with its two links), every one re-derived in the tree; the 103 ledger entries struck, 39 wrong in whole or in part or beside a wrong sentence; the part's queue settled; the record audited by one agent per page, which found **71 of them, 52 in sentences the session had just written** — about one in three; two queue-router bugs fixed; three pages outside the part corrected with it; items handed to N, O and P |
 | **J** | X · The client — the largest ledger; may split at the GUI stack (pages 1–5, 6–12) | 118+17 | 6·3·4·27 | 59·71·10·9 | 29.6k | done 2026-09-28 | **314 corrections on thirteen pages**, in one session (36 inside a figure or a caption; `what-makes-a-sound`'s figure redrawn, your own break a level event your client runs locally rather than a place's sound; four false headings, two with their links), every one re-derived in the tree; the 135 ledger entries struck, 65 wrong in whole or in part or beside a wrong sentence; the part's 54 queue units settled; the record audited by one agent per page, which found **131 of them, 74 in sentences the session had just written** — about two in five, the pass's highest; `options`' 1.21 box and three `naming-drift` rows cut, their names never Mojang's; sixteen pages outside the part corrected with it; items handed to L, M, O and P |
 | **K** | XI · Rendering, **the figures** — pass 7's session K: its runbook, its viewer brief, its gate; the part's 20 figures rendered and read against their sections; the 19 captions written; the three eight-lane traces split or folded; the 17 figure-kind queue units; recorded in [pass7-brief.md](pass7-brief.md) Part 4 as well as here | — | ·   ·17·   | — | — | done 2026-09-29 | **Every Part XI figure captioned** (so all 224 in the book are), redrawn and rendered: nothing below 0.78 or under 12.5px (from 0.60 / 9.7px), no lane over six (from three eight-lane traces), no name broken on screen; `entity-rendering`'s eight-lane trace split into three stage traces, `blaze3d` f1 a class diagram, the landing figure numbered to the watch order; **110 corrections** in figures, captions and the sentences that read them, every one re-derived in the tree — 51 found by twelve viewer agents and the session, then **59 by the record's audit, 55 in labels, captions and sentences the session had just written**, more than half, the pass's highest rate; the part's 16 figure units struck; items handed to L, O, P and the second edition |
-| **L** | XI · Rendering — the check and the polish, after K | 82+8 | 1·5·0·25 | 82·72·21·21 | 35.7k | — | |
+| **L** | XI · Rendering — the check and the polish, after K | 82+8 | 1·5·0·25 | 82·72·21·21 | 35.7k | done 2026-09-29 | **393 corrections on twelve pages** (and the glossary, `block-interaction` and the landing page), every one re-derived in the tree; `section-meshing`'s hook rewritten (a default client compiles your own block's section on the Render thread, E's, J's and K's handoff); seven false headings corrected, one with its inbound link; every 1.21 blockquote cut to names the 1.21.11 tree has, none over eight lines; the 90 ledger entries struck, 22 wrong in whole or in part or beside a wrong sentence; the part's queue settled (40 struck, five shares noted); the record audited by one agent per page, which found **113 of them, 86 in sentences the session had just written** — about three in ten; one probable upstream bug written as mechanism (a meshing NPE leaks a buffer pack); items handed to O, P and the second edition |
 | **M** | XII · World generation — the part V2 rewrote most; its agents read V2's ledger entries first | 77 | 6·1·0·18 | 69·61·19·2 | 30.7k | — | |
 | **N** | XIII · Commands and data packs | 72+24 | 6·7·1·22 | 39·38·14·0 | 25.6k | — | |
 | **O** | **Reference and the frame** — the introduction, `lectures.md`, the atlas's prose, `reference/README` and the hand-kept Reference pages, read *after* the parts (the summarisers are read last); the glossary against every owner page; `what-this-book-skips` and every *where the part stops* against [pass3.md](pass3.md) §7; and the eleven generated Reference views, which no other row names (session A's routing, 2026-09-26): each generator's typed prose in `gen_reference.py` read against the tree — V2 found two stale — and one population per view re-derived | 85 · 28+56 | 18·8·1·49 | 43·38·7·2 / 17·12·1·0 | 55k + 9k | — | |
@@ -1419,3 +1419,37 @@ and `FPHAIR` added and five emptied rows removed. Left for L: the sentences the 
 ledger's *For later sessions* (among them `section-meshing`'s opening and the landing page's watch line five, both J's handoff).
 For O or P: two names broken on screen outside the part. For the second edition: eleven sections the viewers asked a figure for.
 For P: every figure and caption on these twelve pages, and this session's diff.
+
+**Session L — Part XI · Rendering, the check and the polish (2026-09-29).** Twelve pages, each checked under Part 2 by its
+own agent while the session read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, added by
+script, every pass 8 entry on them (V1's, V2's, B–J's handoffs and session K's 126 figure corrections) and the handoffs to L
+in the ledger. A process crash stopped all twelve agents mid-check; each was resumed from its transcript, and the session
+now saves every report to a file by script from the session transcript, so a crash loses nothing. **393 corrections**,
+every one re-derived in `reference/26.3` before it was made. Ledger entries checked: the 90 pass 5–7 entries on these pages
+(60 checked, 22 wrong in whole or in part or beside a wrong sentence, 8 overtaken). The three worst corrections:
+`section-meshing`'s hook had a worker thread rebuild your placed block's section with a queued scratch buffer, where a
+default client's *fancy* preset turns on *prioritise chunk updates* for your own changes and the section is compiled on the
+Render thread with the fixed buffer pack after the next frame has drawn its terrain; `visibility-and-the-frame-graph` said
+entities read the visible list (they are tested one by one against a look-up of their own section) and that a block
+behind you waits for the walk (it waits for the frustum step, and the frustum is pulled back over the camera's own cell);
+and `block-entity-rendering`'s heading *Culling by section, not by frustum* was false, the visible list being the frustum's
+own output. What the whole-part read found before the reports: the landing page's watch lines disagreeing with five of
+their pages (a worker compiling *frames later*, *every quad*, *not terrain*, *culled by its section rather than by the
+frustum*, *asked five times over*), `lightmap-fog-and-sky`'s table having the weather ask for something its prose says it
+never asks, `blaze3d` applying pipeline state *when bound* and *at the first draw* forty lines apart, and eight
+blockquotes over eight lines; the reports then found each of these too. **The record's audit was again the session's
+finding**: twelve agents re-derived every changed sentence and found **113 of the 393, 86 in sentences the session had
+just written** — about three in ten, between H's rate and I's — among them the session's own *one reach by reference* below
+`LevelRenderer.render` (a sign's text and a synchronously compiled section's tints and light are two more), a new sentence
+routing post chains' per-frame values through the projection, fog and lighting blocks (a post pipeline declares only
+*Globals*), a hook promising *one frame later* and *never a hole* (the first block placed into a section of air waits a
+frame more), and a corrected heading that was still false (*Culling by section, not one by one*: two of the three gates are
+per block entity). Every 1.21 blockquote was re-read against the 1.21.11 tree and now names only what that tree has, with
+the real 1.21.11 → 26.3 moves added. The polish: eleven possessives on a link, four bare number devices (V9), seven
+*actually*, one em-dash chain, the part's last *client thread* and lower-case *render thread* (V7). Also: Part XI's queue
+settled (40 struck, five shared units given XI's share); the glossary's *Extract*, *Render state*, *Partial tick* and
+*Particle* and `blocks/block-interaction`'s opening corrected where a correction here made them disagree. One probable
+upstream bug written as mechanism: a meshing null-pointer failure outside the per-block tesselation requeues the section
+and never returns its buffer pack, so a section that fails every time drains the pool (`section-meshing`). Left for O:
+`naming-drift`'s Part XI rows, judged against an earlier 1.21 than the blockquotes now are, and three glossary and budget
+units. For P: the 296 pass 8 entries on these pages, the items each page's audit left as low, and this session's diff.

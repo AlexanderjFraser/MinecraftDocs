@@ -3,12 +3,12 @@
 > Verified against **Minecraft 26.3** · Part XI · A player breaks a block, and the puff of block texture appears on every screen within sixty-four blocks.
 
 The block goes. On the breaker's own machine the puff is already there,
-predicted, before the server has heard about the swing; on every other
+predicted, before the server has heard the dig finish; on every other
 machine within sixty-four blocks it arrives a moment later as a level event
 and lands as the same sixty-four textured quads, built by the same method
 from the same shape. Two entirely different routes, one visual result — and
-the interesting thing is what neither route does. Neither asks how far away
-you are. Neither asks whether the packet was worth sending. And neither asks
+the interesting thing is what neither route does. Neither asks, on your machine, how far
+away you are. Neither asks whether the packet was worth sending. And neither asks
 your particle setting, which three pieces of the client read three different
 ways, while the server is told what you chose and never once acts on it. **A
 particle is not something the game decides to show you. It is something that
@@ -18,15 +18,15 @@ survives a series of gates that disagree about what they are gating.**
 
 | class | what it decides | thread |
 |---|---|---|
-| `ServerLevel` | which players are told about a particle at all — on dimension and distance, nothing else | Server |
+| `ServerLevel` | which players are told about a particle at all — on dimension and distance, and for a level event who caused it | Server thread |
 | `ParticleType` | the type's identity in the registry, and `ParticleType.getOverrideLimiter`, the "ignore the limits" flag baked into it | either |
-| `ClientLevel` | the gated entry point, `ClientLevel.doAddParticle` — and the ungated ones beside it | Client |
-| `ParticleResources` | which provider a type gets, registered once at construction, and which `SpriteSet` — rebound on every reload | load off-thread, bind on Client |
-| `ParticleProvider` | one per registered type: what class of `Particle` an options record turns into | Client |
-| `ParticleEngine` | the groups, the one-tick admission queue, the emitters, the per-type counts | Client |
-| `ParticleGroup` | whether there is room: the per-render-type cap and the probabilistic reservoir | Client |
-| `ClientExplosionTracker` | how many explosion particles happen this tick, and where — the client's own budgeted generator | Client |
-| `SingleQuadParticle.Layer` | which of three atlases a quad reads, and which pipelines draw it | Client |
+| `ClientLevel` | the gated entry point, `ClientLevel.doAddParticle` — and the ungated ones beside it | Render thread |
+| `ParticleResources` | which provider a type gets, registered once at construction, and which `SpriteSet` — rebound on every reload | load off-thread, bind on the Render thread |
+| `ParticleProvider` | one per registered type: what class of `Particle` an options record turns into | Render thread |
+| `ParticleEngine` | the groups, the one-tick admission queue, the emitters, the per-limit counts | Render thread |
+| `ParticleGroup` | whether there is room: the per-render-type cap and the probabilistic reservoir | Render thread |
+| `ClientExplosionTracker` | how many explosion particles happen this tick, and where — the client's own budgeted generator | Render thread |
+| `SingleQuadParticle.Layer` | which of three atlases a quad reads, and which pipelines draw it | Render thread |
 
 Everything below the second row runs on the Render thread, and the only
 off-thread work in the system is the load half of `ParticleResources.reload`
@@ -92,7 +92,7 @@ through `Block.spawnDestroyParticles`, all raise it with a null source
 — which means the server broadcasts it to *everybody*, including whoever
 caused it.
 
-**Sixty-four** — quads in a full cube's puff, because
+**Sixty-four quads** make a full cube's puff, because
 `ClientLevel.addDestroyBlockEffect` walks every box of
 `BlockBehaviour.BlockStateBase.getShape` on a fixed quarter-block grid with
 a minimum of two cells per axis.
@@ -103,8 +103,8 @@ particles, where reading the collision shape would give none. Each particle
 shows a different randomly-offset quarter-crop of the block's sprite, which
 is why the puff does not look tiled. A block may opt out of the whole thing
 — `BlockBehaviour.BlockStateBase.shouldSpawnTerrainParticles` gates both the
-destroy and the crack particles — and `TerrainParticle` additionally refuses
-air and `Blocks.MOVING_PISTON`.
+destroy and the crack particles — and the providers that build a `TerrainParticle`
+for other callers additionally refuse `Blocks.MOVING_PISTON`.
 
 ### Three neighbours that look like the same thing
 
@@ -134,14 +134,17 @@ which is the only reason you can see them.
 
 ## Who is allowed to see it?
 
-There are three distance rules, enforced by three different pieces of code,
-and two of them happen to be the same number. The table's fourth row is the
-absence that makes the page's hook true: the busiest route of all has no
-distance rule at any point.
+There are three distance rules on the two routes this section follows, the
+particle packet and the level event, enforced by three different pieces of code,
+and two of them happen to be the same number; an explosion's packet has a
+64-block rule of its own, and an entity's own packets (a crit, an item pickup)
+reach whoever is tracking it. The table's fourth row
+is the absence that makes the page's hook true: once a finished particle is
+handed to the engine, the client applies no distance rule at all.
 
 | the gate | measured from | the distance | what an override does to it |
 |---|---|---|---|
-| the server choosing whom to send a `ClientboundLevelParticlesPacket` to | the receiving player | 32 blocks | *widens* it, to 512 — but from the caller's own boolean, in practice `/particle … force`, and never from the particle type |
+| the server choosing whom to send a `ClientboundLevelParticlesPacket` to | the receiving player | 32 blocks | *widens* it, to 512 — but from the caller's own boolean, in practice `/particle … force` and the creaking heart's, and never from the particle type |
 | the client deciding whether to build the particle at all, in `ClientLevel.doAddParticle` | the **camera** | 32 blocks | skips the check entirely |
 | the server broadcasting a level event — the break puff's second route | the receiving player | 64 blocks | not consulted: a level event carries no particle type |
 | `ClientLevel.addDestroyBlockEffect`, and everything else that hands `ParticleEngine.add` a finished particle | — | none | nothing to override |
@@ -150,14 +153,16 @@ The two thirty-twos are independent, not one check written twice. A particle
 that clears the server's test can still be dropped by the client's, because
 the client measures from where you are *looking* rather than from where your
 feet are, and a packet that took a tick to arrive is measured against a
-camera that has since moved. And the two overrides are not one flag either:
-the client's comes off the particle type, through
+camera that has since moved. And the two overrides are not one flag, though
+one feeds the other: the client's comes off the particle type, through
 `ParticleType.getOverrideLimiter`, whose three readers are all client-side,
-while the server's is a boolean the caller passes in. One deletes a check
-outright; the other multiplies a different check by sixteen.
+while the server's is a boolean the caller passes in, which the packet then
+carries down as an override of its own. On the client an override deletes the
+distance check and the setting check outright; on the server it multiplies a
+different check by sixteen.
 
 The 64-block radius is the third rule, and nothing overrides it in either
-direction. Once a level event lands the client asks no further questions,
+direction. Once the puff's level event lands the client asks no further questions,
 which is why a break puff at the edge of view is unconditional where the
 same particle requested by `/particle` would never have been sent.
 
@@ -168,7 +173,7 @@ agrees with the others about what its values mean.
 
 | who reads it | what it does |
 |---|---|
-| `ClientLevel.doAddParticle` | *decreased* is rewritten to *minimal* about a third of the time, and *minimal* drops everything — except that the always-show flag rescues a *minimal* setting one time in ten, and the rescue lands on *decreased*, which is then re-rolled |
+| `ClientLevel.doAddParticle` | an override creates the particle whatever the setting; otherwise *decreased* is rewritten to *minimal* about a third of the time, and *minimal* drops everything — except that the always-show flag rescues a *minimal* setting one time in ten, and the rescue lands on *decreased*, which is then re-rolled |
 | `ClientExplosionTracker` | anything below *All* is off. The pending explosions are cleared unused, and there is no decreased tier for explosion block particles at all |
 | `ClientLevel.tickWeatherEffects` | on *decreased*, halves its column count — rain thins rather than stopping; on *minimal* it breaks out before adding anything, and there it does stop |
 
@@ -182,14 +187,14 @@ Arriving as a level event, it is unconditional.
 
 The last piece reads like a bug and is not. **The server knows your particle
 setting and never uses it.** It arrives in the client information and is
-stored on the player, and the broadcast filters on dimension and distance
-and nothing else — so turning particles down saves your GPU and costs the
+stored on the player, and the broadcasts filter on dimension, distance and,
+for a level event, who caused it, never on the setting — so turning particles down saves your GPU and costs the
 server exactly nothing.
 
 ## Is there room for it?
 
-Explosions are the one source that budgets itself before it asks anyone
-else, and they are not a particle packet at all. What `ServerLevel.explode`
+Explosions budget themselves before they ask anyone else, and they are not
+a particle packet at all. What `ServerLevel.explode`
 sends is a *description*: a `ClientboundExplodePacket` of a radius, a block
 count and a `WeightedList` of `ExplosionParticleInfo`, which
 `ClientPacketListener.handleExplosion` hands to `ClientExplosionTracker` to
@@ -202,7 +207,8 @@ each rejected outright if the block there is not air. Then the whole list is
 cleared, spent or not — which is the budget: an explosion gets one tick's
 worth of particles and no second chance.
 
-Everything else meets the engine's own two limits.
+Everything that reaches `ParticleEngine.add`, an explosion's samples included,
+then meets the engine's own two limits.
 
 ```mermaid
 flowchart TD
@@ -219,13 +225,12 @@ flowchart TD
     K --> T["ticked from the next tick onward"]
 ```
 
-*The engine's two limits in the order a particle meets them: the per-type
+*The engine's two limits in the order a particle meets them: the per-limit
 count on arrival, and its render type's group at the next tick. Only a
 particle carrying `ParticleLimit.SPORE_BLOSSOM` has a count to meet, and one the
 group refuses gives its count back.*
 
-**There are four render types in the game**, and they are the whole
-population every *four* below counts against: `ParticleRenderType.SINGLE_QUADS`,
+**There are four render types in the game**: `ParticleRenderType.SINGLE_QUADS`,
 which is almost everything, `ParticleRenderType.ITEM_PICKUP`,
 `ParticleRenderType.ELDER_GUARDIANS` and `ParticleRenderType.NO_RENDER`. One
 `ParticleGroup` exists per type. The cap, `ParticleGroup.MAX_PARTICLES`, is per render type rather than
@@ -237,12 +242,13 @@ rather than hitting a wall. Since almost everything is a
 single-quad particle, that one group's budget is effectively the whole
 budget; the other three have their own.
 
-The per-type machinery beside it is the strangest thing in the system.
+The per-limit machinery beside it is the strangest thing in the system.
 `ParticleLimit` is a full accounting apparatus — a key carried by the
 particle, a count map in `ParticleEngine.trackedParticleCounts`, a decrement
 when a group refuses a particle the limit had already accepted — and it has
 **exactly one instance**, `ParticleLimit.SPORE_BLOSSOM`. The whole mechanism
-exists to hold down one kind of falling petal, and
+exists to hold down one ambient particle, the haze of spores a spore blossom
+scatters around itself, and
 `ParticleEngine.hasSpaceInParticleLimit` is the only thing that ever reads the
 map. The number on the debug screen is a different count:
 `ParticleEngine.countParticles` walks the live render-type groups, and
@@ -253,7 +259,7 @@ map. The number on the debug screen is a different count:
 Admission is deferred by up to a tick. `ParticleEngine.add` puts the
 particle in `ParticleEngine.particlesToAdd`, and `ParticleEngine.tick` —
 which runs from `Minecraft.tick`, right after the ambient scatter, and only
-while the level is running normally — does three things in a fixed order:
+while the game is unpaused and the level is running normally — does three things in a fixed order:
 tick every existing group, then tick the emitters, then drain the queue into
 groups. Because the drain is *last*, a particle never moves on the tick that
 admits it, and a particle created during rendering is invisible until a tick
@@ -274,11 +280,11 @@ what a no-render particle is for.
 ### The eighty-odd subclasses, which are one shape
 
 The eighty-odd `Particle` subclasses are a family, and the shape above is all
-of it: a provider, a lifetime, a per-tick move, and a group. The two largest
-are `DripParticle` and `FireworkParticles`, and both are large for the same
-reason — each is a nest of static factories and nested subclasses covering a
-dozen variants (every fluid that drips, every stage of a rocket) behind one
-class name. What varies between any two of them is which `ParticleOptions`
+of it: a provider for most of them, a lifetime, a per-tick move, and a group. The two largest
+files are `DripParticle` and `FireworkParticles`, the second a holder class
+rather than a subclass, and both are large for the same reason: each is a nest
+of providers and nested subclasses (every fluid that drips, every stage of a
+rocket) behind one class name. What varies between any two of them is which `ParticleOptions`
 record the registry hands the provider: `ParticleType` is
 [a data-driven registry
 entry](../foundations/data-driven-types.md#the-bare-spelling-the-registry-holds-a-mapcodec)
@@ -295,14 +301,15 @@ being packed — interpolation is not a property of the particle, it is a
 property of the extract. It is also where the culling happens, and the cull
 is a point test: the particle's centre, not its quad, against a `Frustum`
 whose origin has been slid a few blocks *behind* the camera so that
-particles just past the near plane survive. Three of the four groups take a
-`Frustum` and ignore it. Only `QuadParticleGroup` culls.
+particles just past the near plane survive. Two of the other three groups take a
+`Frustum` and ignore it, and the no-render group is never asked. Only
+`QuadParticleGroup` culls.
 
 What survives is packed into `ParticlesRenderState`, one
 `ParticleGroupRenderState` per group, with `QuadParticleRenderState` writing
 twelve floats and two integers per particle into a per-layer
-`QuadParticleRenderState.Storage` — a growable struct-of-arrays, reset and
-reused each frame rather than reallocated — and
+`QuadParticleRenderState.Storage` — a growable pair of arrays, one of floats and
+one of integers, reset and reused each frame rather than reallocated — and
 `QuadParticleFeatureRenderer` turning that into draws through
 [Blaze3D](blaze3d.md). The layer decides which atlas is bound, and the
 particle system draws from three of them, not one:
@@ -316,7 +323,7 @@ particle system draws from three of them, not one:
 Without *improved transparency* the six resolve to two pipelines,
 `RenderPipelines.OPAQUE_PARTICLE` and
 `RenderPipelines.TRANSLUCENT_PARTICLE`. `SingleQuadParticle.Layer.bySprite`
-picks a row and a column by reading whether the stitched sprite actually
+picks a row and a column by reading whether the stitched sprite
 contains translucent texels and which atlas the sprite lives on — and only
 three particle classes ever ask it: `TerrainParticle`, `BlockMarker` and
 `BreakingItemParticle`. Every other quad particle hard-codes opaque or
@@ -334,41 +341,36 @@ once. The feature renderer owns no render target and draws into the pass it
 is handed; under *improved transparency* the after-terrain bucket is the
 order-independent one, and the three translucent layers draw once per
 `OitStage` through `RenderPipelines.OIT_PARTICLE`
-([visibility and the frame graph](visibility-and-the-frame-graph.md)). One
-particle escapes this system entirely: `ItemPickupParticle` carries an
+([visibility and the frame graph](visibility-and-the-frame-graph.md)). Two
+particles' draws escape this system: `ItemPickupParticle` carries an
 `EntityRenderState` and is submitted through `EntityRenderDispatcher`, so
 the item flying into your inventory is
-[a rendered entity](entity-rendering.md) wearing a particle's lifetime.
+[a rendered entity](entity-rendering.md) wearing a particle's lifetime, and
+`ElderGuardianParticle` is submitted as a model.
 
 ### What empties the engine, and what it crashes on
 
 Two events empty the engine wholesale, and both have to.
-`ParticleEngine.clearParticles` runs on a resource reload, because every
-live particle holds a sprite reference into an atlas that no longer exists,
-and `ParticleEngine.setLevel` clears the particles and the emitters both.
+`ParticleEngine.clearParticles` runs on a resource reload, because a quad
+particle holds a sprite reference into an atlas that no longer exists, and
+`ParticleEngine.setLevel` runs the same clear, emitters and all.
 Particles are crash-report sites by design, though none of the reports is
 raised on `ParticleEngine`: they come from `ParticleGroup.tickParticle`,
 from `QuadParticleGroup.extractRenderState`, and from
 `ClientLevel.doAddParticle` for a provider that throws while constructing.
-The one malformed particle that does *not* crash is the one arriving over
-the network — `ClientPacketListener.handleParticleEvent` logs it and drops
-it. And `Particle.move` skips the collision sweep above a fixed speed, so a
-particle thrown hard enough stops colliding with the world altogether, while
+The one malformed particle that does *not* crash is one arriving in a
+particle packet — `ClientPacketListener.handleParticleEvent` logs it and drops
+it, with the rest of that packet's count. And `Particle.move` skips the collision sweep above a fixed speed, so a
+particle thrown hard enough passes through the world for as long as it moves that fast, while
 one that has been stopped by a collision once stays flagged as stopped.
 
-> **For a 1.21-era reader.** `ParticleEngine` no longer owns providers,
-> sprites, reloading or rendering — those became `ParticleResources` and the
-> extract-plus-feature-renderer pipeline, and every provider and sprite-set
-> member moved off the engine. *TextureSheetParticle* merged into
-> `SingleQuadParticle`; the sheet-based `ParticleRenderType` constants became
-> `SingleQuadParticle.Layer`, leaving `ParticleRenderType` a record with four
-> values; *Particle.getRenderType* is `Particle.getGroup`;
-> *Particle.getLightColor* is `Particle.getLightCoords`; *Particle.render*
-> and *ParticleEngine.render* are an extract method plus
-> `QuadParticleFeatureRenderer`; *ParticleEngine.destroy* and *crack* are on
-> `ClientLevel`. And the name `ParticleGroup` was reused for something
-> completely different: it is the per-render-type bucket now, and the limiter
-> record it used to be is `ParticleLimit`.
+> **For a 1.21-era reader.** *Particle.getLightColor* is now
+> `Particle.getLightCoords` and *ParticleFeatureRenderer* is
+> `QuadParticleFeatureRenderer`. *SingleQuadParticle.Layer.TERRAIN* and *ITEMS*
+> each split into an opaque and a translucent layer, which
+> `SingleQuadParticle.Layer.bySprite` picks between, and a full `ParticleGroup`
+> now refuses a newcomer where it used to evict its oldest. `ParticleResources`,
+> `ParticleRenderType` and `ParticleLimit` kept their names.
 
 ## Where to look
 

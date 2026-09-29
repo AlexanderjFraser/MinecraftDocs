@@ -10,16 +10,17 @@ because nothing in them talks to a driver: they talk to `GpuDevice`,
 `com/mojang/renderpearl/backend/vulkan` turns that into real calls. What made
 the swap possible is that the state machine left the game. Blend mode, depth
 test, cull and polygon mode are *fields of a `RenderPipeline`*, declared once
-and applied when the pipeline is bound, and
+and applied by the backend (by OpenGL at the first draw that uses the pipeline,
+by Vulkan when it is bound), and
 `RenderSystem` — the class that used to be the state machine — contains no GL
 call at all. It did not vanish, though. It moved behind the backend boundary,
-where `GlStateManager` still shadows every toggle and still elides the
-redundant ones.
+where `GlStateManager` still shadows the enable-and-disable toggles and still
+elides the redundant ones.
 
 Nothing in this page chooses which backend that is. The choice is made in
 `Minecraft`, before Blaze3D exists, and which candidates it tries and in what
-order is [the
-window](the-window.md#trying-backends-until-one-of-them-makes-a-device)'s —
+order belongs to [the
+window](the-window.md#trying-backends-until-one-of-them-makes-a-device) —
 which is also why the option is a preference rather than an instruction. This
 page is the vocabulary of the boundary once one of them has won; the frame
 that drives it is [the frame](the-frame.md).
@@ -28,14 +29,14 @@ that drives it is [the frame](the-frame.md).
 
 | class | what it decides | thread |
 |---|---|---|
-| `RenderSystem` | the static holder: the device, the render thread, the frame's shared uniforms and buffers | Render thread |
+| `RenderSystem` | the static holder: the device, the Render thread, the frame's shared uniforms and buffers | Render thread |
 | `GpuBackend` | which API is alive — its library, the device, creation errors, and then the window | Render thread |
 | `GpuDevice` | what exists, and what the hardware will allow | Render thread |
 | `CommandEncoder` | whether a pass may open, and with which attachments | Render thread |
 | `RenderPass` | that the pipeline matches the attachments before a draw is allowed | Render thread |
 | `GpuSurface` | how a finished frame reaches the screen, and what vsync means | Render thread |
 | `RenderPipeline` | how to rasterise: shaders, blend, depth, cull, topology — declared, never called | declaration only, compiled on workers, bound on the Render thread |
-| `BufferBuilder` | vertex data — on the render thread, except the one instance chunk meshing runs | Render thread, and the meshing workers |
+| `BufferBuilder` | vertex data — on the Render thread, except the builders chunk meshing runs on workers | Render thread, and the meshing workers |
 
 ## Four objects the game only touches through a façade
 
@@ -83,18 +84,20 @@ running.*
 | `GpuSurface` | `FrontendGpuSurface` | `GpuSurfaceBackend` |
 
 `GpuBackend` is the entry point and the exception: no façade, because it is
-what exists before a device does. Everything else the device creates, and it
-answers for the hardware too — as one record graph, not a pile of getters.
-`GpuDevice.getDeviceInfo` returns a `DeviceInfo` of `DeviceInfo.name`,
+what exists before a device does, and it makes the device and the window. Everything else the device creates, or its encoder
+does, and the device answers for the hardware too — as one record graph, not a pile of getters.
+`GpuDevice.getDeviceInfo` returns a `DeviceInfo` whose fields include `DeviceInfo.name`,
 `DeviceInfo.backendName`, `DeviceInfo.isZZeroToOne`, a `DeviceFeatures` of
 eight booleans, a `HintsAndWorkarounds`, a `DeviceType` and a `DeviceLimits`
-whose `DeviceLimits.maxMemoryAllocationSize` caps the window size.
+whose `DeviceLimits.maxTextureSize`, and what its
+`DeviceLimits.maxMemoryAllocationSize` can hold, cap the window size.
 
 That record is **sniffed as well as queried**, which is why the game cares
 which GPU you have when it could simply ask the driver. `GlHeuristics` reads
 the renderer and vendor strings to guess the device type, flags GL-over-D3D12
 — assumed on Windows-on-ARM whatever the string says — and flags AMD for
-anisotropy problems, both of which change how the game uploads and filters.
+anisotropy problems: the first changes how the backend maps buffers and stages
+chunk uploads, the second which filtering a graphics preset picks.
 The backend probes the reported maximum texture size rather than trusting it
 too, halving a proxy allocation until the driver accepts one.
 
@@ -126,7 +129,8 @@ lacks — goes to the backend unchecked in a shipped game.
 The thread assertions are not where a reader expects them either.
 `RenderSystem.assertOnRenderThread` is called from nine classes, eight of
 those sites inside `RenderSystem` itself: it guards `RenderSystem`'s own
-mutable statics and the GL- and SDL-facing classes, while
+mutable statics, the GL- and SDL-facing classes, the render targets and one
+texture helper, while
 `FrontendGpuDevice`, `FrontendCommandEncoder` and `FrontendRenderPass` assert
 nothing at all. And `GpuDevice.createCommandEncoder` does not create an
 encoder — `FrontendGpuDevice` hands back the one `FrontendCommandEncoder` it
@@ -138,24 +142,23 @@ use site and the *is a pass open* guard still sees every pass.
 **OpenGL is imported by exactly fifteen files** — fourteen in
 `com/mojang/renderpearl/backend/opengl`, the fifteenth the native-library
 bootstrap — and nothing else in the game references LWJGL's OpenGL bindings.
-Vulkan gets the same treatment and the same two exemptions: outside
-`com/mojang/renderpearl/backend/vulkan`, exactly two files import its bindings,
-and they are the mirror of OpenGL's exemption rather than a leak of their own
+Vulkan gets nearly the same treatment: outside
+`com/mojang/renderpearl/backend/vulkan`, exactly two files import its bindings
 — the same native-library bootstrap, and `FrontendRenderPass`, which borrows
 two Vulkan indirect-command structs for their *size* when it validates an
-indirect buffer. The boundary is thinner still than that suggests in one
+indirect buffer, a small leak OpenGL has no counterpart to. The boundary is thinner still than that suggests in one
 direction and thicker in the other: `BackendCreationException`, in
 `renderpearl/api` where the game can see it, names eleven ways a backend can
 fail to be created and **eight of the eleven are Vulkan's**, so the neutral
 façade layer knows rather a lot about one of the two APIs it is meant not to.
-Graphics is not all of it either, and neither is the render thread:
+Graphics is not all of it either, and neither is the Render thread:
 `com/mojang/blaze3d/audio` is the OpenAL wrapper, whose per-source calls run on the sound engine's own thread — see [the sound
 engine](../client/sound-engine.md).
 
 ## Vulkan is not a stub
 
 **7,387 lines against 5,815** — the Vulkan backend against the OpenGL one,
-thirty-three classes against twenty-nine.
+thirty-three files against twenty-nine.
 
 It is the larger of the two trees: a real swapchain, pipelines built straight
 from the SPIR-V the shared compiler produces, five required device
@@ -179,7 +182,7 @@ the batched chunk path wherever terrain is not drawn indirect — not at all.
 ## A pipeline is a record, not a sequence of calls
 
 `RenderPipeline` is declarative and effectively immutable: a
-`RenderPipeline.getLocation` identity, two shader `Identifier`s, a
+`RenderPipeline.getLocation` name, two shader `Identifier`s, a
 `ShaderDefines`, a list of `BindGroupLayout`, up to eight `ColorTargetState`,
 an optional `DepthStencilState`, vertex bindings, a `PolygonMode`, a cull flag
 and a `PrimitiveTopology`. `RenderPipeline.Builder` assembles one, and
@@ -187,10 +190,10 @@ composition is the static `RenderPipeline.builder` taking
 `RenderPipeline.Snippet`s, which `RenderPipeline.Builder.buildSnippet`
 produces rather than consumes.
 
-Blending is a named `BlendFunction` (`BlendFunction.TRANSLUCENT`,
-`BlendFunction.ADDITIVE`…) rather than a pair of loose factors, and
-`RenderPipeline.Builder.build` refuses a pipeline whose colour targets do not
-all share one blend function, or that binds more than sixteen vertex
+Blending is a `BlendFunction` record, most often a named one
+(`BlendFunction.TRANSLUCENT`, `BlendFunction.ADDITIVE`…), rather than factors
+set on the device, and `RenderPipeline.Builder.build` refuses a pipeline whose
+blended colour targets do not all share one blend function, or that binds more than sixteen vertex
 attributes. Depth is reversed-Z throughout: `DepthStencilState.DEFAULT`
 compares greater-or-equal and `RenderSystem.DEFAULT_DEPTH_CLEAR_VALUE` is zero.
 
@@ -205,8 +208,7 @@ snippets and the shared uniform-name sets in `BindGroupLayouts`, and
 ## What a pipeline does not say
 
 A `RenderPipeline` says how to rasterise. It does not say which textures to
-bind or which target to draw into — and that is where a 1.21 reader's composed
-stack of *RenderStateShard*s went. The answer is *client/renderer/rendertype*:
+bind or which target to draw into. The textures are *client/renderer/rendertype*'s:
 `RenderType` wraps a `RenderPipeline` with its texture bindings, a
 `TextureTransform`, a `LayeringTransform`, an outline variant and the batching
 predicates `RenderType.canConsolidateConsecutiveGeometry` and
@@ -217,9 +219,10 @@ and that draws into whatever `RenderPass` its caller has opened.
 
 ## Buffers, uniforms, and the ring that resets every frame
 
-The resource vocabulary is small: `GpuBuffer` and `GpuBufferSlice` with usage
-bits (`GpuBuffer.USAGE_VERTEX`, `GpuBuffer.USAGE_UNIFORM`,
-`GpuBuffer.USAGE_MAP_WRITE`…), `GpuTexture` and `GpuTextureView` with theirs,
+The resource vocabulary is small: `GpuBuffer` with usage bits
+(`GpuBuffer.USAGE_VERTEX`, `GpuBuffer.USAGE_UNIFORM`, `GpuBuffer.USAGE_MAP_WRITE`…)
+and `GpuBufferSlice` over it, `GpuTexture` with its own and `GpuTextureView`
+over it,
 `GpuSampler`, `GpuFence`, `GpuFormat`, `IndexType`, `PrimitiveTopology`. Two of
 those are where old habits break. Sampler state left the texture — `GpuTexture`
 has no filter or wrap setters, filtering is an immutable `GpuSampler` bound per
@@ -228,7 +231,7 @@ and throws if either enum ever gains a constant. And there are three shared
 index buffers, not one: `RenderSystem.getSequentialBuffer` switches between a
 quad buffer, a line buffer with different winding, and a one-to-one buffer.
 
-### The ring, and the one block every shader gets for free
+### The ring, and the blocks a shader gets for free
 
 Per-draw uniform data does not come from per-draw uniform calls; it is carved
 out of ring buffers, and the ring is what makes it safe: a slice handed out
@@ -238,34 +241,36 @@ buffer is *rotated* rather than overwritten. `DynamicGpuData` and
 `MappableRingBuffer`, and `DynamicGpuDataStorageMapped.endFrame` rotates it,
 resets the write cursor and closes any buffer a growth left behind.
 `FogRenderer.regularBuffer` is a
-second ring rotated the same way at the end of the same frame, while
+second ring, rotated the same way every frame, between the world and the GUI, while
 `GlobalSettingsUniform` and `ProjectionMatrixBuffer` hold one buffer apiece
 and rewrite it in place, which is all a frame-wide value needs. The first of
-those is the *Globals* block `RenderSystem.bindDefaultUniforms` puts in front
-of every draw in the game, and its seven members are fixed in Java: the
+those is the *Globals* block, one of the four `RenderSystem.bindDefaultUniforms`
+puts in front of every draw but the two depth-integrating passes — beside the
+projection, the fog and the lighting — and its seven members are fixed in Java: the
 camera position as an integer block position *and* the fraction left over,
 the screen size, the glint strength, the time of day as a fraction of
 twenty-four thousand ticks, the menu blur radius, and a flag for the
-supersampled texture-filtering mode. That is the whole of what a shader may
-know without being told, which is why [a post chain that
+supersampled texture-filtering mode. Those four, and a post pass's own sizes, are the whole of what a shader may
+know without being told, and a post pipeline declares only the first of the
+four, which is why [a post chain that
 wants something to vary per
 frame](post-processing.md#a-pass-is-three-vertices-and-its-uniforms-are-written-once-at-load)
-has nowhere else to put it. Per-frame
+has to find it in *Globals* or in its own pass's sizes. Per-frame
 scratch comes from `TransientMemory` — one interface over the shared
 `TransientBlockAllocator`, with `GlTransientMemory` and
 `VulkanTransientMemory` behind it, each among the four longest classes of its
 backend tree.
 Blocks are packed by hand with `Std140Builder`, sized by `Std140SizeCalculator`.
 
-### Vertices, and the one builder that is not on the render thread
+### Vertices, and the builders that are not on the Render thread
 
 Vertex data is described by `VertexFormat` and `VertexFormatElement` (a plain
 record of name, offset and `GpuFormat`) with the standard layouts in
 `DefaultVertexFormat`, and built with `ByteBufferBuilder` and `BufferBuilder`
-into a `MeshData`. Most `BufferBuilder`s are on the render thread like
-everything else here; the exception is the one that matters most for
-throughput, because chunk meshing runs `BufferBuilder` on worker threads and
-stages the result through `UberGpuBuffer` into a `StagingBuffer`, which is why
+into a `MeshData`. Most `BufferBuilder`s are on the Render thread like
+everything else here; the exception is the use that matters most for
+throughput, because chunk meshing builds its sections with `BufferBuilder`s on
+worker threads, a synchronous compile's aside, and stages the result through `UberGpuBuffer` into a `StagingBuffer`, which is why
 `SectionRenderDispatcher` has a spin-wait guarded by
 `RenderSystem.isOnRenderThread`.
 
@@ -303,8 +308,9 @@ the driver. It is all data on disk, alongside the chains in
 
 ## One draw
 
-Every drawing class comes through this one shape: `LevelRenderer`,
-`GuiRenderer`, `FeatureRenderDispatcher`, `Lightmap`, `TextureAtlas`.
+Every drawing class comes through this one shape — `LevelRenderer`,
+`GuiRenderer`, `Lightmap` and `TextureAtlas` among them — or joins it halfway, handed a pass
+someone else opened, as `FeatureRenderDispatcher` is.
 
 ```mermaid
 sequenceDiagram
@@ -347,11 +353,11 @@ point is not that a draw is cheap. It is that *the game* never sees any of it.
 
 A pipeline reaches `RenderPass.setPipeline` already compiled: the game asks
 `RenderSystem.getCompiledPipeline` for it, and the current `PipelineCache`
-answers by identity, compiling on a miss while the render thread waits. The
+answers by identity, compiling on a miss while the Render thread waits. The
 reload is what keeps that off the frame: in the *prepare* half of every
 resource reload `ShaderManager` compiles the static catalogue through
 `GpuDevice.compilePipeline` — the SPIR-V and its reflection on workers, each
-pipeline finished on the render thread — and in the *apply* half it fills a
+pipeline finished on the Render thread — and in the *apply* half it fills a
 fresh `PipelineCache` and swaps it in with `RenderSystem.setCurrentPipelineCache`
 only if every required pipeline compiled, so a pack that breaks one leaves the
 old cache standing rather than a half-built one. The lazy path is left for
@@ -360,8 +366,8 @@ chains](post-processing.md#loaded-off-thread-compiled-inside-a-frame) and
 three item pipelines, `RenderPipelines.ITEM_CUTOUT` among them, that the
 location-keyed required list drops because another pipeline reuses their
 location. Run the trace on Vulkan and the game code is unchanged — dynamic
-rendering replaces the framebuffer bind, push descriptors the uniform binding,
-and the swapchain lives in `VulkanGpuSurface`.
+rendering replaces the framebuffer bind, and push descriptors the uniform
+binding.
 
 ## How a frame reaches the screen
 
@@ -369,7 +375,8 @@ Presentation is a four-step protocol, not a swap: `GpuSurface.configure`, then
 `GpuSurface.acquireNextTexture`, then `GpuSurface.blitFromTexture`, then
 `GpuSurface.present`. Vsync is not a toggle in that sequence but a
 `GpuSurface.PresentMode` in the configuration: OpenGL offers a fixed pair of
-modes, Vulkan whatever the driver enumerates, mailbox and relaxed FIFO included.
+modes, Vulkan whatever the driver enumerates for the surface
+`VulkanGpuSurface` owns beside its swapchain, mailbox and relaxed FIFO included.
 
 ### What stops the CPU running a hundred frames ahead of the GPU
 
@@ -384,18 +391,13 @@ that has not signalled. Its one registration site in the game is
 `GlCommandEncoder`'s texture readback, and Vulkan routes the same callbacks
 through its own destruction queue.
 
-> **For a 1.21-era reader.** Nearly every name you would reach for in this
-> corner of the codebase has gone. `PoseStack` did *not* move, and is still here.
-
-| you are looking for | it is now |
-|---|---|
-| *RenderSystem.setShader* and every state toggle on it | fields of a `RenderPipeline` |
-| *ShaderInstance* | the pipeline's two shader `Identifier`s, compiled by `ShaderManager` |
-| *RenderStateShard* | `RenderType` over a `RenderPipeline` |
-| *VertexBuffer*, *Tesselator*, *BufferUploader* | `BufferBuilder` into a `MeshData`, then a `GpuBuffer` |
-| *VertexFormat.Mode*, *VertexFormat.IndexType*, *TextureFormat* | `PrimitiveTopology`, a top-level `IndexType`, `GpuFormat` |
-| *GpuDevice.getDeviceName* and its siblings | the `DeviceInfo` record |
-| *Window.updateDisplay*, *setVsync* | `GpuSurface.present` and a `GpuSurface.PresentMode` |
+> **For a 1.21-era reader.** *Tesselator* is gone: vertices go through a
+> `BufferBuilder` into a `MeshData`, then a `GpuBuffer`. *VertexFormat.Mode*,
+> *VertexFormat.IndexType* and *TextureFormat* are now `PrimitiveTopology`, a
+> top-level `IndexType` and `GpuFormat`; *GpuDevice.getRenderer* and its
+> siblings are the `DeviceInfo` record; and *Window.updateDisplay* is
+> `GpuSurface.present`, with vsync a `GpuSurface.PresentMode`. `PoseStack` did
+> not move.
 
 ## Where to look
 

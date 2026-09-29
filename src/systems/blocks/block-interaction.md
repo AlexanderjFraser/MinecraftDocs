@@ -3,8 +3,8 @@
 > Verified against **Minecraft 26.3** · Part V · A player right-clicks the bottom half of an oak door, and the top half opens without a single neighbour update.
 
 You are standing in front of a closed oak door, crosshair on its bottom half,
-and you press the use key. Before the tick is over the door is open on your
-screen, both halves of it, and a packet is on its way to a server that has
+and you press the use key. Before the tick is over the door is open in your
+client's world, both halves of it, on your screen a frame or so later, and a packet is on its way to a server that has
 not yet been asked. The obvious guess about how the top half found out is
 wrong. Opening a door fires **no neighbour updates at all** — `DoorBlock`
 writes with flags 10, and the neighbour bit is not among them — and the top

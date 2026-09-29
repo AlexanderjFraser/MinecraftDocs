@@ -50,7 +50,7 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, and K on 2026-09-29** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, and K and L on 2026-09-29** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
@@ -58,7 +58,7 @@ and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
 audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit; H found 241 on
 Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit; J found 314 on Part X, 131 of them by that
-audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit — and L onward have not. After it, nothing more is done here except a
+audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit; L found 393 on Part XI, 113 of them by that audit — and M onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -583,3 +583,14 @@ understood; recording is after the release.
   what the session had just written** — more than half, the pass's highest rate. Sixteen queue units struck (Part XI has no open
   figure unit); lane rows `GlRP`, `MFR`, `FPHAIR` added and five emptied rows removed; items handed to L, O, P and the second
   edition. Deployed.
+
+- **2026-09-29, pass 8, session L — Part XI · Rendering, the check and the polish (Opus).** Twelve fact-check agents, one per
+  page, while the session read the part whole; a process crash stopped all twelve mid-check and each was resumed from its
+  transcript, the reports saved to files by script. **393 corrections**, every one re-derived in the tree: `section-meshing`'s
+  hook (a default client compiles your own block's section on the Render thread after the next frame's terrain, not on a
+  worker — E's, J's and K's handoff), entities read from the visible list, a block behind you waiting for *the walk*, and seven
+  false headings, one with its inbound link. Every 1.21 blockquote re-read against the 1.21.11 tree and cut to names it has. The
+  90 pass 5–7 ledger entries struck (22 wrong or beside a wrong sentence); the part's queue settled (40 struck, five shares). The
+  record audited by one agent per page, which found **113 of the 393, 86 in sentences the session had just written** — about
+  three in ten. One probable upstream bug written as mechanism (a meshing NPE leaks a buffer pack); items handed to O, P and the
+  second edition. Deployed.

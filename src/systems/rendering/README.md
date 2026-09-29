@@ -11,31 +11,31 @@ something feeding it, or something on the far side of it working from a copy.
 And the claim the part makes is that **nothing you see on screen is the
 world; it is a copy of the world, and every seam a player notices is two
 copies disagreeing**. A mob pins in place under `/tick freeze` while the item
-in your hand keeps swaying, because they were copied at different instants. A
+in your hand keeps swaying, because each was copied at a partial tick of its own. A
 chest's lid stops and the chest in your hand does not, for the same reason
 one step further out. And terrain fills in outward as you fly because the
 copy that decides what is *visible* can only reach as far as the copies that
 already exist — which is the same disagreement again, now between the world
 and the meshes that stand in for it.
 
-Three things escape the frame, and each of them is a page: particles are
-stepped from the [*tick*](particles.md), sections are meshed on [a background
-pool](section-meshing.md), and the atlases are built by [a resource
-reload](models-and-atlases.md).
+Besides the renderer's own per-tick half, three things escape the frame, and
+each of them is a page: particles are stepped from the [*tick*](particles.md),
+most sections are meshed on [a background pool](section-meshing.md), and the atlases are built by [a resource
+reload](models-and-atlases.md) and animated before each frame.
 
 It is also the largest thing on the client. `client/renderer`,
 `client/model`, `client/particle`, `com/mojang/blaze3d` and
 `com/mojang/renderpearl` together come to
 {{#include ../../generated/part-rendering.md}} — counted the way [the
 atlas](../../maps/README.md) counts everything, and against 432 classes and
-54,000 lines for the whole of `net/minecraft/server`. The entire server is a
-third the size of the client's renderer.
+54,000 lines for the whole of `net/minecraft/server`. `net/minecraft/server` has a
+third as many classes as the client's renderer, and a little over half its lines.
 
 ## The shape of the part
 
 Part XI is **a substrate under a pipeline**. Two of its pages — the window
 and Blaze3D — are what the renderer stands on: neither has a trace through
-the world, and both are cited far more than they cite. The rest is a
+the world, and Blaze3D is cited far more than it cites. The rest is a
 pipeline. [The frame](the-frame.md) opens the part ahead of the substrate it
 stands on, because it is the shortest way to see the whole shape at once and
 because a reader who has watched one frame end to end has a reason to care
@@ -88,11 +88,10 @@ leans on the barrier semantics taught there rather than restating them.
 
 [Environment attributes and timelines](../world/environment-attributes-and-timelines.md)
 from Part IV before [lightmap, fog and sky](lightmap-fog-and-sky.md). Part IV
-owns that system; Part XI is its client-side consumer and deliberately does
-not re-teach it.
+owns that system; Part XI is one of its client-side consumers and does not
+re-teach it.
 
-[The client level](../client/the-client-level.md), for what the thing being
-drawn actually is — a `Level` with its authority removed — and for the two
+[The client level](../client/the-client-level.md), for what the thing being drawn is — a `Level` with its authority removed — and for the two
 ways `LevelExtractor` is reached, pushed and pulled.
 
 ## Watch in this order
@@ -112,30 +111,32 @@ ways `LevelExtractor` is reached, pushed and pulled.
    asymmetry — uncompiled sections stop it, empty ones do not — is why
    terrain reveals itself outward.
 5. [Section meshing](section-meshing.md) — where the triangles came from. A
-   block is placed, a halo of positions goes dirty, a worker compiles a
-   snapshot, and the swap happens frames later and all at once.
+   block is placed, a halo of positions goes dirty, the sections it touches are
+   rebuilt from a snapshot — by default inline for your own block, on a worker
+   for the server's —
+   and the new mesh swaps in all at once.
 6. [Models and atlases](models-and-atlases.md) — the reload pipeline behind
-   every quad. Twelve atlases stitched in parallel, one barrier, and a
+   block, item and particle quads. Twelve atlases stitched in parallel, one barrier, and a
    quad whose chunk layer is read out of its sprite's pixels.
-7. [Entity rendering](entity-rendering.md) — everything in the world that is
-   not terrain, in four stages, none of which is called *render*. The zombie
+7. [Entity rendering](entity-rendering.md) — every entity in the world, in
+   four stages, none of which is called *render*. The zombie
    is animated at least twice per frame.
 8. [Block-entity rendering](block-entity-rendering.md) — the same four
    stages with three differences that show. A chest's block model is empty,
-   a block entity is culled by its section rather than by the frustum, and
+   a block entity is never frustum-tested on its own, and
    the chest in your hand is drawn by a different renderer at a different
    partial tick.
 9. [Lightmap, fog and sky](lightmap-fog-and-sky.md) — what colour all of it
-   is. One question asked five times over, by renderers that mostly no
+   is. One question asked by four of the five renderers, most of which no
    longer know what time it is.
 10. [Particles](particles.md) — the part's policy page: three distance rules
-    enforced in three places and three readers of one setting who disagree
+    for a particle or a level event, enforced in three places and three readers of one setting who disagree
     about what its values mean, with a break puff that answers to almost
     none of them.
 11. [Post-processing](post-processing.md) — the closer. Five JSON-declared
     shader chains, which is how the pause-menu blur and the creeper
     spectator shader turn out to be the same machine — and a resource pack
-    can rewrite all five and add a sixth.
+   can rewrite all five and add its own.
 
 Four and five are a pair — one journey seen from its two ends — and so are
 seven and eight, the second of which is written as the differences from the
@@ -149,14 +150,15 @@ What draws *over* the world rather than in it — screens, the HUD, the render
 tree they record into and the text inside them — is Part X, from [the GUI
 render tree](../client/the-gui-render-tree.md) onward; what the server chose
 to tell this client is Part IX. The packages themselves cross the boundary in
-both directions: the render states and debug renderers under `client/renderer`
-are Part X's, and `client/resources/model` counts against Part X while being
-[models and atlases](models-and-atlases.md)' subject entire.
+both directions: the GUI's render states and the debug renderers under `client/renderer`
+count against Part XI while being Part X's subjects, and `client/resources/model`
+counts against Part X while being the subject of [models and
+atlases](models-and-atlases.md).
 
 Everything else left out is the families — one class per mob model, one per
 renderer, one per particle, one file per GL or Vulkan call site — which is
 why {{#include ../../generated/coverage-rendering.md}}, the second-highest
-figure in the book after Part V's. Teaching six shapes and declining their
+figure in the book after Part V's. Teaching each family's shape and declining its
 instances leaves a great many lines untouched, and that is the trade, made on
 purpose.
 
@@ -167,12 +169,12 @@ the catalogue behind [entity rendering](entity-rendering.md) and
 [block-entity rendering](block-entity-rendering.md): the fifteen phases a
 submitted feature can land in, and the twelve renderers that write the
 vertices. [The threads](../../reference/threads.md) for the two that matter
-here — the Render thread the whole part runs on, and the background pool that
+here — the Render thread most of the part runs on, and the background pool that
 meshes sections — and [diagram lanes](../../reference/lanes.md) for the
 abbreviations the figures use. [Naming drift](../../reference/naming-drift.md)
-is worth having open throughout: the client was rewritten around
-extract-then-render, so almost nothing at the top of the render stack kept
-the name a 1.21-era reader knows it by. [The
+is worth having open throughout: the world-facing half of the
+old `LevelRenderer` is now `LevelExtractor`, and many of the names a 1.21-era
+reader reaches for moved with it. [The
 glossary](../../reference/glossary.md) for *extract*, *render state*, *frame
 graph*, *partial tick*, *atlas*, *special model renderer* and *built-in block
 model*.

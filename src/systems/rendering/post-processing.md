@@ -4,8 +4,7 @@
 
 The blur behind the pause menu is not a GUI effect. It is a *post-processing
 chain*: a file called *blur.json*, sitting in the jar beside *creeper.json*,
-in the same format, loaded by the same loader, compiled into the same kind of
-object and run by the same three classes. Five such files ship, covering the
+in the same format, loaded by the same loader, compiled into the same kind of object and run by the same two classes, `PostChain` and `PostPass`. Five such files ship, covering the
 pause menu, the three things it is unpleasant to spectate and the glow around
 a spectral-arrowed mob. A resource pack can rewrite every one of the five,
 with as many passes as it likes, running fragment programs it also ships — a
@@ -18,10 +17,10 @@ in the jar answers to that name.
 | class | what it decides | thread |
 |---|---|---|
 | `PostChainConfig` | what a chain is as data: its own targets, and its passes in order | parsed on a worker |
-| `ShaderManager` | which chains exist, when they are compiled, and when they are thrown away | configs read on a worker, everything else on the render thread |
+| `ShaderManager` | which chains exist, when they are compiled, and when they are thrown away | configs read and pipelines compiled on workers (a chain's while the Render thread waits), the rest on the Render thread |
 | `PostChain` | which targets a pass may name, and where a pass's output lives | Render thread |
 | `PostPass` | one draw: a pipeline, its inputs as samplers, its uniforms as buffers | Render thread |
-| `UniformValue` | the seven types a JSON-declared uniform may have, and how each is packed | Render thread |
+| `UniformValue` | the seven types a JSON-declared uniform may have, and how each is packed | decoded on a worker, packed on the Render thread |
 | `LevelTargetBundle` | the two names the level's targets answer to, and which set a chain may ask for | Render thread |
 | `LevelRenderer` | the one chain that becomes passes in the world's own frame graph | Render thread |
 | `GameRenderer` | the blur and the per-frame list of chains, each given a frame graph of its own, built and thrown away on the spot | Render thread |
@@ -29,10 +28,10 @@ in the jar answers to that name.
 Nothing here talks to a driver directly: a pass is a [`RenderPipeline` and a
 `RenderPass`](blaze3d.md#one-draw) like every other draw in the game, and the
 vocabulary this page spends — `BindGroupLayout`, `GpuBuffer`,
-`MappableRingBuffer`, `Std140Builder`, `TextureTarget` — is
-[Blaze3D](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame)'s.
-The graph the passes go into is [visibility and the frame
-graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled)'s.
+`MappableRingBuffer`, `Std140Builder`, `TextureTarget` — is taught on
+[the Blaze3D page](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame).
+The graph the passes go into belongs to [visibility and the frame
+graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled).
 
 ## From a file on disk to a pass in a graph
 
@@ -81,9 +80,9 @@ of exactly two shapes: `PostChainConfig.TargetInput` names another target and
 may ask for its depth attachment rather than its colour, and
 `PostChainConfig.TextureInput` names a PNG under *textures/effect* with its
 dimensions. Both carry a *sampler name*, and two inputs on one pass sharing
-one is rejected by the codec while the file is being parsed — so the chain
-never reaches the config map at all, rather than failing later when something
-asks for it — and that name is the contract with the GLSL —
+one is rejected by the codec while the file is being parsed, so the chain
+never reaches the config map at all rather than failing later when something
+asks for it. That name is the contract with the GLSL:
 `PostChain` appends *Sampler* to it when it builds the pass's
 `BindGroupLayout`, so an input called *In* is the shader's *InSampler*.
 
@@ -98,9 +97,9 @@ subset of the allowed set the caller passed in —
 `LevelTargetBundle.MAIN_TARGETS` or `LevelTargetBundle.OUTLINE_TARGETS` — one
 name or two, each set being the main target plus whatever else that caller is
 prepared to hand over. A chain naming a target its caller did not offer does
-not load at all. An internal target may also be declared *persistent*, in
-which case `PostChain` allocates it once, keeps it in
-`PostChain.persistentTargets` and imports it rather than creating it, so a
+not load at all. An internal target may also be declared *persistent*, in which case `PostChain` allocates it itself, again whenever its size changes, keeps it in
+`PostChain.persistentTargets` until the chain drops out of the frame's list, and
+imports it rather than creating it, so a
 pass can read what it wrote last frame. None of the five asks for one.
 
 ## Loaded off-thread, compiled inside a frame
@@ -116,7 +115,7 @@ barrier, `ShaderManager` [precompiles the static pipeline
 catalogue](blaze3d.md#one-draw) through `GpuDevice.compilePipeline`, whose
 compiler [resolves each source's *#include*
 directives](blaze3d.md#shaders-and-the-reflection-that-checks-them) against
-what was just read. `ShaderManager.apply` then runs on the render thread and
+what was just read. `ShaderManager.apply` then runs on the Render thread and
 installs the compiled set as a new `PipelineCache`.
 
 Post chains are not in that precompiled set. They are built lazily, the first
@@ -126,10 +125,7 @@ from `RenderPipelines.POST_PROCESSING_SNIPPET`, names it *chain id* slash
 *pass index*, and precompiles it there and then. **The first frame you
 spectate a creeper compiles two shader programs in the middle of itself.** A
 failure throws `ShaderManager.CompilationException`, which
-`ShaderManager.getPostChain` logs, caches as a permanent absence so the next
-frame does not try again, and reports to
-`Minecraft.triggerResourcePackRecovery` — the path that disables a resource
-pack that broke the game. Closing the old cache, meanwhile, closes every
+`ShaderManager.getPostChain` logs, caches as an absence until the next reload so the next frame does not try again, and, for the first such failure since that reload, reports to `Minecraft.triggerResourcePackRecovery` — the path that deselects every resource pack it can and reloads, or, when none can be deselected, crashes the game if vanilla is all that is selected and otherwise returns to the title screen. Closing the old cache, meanwhile, closes every
 `PostChain` in it, destroying its persistent targets and freeing each
 `PostPass`'s uniform buffers: a reload does not rebuild the chains, it
 forgets them.
@@ -147,10 +143,9 @@ lends them to every chain — writes the output size and each input's size into
 a `MappableRingBuffer` as the *SamplerInfo* block, then opens a `RenderPass`,
 binds pipeline, default uniforms, custom uniform blocks and inputs, and draws.
 
-**Three** — vertices in every post-processing draw, in all twenty-four passes
+**Three vertices** make every post-processing draw, in all twenty-four passes
 the five chains declare (`PostPass.addToFrame`). There is no quad and no
-vertex buffer: the shared vertex program builds one oversized triangle out of
-the vertex index alone, and the fragment shader sees the whole screen.
+vertex buffer: both vertex programs the chains use build one oversized triangle out of the vertex index alone, and the fragment shader sees the whole screen.
 
 The uniforms are stranger than they look. A `UniformValue` has seven types —
 int, ivec3, float, vec2, vec3, vec4 and a 4×4 matrix — and a block is a list
@@ -161,15 +156,13 @@ to a `GpuBuffer` **once**, at load, never to be written again. The per-entry
 members match the GLSL block positionally. Only the block's own name, the key
 in the uniforms map, has to match anything.
 
-That is why the blur's radius is not one of them. *blur.json* declares a
-radius of zero, and *box_blur* treats zero as "ask elsewhere": it falls back
+That is why the blur's working radius is not one of them. *blur.json* declares a radius of zero, and *box_blur* treats anything under a half as "ask elsewhere": it falls back
 to a member of [the *Globals*
 block](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame),
 which `GlobalSettingsUniform.update` rewrites every frame — from
 `OptionsRenderState.menuBackgroundBlurriness`, in this case — and
 `RenderSystem.bindDefaultUniforms` binds to every post pass. **Anything a
-chain needs to vary per frame cannot be a chain uniform.** It has to come in
-through the global block, whose membership is fixed in Java.
+chain needs to vary per frame cannot be a chain uniform.** It has to come in through a block the game writes itself — the global block, or the pass's own *SamplerInfo* sizes, the only two a post pipeline declares beside its own — whose membership is fixed in Java.
 
 ## The five chains
 
@@ -184,19 +177,18 @@ reporting.
 | *creeper* | `GameRenderer.render`, when the camera entity is a `Creeper` | the main target, and one internal target it bounces through | luminance collapsed into the green channel, then posterised and mosaicked |
 | *spider* | `GameRenderer.render`, when it is a `Spider` | the main target and four internal targets | the view repeated through several skewed, blurred, red-tinted lobes |
 | *invert* | `GameRenderer.render`, when it is an `Enderman` | the main target, and one internal target it bounces through | colours inverted, four fifths of the way |
-| *entity_outline* | `LevelRenderer.render`, only on a frame where something submitted an outline | the entity-outline target — and never the main one | the coloured halo around a glowing mob |
+| *entity_outline* | `LevelRenderer.render`, only on a frame where something submitted an outline | the entity-outline target, and one internal target it bounces through — never the main one | the coloured halo around a glowing mob |
 
 Only one of those is a screen effect. *blur* runs over whatever is currently
 on the main target, world and GUI alike, because `GuiRenderer.draw` splits the
 GUI in two and runs this chain in the gap. Where that boundary falls, who asks
-for it and why a chest does not is [the GUI render
-tree](../client/the-gui-render-tree.md#blur-is-a-barrier-and-it-is-fussy)'s;
+for it and why a chest does not are questions for [the GUI render
+tree](../client/the-gui-render-tree.md#blur-is-a-barrier-and-it-is-fussy);
 what this page owns is that the thing running in the gap is an ordinary post
 chain over the main target, with nothing about it that knows it is a menu.
 
 Three are world effects: *creeper*, *spider* and *invert* run at the end of
-`GameRenderer.render`'s world block, after the level and before any GUI, so
-they warp the world and leave the HUD alone. They get there on a list
+`GameRenderer.render`'s world block, after the level and before any GUI, so they warp the world and leave the HUD alone. They get there on a list
 `GameRenderer.update` rebuilds every frame — *end_of_frame*, then
 `LocalPlayer.getActivePostEffects`, then the spectator chain unless F4 has
 switched it off — which `GameRenderer.render` looks up and runs in that
@@ -235,7 +227,7 @@ sequenceDiagram
         PChain->>PPass: addToFrame, four times, in declared order
         PPass->>FGB: addPass, declaring what it reads and what it writes
     end
-    FGB->>FGB: execute — with the chain added, sobel, blur, blur, blit back
+    LR->>FGB: execute — with the chain added, sobel, blur, blur, blit back
     GR->>LR: blitEntityOutline, after the graph — the glow onto the main target
 ```
 
@@ -302,29 +294,19 @@ forgetting which chain was chosen; the F3 screen's `DebugEntryPostEffects`
 lists only the chains the renderer applied, so a switched-off one drops out
 of it.
 
-**What happens to a chain when the window is resized?** Nothing. A
-`PostChain` has no size of its own: the dimensions arrive as arguments to
+**What happens to a chain when the window is resized?** Nothing, for the five that ship. A `PostChain` without a persistent target has no size of its own: the dimensions arrive as arguments to
 `PostChain.addToFrame` every frame, and internal targets are described fresh
-from them each time. `GameRenderer.resize` clears the resource pool so the
-old targets are not handed back, and `LevelRenderer.resize` resizes the
+from them each time. `GameRenderer.resize` clears the resource pool, freeing the old targets at once rather than three frames later, and `LevelRenderer.resize` resizes the
 entity-outline target it owns. The compiled pipelines never mention a
 resolution, so they are untouched.
 
-> **For a 1.21-era reader.** *ShaderInstance*, *EffectInstance*, *Effect* and
-> *AbstractUniform* are gone, and `Uniform` survives only as an OpenGL-backend
-> detail no post chain ever names: a post pass's uniforms are
-> `UniformValue` records packed into a `GpuBuffer` with `Std140Builder`, and
-> everything else is bound by `RenderSystem.bindDefaultUniforms`.
-> *PostChain.process* still exists, but it is deprecated and both its callers
-> build a throwaway frame graph — `PostChain.addToFrame` is the real one.
-> *PostChain.resize*, *PostChain.getTempTarget* and `PostChain`'s whole
-> bookkeeping of named render targets are gone, because the frame graph
-> allocates them now. And *Fabulous* is no longer a mode anything reads: it
-> survives as one of four `GraphicsPreset` values, but a preset only *writes*
-> `Options.improvedTransparency` and the other individual options and is then
-> forgotten — and `GraphicsPreset.FABULOUS` writes it true. The *transparency*
-> chain it switched on is gone: `LevelRenderer.executeOit` does its work,
-> inside the level's main pass.
+> **For a 1.21-era reader.** The *transparency* chain is gone, and
+> *LevelTargetBundle.SORTING_TARGETS* with it: improved transparency is
+> `LevelRenderer.executeOit`, drawn inside the level's main pass, and
+> `GraphicsPreset.FABULOUS` sets `Options.improvedTransparency` on every
+> platform, macOS included.
+> `PostChain`, `PostPass`, `UniformValue` and the deprecated
+> `PostChain.process` kept their names.
 
 ## Where to look
 

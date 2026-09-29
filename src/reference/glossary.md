@@ -271,9 +271,7 @@ the drain against a time budget; the client empties the queue every frame. → [
 on in the create-world screen is a data-pack reload. → [creating a world](../systems/worldgen/creating-a-world.md)
 
 **Extract** — the first half of the client's frame: walk the game state, cull
-it, and write the render states, so that the drawing half reads no live game
-state from `LevelRenderer.render` down — the top of the render half still
-does. The top-level states are single objects re-filled each frame, not fresh
+it, and write the render states, so that the drawing half reads no live game state from `LevelRenderer.render` down but what a few snapshots hold by reference (a moving block's light, a sign's text, a section compiled on the spot) — the top of the render half still does. The top-level states are single objects re-filled each frame, not fresh
 immutable values. → [the frame](../systems/rendering/the-frame.md)
 
 ## F
@@ -541,12 +539,12 @@ sets are listed in [loot context parameter sets](loot-context-params.md). → [c
 
 **Partial tick** — the fraction of a tick elapsed at the moment a frame is
 drawn, used to interpolate the world. There is no single one: a frame carries
-six values, they disagree on purpose, and the one screens are handed is not a
-fraction of a tick at all. → [the frame](../systems/rendering/the-frame.md#update-and-extract-six-clocks-in-one-frame)
+six values, they disagree on purpose, and two of them, the one screens are handed among them, are not fractions of a tick at all. → [the frame](../systems/rendering/the-frame.md#update-and-extract-six-clocks-in-one-frame)
 
-**Particle** — a client-only object with a position, a velocity, an age and a
-sprite, ticked and drawn by the `ParticleEngine`. Nothing about it is
-authoritative: it is spawned locally by prediction or by a level event, and the
+**Particle** — a client-only object with a position, a velocity and an age,
+most of them a textured quad, ticked by the `ParticleEngine` and extracted from
+it each frame. Nothing about it is authoritative: it is spawned locally, by
+prediction, by the ambient scatter or on a packet or level event, and the
 server is told the player's particle setting and never acts on it.
 → [particles](../systems/rendering/particles.md#does-the-particle-happen-at-all)
 
@@ -625,8 +623,7 @@ needs off the worker pool and swaps its live state on the owning thread, every
 apply running in order behind a `PreparableReloadListener.PreparationBarrier`. → [the resource system](../systems/foundations/resource-system.md#prepare-every-listener-at-once)
 
 **Render state** — the snapshot of what to draw, produced by the extract half
-of the frame and consumed by the drawing half; the property that matters is
-that the drawing half reads no game state below `LevelRenderer.render` (see
+of the frame and consumed by the drawing half; the property that matters is that the drawing half reads no game state below `LevelRenderer.render` but what a few snapshots hold by reference (see
 *Extract* for where the wall actually is).
 → [the frame](../systems/rendering/the-frame.md#the-wall-and-the-one-level-at-which-it-is-real)
 

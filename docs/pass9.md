@@ -74,6 +74,527 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session L — Part XI · Rendering: the check and the polish *(2026-09-29)*
+
+Twelve pages, each checked under Part 2 by its own agent while the session read the part whole (the whole-part read was
+written before any report was opened, and listed sixty-odd items). Each prompt carried the page's pass 5–7 ledger entries
+and, added by script because `pass8_prompts.py` leaves them out, every pass 8 entry on the page (V1's, V2's, B–J's
+handoffs and session K's 126 figure corrections) plus the handoffs to L in the ledger's *For later sessions* (E's, H's,
+J's and K's). A process crash stopped all twelve agents mid-check; each was resumed from its transcript and nothing was
+lost. **393 corrections**, every one re-derived in `reference/26.3` before it was made: 279 from the reports and the
+whole-part read, one from a queue unit, and **113 from the record's audit** — twelve agents re-deriving every changed
+sentence against the tree, its neighbours and the corpus — **86 of them in sentences this session had just written** —
+about three in ten of the session's corrections, between H's rate and I's. The 90 pass 5–7 ledger entries on these pages struck (60 checked, 22 wrong in whole or in
+part or beside a wrong sentence, 8 overtaken); the pass 8 entries on these pages were checked as claims in the prompts and
+are session P's. Part XI's queue settled: 40 units struck, five shared units given XI's share.
+
+**The three worst.** `section-meshing`'s hook had a worker thread rebuild your placed block's section with a queued
+scratch buffer; on a default client the *fancy* preset sets *prioritise chunk updates* to player-affected, your own
+placement carries the player bit, and the section is compiled on the Render thread with the fixed buffer pack after the
+next frame has drawn its terrain (E's, J's and K's handoff). `visibility-and-the-frame-graph` said entities read the visible
+list (they are tested one by one, with a look-up of their own section) and that a block behind you waits for *the walk*
+(it waits for the frustum step, and the frustum is pulled back to cover the camera's own cell). And
+`block-entity-rendering`'s heading *Culling by section, not by frustum* was false — the visible list is the frustum's
+output — and was corrected with its one inbound link, then corrected again by the audit.
+
+**Headings corrected** (each checked for inbound links first): `section-meshing` *…the real throttle* (the section's own
+conclusion was the thread count), `the-frame` *What the two halves share, which is three buffers and a storage*,
+`blaze3d` *…the one block every shader gets for free* and *…the one builder that is not on the render thread*,
+`lightmap-fog-and-sky` *The clouds, which are never handed a fog slice and never bind a texture* (under improved
+transparency they bind the main depth), `models-and-atlases` *The handshake that lets two listeners share a future*
+(`ParticleResources` awaits a stitch too), and `block-entity-rendering`'s culling heading, whose link from
+`entity-rendering` moved with it.
+
+**Every 1.21 blockquote re-read against the 1.21.11 tree** (the owner's rule since session J): each now names only what a
+1.21.11 reader will hunt for and is at most eight lines. Removed as not 1.21.11 names: *RenderStateShard*, *ShaderInstance*,
+*VertexBuffer*, *BufferUploader*, *RenderSystem.setShader*, *Window.setVsync*, *Window.setupGuiState*, *setupRender*,
+*renderChunkLayer*, *TextureSheetParticle*, *BakedModel*, *ModelResourceLocation*, *AtlasSet*, *ItemColors*, the `Camera`
+accessor note, *DimensionSpecialEffects*, *FogParameters*, *getRenderBoundingBox* and others;
+added the real 1.21.11 → 26.3 moves (*Window.updateVsync*, *ParticleFeatureRenderer*, *SingleQuadParticle.Layer.TERRAIN*
+and *ITEMS*, *RenderTypes.entityCutoutNoCull*, *LevelRenderer.cullTerrain*, *BedRenderer*, *ChunkSectionLayer.TRIPWIRE*).
+`blaze3d`'s drift table folded into its blockquote.
+
+**Probable upstream bug, written as mechanism** (`section-meshing`): a null-pointer failure anywhere in a compile outside
+the per-block tesselation requeues the section and never returns the buffer pack it acquired, so a section that fails
+that way every time drains the pool until no compile on a worker finishes again (`client/renderer/chunk/SectionRenderDispatcher.java`:89–102).
+
+### Figures changed
+
+- `visibility-and-the-frame-graph` f2: the SKY node reads *if drawn* — asserts the sky pass is conditional
+  (`LevelRenderer.java`:238, 359, 370). No arrow added, removed or reversed.
+- `post-processing` f2: the *execute* message now leaves `LevelRenderer` (it was a self-message on `FrameGraphBuilder`) —
+  asserts `LevelRenderer.render` calls `FrameGraphBuilder.execute` after the `opt` block (`LevelRenderer.java`:263).
+- `section-meshing` f1: the tracker's message is `setDirty` (was the word *dirty*); the upload's callback swaps in each
+  *fully uploaded* mesh (was *staged*). Orderings unchanged.
+- `the-frame` f1: the wall note reads *nearly sealed at LevelRenderer.render*. Orderings unchanged.
+- `lightmap-fog-and-sky` f1: the probe's tick note reads *rolled over or evicted*. Orderings unchanged.
+- All 22 Part XI figures rendered after the edits (`node tools/render_figures.js --no-build --pages systems/rendering`):
+  nothing under 12.5px on screen, no name broken (`tools/pass7/broken_names.py`: 0).
+
+### Captions written
+
+- `section-meshing` f1: *The trip from a placed block to a drawn mesh: a tick sets flags, and the frame after it sweeps
+  only visible sections and compiles or queues the dirty ones after its own terrain is drawn. A synchronous compile is
+  swapped in at the end of that frame, an asynchronous one at the end of whichever frame uploads the last of it.*
+- `particles` f2: *per-type count* → *per-limit count* (`client/particle/ParticleEngine.java`:32).
+
+### For later sessions
+
+- **O** — `reference/naming-drift`'s Part XI rows are judged against an earlier 1.21 than this part's blockquotes now are:
+  it lists *TextureSheetParticle*, *ParticleGroup* as a limit record, the `Camera` *get*-prefix row (whose *getCullFrustum*,
+  *getFov* and *getCameraEntityPartialTicks kept theirs* is false against 1.21.11, which had neither those names nor the
+  prefixed ones), *RenderStateShard* as *the texture/target/layering half* (`RenderType` carries no target,
+  `client/renderer/rendertype/RenderSetup.java`:25–36), *Window.setVsync* (1.21.11's is *updateVsync*), *FogParameters*,
+  *RenderSystem.setShaderFogColor*, *DimensionSpecialEffects*, *BakedModel*, *ModelResourceLocation*, *ItemModelShaper*,
+  *AtlasSet*, *ItemColors*, *RenderType.chunkBufferLayers* (*five layers*; 1.21.11 has four `ChunkSectionLayer`s) and
+  *ChunkRenderDispatcher*/*RenderChunk*/*CompiledChunk*; and it lacks the real 1.21.11 → 26.3 moves this session wrote into
+  the blockquotes (above). Which baseline the table keeps is O's ruling, or the owner's.
+- **O** — `anatomy/what-this-book-skips`: *33 classes, 7,387 lines* for the Vulkan backend counts `package-info.java`;
+  `blaze3d` now says *files*. The glossary's *Staging buffer* (pass5.md:1160) and *extract* (pass5.md:6111), and
+  `TEMPLATE.md`'s landing-page budget (pass5.md:6234), are O's; XI's shares are noted.
+- **O** — the landing page's *counted the way the atlas counts everything*: the server row includes the skipped `jsonrpc`
+  and `rcon` packages and the part phrase drops the skipped `blaze3d/audio` (low).
+- **P** — the 296 pass 8 entries on these pages (V1, V2, B–J's handoffs, K's figure corrections), checked as claims in the
+  prompts and not struck here; this session's diff; and the items the audit left as low or unverifiable, each in its
+  page's `.audit.md` (for example `lightmap-fog-and-sky` f1's arrow from `LightmapRenderStateExtractor` to `Lightmap`, a
+  data hand-off drawn as a message in the extract band; `the-window`'s `Window.getX`, which has no caller;
+  `models-and-atlases`' `SpriteId` on the slot path; `entity-rendering`'s *after `EntityRenderDispatcher.prepare` has set
+  the camera*, which runs at the top of extract).
+- **Second edition** — `models-and-atlases` never introduces `ModelState`; `blaze3d`'s vocabulary arrives after its first
+  use; the cast table's thread column on the pages with one thread (pass5.md:6196, 6210, 6214).
+
+### Corrections
+
+1. `rendering/README`:14 — *keeps swaying, because they were copied at different instants.* — now *keeps swaying, because each was copied at a partial tick of its own.* — same extract, different partial ticks (LevelExtractor.java:272; Camera.java:139); the-frame's "in the same frame, from the same extract"
+2. `rendering/README`:21 — *Three things escape the frame, and each of them is a page: particles are stepped from the [*tick*](particles.md), sections are meshed on …* — now *Besides the renderer's own per-tick half, three things escape the frame, and each of them is a page: particles are stepped from …* — GameRenderer.tick (Camera.tick advancing the probe, the lightmap's flag; Minecraft.java:2046, GameRenderer.java:294-302) is a fourth escape with no page of its own; meshing is off the frame only for a section the player did not change under the default preset
+3. `rendering/README`:(rewritten again by the audit) — *The entire server is a third the size of the client's renderer.* — now *The entire server has a third as many classes as the client's renderer, and a little over half its lines.* — 432/1,291 classes = a third; 53,789/98,283 lines = 55% (find over reference/26.3/net/minecraft/server; generated/part-rendering.md)
+4. `rendering/README`:37 — *neither has a trace through the world, and both are cited far more than they cite.* — now *neither has a trace through the world, and Blaze3D is cited far more than it cites.* — the-window is cited from 5 pages and cites 7; blaze3d is cited from 13 and cites 6 (grep of src/)
+5. `rendering/README`:113 — *A block is placed, a halo of positions goes dirty, a worker compiles a snapshot, and the swap happens frames later and …* — now *A block is placed, a halo of positions goes dirty, the section is rebuilt from a snapshot — inline for your own …* — watch line 5 (E, J, K handoff): under the default preset your own block's section compiles inline on the Render thread and swaps in at the end of that frame (LevelRenderer.java:1117-1125, :290; SRD:350-354); a server's change goes to a worker
+6. `rendering/README`:(rewritten again by the audit) — *the reload pipeline behind every quad.* — now *the reload pipeline behind every block, item and particle quad.* — glyph quads come from FontManager's own reload (FontManager.java:56)
+7. `rendering/README`:121 — *everything in the world that is not terrain, in four stages,* — now *every entity in the world, in four stages,* — sky, clouds, weather and the border are not terrain and bypass the four stages (LevelRenderer.java:375, 643-644, 793-799)
+8. `rendering/README`:(rewritten again by the audit) — *a block entity is culled by its section rather than by the frustum,* — now *a block entity is culled with its section rather than on its own,* — the visible-section list is frustum-trimmed (SectionOcclusionGraph.addSectionsInFrustum, :119-132); a block entity is never tested alone
+9. `rendering/README`:130 — *One question asked five times over, by renderers that mostly no longer know what time it is.* — now *One question asked by four of the five renderers, most of which no longer know what time it is.* — four of the five renderers ask the probe; the weather asks none (WeatherEffectRenderer.java:72-101); lightmap-fog-and-sky :52
+10. `rendering/README`:138 — *and a resource pack can rewrite all five and add a sixth.* — now *and a resource pack can rewrite all five and add its own.* — /posteffect lets a server request any chain a pack ships (PostEffectCommand.java:44; GameRenderer.java:464); post-processing :205-209
+11. `rendering/README`:90 — *Part IV owns that system; Part XI is its client-side consumer and deliberately does not re-teach it.* — now *Part IV owns that system; Part XI is one of its client-side consumers and does not re-teach it.* — environment attributes have another client consumer, sound (Minecraft.java:2993; BiomeAmbientSoundsHandler.java:48)
+12. `rendering/README`:153 — *the render states and debug renderers under `client/renderer` are Part X's, and `client/resources/model` counts against Part X while being [models and atlases](models-and-atlases.md)' …* — now *the GUI's render states and the debug renderers under `client/renderer` count against Part XI while being Part X's subjects, and `client/resources/model` counts …* — all of client/renderer counts against Part XI (map_source.py PARTS); the GUI's render states and the debug renderers are Part X's subjects; client/resources/model counts against Part X; V8 possessive on the link
+13. `rendering/README`:161 — *Teaching six shapes and declining their instances* — now *Teaching each family's shape and declining its instances* — the families listed are four; "six shapes" has no population
+14. `rendering/README`:172 — *the Render thread the whole part runs on,* — now *the Render thread most of the part runs on,* — meshing, stitching and the bake run on the worker pool (LevelRenderer.java:1321; AtlasManager.java:122-126; ModelManager.java:105)
+15. `rendering/README`:175 — *the client was rewritten around extract-then-render, so almost nothing at the top of the render stack kept the name a 1.21-era reader …* — now *the world-facing half of the old `LevelRenderer` is now `LevelExtractor`, and many of the names a 1.21-era reader reaches for moved with …* — GameRenderer, LevelRenderer, Camera, ParticleEngine, EntityRenderDispatcher, BlockEntityRenderDispatcher, FeatureRenderDispatcher are 1.21.11 names too (D:/pvpmod/reference/minecraft); LevelExtractor is new
+16. `rendering/the-frame`:7 — *the second draws that state and nothing else.* — now *the second draws that state, and reads the live game only where the wall below leaks.* — the drawing half reads live state in a few places (GameRenderer.java:672-692 outline, :744 boss fog, :385 hand's game mode, :605-611 world icon)
+17. `rendering/the-frame`:32 — *| `LevelRenderer` | the world half — handed a `CameraRenderState`, never a `Camera` | Render thread |* — now *| `LevelRenderer` | the world half — its render handed a `CameraRenderState`, never a `Camera` | Render thread |* — cast: LevelRenderer.invalidateCompiledGeometry takes a Camera (LevelRenderer.java:1317); its render is the one handed a CameraRenderState
+18. `rendering/the-frame`:48 — *| the real-time clock, the GPU timer query, `Minecraft.pauseIfInactive`,* — now *| the real-time clock, the GPU timer query when something wants it, `Minecraft.pauseIfInactive`,* — zone table: the timer query only runs for F3's GPU line or a metrics recording (Minecraft.java:1383-1386)
+19. `rendering/the-frame`:50 — *| the wall: the window, the options, the lightmap, the camera, the level and the GUI copied into `GameRenderState` |* — now *| the wall: the window and the options, then on a frame with a world to draw the lightmap, the camera and …* — zone table: the lightmap, camera and level extract, and the lightmap draw, are guarded on shouldRenderLevel (GameRenderer.java:476-487, 518-520) (K handoff)
+20. `rendering/the-frame`:52 — *| the resize, the clear, the lightmap, then the two zones below |* — now *| the resize, the clear, on a frame with a world to draw the lightmap, then the two zones below |* — zone table: the lightmap, camera and level extract, and the lightmap draw, are guarded on shouldRenderLevel (GameRenderer.java:476-487, 518-520) (K handoff)
+21. `rendering/the-frame`:120 — *Vsync is a [`GpuSurface.PresentMode`](blaze3d.md#how-a-frame-reaches-the-screen) in that configuration rather than a swap interval, so toggling it in the options forces a reconfigure — …* — now *Vsync is a [`GpuSurface.PresentMode`](blaze3d.md#how-a-frame-reaches-the-screen) in that configuration, which the OpenGL surface turns into a swap interval, so toggling it in the options …* — OpenGL's configure turns the present mode into a swap interval (GlSurface.java:32); invalidateSurfaceConfiguration sets a flag the next frame acts on (Minecraft.java:3297-3298, :1356)
+22. `rendering/the-frame`:152 — *`FramerateLimitTracker.getThrottleReason` tests iconification *first*, ahead of idleness and the menu, and answers with a limit of ten* — now *`FramerateLimitTracker.getThrottleReason` tests iconification *first*, ahead of idleness and the menu, and `FramerateLimitTracker.getFramerateLimit` turns that answer into a limit of ten* — getThrottleReason returns a reason; getFramerateLimit maps it to 10 (FramerateLimitTracker.java:34-35, 72)
+23. `rendering/the-frame`:158 — *and that menu's vote stops a singleplayer world, so every frame after that draws a world that has stopped.* — now *and that menu's vote stops a singleplayer world not opened to LAN, so every frame after that draws a world that has …* — the vote does not stop a world opened to LAN (Minecraft.java:1336)
+24. `rendering/the-frame`:165 — *It brackets almost the whole frame, from here through the blit, and it is only *started* when the last one has been …* — now *It brackets almost the whole frame, from here through the blit, runs only while the debug screen's GPU line is shown or …* — the timer query's gate (Minecraft.java:1383-1386)
+25. `rendering/the-frame`:175 — *Between those two sits the flag the rest of the page keeps leaning on.* — now *Behind all of this sits the flag the rest of the page keeps leaning on.* — the flag is not read between Camera.update and Minecraft.pick (it is read at Minecraft.java:1396 and in extract)
+26. `rendering/the-frame`:185 — *appears during blocking work. Every other frame is a ticking one, and the term means only that.* — now *appears during blocking work. And the loop's own call passes false for every frame after the client has recovered from running out …* — a fifth path: runTick(!oomRecovery) after an out-of-memory recovery (Minecraft.java:935, 964, 1321)
+27. `rendering/the-frame`:203 — *There are six, they disagree on purpose, and one of them is not a partial tick at all.* — now *There are six, they disagree on purpose, and two of them are not partial ticks at all.* — two of the six are whole deltas, not positions inside a tick (DeltaTracker.java:60, 70, 104-106, 114-116)
+28. `rendering/the-frame`:209 — *| the camera and the held item | `Camera.getCameraEntityPartialTicks` |* — now *| the camera, and the held item as it is posed | `Camera.getCameraEntityPartialTicks` |* — the held item is extracted at the player's own partial tick and posed at the camera entity's (LevelExtractor.java:438, 445; GameRenderer.java:399)
+29. `rendering/the-frame`:241 — *asks the game mode what it is and looks a `BlockState` up in the level, all mid-draw.* — now *asks the game mode what it is and looks a `BlockState` up in the level, all mid-draw. It is not the only …* — the wall leaks in more places than the outline (GameRenderer.java:744, 385, 605-611)
+30. `rendering/the-frame`:255 — *### What the two halves share, which is three buffers and a storage* — now *### What the drawing half holds, which is three buffers and a storage per drawer* — FALSE HEADING (no inbound links): only stagedVertexBuffer is reached outside meshing, and no storage is shared -- four drawers each hold their own SubmitNodeStorage (LevelRenderer.java:128, GameRenderer.java:133, GuiItemAtlas.java:28, PictureInPictureRenderer.java:37); rule 3: the version-drift phrasing leaves the body
+31. `rendering/the-frame`:257 — *The buffers the halves share are far smaller than a 1.21-era reader expects. `RenderBuffers` holds `RenderBuffers.fixedBufferPack`, the section-meshing scratch `RenderBuffers.sectionBufferPool` — capped …* — now *The buffers are few. `RenderBuffers` holds `RenderBuffers.fixedBufferPack` and the section-meshing scratch `RenderBuffers.sectionBufferPool` — capped by processor count and again by a memory …* — FALSE HEADING (no inbound links): only stagedVertexBuffer is reached outside meshing, and no storage is shared -- four drawers each hold their own SubmitNodeStorage (LevelRenderer.java:128, GameRenderer.java:133, GuiItemAtlas.java:28, PictureInPictureRenderer.java:37); rule 3: the version-drift phrasing leaves the body
+32. `rendering/the-frame`:298 — *parking only below a threshold, so the top slider position never parks at all.* — now *parking only below a threshold, so the top slider position parks only when the limit has been replaced.* — the limiter parks at the top position whenever the tracker has replaced the limit (FramerateLimitTracker.java:30-49; Minecraft.java:1483-1486); SHORT_AFK is min(option, 30), a cap (FramerateLimitTracker.java:41)
+33. `rendering/the-frame`:301 — *and the four cases in which `FramerateLimitTracker` has already replaced the player's option with a limit of its own* — now *and the four cases in which `FramerateLimitTracker` has already capped or replaced the player's option* — the limiter parks at the top position whenever the tracker has replaced the limit (FramerateLimitTracker.java:30-49; Minecraft.java:1483-1486); SHORT_AFK is min(option, 30), a cap (FramerateLimitTracker.java:41)
+34. `rendering/the-frame`:332 — ***Where does the main menu's panorama come from?** The game, on the same two halves. `Minecraft.grabPanoramixScreenshot` runs* — now ***Where does the main menu's panorama come from?** From six textures drawn as a turning cube, and the game can take the …* — the menu panorama is a cube map of six textures (GuiRenderer.java:85, 116-117); grabPanoramixScreenshot runs only when the PANORAMA_SCREENSHOT debug flag is set (Screenshot.java:33-35; SharedConstants.java:100)
+35. `rendering/the-frame`:341 — *> **For a 1.21-era reader.** The rendering model is now **extract then > render**: `GameRenderer.extract` copies the live game into a > …* — now *> **For a 1.21-era reader.** The frame is now **extract then render**: > `GameRenderer.extract` copies the live game into a `GameRenderState`, and …* — blockquote (V13 <= 8 lines): every hunted name checked in the 1.21.11 tree; the Camera-accessor sentence dropped (1.21.11 has no Camera.getCullFrustum or getFov, and its accessors were already unprefixed); the "because the camera may have moved" rationale is not in the code
+36. `rendering/the-window`:22 — *the CPU image type every texture, screenshot, skin and glyph in the game passes through on its way to or from a …* — now *the CPU image type every texture, screenshot and skin, and every glyph but the unihex font's, passes through on its way to …* — unihex glyphs upload from an IntBuffer with no NativeImage (UnihexProvider.java:433-438)
+37. `rendering/the-window`:28 — *it opens on a surface that has already been acquired. This page is what acquired it.* — now *it opens on a surface that has already been acquired. This page is what created it.* — the frame acquires each frame (Minecraft.java:1370-1377); this page's startup creates the surface (Minecraft.java:562)
+38. `rendering/the-window`:52 — *and all of it runs on the Render thread, which is [one of the four](../anatomy/anatomy.md#four-threads-worth-memorising).* — now *and most of it runs on the Render thread, which is [one of the four](../anatomy/anatomy.md#four-threads-worth-memorising): images are decoded and mipmapped on reload …* — the watchdog sleeps on its own thread; images are decoded and mipmapped on reload workers and written on the IO pool (ClientShutdownWatchdog.java:26-54; SpriteLoader.java:111-116, 138-142; Screenshot.java:59-64)
+39. `rendering/the-window`:62 — *A backend that cannot load its library and a backend that cannot make a device fail identically, and both hand the next …* — now *A backend that cannot load its library and a backend that cannot make a device land in the same handler, which unloads …* — both failures land in one catch, but only a device failure unloads (Minecraft.java:518-531; K handoff)
+40. `rendering/the-window`:(rewritten again by the audit) — *A previous unclean shutdown downgrades twice over — a Vulkan preference becomes the default, and the default becomes OpenGL — so a …* — now *A start that crashed before it finished loading downgrades the preference one step on the next start — a Vulkan preference becomes …* — one step per start (else-if, Minecraft.java:486-495), triggered by a start that never finished loading (options.startedCleanly, :455-456, :794-795)
+41. `rendering/the-window`:111 — *with `DisplayData.withSize` and `DisplayData.withFullscreen` for the transitions that change them later.* — now *with `DisplayData.withSize` and `DisplayData.withFullscreen` applying the saved overrides before the window is made.* — withSize/withFullscreen are used only before the window exists (Minecraft.java:464, 468, 472)
+42. `rendering/the-window`:120 — *SDL and STB, reached through LWJGL, are what the package sits on,* — now *SDL, STB and FreeType, reached through LWJGL, are what the package sits on,* — NativeImage.copyFromFont calls FreeType (NativeImage.java:357-378)
+43. `rendering/the-window`:150 — *Errors are read where they happen: the game checks an SDL call's result where it makes the call and reads *SDL_GetError* there …* — now *Errors are read where they happen: where the game checks an SDL call's result it does so at the call and reads …* — several SDL calls go unchecked (Window.java:163; setTitle; setWindowMaxSize)
+44. `rendering/the-window`:224 — *its callers are `Minecraft` and `Options`, which is to say the game calling itself when the GUI scale option changes.* — now *its callers are `Minecraft` and `Options`, which is to say the game calling itself — at startup, after every new framebuffer size, …* — resizeGui's callers: startup, every framebufferSizeChanged, the GUI scale and font options (Minecraft.java:699, 1566-1569; Options.java:614-620, 1322)
+45. `rendering/the-window`:248 — *That is why the game sometimes leaves a crash report behind after you close it.* — now *That is one reason the game sometimes leaves a crash report behind after you close it.* — the post-main arming also leaves a report (ClientShutdownWatchdog.java:32-47; Main.java:291)
+46. `rendering/the-window`:285 — *`Window.setFullscreen`, which the fullscreen option calls, and `Window.setWindowed` set the request,* — now *`Window.setFullscreen`, which the fullscreen option calls, sets the request, `Window.setWindowed` applies one at once,* — setWindowed applies at once with setMode (Window.java:743-748)
+47. `rendering/the-window`:(rewritten again by the audit) — *and what it watches is the window: iconification and idle time, and focus only in exclusive fullscreen,* — now *and what it watches is mostly the window: iconification, and focus only in exclusive fullscreen, beside the idle time since the last …* — the tracker also watches the menu state and input idle time (FramerateLimitTracker.java:55-74); four reasons, one a cap (:41)
+48. `rendering/the-window`:308 — *and the four limits it substitutes,* — now *and the four limits it caps or substitutes,* — the tracker also watches the menu state and input idle time (FramerateLimitTracker.java:55-74); four reasons, one a cap (:41)
+49. `rendering/the-window`:329 — *an atlas is assembled on the GPU, sprite by sprite, which is [models and atlases](models-and-atlases.md#the-barrier-and-how-a-sprite-reaches-the-gpu)'.* — now *an atlas is assembled on the GPU, sprite by sprite, as [models and atlases](models-and-atlases.md#the-barrier-and-how-a-sprite-reaches-the-gpu) explains.* — V8 possessive on a link (H handoff)
+50. `rendering/the-window`:(rewritten again by the audit) — *It is where every image in the game briefly is, and it is not only textures.* — now *It is where nearly every image in the game briefly is, the unihex font's glyphs aside, and it is not only textures.* — nearly every image: the unihex exception (UnihexProvider.java:433-438)
+51. `rendering/the-window`:341 — *and `NativeImage.untrack` exists for the cases where something else has taken the pointer over.* — now *and `NativeImage.untrack` only takes an image out of LWJGL's leak tracking, for the few special glyphs kept for the life of the …* — untrack only removes the allocation from LWJGL's debug leak tracking; one caller, SpecialGlyphs (NativeImage.java:496-498; SpecialGlyphs.java:41)
+52. `rendering/the-window`:354 — *before `MipmapGenerator` builds a sprite's mip chain it runs one of two repairs over it, `TextureUtil.solidify` flooding the nearest opaque colour outward …* — now *before `MipmapGenerator` builds a sprite's mip chain it runs one of two repairs over it, when the sprite is not an item's …* — the repair is conditional on strategy, one level, and not an item sprite; dark fill is the darkest colour darkened (MipmapGenerator.java:97-110; TextureUtil.java:229-275); only solidify protects the plain mean averaging (ARGB.meanLinear)
+53. `rendering/the-window`:365 — *the macOS and memory-tracking helpers, and `InputConstants`,* — now *the macOS and memory-tracking helpers, `Lighting`'s buffer of diffuse-light directions, and `InputConstants`,* — the package account omits Lighting (com/mojang/blaze3d/platform/Lighting.java)
+54. `rendering/the-window`:(rewritten again by the audit) — *then `Window.updateFullscreenIfChanged` for the only thing the window does per frame.* — now *then `Window.updateFullscreenIfChanged` for the one thing the window does inside the frame.* — Window.setErrorSection runs three times a pass (Minecraft.java:1214, 1295, 1333); the frame's call is the one inside renderFrame
+55. `rendering/the-window`:373 — *> **For a 1.21-era reader.** GLFW is gone; SDL3 does its work, and *GLX* went > with it. The window no longer …* — now *> **For a 1.21-era reader.** GLFW is gone; SDL3 does its work, and *GLX* went > with it. The window no longer …* — blockquote against the 1.21.11 tree: ScreenManager and GLX existed there; Window.setVsync and Window.setupGuiState did not
+56. `rendering/blaze3d`:12 — *declared once and applied when the pipeline is bound, and* — now *declared once and applied by the backend when a draw first uses the pipeline, and* — page against itself: pipeline state is applied at the first draw that uses it (GlCommandEncoder.java:455-468; GlRenderPipeline.java:112-155), as :343-345 says
+57. `rendering/blaze3d`:17 — *where `GlStateManager` still shadows every toggle and still elides the redundant ones.* — now *where `GlStateManager` still shadows the enable-and-disable toggles and still elides the redundant ones.* — polygon mode, scissor, viewport and program are not shadowed (GlStateManager.java:368-371, 56-58, 479-481, 195-198)
+58. `rendering/blaze3d`:32 — *| the static holder: the device, the render thread, the frame's shared uniforms and buffers |* — now *| the static holder: the device, the Render thread, the frame's shared uniforms and buffers |* — V7; many builders on workers from one call site (SectionCompiler.java:131-141)
+59. `rendering/blaze3d`:39 — *| vertex data — on the render thread, except the one instance chunk meshing runs |* — now *| vertex data — on the Render thread, except the builders chunk meshing runs on workers |* — V7; many builders on workers from one call site (SectionCompiler.java:131-141)
+60. `rendering/blaze3d`:87 — *Everything else the device creates, and it answers for the hardware too* — now *Everything else the device creates, or its encoder does, and the device answers for the hardware too* — a RenderPass comes from the encoder (CommandEncoder.java:41)
+61. `rendering/blaze3d`:91 — *a `DeviceLimits` whose `DeviceLimits.maxMemoryAllocationSize` caps the window size.* — now *a `DeviceLimits` whose `DeviceLimits.maxTextureSize`, and what its `DeviceLimits.maxMemoryAllocationSize` can hold, cap the window size.* — the window cap is maxTextureSizeForFormat: the smaller of maxTextureSize and what the allocation limit holds (DeviceLimits.java:7-8; Minecraft.java:546, 549)
+62. `rendering/blaze3d`:98 — *and flags AMD for anisotropy problems, both of which change how the game uploads and filters.* — now *and flags AMD for anisotropy problems: the first changes how the game uploads, the second which filtering a graphics preset picks.* — the AMD flag only steers a graphics preset's filtering (GraphicsPreset.java:96-100); the D3D12 hint picks the staging path (StagingBuffer.java:20)
+63. `rendering/blaze3d`:131 — *it guards `RenderSystem`'s own mutable statics and the GL- and SDL-facing classes, while* — now *it guards `RenderSystem`'s own mutable statics, the GL- and SDL-facing classes, the render targets and one texture helper, while* — four of the nine are render targets and a texture helper (RenderTarget, MainTarget, TextureTarget, TextureUtil)
+64. `rendering/blaze3d`:145 — *Vulkan gets the same treatment and the same two exemptions: outside `com/mojang/renderpearl/backend/vulkan`, exactly two files import its bindings, and they are the …* — now *Vulkan gets nearly the same treatment: outside `com/mojang/renderpearl/backend/vulkan`, exactly two files import its bindings — the same native-library bootstrap, and `FrontendRenderPass`, which …* — OpenGL has one outside importer (NativeLibrariesBootstrap.java:44); FrontendRenderPass is a Vulkan import in the neutral frontend with no OpenGL counterpart (FrontendRenderPass.java:33-34)
+65. `rendering/blaze3d`:184 — *a `RenderPipeline.getLocation` identity,* — now *a `RenderPipeline.getLocation` name,* — locations are shared by three item pipelines (RenderPipelines.java:129-131); identity is the object (PipelineCache.java:17)
+66. `rendering/blaze3d`:193 — *Blending is a named `BlendFunction` (`BlendFunction.TRANSLUCENT`, `BlendFunction.ADDITIVE`…) rather than a pair of loose factors, and `RenderPipeline.Builder.build` refuses a pipeline whose colour targets …* — now *Blending is a `BlendFunction` record, most often a named one (`BlendFunction.TRANSLUCENT`, `BlendFunction.ADDITIVE`…), rather than factors set on the device, and `RenderPipeline.Builder.build` refuses …* — BlendFunction is itself a record of factor equations; three pipelines build one inline (RenderPipelines.java:212-214); only blended targets are compared (RenderPipeline.java:373-384)
+67. `rendering/blaze3d`:222 — *`GpuBuffer` and `GpuBufferSlice` with usage bits (`GpuBuffer.USAGE_VERTEX`, `GpuBuffer.USAGE_UNIFORM`, `GpuBuffer.USAGE_MAP_WRITE`…), `GpuTexture` and `GpuTextureView` with theirs,* — now *`GpuBuffer` with usage bits (`GpuBuffer.USAGE_VERTEX`, `GpuBuffer.USAGE_UNIFORM`, `GpuBuffer.USAGE_MAP_WRITE`…) and `GpuBufferSlice` over it, `GpuTexture` with its own and `GpuTextureView` over it,* — usage bits are on GpuBuffer and GpuTexture only (GpuBuffer.java:11-20; GpuTexture.java:12-16)
+68. `rendering/blaze3d`:234 — *### The ring, and the one block every shader gets for free* — now *### The ring, and the blocks every shader gets for free* — FALSE HEADING (no inbound links): bindDefaultUniforms binds four blocks (RenderSystem.java:383-407), as the figure's arrow 7 says
+69. `rendering/blaze3d`:243 — *`FogRenderer.regularBuffer` is a second ring rotated the same way at the end of the same frame,* — now *`FogRenderer.regularBuffer` is a second ring, rotated the same way once the world has been drawn,* — the fog ring rotates once the world is drawn (GameRenderer.java:531 -> FogRenderer.java:82-84)
+70. `rendering/blaze3d`:246 — *The first of those is the *Globals* block `RenderSystem.bindDefaultUniforms` puts in front of every draw in the game, and its seven members …* — now *The first of those is the *Globals* block, one of the four `RenderSystem.bindDefaultUniforms` puts in front of every draw but the two …* — four default blocks; the INTEGRATE_DEPTH passes bind none (GameRenderer.java:824-829; LevelRenderer.java:529-533)
+71. `rendering/blaze3d`:(rewritten again by the audit) — *That is the whole of what a shader may know without being told, which is why [a post chain that wants something …* — now *Those four blocks are the whole of what a shader may know without being told, which is why [a post chain that …* — four default blocks; the INTEGRATE_DEPTH passes bind none (GameRenderer.java:824-829; LevelRenderer.java:529-533)
+72. `rendering/blaze3d`:270 — *Most `BufferBuilder`s are on the render thread like everything else here; the exception is the one that matters most for throughput, because …* — now *Most `BufferBuilder`s are on the Render thread like everything else here; the exception is the use that matters most for throughput, because …* — chunk meshing builders: many, on workers, except a synchronous compile's (SectionCompiler.java:137; SRD:353)
+73. `rendering/blaze3d`:311 — *Every drawing class comes through this one shape: `LevelRenderer`, `GuiRenderer`, `FeatureRenderDispatcher`, `Lightmap`, `TextureAtlas`.* — now *Every drawing class comes through this one shape — `LevelRenderer`, `GuiRenderer`, `Lightmap`, `TextureAtlas` — or joins it halfway, handed a pass someone …* — FeatureRenderDispatcher is handed a pass (FeatureRenderDispatcher.java:115)
+74. `rendering/blaze3d`:356 — *compiling on a miss while the render thread waits.* — now *compiling on a miss while the Render thread waits.* — V7
+75. `rendering/blaze3d`:359 — *each pipeline finished on the render thread* — now *each pipeline finished on the Render thread* — V7
+76. `rendering/blaze3d`:154 — *Graphics is not all of it either, and neither is the render thread:* — now *Graphics is not all of it either, and neither is the Render thread:* — V7
+77. `rendering/blaze3d`:368 — *dynamic rendering replaces the framebuffer bind, push descriptors the uniform binding, and the swapchain lives in `VulkanGpuSurface`.* — now *dynamic rendering replaces the framebuffer bind, and push descriptors the uniform binding.* — K handoff: the OpenGL trace has no surface; the swapchain clause moves to the presentation section (VulkanGpuSurface.java)
+78. `rendering/blaze3d`:377 — *OpenGL offers a fixed pair of modes, Vulkan whatever the driver enumerates,* — now *OpenGL offers a fixed pair of modes, Vulkan whatever the driver enumerates for the swapchain `VulkanGpuSurface` owns,* — K handoff: the OpenGL trace has no surface; the swapchain clause moves to the presentation section (VulkanGpuSurface.java)
+79. `rendering/visibility-and-the-frame-graph`:21 — *so everything else the extractor does that frame — entities, block entities, dirty sections alike — is already reading the list of …* — now *so the two things the extractor later takes from that list — the dirty sections and the block entities — are already …* — entities never read visibleSections: isEntityVisible = dispatcher frustum + isSectionCompiledAndVisible look-up (LevelExtractor.java:288-299; LevelRenderer.java:1407-1415); only dirty sections (:176-186) and block entities (:313) read the list
+80. `rendering/visibility-and-the-frame-graph`:31 — *| `LevelRenderer` | which sections are visible, which passes the frame declares, and how terrain is finally drawn | Render thread |* — now *| `LevelRenderer` | which passes the frame declares, and how terrain is bucketed and finally drawn — it holds the visible list …* — cast: LevelRenderer holds the list, the extractor fills it (LevelExtractor.java:518-519); the bucketing is LevelRenderer.extractSectionDrawGroups (:830-915)
+81. `rendering/visibility-and-the-frame-graph`:38 — *| `ChunkSectionsToRender` | one bucket per buffer set, so sections that share buffers share a binding | Render thread |* — now *| `ChunkSectionsToRender` | how the bucketed terrain is issued: one indirect draw per bucket, or one multi-draw per layer | Render thread …* — cast: LevelRenderer holds the list, the extractor fills it (LevelExtractor.java:518-519); the bucketing is LevelRenderer.extractSectionDrawGroups (:830-915)
+82. `rendering/visibility-and-the-frame-graph`:97 — *and then read for free thousands of times a frame.* — now *and then read for free by every walk that passes through it.* — VisibilitySet read only by a walk (SectionOcclusionGraph.java:324, 210)
+83. `rendering/visibility-and-the-frame-graph`:(rewritten again by the audit) — *Everything else happens on the client thread,* — now *Everything else happens on the Render thread,* — V7 thread name
+84. `rendering/visibility-and-the-frame-graph`:385 — *`SectionOcclusionGraph.runPartialUpdate` for the only part of it on the client thread.* — now *`SectionOcclusionGraph.runPartialUpdate` for the only part of it on the Render thread.* — V7 thread name
+85. `rendering/visibility-and-the-frame-graph`:128 — *smart cull adds a ray march *back toward the camera* from the neighbour being considered, and rejects that neighbour* — now *smart cull adds a ray march *back toward the camera* from the section being stepped out of, and rejects the neighbour* — the march starts from a corner of the section being stepped out of (SectionOcclusionGraph.java:292, 336-343)
+86. `rendering/visibility-and-the-frame-graph`:152 — *so a block you place behind you costs nothing until the walk reaches that section again;* — now *so a block that changes behind you costs nothing until you turn and the frustum lets its section back into the list;* — a section behind you is normally reached by the walk and cut by the frustum (SectionOcclusionGraph.java:119-133, 284-381)
+87. `rendering/visibility-and-the-frame-graph`:165 — *That is `SectionOcclusionGraph.invalidateIfNeeded`, and what it schedules is the full off-thread rebuild.* — now *That is `SectionOcclusionGraph.invalidateIfNeeded`, and what it asks for is the full off-thread rebuild, which `SectionOcclusionGraph.update` then schedules.* — invalidateIfNeeded only raises needsFullUpdate; update schedules (SectionOcclusionGraph.java:98-110, 160-161)
+88. `rendering/visibility-and-the-frame-graph`:201 — *and one depth target when an always-on-top gizmo is drawn while a post effect runs.* — now *and one depth target when an always-on-top gizmo is drawn while a post effect runs; the outline chain, in a frame that …* — the outline chain's swap target is a ninth createInternal in an outline frame (PostChain.java:326; entity_outline.json)
+89. `rendering/visibility-and-the-frame-graph`:219 — *SKY["sky — LevelRenderer.addSkyPass"]* — now *SKY["sky — LevelRenderer.addSkyPass, if drawn"]* — figure 2: the sky pass is conditional (LevelRenderer.java:238, 359, 370)
+90. `rendering/visibility-and-the-frame-graph`:311 — *the [same ring the dirty flags live in](section-meshing.md#the-flag-belongs-to-a-slot-not-to-a-section),* — now *the [same kind of ring the dirty flags live in](section-meshing.md#the-flag-belongs-to-a-slot-not-to-a-section),* — ViewArea and SectionUpdateTracker are two instances of one class (ViewArea.java:14, 25; SectionUpdateTracker.java:12, 15)
+91. `rendering/visibility-and-the-frame-graph`:358 — *crossing a section boundary changes it, and wandering about inside one does not.* — now *crossing a section boundary changes it only for the sections in the two slabs that boundary separates, and wandering about inside one …* — crossing a boundary changes the clamped value only for the two slabs it separates (TranslucencyPointOfView.java:27-31)
+92. `rendering/visibility-and-the-frame-graph`:359 — *`TranslucencyPointOfView.isAxisAligned` is the same record answering* — now *`TranslucencyPointOfView.isAxisAligned` is the same object answering* — TranslucencyPointOfView is a mutable final class, not a record (TranslucencyPointOfView.java:7, 21)
+93. `rendering/visibility-and-the-frame-graph`:(rewritten again by the audit) — *which reorders the existing mesh rather than recompiling it —* — now *which reorders the existing mesh rather than recompiling it, and does nothing when the section's view has not changed and no axis …* — the task cancels without re-sorting when the view is unchanged and the section is not axis-aligned (SectionRenderDispatcher.java:488-491)
+94. `rendering/section-meshing`:5 — *You right-click a block into place and it is simply *there* — no shimmer, no gap, no frame in which the wall …* — now *You right-click a block into place and one frame later it is simply *there* — no shimmer, no fade, and never a …* — HOOK (E, J, K handoffs; agent): default preset FANCY applied at every start (Options.java:889; Minecraft.java:584) sets PrioritizeChunkUpdates.PLAYER_AFFECTED (GraphicsPreset.java:63); your own placement is setBlock(...,11), bit 8 (BlockItem.java:155; LevelExtractor.java:565), so compileSync on the Render thread with the fixed pack (LevelRenderer.java:1117-1125; SRD:350-354), after frame.execute (LevelRenderer.java:263 < 283) and uploaded in the same frame (:290); server writes arrive at flags 19 (CPL:898, :1007). A click places at the crosshair, in the frustum, so "place a block behind you" becomes "let a block change behind you".
+95. `rendering/section-meshing`:28 — *| `SectionCompiler` | the block-by-block walk that turns a snapshot into vertices | `Util.backgroundExecutor` |* — now *| `SectionCompiler` | the block-by-block walk that turns a snapshot into vertices | the worker pool, or the Render thread for a …* — cast: SectionCompiler and BlockModelLighter also run on the Render thread for every compileSync (SRD:353)
+96. `rendering/section-meshing`:29 — *| `BlockModelLighter` | smooth lighting and ambient occlusion, per quad, as the walk goes | `Util.backgroundExecutor` |* — now *| `BlockModelLighter` | smooth lighting and ambient occlusion, per quad, as the walk goes | the worker pool, or the Render thread …* — cast: SectionCompiler and BlockModelLighter also run on the Render thread for every compileSync (SRD:353)
+97. `rendering/section-meshing`:47 — *LX->>SUT: dirty over a 3x3x3 block halo, one to eight sections* — now *LX->>SUT: setDirty over a 3x3x3 block halo, one to eight sections* — figure: the tracker's method is setDirty (SectionUpdateTracker.java:20); the swap needs every layer uploaded, not staged (SRD:393-404)
+98. `rendering/section-meshing`:63 — *LR->>SRD: uploadTerrainBuffersToGpu, whose callback swaps in each fully staged mesh* — now *LR->>SRD: uploadTerrainBuffersToGpu, whose callback swaps in each fully uploaded mesh* — figure: the tracker's method is setDirty (SectionUpdateTracker.java:20); the swap needs every layer uploaded, not staged (SRD:393-404)
+99. `rendering/section-meshing`:70 — *an asynchronous one at the end of whichever frame's upload finds all of it staged.** — now *an asynchronous one at the end of whichever frame uploads the last of it.** — figure: the tracker's method is setDirty (SectionUpdateTracker.java:20); the swap needs every layer uploaded, not staged (SRD:393-404)
+100. `rendering/section-meshing`:76 — *and an empty mesh is published by the worker that found it empty.* — now *and an empty mesh is published by whichever thread compiled it.* — the empty mesh is published on the thread running doTask (SRD:612-613, via :353 for sync)
+101. `rendering/section-meshing`:81 — *`MultiPlayerGameMode` owns the prediction sequence — the client places the block itself and remembers what it assumed — but* — now *`MultiPlayerGameMode` starts the prediction — the client places the block itself, and its level remembers the state the server last confirmed, to …* — the prediction sequence and the remembered state are ClientLevel's BlockStatePredictionHandler, which keeps the server-verified state (MultiPlayerGameMode.java:299-304; BlockStatePredictionHandler.java:21-24, 38-52)
+102. `rendering/section-meshing`:84 — *From the renderer's side it makes no difference whether the change came from your own hand or from the server; [what the …* — now *From the renderer's side the one difference is a flag: your own write carries the player-changed bit and the server's does not. …* — your own write carries bit 8, the server's does not (BlockItem.java:155; ClientPacketListener.java:898, :1007 -> setServerVerifiedBlockState, ClientLevel.java:214-218)
+103. `rendering/section-meshing`:110 — *so a state change no model reacts to marks nothing through that route — but it is not the route a placed …* — now *so a state change no model reacts to marks nothing through that route — but it cannot stop a placed block. `Level.setBlock` …* — self-contradiction: a placed block takes both routes (Level.java:227-233)
+104. `rendering/section-meshing`:148 — *A compile runs for an unbounded time on a worker while the Render thread keeps applying block updates,* — now *A compile on a worker runs for an unbounded time while the Render thread keeps applying block updates,* — "on a worker" is the async branch's
+105. `rendering/section-meshing`:168 — *## The queue, and the scratch buffer that is the real throttle* — now *## The queue, and the scratch buffer every compile must hold* — FALSE HEADING (no inbound links: grep of src/ for the anchor): the section's own conclusion is that the thread count is the constraint (pool = min(processors, memory share), GameRenderer.java:153, SectionBufferBuilderPool.java:22-23; threads = processors - 1, Util.java:264-265)
+106. `rendering/section-meshing`:187 — *The throttle is not the thread count. Each task-runner must acquire a* — now *A thread is not enough. Each task-runner must also acquire a* — FALSE HEADING (no inbound links: grep of src/ for the anchor): the section's own conclusion is that the thread count is the constraint (pool = min(processors, memory share), GameRenderer.java:153, SectionBufferBuilderPool.java:22-23; threads = processors - 1, Util.java:264-265)
+107. `rendering/section-meshing`:197 — *the catch that implements it covers the whole compile, so *any* null-pointer failure inside the mesher quietly requeues the section rather than …* — now *the catch that implements it covers the whole compile. A failure while one block is being tesselated is reported, as a crash; …* — per-block failures are reported as a crash (SectionCompiler.java:100-105 -> ReportedException -> SRD:103-104 delayCrash); an NPE elsewhere requeues and skips the pack's release (SRD:89-102)
+108. `rendering/section-meshing`:204 — *The ceiling on how many meshes exist at once is therefore the pool **plus one**:* — now *The ceiling on how many compiles run at once is therefore the pool **plus one**:* — pool + 1 bounds compiles in flight, not meshes (SRD:89-99, 353)
+109. `rendering/section-meshing`:234 — *But the mesher can overrule it in two places.* — now *But the mesher overrules it in one place, and fluids take a road of their own.* — only forceOpaque overrules the baked layer; the fluid's layer is baked too (FluidModel.java:26)
+110. `rendering/section-meshing`:(rewritten again by the audit) — *a section that compiled to nothing at all is published directly on the worker, because there is nothing to upload.* — now *a section that compiled to nothing at all is published directly by the thread that compiled it, because there is nothing to …* — the empty-mesh publish is on the compiling thread (SRD:612-613)
+111. `rendering/section-meshing`:279 — *the price being that the section you can see is, for a few frames, deliberately out of date.* — now *the price being that the section you can see is, for a frame or more, deliberately out of date.* — a synchronous compile is out of date for one frame
+112. `rendering/section-meshing`:294 — *> **For a 1.21-era reader.** The whole dirty API moved. Every > *setBlockDirty*-shaped method that used to live on `LevelRenderer` is now …* — now *> **For a 1.21-era reader.** The whole dirty API moved: every > *setBlockDirty*-shaped method on `LevelRenderer` is now on `LevelExtractor`, > in …* — blockquote against the 1.21.11 tree (V13 <= 8 lines): SectionRenderDispatcher, CompiledSectionMesh, RenderSectionRegion already exist in 1.21.11 (not drift); getShade's successor is BlockAndTintGetter.cardinalLighting (26.3 client/renderer/block/BlockAndTintGetter.java:59); 1.21.11 has LiquidBlockRenderer, BlockRenderDispatcher, ChunkSectionLayer.TRIPWIRE, world/level/BlockAndTintGetter.getShade, and no SectionUpdateTracker
+113. `rendering/models-and-atlases`:9 — *and were still re-listed, re-parsed, re-resolved and re-baked, because the sprite they point at is now a different object at different coordinates …* — now *and were still re-listed, re-parsed, re-resolved and re-baked: nothing in the reload asks what changed, and the sprite they point at is …* — the reload has no change detection (ModelManager.java:102-144); the sprite object is new each reload (SpriteLoader.java:166) but a same-size replacement lands where the old one was (Stitcher.java:15-21)
+114. `rendering/models-and-atlases`:14 — *Every block face, every item sprite and every particle texture starts as JSON and a PNG in a pack* — now *Every block face, every item sprite and every particle texture starts as a PNG in a pack, and most of them as …* — fluid faces take hard-coded materials, and BuiltInBlockModels is code (FluidStateModelSet.java:15-16; ModelManager.java:108-110)
+115. `rendering/models-and-atlases`:25 — *| workers, then the Render thread at apply |* — now *| the Render thread to start and to apply, workers between |* — cast: the reload body runs on the Render thread (ModelManager.java:102-144); the rotation is UnbakedCuboidGeometry's (:83)
+116. `rendering/models-and-atlases`:(rewritten again by the audit) — *| a quad's UVs, its rotated cull face, and its chunk layer |* — now *| a quad's UVs, their rotation, and its chunk layer |* — cast: the reload body runs on the Render thread (ModelManager.java:102-144); the rotation is UnbakedCuboidGeometry's (:83)
+117. `rendering/models-and-atlases`:87 — *and each is a definition file in *atlases/*, not a folder scan.* — now *and each is a definition file in *atlases/*, read from every pack that ships one, not a folder scan.* — an atlas definition is a stack across packs (SpriteSourceList.java:86-97); overwrite-by-id redirects; a PNG shadows (DirectoryLister.java:21-24)
+118. `rendering/models-and-atlases`:90 — *and a later source overwrites an earlier one by id, which is how a pack replaces a vanilla texture blind.* — now *and a later source overwrites an earlier one by id, which is how a pack's own definition file redirects a sprite; replacing …* — an atlas definition is a stack across packs (SpriteSourceList.java:86-97); overwrite-by-id redirects; a PNG shadows (DirectoryLister.java:21-24)
+119. `rendering/models-and-atlases`:100 — *The mip level is clamped to the smallest sprite's power of two, with a warning, so **one undersized texture degrades mipmapping for …* — now *The mip level is clamped by the lowest set bit of each sprite's width and height, with a warning, so **one undersized …* — the clamp is the lowest set bit of each sprite's size (SpriteLoader.java:67-71); the slider triggers a full reload when the screen closes (VideoSettingsScreen.java:172-175; Minecraft.java:2884-2888)
+120. `rendering/models-and-atlases`:107 — *it writes the new level onto `AtlasManager` and schedules a texture reload, so every sprite in the game is decoded and stitched …* — now *it writes the new level onto `AtlasManager` and asks for a full resource reload when the video settings close, so every sprite …* — the clamp is the lowest set bit of each sprite's size (SpriteLoader.java:67-71); the slider triggers a full reload when the screen closes (VideoSettingsScreen.java:172-175; Minecraft.java:2884-2888)
+121. `rendering/models-and-atlases`:117 — *### The handshake that lets two listeners share a future* — now *### The handshake that lets listeners share a future* — FALSE HEADING (no inbound links): ParticleResources awaits the particles atlas through PENDING_STITCH too (ParticleResources.java:222-223) (K handoff)
+122. `rendering/models-and-atlases`:119 — *Reload listeners are not supposed to reach into each other, and this pair has to:* — now *Reload listeners are not supposed to reach into each other, and these have to:* — FALSE HEADING (no inbound links): ParticleResources awaits the particles atlas through PENDING_STITCH too (ParticleResources.java:222-223) (K handoff)
+123. `rendering/models-and-atlases`:127 — *from inside its own prepare, which is what lets baking overlap stitching instead of queueing behind it.* — now *from inside its own prepare, which lets loading and resolving the models overlap the stitching even though the bake waits for it. …* — B handoff: the bake waits on the two stitches; loading and resolving the models overlaps them (ModelManager.java:105-124)
+124. `rendering/models-and-atlases`:141 — *A model whose parents never reach a root is logged and excluded,* — now *A model whose parent chain loops is logged and excluded, one whose parent is missing inherits from the missing model,* — a missing parent resolves to the missing model; only a loop is excluded (ModelDiscovery.java:43-53, 108, 118-127)
+125. `rendering/models-and-atlases`:175 — *Two tables come out of a bake because there are two interfaces,* — now *Two block tables come out of a bake because there are two interfaces,* — two block tables; four lookups in all (ModelManager.java:319-325)
+126. `rendering/models-and-atlases`:190 — *the item `RenderType`, the tint index, shade and light emission. Three decisions land here and not later.* — now *the item `RenderType` and its two glint variants, the tint index, shade and light emission. Three things are settled here and not …* — MaterialInfo also holds the two glint render types (BakedQuad.java:70); the tint index is settled, the colour put off
+127. `rendering/models-and-atlases`:(rewritten again by the audit) — *so the mesher and `ItemStackRenderState` can decide whether they need sorting or re-uploading without reading a quad.* — now *so the renderers that draw a model outside the terrain mesh — the block outline, moving blocks, the breaking overlay, the display …* — SectionCompiler never reads the material flags; the readers are the outline, moving blocks, breaking overlay and display/item models (LevelExtractor.java:401; SubmitNodeCollection.java:247; LevelRenderer.java:1200; BlockStateModelWrapper.java:29)
+128. `rendering/models-and-atlases`:209 — *and `ChunkSectionLayer.byTransparency` reads them in that order:* — now *and `ChunkSectionLayer.byTransparency` reads them the other way round:* — byTransparency tests hasTranslucent first (ChunkSectionLayer.java:28); the item type comes from hasTranslucent and the sprite's atlas (BakedQuad.java:78-86)
+129. `rendering/models-and-atlases`:(rewritten again by the audit) — *The same two booleans pick the item render type out of `Sheets`, which is where the four block-and-item sheets live.* — now *The item render type comes out of `Sheets` too, chosen by the partial alpha alone and by the atlas the sprite is …* — byTransparency tests hasTranslucent first (ChunkSectionLayer.java:28); the item type comes from hasTranslucent and the sprite's atlas (BakedQuad.java:78-86)
+130. `rendering/models-and-atlases`:237 — *| a blockstate file will not parse | that block's states are dropped |* — now *| a blockstate file will not parse | that pack's copy is skipped and a lower pack's used; with none left, the …* — a broken blockstate file drops only that pack's copy (BlockStateModelLoader.java:42, 72, 89, 96, 127); a missing parent is not excluded
+131. `rendering/models-and-atlases`:239 — *| a model's parent chain never reaches a root | the model is logged and excluded | | the parent chain is …* — now *| a model's parent is missing | the missing model stands in as its parent | | the parent chain is a …* — a broken blockstate file drops only that pack's copy (BlockStateModelLoader.java:42, 72, 89, 96, 127); a missing parent is not excluded
+132. `rendering/models-and-atlases`:247 — *The startup sweep that would catch the atlas-membership case up front, `Minecraft.selfTest`, **only runs in a development environment**, and there it throws …* — now *The atlas-membership case is caught only at the moment a model is baked, and quietly. `Minecraft.selfTest`, the startup sweep that throws rather …* — selfTest checks no atlas (Minecraft.java:1103-1150); membership is checked at bake and warned (SimpleModelWrapper.java:31-35)
+133. `rendering/models-and-atlases`:261 — *The Render thread has done exactly one thing since the reload began — `AtlasManager.prepareSharedState`, the handshake above, before any task ran — …* — now *The Render thread started the reload — every listener's shared state, `AtlasManager.prepareSharedState` among them, then every listener's reload, which scheduled the work …* — the Render thread called every listener's prepareSharedState and reload (SimpleReloadInstance.java:69-83) (K handoff; the figure's HS)
+134. `rendering/models-and-atlases`:267 — *and it registers the checkerboard `MissingTextureAtlasSprite` at construction.* — now *and it registers a checkerboard texture at `MissingTextureAtlasSprite`'s location at construction.* — it registers a DynamicTexture of the checkerboard at the missing sprite's location (TextureManager.java:37-41)
+135. `rendering/models-and-atlases`:287 — *builds a new `SectionCompiler` from the new model sets and queues every section for re-meshing* — now *builds a new `SectionCompiler` from the new model sets and replaces every section with a fresh, uncompiled one, each re-meshed as it …* — invalidateCompiledGeometry replaces the sections with fresh uncompiled ones (LevelRenderer.java:1317-1343)
+136. `rendering/models-and-atlases`:294 — *with the HUD, `LevelExtractor` and `FeatureRenderDispatcher` covering the rest.* — now *with the HUD, `LevelExtractor`, `FeatureRenderDispatcher` and the display table's own fallback covering the rest.* — invalidateCompiledGeometry replaces the sections with fresh uncompiled ones (LevelRenderer.java:1317-1343)
+137. `rendering/models-and-atlases`:304 — *Every `ItemStack` carries `DataComponents.ITEM_MODEL` — an `Identifier`, nothing else — and that id is the whole decision:* — now *An `ItemStack` names its model in `DataComponents.ITEM_MODEL` — an `Identifier`, nothing else, and a stack without one draws nothing — and that …* — the resolver guards a null component and draws nothing (ItemModelResolver.java:49-51); EmptyModel appends no layer
+138. `rendering/models-and-atlases`:313 — *which appends one or more layers to an `ItemStackRenderState`.* — now *which appends the layers it draws to an `ItemStackRenderState`.* — the resolver guards a null component and draws nothing (ItemModelResolver.java:49-51); EmptyModel appends no layer
+139. `rendering/models-and-atlases`:316 — *whose two visible flags are whether the item plays* — now *whose two flags are whether the item plays* — ClientItem.Properties has two booleans and a float (ClientItem.java:23)
+140. `rendering/models-and-atlases`:322 — *only one of them, `CuboidItemModelWrapper`, draws anything by itself.* — now *only one of them, `CuboidItemModelWrapper`, draws quads of its own.* — SpecialModelWrapper appends a layer of its own; only the cuboid wrapper draws quads of its own
+141. `rendering/models-and-atlases`:(rewritten again by the audit) — *is where those thirteen get their geometry).* — now *is where eleven of those thirteen borrow their geometry).* — shield and trident are not block entities; eleven of thirteen borrow from blockentity (block-entity-rendering's own count)
+142. `rendering/models-and-atlases`:350 — *Two of them keep state, which nothing else in the baking pipeline does. A compass is a `NeedleDirectionHelper`, and its needle is …* — now *Three of them keep state, which nothing else in the baking pipeline does. A compass and a clock are each a `NeedleDirectionHelper`, …* — three stateful properties: CompassAngle, Time, LocalTime; the state is per baked model, not per stack; a compass damps only for the local player (CompassAngle.java:14; Time.java:14; CompassAngleState.java:61; NeedleDirectionHelper.java:50-58)
+143. `rendering/models-and-atlases`:366 — *One rule is enforced here and nowhere else.* — now *One rule is enforced here.* — the block-atlas rule is also enforced in MissingModels.bake (ModelBakery.java:179-182)
+144. `rendering/models-and-atlases`:377 — *so a laggy client advances every animation by one frame however many ticks it just owed.* — now *so a laggy client advances every animation by one tick however many ticks it just owed.* — one tick of animation time, not a frame (SpriteContents.java:364-373)
+145. `rendering/models-and-atlases`:388 — *makes the game dump one at upload time too, without the keypress.* — now *makes every atlas dump itself at each upload too, without the keypress.* — every atlas dumps at every upload (TextureAtlas.java:157-166)
+146. `rendering/models-and-atlases`:391 — *> **For a 1.21-era reader.** This subsystem was renamed and re-packaged > wholesale: > > | you will hunt for | it …* — now *> **For a 1.21-era reader.** *BlockModelShaper* is now `BlockStateModelSet`; > *BlockElement* and *BlockElementFace* are `CuboidModelElement` and > `CuboidFace`; *BlockModelDefinition* is `BlockStateModelDispatcher`; and …* — blockquote against 1.21.11 (V13 <= 8 lines): BlockModelShaper, BlockElement, BlockElementFace, BlockModelDefinition, BlockRenderDispatcher, ItemRenderer and a JSON BlockModel are 1.21.11's; BakedModel, ModelResourceLocation, WeightedBakedModel, AtlasSet, ItemModelShaper, ItemColors, SpriteTicker are in neither tree
+147. `rendering/entity-rendering`:(rewritten again by the audit) — *each handing the next a value object rather than a shared one:* — now *each handing the next a description rather than the live mob:* — submit nodes carry the shared Model; the state is the value copy (ModelFeatureRenderer.java:50) -- a description, not the live mob
+148. `rendering/entity-rendering`:9 — *the descriptions are sorted and batched, and only then does anything write a vertex. Which is why `EntityRenderer` has no *render* method …* — now *the descriptions are grouped and the translucent ones sorted, and only then does anything write a vertex. Which is why `EntityRenderer` has …* — only translucent phases sort (SimpleFeatureRenderPhase.java:44-69) (K handoff); the feature renderers do draw, at execute (RenderTypeFeatureRenderer.java:58-73)
+149. `rendering/entity-rendering`:70 — *a map the dispatcher builds once from `EntityRenderers`,* — now *a map the dispatcher rebuilds on every resource reload from `EntityRenderers`,* — the map is rebuilt on every resource reload (EntityRenderDispatcher.java:210-216)
+150. `rendering/entity-rendering`:82 — *The third — "is the section this entity stands in actually compiled and visible" — belongs to `LevelExtractor`, which is [the reachability …* — now *The third — "is the section this entity stands in compiled and faded in" — belongs to `LevelExtractor`, which asks `LevelRenderer` to …* — the third test is a look-up of the entity's own section (LevelRenderer.isSectionCompiledAndVisible, :1407-1414; LevelExtractor.java:298), not the walk's list (K handoff)
+151. `rendering/entity-rendering`:85 — *Block entities keep the distance half and drop the frustum, which is [block-entity rendering](block-entity-rendering.md#culling-by-section-not-by-frustum)'s first difference.* — now *Block entities keep the distance half and meet the frustum only with their section, which is [the first difference block-entity rendering](block-entity-rendering.md#culling-by-section-not-one-by-one) makes.* — block entities are frustum-tested with their section (visibleSections is frustum-trimmed); the BER heading is corrected in the same commit; V8
+152. `rendering/entity-rendering`:90 — *`DisplayRenderer` is the largest file in the package for the same reason the entity is unusual:* — now *`DisplayRenderer` is large for the same reason the entity is unusual:* — DisplayRenderer is fourth by size in its package (wc -l: EntityRenderer 397, LivingEntityRenderer 380, EntityRenderers 317, DisplayRenderer 313)
+153. `rendering/entity-rendering`:96 — *each of which is drawn because something *else* in view is attached to it.* — now *each of which is drawn for what it is attached to.* — an end crystal is drawn whenever it has a beam target, in view or not (EndCrystalRenderer.java:76)
+154. `rendering/entity-rendering`:124 — *that method returns full brightness for a burning entity.* — now *that method returns full block light for a burning entity.* — burning is full block light; sky light is still sampled (EntityRenderer.java:52-64); shadow quads are built two stages later (ShadowFeatureRenderer.java:25-35)
+155. `rendering/entity-rendering`:126 — *so that the feature renderer three stages later only has to turn them into quads.* — now *so that the feature renderer two stages later only has to turn them into quads.* — burning is full block light; sky light is still sampled (EntityRenderer.java:52-64); shadow quads are built two stages later (ShadowFeatureRenderer.java:25-35)
+156. `rendering/entity-rendering`:(rewritten again by the audit) — *`UndeadRenderState` what the undead share, `ZombieRenderState` two flags of its own. The player sits off the ladder in `AvatarRenderState`.* — now *`UndeadRenderState` one overridden rule the undead share, `ZombieRenderState` two flags of its own. The player's `AvatarRenderState` branches off the humanoid rung beside …* — UndeadRenderState adds no field (UndeadRenderState.java); AvatarRenderState extends HumanoidRenderState (AvatarRenderState.java:9)
+157. `rendering/entity-rendering`:163 — *and, besides the creeper, only a primed TNT minecart and the sulfur cube's inner layer.* — now *and, besides the creeper, only primed TNT, a primed TNT minecart and the sulfur cube's inner layer.* — primed TNT uses the white flash too (TntRenderer.java:39); the overlay is written into the vertex at prepare (ModelFeatureRenderer.java:47)
+158. `rendering/entity-rendering`:165 — *and lands, at execute, as a **per-vertex attribute**.* — now *and lands, at prepare, as a **per-vertex attribute**.* — primed TNT uses the white flash too (TntRenderer.java:39); the overlay is written into the vertex at prepare (ModelFeatureRenderer.java:47)
+159. `rendering/entity-rendering`:208 — *— nine of the thirteen kinds of node the storage can hold, the other four being moving blocks, breaking overlays, shape outlines …* — now *— between them eight of the twelve kinds of node the storage can hold, since text and name tags make the same …* — twelve FeatureRendererType constants (FeatureRenderDispatcher.java:45-56); submitText and submitNameTag make one kind; breaking overlays are model or block-model nodes (SubmitNodeCollection.java:137-140, 176-177, 240, 296)
+160. `rendering/entity-rendering`:245 — *and from replaying the animation at draw time.* — now *and from replaying the animation at prepare time.* — the pose is replayed at prepare (ModelFeatureRenderer.java:46)
+161. `rendering/entity-rendering`:252 — *the type map has no entry for the player or the mannequin, and the dispatcher keeps two avatar maps, wide and slim, …* — now *the type map has no entry for the player or the mannequin, and the dispatcher keeps two avatar maps, one for players …* — two avatar maps: players and mannequins, each keyed wide and slim (EntityRenderDispatcher.java:46-47, 106-111)
+162. `rendering/entity-rendering`:280 — *value — the four textures, the arm width and the secure flag — read off the tab-list entry rather than off the …* — now *value — three textures, the arm width and the secure flag — read, for a player, off the tab-list entry rather than …* — PlayerSkin has three textures (PlayerSkin.java:12); a mannequin's skin is on the entity (ClientMannequin.java:24, 82-84) (H handoff)
+163. `rendering/entity-rendering`:286 — *`PlayerModelType` is the one piece that never reaches the state, because the dispatcher used it earlier — it is the key into …* — now *`PlayerModelType` is the arm width inside that record, and the dispatcher reads it back out of the state at submit as the …* — PlayerModelType rides in the record and is re-read at submit (EntityRenderDispatcher.java:113-121)
+164. `rendering/entity-rendering`:289 — *`SkinManager` and `SkinTextureDownloader` through a `PlayerSkinRenderCache`, with `DefaultPlayerSkin` standing in until one does.* — now *`SkinManager` and `SkinTextureDownloader`, with a `PlayerSkinRenderCache` in front for the profiles a mannequin or a head names and `DefaultPlayerSkin` standing in until …* — a player's skin goes PlayerInfo -> SkinManager -> SkinTextureDownloader; the render cache serves profile look-ups (PlayerInfo.java:34-38; SkinManager.java:84-86; PlayerSkinRenderCache.java:31-42)
+165. `rendering/entity-rendering`:300 — *and lets the thirteen feature renderers build geometry* — now *and lets the twelve feature renderers build geometry* — twelve, not thirteen (FeatureRenderDispatcher.java:45-56) (K handoff)
+166. `rendering/entity-rendering`:324 — *Twelve are a `SimpleFeatureRenderPhase`, which groups by feature type and then by *batch key* — and **only two of the thirteen kinds …* — now *With improved transparency off, as a new client starts, twelve are a `SimpleFeatureRenderPhase`, which groups by feature type and then by *batch …* — with improved transparency off (the default a new client starts with); every simple-phase group can fold into any earlier draw (SimpleFeatureRenderPhase.java:60; RenderTypeFeatureRenderer.java:38, 106); adjacency-only is the translucent phases'
+167. `rendering/entity-rendering`:333 — *The other three phases are a `TranslucentFeatureRenderPhase`.* — now *The other three phases are a `TranslucentFeatureRenderPhase` (with improved transparency on, ten of the fifteen names share one simple phase, and only …* — with improved transparency off (the default a new client starts with); every simple-phase group can fold into any earlier draw (SimpleFeatureRenderPhase.java:60; RenderTypeFeatureRenderer.java:38, 106); adjacency-only is the translucent phases'
+168. `rendering/entity-rendering`:369 — ***Decided:** almost nothing — the ordering was fixed two stages ago.* — now ***Decided:** almost nothing — the ordering was fixed at submit and prepare.* — the order buckets are fixed at submit, the sort at prepare
+169. `rendering/entity-rendering`:372 — *and the frame graph's main pass calls every one: `.executeSolid` and `.executeOutline` always, `.executeTranslucent` and `.executeTranslucentAfterTerrain` for classic transparency, `.executeWaterMask` and `.executeOit` …* — now *and the frame graph's main pass is where each is called: `.executeSolid` always, `.executeOutline` when something glows, `.executeTranslucent` and `.executeTranslucentAfterTerrain` for classic …* — .executeOutline is guarded (LevelRenderer.java:803); outline, water mask and OIT stages open their own passes (:596, 637, 751, 804-806)
+170. `rendering/entity-rendering`:393 — *`FirstPersonHandsAndItemsRenderer` submits into its own `SubmitNodeStorage`,* — now *`FirstPersonHandsAndItemsRenderer` submits into a `SubmitNodeStorage` it shares with the screen effects,* — the hand's storage is shared with the screen effects (GameRenderer.java:133, 399, 763)
+171. `rendering/entity-rendering`:402 — *the submit node carries only a `Component`, and every glyph in it is resolved by [text and fonts](../client/text-and-fonts.md), not here.* — now *the submit node carries the text already laid out and measured, and every glyph in it is resolved by [text and fonts](../client/text-and-fonts.md), …* — the text node holds a FormattedCharSequence measured at submit (SubmitNodeCollection.java:119-128)
+172. `rendering/entity-rendering`:406 — *> **For a 1.21-era reader.** `EntityRenderer` has no *render* method, and > neither does anything else on this page: the pair is …* — now *> **For a 1.21-era reader.** *MultiBufferSource* does not exist anywhere in > the game, nor any other buffer source: a renderer submits, …* — blockquote against 1.21.11 (V13 <= 8 lines): AvatarRenderer, EntityRenderer.submit, WingsLayer are 1.21.11's; MultiBufferSource, ItemBlockRenderTypes and entityCutoutNoCull are the drift (1.21.11 tree; 26.3 RenderTypes.java:257-266)
+173. `rendering/block-entity-rendering`:3 — *drawn in the same frame by two renderers that share a model and nothing else.* — now *drawn in the same frame by two renderers built from one model definition.* — verified line (K handoff): two ChestModel instances from one layer definition, plus a shared FeatureRenderDispatcher and collector interface (ChestRenderer.java:50-52; ChestSpecialRenderer.java:78; LevelRenderer.java:162; GameRenderer.java:402)
+174. `rendering/block-entity-rendering`:12 — *is drawn by a class in a different package that exists only because an item cannot be a block entity.* — now *is drawn by a class in a different package that exists for chests that are not block entities.* — renderer/special also serves the block-model road (BuiltInBlockModels.java:114-120), as :73-75 says
+175. `rendering/block-entity-rendering`:21 — ***prepare** sorts and batches every description in the frame,* — now ***prepare** groups every description in the frame and sorts the translucent ones,* — only translucent phases sort (SimpleFeatureRenderPhase.java:44-67) (K handoff); states hold no entity (MovingBlockRenderState and SignText are the live handles this page comes to)
+176. `rendering/block-entity-rendering`:23 — *along with render states that hold no live object,* — now *along with render states that hold no live entity,* — only translucent phases sort (SimpleFeatureRenderPhase.java:44-67) (K handoff); states hold no entity (MovingBlockRenderState and SignText are the live handles this page comes to)
+177. `rendering/block-entity-rendering`:75 — *Only the left-hand road has a visibility policy of its own, a state class of its own, or an extract stage that …* — now *Only the left-hand road has a visibility policy of its own, or an extract stage that reads the live world.* — the item and block roads have state classes of their own (ItemStackRenderState layers; BlockModelRenderState)
+178. `rendering/block-entity-rendering`:83 — *| a layer of an `ItemStackRenderState` |* — now *| a layer of an `ItemStackRenderState`, or a `BlockModelRenderState` |* — the item and block roads have state classes of their own (ItemStackRenderState layers; BlockModelRenderState)
+179. `rendering/block-entity-rendering`:85 — *| the item transform for the display context |* — now *| the item transform for the display context, or the block model's own |* — the item and block roads have state classes of their own (ItemStackRenderState layers; BlockModelRenderState)
+180. `rendering/block-entity-rendering`:155 — *minecart contents, the golems, the block an enderman is carrying.* — now *minecart contents, the golems, the block an enderman is carrying, and a few more.* — every caller of BlockModelResolver is an entity renderer; the list gave examples (ten renderers)
+181. `rendering/block-entity-rendering`:158 — *the record every block-entity renderer is constructed from* — now *the record the block-entity renderers are constructed from* — six providers ignore the context (BlockEntityRenderers.java:40-64)
+182. `rendering/block-entity-rendering`:160 — *When an entity renderer draws a chest it gets the quads **and** the special renderer, both, because that road draws whatever it …* — now *When an entity renderer draws a chest it gets whatever quads the block has, which for a chest is none, **and** the …* — the composite's quads come from the same BlockStateModelSet entry, empty for a chest (BlockStateModelWrapper.java:52-53)
+183. `rendering/block-entity-rendering`:177 — *and the two ordinary chests are a `ConditionalBlockModel` — the Christmas switch this page comes back to. Most of the rest are …* — now *and the two ordinary chests are a `CompositeBlockModel` whose special half is a `ConditionalBlockModel` — the Christmas switch this page comes back …* — the ordinary chests are Composite(BlockStateModelWrapper, Conditional) (BuiltInBlockModels.java:95-96, 191-195, 293-296)
+184. `rendering/block-entity-rendering`:(rewritten again by the audit) — *## Culling by section, not by frustum* — now *## Culling by section, not one by one* — FALSE HEADING: visibleSections is frustum-trimmed (SectionOcclusionGraph.addSectionsInFrustum, :119-132); one inbound link (entity-rendering.md) repointed in the same commit
+185. `rendering/block-entity-rendering`:189 — *A block entity is never frustum-tested. `LevelExtractor.extractVisibleBlockEntities` starts from `LevelRenderer.visibleSections` — the reachability walk that [visibility and the frame graph](visibility-and-the-frame-graph.md) describes — …* — now *A block entity is never frustum-tested on its own. `LevelExtractor.extractVisibleBlockEntities` starts from `LevelRenderer.visibleSections` — the sections of the reachability walk that survived …* — FALSE HEADING: visibleSections is frustum-trimmed (SectionOcclusionGraph.addSectionsInFrustum, :119-132); one inbound link (entity-rendering.md) repointed in the same commit
+186. `rendering/block-entity-rendering`:196 — ***Three gates decide whether a block entity is extracted at all**,* — now ***Three gates of visibility decide whether a block entity is extracted**,* — extraction can also fail for no renderer or an invalid state (BlockEntityRenderDispatcher.java:65, 67)
+187. `rendering/block-entity-rendering`:(rewritten again by the audit) — *so it is the one renderer in the package whose output depends on your permissions |* — now *so its output, and that of the test-instance renderer that wraps it, depends on your permissions |* — TestInstanceRenderer calls the same extract (TestInstanceRenderer.java:41, 55)
+188. `rendering/block-entity-rendering`:240 — *`BlockEntityRenderer.shouldRenderOffScreen` is not an extra permission — it is a switch between two mutually exclusive lists, and it is enforced twice.* — now *`BlockEntityRenderer.shouldRenderOffScreen` picks which of two lists a block entity is drawn from, and it is enforced twice.* — the lists overlap; only the extraction is exclusive (SectionCompiler.java:83-88; ClientLevel.java:204-205; BlockEntityRenderDispatcher.java:68)
+189. `rendering/block-entity-rendering`:260 — *`BlockEntityRenderer` declares one extraction method, not two, so nothing reaches back into the world after the snapshot is taken.* — now *`BlockEntityRenderer` declares one extraction method, not two, so there is no second extraction step; the two live handles this page comes to …* — the moving block is lit at prepare and signs hold the live SignText (MovingBlockFeatureRenderer.java:51; SignText.java:101-113)
+190. `rendering/block-entity-rendering`:299 — *One live handle survives into a snapshot, and it is not unique to this side:* — now *Two live handles survive into snapshots, and the first is not unique to this side:* — the moving block is lit at prepare and signs hold the live SignText (MovingBlockFeatureRenderer.java:51; SignText.java:101-113)
+191. `rendering/block-entity-rendering`:307 — *Signs are the other partial exception. `SignRenderState` stores the two `SignText` objects rather than laid-out glyphs, and `AbstractSignRenderer` calls `Font.split` during **submit** …* — now *Signs are the second. `SignRenderState` stores the block entity's own two `SignText` objects rather than laid-out glyphs, and `AbstractSignRenderer` calls `Font.split` during …* — the SignText is the block entity's own and caches its laid-out lines; Font.split runs only when that cache is empty (AbstractSignRenderer.java:53-57)
+192. `rendering/block-entity-rendering`:331 — *Three things drawn in one frame, and the only reason they disagree* — now *A mob exempt from the freeze, a chest lid and the chest in your hand: three things drawn in one frame, and …* — name the three
+193. `rendering/block-entity-rendering`:353 — *pull one component out of it through* — now *pull what they need out of it through* — the shield extracts the whole component map (ShieldSpecialRenderer.java:39-45)
+194. `rendering/block-entity-rendering`:364 — *The chest in your hand really is the same `ChestModel`, baked from the same `ModelLayerLocation`,* — now *The chest in your hand really is a `ChestModel`, baked from the same `ModelLayerLocation`,* — two ChestModel instances of one class and layer
+195. `rendering/block-entity-rendering`:371 — *and the interesting ones differ only in how far they can be seen, which is the table above, and in what they …* — now *and the interesting ones differ in how far they can be seen and from which list, both above, and in what they …* — renderers also differ in which list and two draw gizmos (BeaconRenderer.java:127; BlockEntityWithBoundingBoxRenderer.java:80-165; TestInstanceRenderer.java:69-73)
+196. `rendering/block-entity-rendering`:399 — *`BlockEntityRenderDispatcher.tryExtractRenderState` first — it is twenty-one lines and it contains two of the three visibility gates.* — now *`BlockEntityRenderDispatcher.tryExtractRenderState` first — it contains two of the three visibility gates.* — V10 size; one call site, two lists walked (LevelExtractor.java:192, 313, 346); many special renderers have counterparts
+197. `rendering/block-entity-rendering`:401 — *for the two lists it is called from,* — now *for the two lists it walks,* — V10 size; one call site, two lists walked (LevelExtractor.java:192, 313, 346); many special renderers have counterparts
+198. `rendering/block-entity-rendering`:401 — *since it is the one with a counterpart in `renderer/special` to compare against.* — now *since its counterpart in `renderer/special` is the one this page compares it with.* — V10 size; one call site, two lists walked (LevelExtractor.java:192, 313, 346); many special renderers have counterparts
+199. `rendering/block-entity-rendering`:392 — *> **For a 1.21-era reader.** `BlockEntityRenderer` has no *render* method > either: the pair is `BlockEntityRenderer.extractRenderState` and > `BlockEntityRenderer.submit`, and `blockentity/state` is …* — now *> **For a 1.21-era reader.** *BedRenderer* is gone, and so is the bed's > block entity: a bed is drawn by its …* — blockquote against 1.21.11 (V13 <= 8 lines): blockentity/state, extractRenderState and submit are 1.21.11's; BedRenderer and BedBlockEntity are 1.21.11's and gone in 26.3; getRenderBoundingBox and renderItem are in neither tree
+200. `rendering/lightmap-fog-and-sky`:3 — *the sun goes down: every colour on screen, traced back to one keyframe curve.* — now *the sun goes down: the light, the fog and the sky, traced back to the day's keyframe curves.* — verified line: block tint, lava and powder-snow fog, the End sky texture and the weather are not keyframed (BiomeColors.java:10-19; LavaFogEnvironment.java:17; PowderedSnowFogEnvironment.java:15; SkyRenderer.java:52; WeatherEffectRenderer.java:256)
+201. `rendering/lightmap-fog-and-sky`:11 — *— and between them they ask one question and nothing else: *what is this attribute worth, here, now?** — now *— and four of them ask one question above all: *what is this attribute worth, here, now?** — they read more than the probe (rain, thunder, the End flash, options, the light engine, game time); four of the five ask it
+202. `rendering/lightmap-fog-and-sky`:15 — *Two still read the raw world clock — the clouds, because they drift, and the rain, whose texture scrolls —* — now *Two still read the level's raw game time — the clouds, because they drift, and the rain, whose texture scrolls —* — the clouds and rain read the level's game time, a different clock from the End flash's WorldClock (LevelExtractor.java:136; WeatherEffectRenderer.java:99; Level.java:687-694)
+203. `rendering/lightmap-fog-and-sky`:54 — ***Whether a value smooths or steps is declared on the attribute**, not chosen by the renderer — which is why the sky …* — now ***Whether a value can smooth or must step is declared on the attribute's type**, not chosen by the renderer — which is …* — interpolation is declared on the attribute's type; a track's ease is data (AttributeType.java:16; KeyframeTrack.java:30; day.json eases)
+204. `rendering/lightmap-fog-and-sky`:90 — *| `WeatherEffectRenderer` | nothing, until it is raining | once per frame, and only then | a list of `WeatherEffectRenderer.ColumnInstance` |* — now *| `WeatherEffectRenderer` | no attribute: the rain level, then each column's height and precipitation | once per frame | two lists of …* — table: the weather reads the rain level, then heights and precipitation, never an attribute; two lists (WeatherEffectRenderer.java:73, 84, 89; WeatherRenderState.java:9-10)
+205. `rendering/lightmap-fog-and-sky`:136 — *The middle band's order is a dependency order.* — now *The middle band's order is the order `GameRenderer.extract` makes its calls in.* — no extract reads another's output; the order is GameRenderer.extract's statement order (GameRenderer.java:482-484)
+206. `rendering/lightmap-fog-and-sky`:(cut) — *In 1.21 this was a `NativeImage` filled pixel by pixel in Java and re-uploaded every frame.* — now *(cut)* — FALSE: 1.21.11 already drew the lightmap on the GPU behind a tick-raised flag (1.21.11 LightTexture.java:37, 67-70, 79-81, 152-155); cut (rule 3 too)
+207. `rendering/lightmap-fog-and-sky`:182 — *it is a CPU-side duplicate of the shader's curve, kept for `Hud`,* — now *it is a CPU-side version of the shader's curve that also mixes in the dimension's ambient light, kept for `Hud`,* — getBrightness also mixes in ambientLight, which the shader does not (Lightmap.java:108-113)
+208. `rendering/lightmap-fog-and-sky`:350 — *`Lightmap.getBrightness`, the CPU-side duplicate this page has already said the shader does not use,* — now *`Lightmap.getBrightness`, the CPU-side version this page has already said the shader does not use,* — getBrightness also mixes in ambientLight, which the shader does not (Lightmap.java:108-113)
+209. `rendering/lightmap-fog-and-sky`:198 — *and `Level.updateSkyBrightness` turns it into `Level.skyDarken` for mob spawning.* — now *and `Level.updateSkyBrightness` turns it into `Level.skyDarken`, which gameplay reads, from mob spawning to whether it is bright outside.* — skyDarken also drives isBrightOutside and getMaxLocalRawBrightness (Level.java:355-356; LevelReader.java:160-168)
+210. `rendering/lightmap-fog-and-sky`:208 — *In open air those are `EnvironmentAttributes.FOG_COLOR`, `EnvironmentAttributes.FOG_START_DISTANCE`, `EnvironmentAttributes.FOG_END_DISTANCE`, `EnvironmentAttributes.SKY_FOG_END_DISTANCE` and `EnvironmentAttributes.CLOUD_FOG_END_DISTANCE`, and underwater they are* — now *In open air the colour starts from `EnvironmentAttributes.FOG_COLOR` and leans toward `EnvironmentAttributes.SUNRISE_SUNSET_COLOR` when you face the sun and toward a weather-darkened `EnvironmentAttributes.SKY_COLOR`, …* — K handoff: the open-air colour leans toward SUNRISE_SUNSET_COLOR and SKY_COLOR; the distances are shifted by rain and clamped (AtmosphericFogEnvironment.java:31-60, 84-90); the horizon pair comes from the render distance (FogRenderer.java:218-221)
+211. `rendering/lightmap-fog-and-sky`:240 — *and `AtmosphericFogEnvironment` **last**, which is what makes it the guaranteed fallback.* — now *and `AtmosphericFogEnvironment` **last**, which answers only for open air.* — Atmospheric applies only in open air; each medium has one colour-providing environment (AtmosphericFogEnvironment.java:113-115; LavaFogEnvironment.java:56-58; PowderedSnowFogEnvironment.java:39-41; WaterFogEnvironment.java:35-37; FogRenderer.java:248-252)
+212. `rendering/lightmap-fog-and-sky`:248 — *blindness and darkness may darken somebody else's colour, never supply one, and the atmospheric environment sits last precisely so somebody always does.* — now *blindness and darkness may darken somebody else's colour, never supply one, and each medium has exactly one environment that does.* — Atmospheric applies only in open air; each medium has one colour-providing environment (AtmosphericFogEnvironment.java:113-115; LavaFogEnvironment.java:56-58; PowderedSnowFogEnvironment.java:39-41; WaterFogEnvironment.java:35-37; FogRenderer.java:248-252)
+213. `rendering/lightmap-fog-and-sky`:292 — *### The clouds, which are never handed a fog slice and never bind a texture* — now *### The clouds, which are never handed a fog slice or their texture* — FALSE HEADING (no inbound links): under improved transparency the clouds bind the main depth texture (CloudRenderer.java:297-300); the cloud texture itself is never bound
+214. `rendering/lightmap-fog-and-sky`:296 — *but their *drift* is raw world time.* — now *but their *drift* is the level's raw game time.* — FALSE HEADING (no inbound links): under improved transparency the clouds bind the main depth texture (CloudRenderer.java:297-300); the cloud texture itself is never bound
+215. `rendering/lightmap-fog-and-sky`:308 — *rebuilds it on a reload, when the camera crosses a cell boundary or changes side, or when the `CloudStatus` changes* — now *rebuilds it after a reload or a full re-mesh of the world, when the camera's cell of the drifting cloud grid or …* — rebuild triggers: the cell is in drifting cloud space (CloudRenderer.java:204-213) and a full rebuild sets it (LevelRenderer.java:1331)
+216. `rendering/lightmap-fog-and-sky`:317 — *so the same column of rain looks the same every frame it exists, and* — now *so the same column of rain keeps its shape every frame it exists, and* — streaks scroll and alpha varies with distance (WeatherEffectRenderer.java:228, 239, 255); snow shifts sideways too (:237-238)
+217. `rendering/lightmap-fog-and-sky`:(rewritten again by the audit) — *World time enters only afterwards, to scroll the streaks down the quad.* — now *World time enters only afterwards, to scroll the streaks down the quad, and snow's sideways too.* — streaks scroll and alpha varies with distance (WeatherEffectRenderer.java:228, 239, 255); snow shifts sideways too (:237-238)
+218. `rendering/lightmap-fog-and-sky`:329 — *The vertex buffer is rebuilt in `WeatherEffectRenderer.prepare`* — now *The vertex buffer is rebuilt in `WeatherEffectRenderer.prepare`* — streaks scroll and alpha varies with distance (WeatherEffectRenderer.java:228, 239, 255); snow shifts sideways too (:237-238)
+219. `rendering/lightmap-fog-and-sky`:323 — *and its per-frame product is a list of `WeatherEffectRenderer.ColumnInstance` records inside a `WeatherRenderState`.* — now *and its per-frame product is two lists of `WeatherEffectRenderer.ColumnInstance` records, rain and snow, inside a `WeatherRenderState`.* — streaks scroll and alpha varies with distance (WeatherEffectRenderer.java:228, 239, 255); snow shifts sideways too (:237-238)
+220. `rendering/lightmap-fog-and-sky`:335 — *is handed the render distance and the far plane so it can stop the wall where the fog would have taken it …* — now *is handed the render distance and the far plane, which bound the wall's width and its height.* — the far plane is the wall's half-height; the render distance clips it (WorldBorderRenderer.java:75-80, 165); no fog is read
+221. `rendering/lightmap-fog-and-sky`:336 — *What the border *is* stays [Part IV's](../../reference/level-data-and-rules.md).* — now *What the border *is* belongs to [level data and rules](../../reference/level-data-and-rules.md).* — the border's owner is a Reference page, not Part IV
+222. `rendering/lightmap-fog-and-sky`:340 — *whose scatter of `EnvironmentAttributes.AMBIENT_PARTICLES` is [particles](particles.md#three-neighbours-that-look-like-the-same-thing)'.* — now *whose scatter of `EnvironmentAttributes.AMBIENT_PARTICLES` belongs to [particles](particles.md#three-neighbours-that-look-like-the-same-thing).* — V8 possessive on a link (H handoff)
+223. `rendering/lightmap-fog-and-sky`:359 — *What does the picking is `Lighting`, a single UBO of two diffuse light directions sliced five ways, one slice per `Lighting.Entry`.* — now *The choice is read in two places: `ClientLevel.cardinalLighting` hands the record to the mesher's face shading, and `Lighting`, a single UBO of …* — Lighting picks its directions by the CardinalLighting.Type; the record goes to the mesher through ClientLevel.cardinalLighting (Lighting.java:47-56; ClientLevel.java:992-993; BlockModelLighter.java:190, 205)
+224. `rendering/lightmap-fog-and-sky`:365 — *which is why an item in a slot, an item in your hand and the player in the inventory screen are each …* — now *which is why a flat item in a slot, a block item in a slot and the player in the inventory screen …* — slot items are ITEMS_FLAT or ITEMS_3D, the inventory player ENTITY_IN_UI, PLAYER_SKIN the skin screen (GuiItemAtlas.java:111; GuiEntityRenderer.java:28; GuiSkinRenderer.java:23); the held item uses LEVEL
+225. `rendering/lightmap-fog-and-sky`:368 — *by `Lighting.updateLevel`, and only when the dimension's choice changes.* — now *by `Lighting.updateLevel`, each time the game renderer is given a level.* — updateLevel runs on every GameRenderer.setLevel with a level (GameRenderer.java:957-960)
+226. `rendering/lightmap-fog-and-sky`:372 — *And the clouds still read the world clock,* — now *And the clouds still read the level's game time,* — the clouds read the level's game time
+227. `rendering/lightmap-fog-and-sky`:378 — *> **For a 1.21-era reader.** Nearly every per-dimension, per-biome, > per-time-of-day visual constant is an environment attribute now, so the > names …* — now *> **For a 1.21-era reader.** *LightTexture* is now `Lightmap`, with its > packing statics in `LightCoordsUtil`. *LevelRenderer.addCloudsPass* and > *LevelRenderer.addWeatherPass* are gone: …* — blockquote against 1.21.11: FogData, setShaderFog, addSkyPass and environment attributes are already 1.21.11's; LightTexture, addCloudsPass and addWeatherPass are the drift (1.21.11 LevelRenderer.java:722, 736)
+228. `rendering/particles`:6 — *predicted, before the server has heard about the swing;* — now *predicted, before the server has heard the dig finish;* — on a multi-tick dig the server has heard START; what it has not heard is the finish (MultiPlayerGameMode.java:270-273)
+229. `rendering/particles`:10 — *Neither asks how far away you are.* — now *Neither asks, on your machine, how far away you are.* — the level event is distance-filtered on the server (ServerLevel.java:1183); no client-side check on either route
+230. `rendering/particles`:21 — *| `ServerLevel` | which players are told about a particle at all — on dimension and distance, nothing else | Server |* — now *| `ServerLevel` | which players are told about a particle at all — on dimension and distance, and for a level event …* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+231. `rendering/particles`:23 — *| the gated entry point, `ClientLevel.doAddParticle` — and the ungated ones beside it | Client |* — now *| the gated entry point, `ClientLevel.doAddParticle` — and the ungated ones beside it | Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+232. `rendering/particles`:24 — *| load off-thread, bind on Client |* — now *| load off-thread, bind on the Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+233. `rendering/particles`:25 — *| one per registered type: what class of `Particle` an options record turns into | Client |* — now *| one per registered type: what class of `Particle` an options record turns into | Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+234. `rendering/particles`:26 — *| the groups, the one-tick admission queue, the emitters, the per-type counts | Client |* — now *| the groups, the one-tick admission queue, the emitters, the per-limit counts | Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+235. `rendering/particles`:27 — *| whether there is room: the per-render-type cap and the probabilistic reservoir | Client |* — now *| whether there is room: the per-render-type cap and the probabilistic reservoir | Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+236. `rendering/particles`:28 — *the client's own budgeted generator | Client |* — now *the client's own budgeted generator | Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+237. `rendering/particles`:29 — *| which of three atlases a quad reads, and which pipelines draw it | Client |* — now *| which of three atlases a quad reads, and which pipelines draw it | Render thread |* — cast: the level event also skips its Player source (ServerLevel.java:1177-1183; PlayerList.java:674) (K handoff); V7 thread names
+238. `rendering/particles`:106 — *and `TerrainParticle` additionally refuses air and `Blocks.MOVING_PISTON`.* — now *and the providers that build a `TerrainParticle` for other callers additionally refuse air and `Blocks.MOVING_PISTON`.* — the TerrainParticle refusal is in createTerrainParticle, which only its providers use; the puff and crack construct directly (TerrainParticle.java:73-76; ClientLevel.java:1094, 1152)
+239. `rendering/particles`:(rewritten again by the audit) — *There are three distance rules, enforced by three different pieces of code, and two of them happen to be the same number. …* — now *There are three distance rules for a particle or a level event, enforced by three different pieces of code, and two of …* — scope: the explosion packet has a 64-block rule of its own (ServerLevel.java:1311), covered by the explosion section; the puff's route is distance-checked on the server
+240. `rendering/particles`:147 — *in practice `/particle … force`, and never from the particle type |* — now *in practice `/particle … force` and the creaking heart's, and never from the particle type |* — the server's override rides the packet and is OR'd into the client's (ClientPacketListener.java:2500; ClientLevel.java:913, 929-933): on the client an override deletes both the distance and the setting check; creaking hearts pass true too (CreakingHeartBlockEntity.java:351)
+241. `rendering/particles`:156 — *And the two overrides are not one flag either: the client's comes off the particle type, through `ParticleType.getOverrideLimiter`, whose three readers are …* — now *And the two overrides are not one flag, though one feeds the other: the client's comes off the particle type, through `ParticleType.getOverrideLimiter`, …* — the server's override rides the packet and is OR'd into the client's (ClientPacketListener.java:2500; ClientLevel.java:913, 929-933): on the client an override deletes both the distance and the setting check; creaking hearts pass true too (CreakingHeartBlockEntity.java:351)
+242. `rendering/particles`:165 — *Once a level event lands the client asks no further questions,* — now *Once the puff's level event lands the client asks no further questions,* — LevelEventHandler's other cases go through the gate (LevelEventHandler.java:246, 257, 303, 340); only the destroy and crack events do not
+243. `rendering/particles`:176 — *| `ClientLevel.doAddParticle` | *decreased* is rewritten to *minimal* about a third of the time,* — now *| `ClientLevel.doAddParticle` | an override creates the particle whatever the setting; otherwise *decreased* is rewritten to *minimal* about a third of the …* — an override creates the particle whatever the setting (ClientLevel.java:929-932)
+244. `rendering/particles`:196 — *Explosions are the one source that budgets itself before it asks anyone else, and they are not a particle packet at all.* — now *Explosions budget themselves before they ask anyone else, and they are not a particle packet at all.* — tickWeatherEffects budgets itself too (ClientLevel.java:364); the explosion's samples go through addParticle (ClientExplosionTracker.java:59)
+245. `rendering/particles`:(rewritten again by the audit) — *Everything else meets the engine's own two limits.* — now *Everything, an explosion's samples included, then meets the engine's own two limits.* — tickWeatherEffects budgets itself too (ClientLevel.java:364); the explosion's samples go through addParticle (ClientExplosionTracker.java:59)
+246. `rendering/particles`:228 — *the per-type count on arrival,* — now *the per-limit count on arrival,* — caption: the count map is keyed by ParticleLimit (ParticleEngine.java:32)
+247. `rendering/particles`:233 — ***There are four render types in the game**, and they are the whole population every *four* below counts against: `ParticleRenderType.SINGLE_QUADS`,* — now ***There are four render types in the game**: `ParticleRenderType.SINGLE_QUADS`,* — page against itself: the section's layers are also counted "four" (:323) -- the render types are not every four's population
+248. `rendering/particles`:245 — *The per-type machinery beside it is the strangest thing in the system.* — now *The per-limit machinery beside it is the strangest thing in the system.* — the only ParticleLimit user is SporeBlossomAirProvider, the ambient haze (SuspendedParticle.java:83-92; SporeBlossomBlock.java:50-55); the falling petal (DripParticle.SporeBlossomFallProvider) has no limit (K handoff)
+249. `rendering/particles`:249 — *The whole mechanism exists to hold down one kind of falling petal, and* — now *The whole mechanism exists to hold down one ambient particle, the haze of spores a spore blossom scatters around itself, and* — the only ParticleLimit user is SporeBlossomAirProvider, the ambient haze (SuspendedParticle.java:83-92; SporeBlossomBlock.java:50-55); the falling petal (DripParticle.SporeBlossomFallProvider) has no limit (K handoff)
+250. `rendering/particles`:261 — *and only while the level is running normally —* — now *and only while the game is unpaused and the level is running normally —* — the engine ticks only unpaused and running normally (Minecraft.java:2097-2099) (K handoff)
+251. `rendering/particles`:282 — *and the shape above is all of it: a provider, a lifetime,* — now *and the shape above is all of it: a provider for most of them, a lifetime,* — a few particles are built without a provider (ClientPacketListener.java:1041; ParticleEngine.java:42, 46; ClientLevel.java:767)
+252. `rendering/particles`:283 — *The two largest are `DripParticle` and `FireworkParticles`, and both are large for the same reason — each is a nest of static …* — now *The two largest files are `DripParticle` and `FireworkParticles`, the second a holder class rather than a subclass, and both are large for …* — FireworkParticles is a holder class, not a Particle subclass (FireworkParticles.java:23), with about three variants
+253. `rendering/particles`:304 — *Three of the four groups take a `Frustum` and ignore it. Only `QuadParticleGroup` culls.* — now *Two of the other three groups take a `Frustum` and ignore it, and the no-render group is never asked. Only `QuadParticleGroup` culls.* — the no-render group is never extracted (ParticleEngine.extract iterates RENDER_ORDER, three of four)
+254. `rendering/particles`:311 — *a growable struct-of-arrays, reset and reused each frame rather than reallocated* — now *a growable pair of arrays, one of floats and one of integers, reset and reused each frame rather than reallocated* — one float[] and one int[], interleaved per particle (QuadParticleRenderState.java:91-107)
+255. `rendering/particles`:344 — *One particle escapes this system entirely: `ItemPickupParticle` carries an `EntityRenderState` and is submitted through `EntityRenderDispatcher`, so the item flying into your inventory …* — now *Two particles' draws escape this system: `ItemPickupParticle` carries an `EntityRenderState` and is submitted through `EntityRenderDispatcher`, so the item flying into your inventory …* — ElderGuardianParticle is submitted as a model too (ElderGuardianParticleGroup.java:120-127); it is the draw that escapes
+256. `rendering/particles`:354 — *because every live particle holds a sprite reference into an atlas that no longer exists, and `ParticleEngine.setLevel` clears the particles and the …* — now *because a quad particle holds a sprite reference into an atlas that no longer exists, and `ParticleEngine.setLevel` runs the same clear, emitters …* — only a quad particle holds a sprite (SingleQuadParticle.java:27); clearParticles clears the emitters too (ParticleEngine.java:170)
+257. `rendering/particles`:361 — *The one malformed particle that does *not* crash is the one arriving over the network —* — now *The one malformed particle that does *not* crash is one arriving in a particle packet —* — only a particle packet's failures are caught (ClientPacketListener.java:2497-2505); the explode packet's are not (:1437)
+258. `rendering/particles`:363 — *so a particle thrown hard enough stops colliding with the world altogether,* — now *so a particle thrown hard enough passes through the world until friction slows it,* — the speed test runs every move; friction brings it back under (Particle.java:19, 114-116, 165)
+259. `rendering/particles`:367 — *> **For a 1.21-era reader.** `ParticleEngine` no longer owns providers, > sprites, reloading or rendering — those became `ParticleResources` and the > …* — now *> **For a 1.21-era reader.** *Particle.getLightColor* is now > `Particle.getLightCoords`. The rest of the machinery a 1.21.11 reader knows > kept its …* — blockquote against 1.21.11: ParticleResources, getGroup, the four-value ParticleRenderType record, the per-render-type ParticleGroup and ParticleLimit are all 1.21.11's; Particle.getLightColor is the one rename since (1.21.11 Particle.java:201)
+260. `rendering/post-processing`:7 — *compiled into the same kind of object and run by the same three classes.* — now *compiled into the same kind of object and run by the same two classes, `PostChain` and `PostPass`.* — "the same three classes" names no population; blur and creeper both run through PostChain and PostPass (GameRenderer.java:253, 595; PostChain.java:330-336)
+261. `rendering/post-processing`:(rewritten again by the audit) — *| configs read on a worker, everything else on the render thread |* — now *| configs read and the catalogue compiled on workers, the rest on the Render thread |* — cast: catalogue compile on the worker (ShaderManager.java:93 -> PipelineBuilder.java:364-399); lazy post compile on Util.backgroundExecutor while the Render thread waits (PipelineCache.java:34); V7
+262. `rendering/post-processing`:23 — *| `UniformValue` | the seven types a JSON-declared uniform may have, and how each is packed | Render thread |* — now *| `UniformValue` | the seven types a JSON-declared uniform may have, and how each is packed | decoded on a worker, packed …* — UniformValue decoded by PostChainConfig.CODEC on the worker (ShaderManager.java:162), packed on the Render thread (PostPass.java:59, 72)
+263. `rendering/post-processing`:100 — *in which case `PostChain` allocates it once, keeps it in* — now *in which case `PostChain` allocates it once for each size the screen takes, keeps it in* — persistent targets are reallocated on a size change (PostChain.java:357-367)
+264. `rendering/post-processing`:128 — *logs, caches as a permanent absence so the next frame does not try again, and reports to `Minecraft.triggerResourcePackRecovery` — the path that …* — now *logs, caches as an absence until the next reload so the next frame does not try again, and, for the first such …* — only the first failure per cache triggers recovery (ShaderManager.java:275-280); no clearable pack -> crash (Minecraft.java:901-904); the absence lasts until the next reload (:206, :261)
+265. `rendering/post-processing`:148 — *the shared vertex program builds one oversized triangle out of the vertex index alone,* — now *both vertex programs the chains use build one oversized triangle out of the vertex index alone,* — two vertex programs: core/screenquad (19 passes) and post/rotscale (5) both build the triangle (screenquad.vsh:7-8, rotscale.vsh:19-20)
+266. `rendering/post-processing`:159 — *That is why the blur's radius is not one of them. *blur.json* declares a radius of zero, and *box_blur* treats zero as …* — now *That is why the blur's working radius is not one of them. *blur.json* declares a radius of zero, and *box_blur* treats anything …* — the radius is a declared chain uniform (blur.json Radius 0.0); box_blur falls back below 0.5 (box_blur.fsh:30)
+267. `rendering/post-processing`:165 — *It has to come in through the global block, whose membership is fixed in Java.* — now *It has to come in through a block the game writes itself — the global block, the projection, fog and lighting blocks, …* — per-frame values also reach a pass through Projection, Fog, Lighting (RenderSystem.java:384-408) and the SamplerInfo ring (PostPass.java:128-140)
+268. `rendering/post-processing`:180 — *| the entity-outline target — and never the main one |* — now *| the entity-outline target, and one internal target it bounces through — never the main one |* — entity_outline reads its swap target too (entity_outline.json)
+269. `rendering/post-processing`:191 — *so they warp the world and leave the HUD alone.* — now *so they warp the world and the hand in front of it, and leave the HUD alone.* — render3dHud (hand, screen effects) draws inside renderLevel before applyPostEffects (GameRenderer.java:522-525, 748)
+270. `rendering/post-processing`:230 — *FGB->>FGB: execute — with the chain added, sobel, blur, blur, blit back* — now *LR->>FGB: execute — with the chain added, sobel, blur, blur, blit back* — figure 2: execute is called by LevelRenderer.render (LevelRenderer.java:263)
+271. `rendering/post-processing`:297 — ***What happens to a chain when the window is resized?** Nothing. A `PostChain` has no size of its own:* — now ***What happens to a chain when the window is resized?** Nothing, for the five that ship. A `PostChain` without a persistent target …* — a chain with a persistent target has a size (PostChain.java:360-367); none of the five has one
+272. `rendering/post-processing`:299 — *`GameRenderer.resize` clears the resource pool so the old targets are not handed back,* — now *`GameRenderer.resize` clears the resource pool, freeing the old targets at once rather than three frames later,* — the pool already refuses a size mismatch (RenderTargetDescriptor.java:35-40); the clear frees them now (CrossFrameResourcePool)
+273. `rendering/post-processing`:303 — *> **For a 1.21-era reader.** *ShaderInstance*, *EffectInstance*, *Effect* and > *AbstractUniform* are gone, and `Uniform` survives only as an OpenGL-backend > detail …* — now *> **For a 1.21-era reader.** The *transparency* chain is gone, and > *LevelTargetBundle.SORTING_TARGETS* with it: improved transparency is > `LevelRenderer.executeOit`, drawn inside …* — blockquote against the 1.21.11 tree: PostPass, UniformValue, GraphicsPreset and the deprecated PostChain.process are all in 1.21.11; TRANSPARENCY_POST_CHAIN_ID and LevelTargetBundle.SORTING_TARGETS are 1.21.11 names gone in 26.3; V13 (<= 8 lines)
+274. `rendering/post-processing`:31 — *`MappableRingBuffer`, `Std140Builder`, `TextureTarget` — is [Blaze3D](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame)'s.* — now *`MappableRingBuffer`, `Std140Builder`, `TextureTarget` — is taught on [the Blaze3D page](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame).* — polish (V8): possessives on links
+275. `rendering/post-processing`:33 — *The graph the passes go into is [visibility and the frame graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled)'s.* — now *The graph the passes go into belongs to [visibility and the frame graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled).* — polish (V8): possessives on links
+276. `rendering/the-frame`:226 — *That is the wall, and one level down it holds.* — now *That is the wall, and one level down it holds but for one reach by reference: a moving block's render state carries …* — the moving block's snapshot holds the level's light engine and is lit from it at prepare, inside LevelRenderer.render (MovingBlockRenderState.lightEngine; MovingBlockFeatureRenderer.java:28-52; LevelRenderer.java:193) -- block-entity-rendering's own paragraph
+277. `reference/glossary`:274 — *so that the drawing half reads no live game state from `LevelRenderer.render` down — the top of the render half still does.* — now *so that the drawing half reads no live game state from `LevelRenderer.render` down but a moving block's light — the top of …* — the moving block's snapshot holds the level's light engine and is lit from it at prepare, inside LevelRenderer.render (MovingBlockRenderState.lightEngine; MovingBlockFeatureRenderer.java:28-52; LevelRenderer.java:193) -- block-entity-rendering's own paragraph
+278. `reference/glossary`:626 — *the property that matters is that the drawing half reads no game state below `LevelRenderer.render`* — now *the property that matters is that the drawing half reads no game state below `LevelRenderer.render` but a moving block's light* — the moving block's snapshot holds the level's light engine and is lit from it at prepare, inside LevelRenderer.render (MovingBlockRenderState.lightEngine; MovingBlockFeatureRenderer.java:28-52; LevelRenderer.java:193) -- block-entity-rendering's own paragraph
+279. `reference/glossary`:542 — *and the one screens are handed is not a fraction of a tick at all.* — now *and two of them, the one screens are handed among them, are not fractions of a tick at all.* — the-frame's table: two of the six are whole deltas (DeltaTracker.java:60, 70)
+
+### The record's audit: corrections to what the session wrote or left
+
+280. `rendering/visibility-and-the-frame-graph`:152 — *so a block that changes behind you costs nothing until you turn and the frustum lets its section back into the list;* — now *so a block that changes behind you, farther back than the few blocks the frustum is pulled back to cover, costs nothing …* — the list is trimmed with a frustum pulled back until the camera's 8-block cell fits inside it (SectionOcclusionGraph.java:120, 384-386; culling/Frustum.java:45-57), so a change close behind you is still swept *(the session's own sentence)*
+281. `rendering/section-meshing`:13 — *let a block change behind you and none of it happens at all.* — now *let a block change behind you, farther back than the few blocks the visible list reaches behind the camera, and none of …* — the list is trimmed with a frustum pulled back until the camera's 8-block cell fits inside it (SectionOcclusionGraph.java:120, 384-386; culling/Frustum.java:45-57), so a change close behind you is still swept *(the session's own sentence)*
+282. `rendering/visibility-and-the-frame-graph`:365 — *`SectionRenderDispatcher.RenderSection.resortTransparency`, which reorders the existing mesh rather than recompiling it, and does nothing when the section's view has not changed and no …* — now *`SectionRenderDispatcher.RenderSection.resortTransparency`, which schedules a worker task that reorders the existing mesh rather than recompiling it, and which gives up without re-sorting if, …* — the give-up test is the worker task's own (SectionRenderDispatcher.java:305-313, 478-491) *(the session's own sentence)*
+283. `rendering/visibility-and-the-frame-graph`:199 — *`FrameGraphBuilder.createInternal` declares up to eight that exist only for the duration of this frame:* — now *`LevelRenderer` declares, through `FrameGraphBuilder.createInternal`, up to eight that exist only for the duration of this frame:* — the swap target is declared through createInternal too (PostChain.java:315-326)
+284. `rendering/visibility-and-the-frame-graph`:201 — *the outline chain, in a frame that has one, adds its own swap target to the same graph.* — now *the outline chain, in a frame that has one, declares its own swap target the same way.* — the swap target is declared through createInternal too (PostChain.java:315-326) *(the session's own sentence)*
+285. `rendering/visibility-and-the-frame-graph`:21 — *the dirty sections and the block entities — are already reading* — now *the dirty sections and the block entities those sections hold — are already reading* — block entities come from the list's sections, then from the global set (LevelExtractor.java:313, 346-360) *(the session's own sentence)*
+286. `rendering/visibility-and-the-frame-graph`:38 — *one indirect draw per bucket, or one multi-draw per layer |* — now *one indirect draw per bucket, split at the device's limit, or one multi-draw per layer |* — the indirect path splits a bucket at the device's limit (ChunkSectionsToRender.java:129-137) *(the session's own sentence)*
+287. `rendering/visibility-and-the-frame-graph`:107 — *Everything else happens on the Render thread,* — now *The rest of the walk happens on the Render thread,* — schedulePropagationFrom is also called by a worker that compiles a section to nothing (SectionRenderDispatcher.java:612-613, 356-359; LevelRenderer.java:1326); report finding the session had only renamed *(the session's own sentence)*
+288. `rendering/visibility-and-the-frame-graph`:109 — *flagged, typically because a new mesh landed for them* — now *flagged (a call a worker also makes when it compiles a section to nothing), typically because a new mesh landed for them* — schedulePropagationFrom is also called by a worker that compiles a section to nothing (SectionRenderDispatcher.java:612-613, 356-359; LevelRenderer.java:1326); report finding the session had only renamed
+289. `rendering/visibility-and-the-frame-graph`:90 — *starts at the camera's own section and walks outward* — now *starts at the camera's own section, or with the camera above or below the world the nearest layer of sections, and walks …* — above or below the world a full walk seeds the nearest layer (SectionOcclusionGraph.java:238-277)
+290. `rendering/visibility-and-the-frame-graph`:385 — *`LevelExtractor.applyFrustum` for why the visible list is usually a cache.* — now *`LevelExtractor.extract`, which decides when to call it, for why the visible list is usually a cache.* — the cache's gate is in LevelExtractor.extract (:143-156)
+291. `rendering/visibility-and-the-frame-graph`:371 — *> **For a 1.21-era reader.** *LevelRenderer.renderLevel* does not exist — the > method is `LevelRenderer.render`, and it is handed render state rather …* — now *> **For a 1.21-era reader.** *LevelRenderer.renderLevel* is now > `LevelRenderer.render`, handed render state rather than a level. > *LevelRenderer.cullTerrain* and *LevelRenderer.applyFrustum* are …* — blockquote (V13, 15 lines -> <= 8) against 1.21.11: renderLevel, cullTerrain, applyFrustum, addCloudsPass, addWeatherPass, the transparency chain and the dirty methods are 1.21.11's LevelRenderer (1.21.11 LevelRenderer.java:125, 366, 429, 460, 722, 736, 1315-1363); renderChunkLayer and setupRender are not; ViewArea, VisGraph, Octree and Frustum are unchanged names, not drift *(the session's own sentence)*
+292. `rendering/post-processing`:165 — *the global block, the projection, fog and lighting blocks, or the pass's own *SamplerInfo* sizes —* — now *the global block, or the pass's own *SamplerInfo* sizes, the only two a post pipeline declares beside its own —* — a post pipeline declares only GLOBALS beside its own samplers, SamplerInfo and custom blocks (RenderPipelines.java:26, 69; PostChain.java:86-105); Projection, Fog and Lighting are bound but undeclared *(the session's own sentence)*
+293. `rendering/blaze3d`:(rewritten again) — *Those four blocks are the whole of what a shader may know without being told, which is why* — now *Those four are the whole of what a shader may know without being told, and a post pipeline declares only the first, …* — a post pipeline declares only GLOBALS beside its own samplers, SamplerInfo and custom blocks (RenderPipelines.java:26, 69; PostChain.java:86-105); Projection, Fog and Lighting are bound but undeclared *(the session's own sentence)*
+294. `rendering/blaze3d`:258 — *has to find it among them.* — now *has to find it in *Globals* or in its own pass's sizes.* — a post pipeline declares only GLOBALS beside its own samplers, SamplerInfo and custom blocks (RenderPipelines.java:26, 69; PostChain.java:86-105); Projection, Fog and Lighting are bound but undeclared *(the session's own sentence)*
+295. `rendering/post-processing`:191 — *so they warp the world and the hand in front of it, and leave the HUD alone.* — now *so they warp the world and leave the HUD alone.* — the three spectator chains run only while spectating a mob, and no hand is drawn in spectator mode (GameRenderer.java:385) *(the session's own sentence)*
+296. `rendering/post-processing`:128 — *— the path that disables a resource pack that broke the game, or crashes it when there is no pack to disable.* — now *— the path that deselects every resource pack it can and reloads, or, when none can be deselected, crashes the game if …* — recovery deselects every pack it can; with none clearable it crashes on vanilla alone, else returns to the title screen (Minecraft.java:900-911, 869-878), as foundations/resource-system says *(the session's own sentence)*
+297. `rendering/post-processing`:100 — *`PostChain` allocates it once for each size the screen takes, keeps it in `PostChain.persistentTargets` and imports it* — now *`PostChain` allocates it itself, again whenever its size changes, keeps it in `PostChain.persistentTargets` until the chain drops out of the frame's list, …* — reallocated on every size change; destroyed when the chain leaves the frame's list (PostChain.java:357-368; GameRenderer.java:578-584) *(the session's own sentence)*
+298. `rendering/post-processing`:306 — *`GraphicsPreset.FABULOUS` now sets `Options.improvedTransparency`.* — now *`GraphicsPreset.FABULOUS` sets `Options.improvedTransparency` on every > platform, macOS included.* — 1.21.11's FABULOUS set improvedTransparency except on macOS (1.21.11 GraphicsPreset.java:96); 26.3 sets it everywhere (:94) *(the session's own sentence)*
+299. `rendering/post-processing`:20 — *| configs read and the catalogue compiled on workers, the rest on the Render thread |* — now *| configs read and pipelines compiled on workers (a chain's while the Render thread waits), the rest on the Render thread |* — a chain's pipeline compiles on a worker while the Render thread waits (PipelineCache.java:34) *(the session's own sentence)*
+300. `rendering/the-frame`:226 — *one level down it holds but for one reach by reference: a moving block's render state carries the level's light engine and …* — now *one level down it holds but for a few reaches by reference: a moving block's render state carries the level's light engine …* — more than one reach by reference below LevelRenderer.render -- a sign's own SignText at submit (AbstractSignRenderer.java:104-105), a section compiled on the spot reading tints and light live through its region (RenderSectionRegion.java:23-34, 68; LevelRenderer.java:1125) *(the session's own sentence)*
+301. `rendering/the-frame`:232 — *It still reaches back into live *renderer* objects for the main target and the shader manager, but no live game object is …* — now *Beyond those it reaches back only into live *renderer* objects, for the main target and the shader manager.* — more than one reach by reference below LevelRenderer.render -- a sign's own SignText at submit (AbstractSignRenderer.java:104-105), a section compiled on the spot reading tints and light live through its region (RenderSectionRegion.java:23-34, 68; LevelRenderer.java:1125)
+302. `rendering/the-frame`:86 — *Note over MC,GuiR: the wall — sealed at LevelRenderer.render, leaky one level up* — now *Note over MC,GuiR: the wall — nearly sealed at LevelRenderer.render, leaky one level up* — more than one reach by reference below LevelRenderer.render -- a sign's own SignText at submit (AbstractSignRenderer.java:104-105), a section compiled on the spot reading tints and light live through its region (RenderSectionRegion.java:23-34, 68; LevelRenderer.java:1125)
+303. `rendering/the-frame`:299 — *so the top slider position parks only when the limit has been replaced.* — now *so the top slider position parks only when `FramerateLimitTracker` has capped or replaced the limit.* — SHORT_AFK is a cap below 260 too (FramerateLimitTracker.java:40-41) *(the session's own sentence)*
+304. `rendering/the-frame`:255 — *### What the drawing half holds, which is three buffers and a storage per drawer* — now *### What the drawing half holds, which is four buffers and a storage per drawer* — GuiRenderer keeps a fourth (GuiRenderer.java:75); heading written this session, no inbound links *(the session's own sentence)*
+305. `rendering/the-frame`:181 — *Four call sites pass false:* — now *Four call sites always pass false:* — GuiRenderer keeps a fourth (GuiRenderer.java:75); heading written this session, no inbound links
+306. `rendering/the-frame`:332 — *From six textures drawn as a turning cube,* — now *From six images loaded as one cube-map texture and drawn as a turning cube,* — six images loaded as one cube-map texture (CubeMapTexture.java:16-45; GuiRenderer.java:85, 116-117) *(the session's own sentence)*
+307. `rendering/the-frame`:200 — *and goes on to copy the window, the options, the lightmap, the camera and the level.* — now *and goes on to copy the window and the options, and on a frame with a world to draw the lightmap, the …* — the extract list's guard (GameRenderer.java:481-487) *(the session's own sentence)*
+308. `rendering/the-frame`:8 — *the frame asks [the window](the-window.md) for somewhere to put the picture,* — now *the frame asks the surface [the window](the-window.md) was made with for somewhere to put the picture,* — the frame asks the surface the window was made with (Minecraft.java:562, 1370-1377)
+309. `rendering/the-frame`:133 — *and `GpuSurface.present` both throw if you reach them without one.* — now *and `GpuSurface.present` both throw, in the façade the game holds, if you reach them without one.* — the throws are the facade's (FrontendGpuSurface.java:89-90, 104-105); renderItemInHand is GameRenderer's own (GameRenderer.java:383, 399)
+310. `rendering/the-frame`:278 — *`GameRenderer.renderItemInHand` — which is `FirstPersonHandsAndItemsRenderer`, drawn under* — now *`GameRenderer.renderItemInHand` — which hands the hand to `FirstPersonHandsAndItemsRenderer`, drawn under* — the throws are the facade's (FrontendGpuSurface.java:89-90, 104-105); renderItemInHand is GameRenderer's own (GameRenderer.java:383, 399)
+311. `reference/glossary`:274 — *reads no live game state from `LevelRenderer.render` down but a moving block's light — the top of the render half still does.* — now *reads no live game state from `LevelRenderer.render` down but what a few snapshots hold by reference (a moving block's light, a sign's …* — the glossary lines this session wrote undercounted the reaches *(the session's own sentence)*
+312. `reference/glossary`:626 — *reads no game state below `LevelRenderer.render` but a moving block's light* — now *reads no game state below `LevelRenderer.render` but what a few snapshots hold by reference* — the glossary lines this session wrote undercounted the reaches *(the session's own sentence)*
+313. `reference/glossary`:544 — ***Particle** — a client-only object with a position, a velocity, an age and a sprite, ticked and drawn by the `ParticleEngine`. Nothing …* — now ***Particle** — a client-only object with a position, a velocity and an age, most of them a textured quad, ticked by the …* — only a quad particle has a sprite; the engine ticks, a feature renderer draws; more sources (SingleQuadParticle.java:27)
+314. `rendering/blaze3d`:12 — *declared once and applied by the backend when a draw first uses the pipeline, and* — now *declared once and applied by the backend (by OpenGL at the first draw that uses the pipeline, by Vulkan when it is …* — Vulkan bakes the state and binds it at setPipeline (VulkanRenderPass.java:121-127); OpenGL applies at the first draw *(the session's own sentence)*
+315. `rendering/blaze3d`:211 — *Those are *client/renderer/rendertype*'s:* — now *The textures are *client/renderer/rendertype*'s:* — RenderType carries textures, not a target (RenderSetup.java:25-36) *(the session's own sentence)*
+316. `rendering/blaze3d`:253 — *Those four are the whole of what a shader may know without being told, and a post pipeline declares only the first, …* — now *Those four, and a post pass's own sizes, are the whole of what a shader may know without being told, and a …* — a post pass also gets its SamplerInfo (PostPass.java:96, 128, 164) *(the session's own sentence)*
+317. `rendering/blaze3d`:234 — *### The ring, and the blocks every shader gets for free* — now *### The ring, and the blocks a shader gets for free* — a post pass also gets its SamplerInfo (PostPass.java:96, 128, 164) *(the session's own sentence)*
+318. `rendering/blaze3d`:244 — *second ring, rotated the same way once the world has been drawn,* — now *second ring, rotated the same way every frame, between the world and the GUI,* — FogRenderer.endFrame runs every frame, between the world and the GUI (GameRenderer.java:531) *(the session's own sentence)*
+319. `rendering/blaze3d`:378 — *Vulkan whatever the driver enumerates for the swapchain `VulkanGpuSurface` owns,* — now *Vulkan whatever the driver enumerates for the surface `VulkanGpuSurface` owns beside its swapchain,* — present modes are enumerated for the VkSurfaceKHR (VulkanGpuSurface.java:79-91) *(the session's own sentence)*
+320. `rendering/blaze3d`:99 — *the first changes how the game uploads, the second which filtering a graphics preset picks.* — now *the first changes how the backend maps buffers and stages chunk uploads, the second which filtering a graphics preset picks.* — the D3D12 flag changes buffer mapping and chunk staging (StagingBuffer.java:20; DirectStateAccess.java:17; GlBuffer.java:59) *(the session's own sentence)*
+321. `rendering/blaze3d`:86 — *because it is what exists before a device does.* — now *because it is what exists before a device does, and it makes the device and the window.* — GpuBackend makes the device and the window (GpuBackend.java)
+322. `rendering/blaze3d`:311 — *Every drawing class comes through this one shape — `LevelRenderer`, `GuiRenderer`, `Lightmap`, `TextureAtlas` — or joins it halfway,* — now *Every drawing class comes through this one shape — `LevelRenderer`, `GuiRenderer`, `Lightmap` and `TextureAtlas` among them — or joins it halfway,* — GpuBackend makes the device and the window (GpuBackend.java) *(the session's own sentence)*
+323. `rendering/blaze3d`:265 — *### Vertices, and the one builder that is not on the render thread* — now *### Vertices, and the builders that are not on the Render thread* — many builders on workers (SectionCompiler.java:131-141); heading had no inbound links
+324. `rendering/blaze3d`:161 — *thirty-three classes against twenty-nine.* — now *thirty-three files against twenty-nine.* — many builders on workers (SectionCompiler.java:131-141); heading had no inbound links
+325. `rendering/blaze3d`:89 — *`GpuDevice.getDeviceInfo` returns a `DeviceInfo` of `DeviceInfo.name`,* — now *`GpuDevice.getDeviceInfo` returns a `DeviceInfo` whose fields include `DeviceInfo.name`,* — many builders on workers (SectionCompiler.java:131-141); heading had no inbound links
+326. `rendering/the-window`:303 — *and what it watches is mostly the window: iconification, and focus only in exclusive fullscreen, beside the idle time since the last …* — now *and what it watches is the window's iconification, and its focus only in exclusive fullscreen, where an unfocused window is throttled as …* — the focus clause belongs to exclusive fullscreen alone; idle time only under the AFK option (FramerateLimitTracker.java:57-58, 72) *(the session's own sentence)*
+327. `rendering/the-window`:306 — *different mechanism with a different effect.* — now *different mechanism with a different effect. Beside the window it watches the idle time since the last input, when the inactivity option …* — the focus clause belongs to exclusive fullscreen alone; idle time only under the AFK option (FramerateLimitTracker.java:57-58, 72)
+328. `rendering/the-window`:150 — *where the game checks an SDL call's result it does so at the call and reads *SDL_GetError* there and then,* — now *where the game checks an SDL call's result it mostly reads *SDL_GetError* there and then, or once in the method that made …* — several checked calls read no SDL_GetError at the call (Window.java:504, 589) *(the session's own sentence)*
+329. `rendering/the-window`:54 — *images are decoded and mipmapped on reload workers and written on the IO pool,* — now *images are decoded and mipmapped on reload workers (a downloaded skin on the download pool) and written on the IO pool,* — a downloaded skin decodes on the download pool (SkinTextureDownloader.java:44-67; Util.java:296-297) *(the session's own sentence)*
+330. `rendering/the-window`:103 — *A start that crashed before it finished loading downgrades* — now *A start that ended before it finished loading, by a crash or otherwise, downgrades* — any start that never finished loading (Minecraft.java:453-456, 794-795) *(the session's own sentence)*
+331. `rendering/the-window`:112 — *applying the saved overrides before the window is made.* — now *applying the saved size and fullscreen options, or, after a start that never finished loading, forcing windowed, before the window is made.* — any start that never finished loading (Minecraft.java:453-456, 794-795) *(the session's own sentence)*
+332. `rendering/the-window`:120 — *are what the package sits on,* — now *are most of what the package sits on,* — any start that never finished loading (Minecraft.java:453-456, 794-795) *(the session's own sentence)*
+333. `rendering/the-window`:317 — *It is where nearly every image in the game briefly is, the unihex font's glyphs aside,* — now *It is where every image the game reads from or writes to a file briefly is, the unihex font's glyphs aside,* — any start that never finished loading (Minecraft.java:453-456, 794-795) *(the session's own sentence)*
+334. `rendering/the-window`:386 — *for the one thing the window does inside the frame.* — now *for the one call the window gets on every frame.* — any start that never finished loading (Minecraft.java:453-456, 794-795) *(the session's own sentence)*
+335. `rendering/the-window`:374 — **Window.updateDisplay* is > gone,* — now **Window.updateDisplay* and > *Window.updateVsync* are gone,* — 1.21.11's name is Window.updateVsync (1.21.11 Window.java:298), gone in 26.3 *(the session's own sentence)*
+336. `rendering/lightmap-fog-and-sky`:54 — ***Whether a value can smooth or must step is declared on the attribute's type**, not chosen by the renderer* — now ***Whether a value can smooth or must step is declared on the attribute's type**, and whether it smooths across a biome border …* — ease is the track's; biome smoothing is the attribute's own flag (KeyframeTrack.java:15, 30; EnvironmentAttributeSystem.java:102) *(the session's own sentence)*
+337. `rendering/lightmap-fog-and-sky`:58 — *curve is the timeline's data, its keyframes' *ease*.* — now *curve in time is the timeline's data, its track's *ease*.* — ease is the track's; biome smoothing is the attribute's own flag (KeyframeTrack.java:15, 30; EnvironmentAttributeSystem.java:102) *(the session's own sentence)*
+338. `rendering/lightmap-fog-and-sky`:215 — *clamped by the render and cloud distances, which also set the horizon pair; underwater they are* — now *clamped by the render and cloud distances, the render distance alone setting the horizon pair in every medium; underwater they are* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+339. `rendering/lightmap-fog-and-sky`:317 — *keeps its shape every frame it exists,* — now *keeps its speed and its offsets every frame it exists,* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+340. `rendering/lightmap-fog-and-sky`:90 — *the rain level, then each column's height and precipitation |* — now *the rain level, then each column's height, precipitation and light |* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+341. `rendering/lightmap-fog-and-sky`:199 — *which gameplay reads, from mob spawning to whether it is bright outside.* — now *which gameplay reads, from mob spawning to whether it is bright outside, and which reaches the screen through the three CPU-side brightness …* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+342. `rendering/lightmap-fog-and-sky`:360 — *hands the record to the mesher's face shading,* — now *hands the record to the face shading of the mesher and of moving blocks,* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+343. `rendering/lightmap-fog-and-sky`:365 — *a flat item in a slot, a block item in a slot and* — now *a flat item in a slot, a side-lit one and* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+344. `rendering/lightmap-fog-and-sky`:319 — *World time enters only afterwards,* — now *Game time enters only afterwards,* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221) *(the session's own sentence)*
+345. `rendering/lightmap-fog-and-sky`:394 — *`WeatherEffectRenderer.extractRenderState` for the meshes rebuilt inside the* — now *`WeatherEffectRenderer.prepare` for the meshes rebuilt inside the* — the horizon pair is the render distance's alone, in every medium (FogRenderer.java:218-221)
+346. `rendering/block-entity-rendering`:187 — *## Culling by section, not one by one* — now *## Frustum-culled by section, not one by one* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+347. `rendering/entity-rendering`:87 — *block-entity-rendering.md#culling-by-section-not-one-by-one* — now *block-entity-rendering.md#frustum-culled-by-section-not-one-by-one* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+348. `rendering/block-entity-rendering`:372 — *the structure block's and the test instance's drawing gizmos instead of submitting geometry.* — now *the structure block drawing gizmos instead of submitting geometry, and the test instance drawing gizmos beside a submitted beacon beam.* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+349. `rendering/block-entity-rendering`:331 — *three things drawn in one frame, and the only reason they disagree is which question each one was allowed to ask.* — now *three things drawn in one frame, and whether each one moves depends only on which question it was allowed to ask.* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+350. `rendering/block-entity-rendering`:3 — *drawn in the same frame by two renderers built from one model definition.* — now *drawn in the same frame by two renderers that share one model definition.* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+351. `rendering/block-entity-rendering`:223 — *so its output, and that of the test-instance renderer that wraps it, depends on your permissions* — now *so its output, and the box the test-instance renderer draws through it, depends on your permissions* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+352. `rendering/block-entity-rendering`:22 — *and sorts the translucent ones,* — now *and sorts the translucent phases back to front,* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+353. `rendering/block-entity-rendering`:196 — ***Three gates of visibility decide whether a block entity is extracted**,* — now ***Three gates of visibility decide whether a block entity is extracted from a section**,* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+354. `rendering/block-entity-rendering`:309 — *when that text has not cached its lines yet* — now *when that text has no lines cached for the current filtering setting* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link) *(the session's own sentence)*
+355. `rendering/block-entity-rendering`:86 — *| one renderer per entity type |* — now *| one renderer per entity type, or per skin model for a player or a mannequin |* — two of the three gates are per block entity; the frustum is per section (heading written this session; one inbound link)
+356. `rendering/entity-rendering`:147 — *`UndeadRenderState` one overridden rule the undead share,* — now *`UndeadRenderState` one overridden rule, which the zombies share with the illagers and not the skeletons,* — the rule is shared by zombies and illagers, not skeletons (IllagerRenderState, ZombieRenderState, ZombifiedPiglinRenderState) *(the session's own sentence)*
+357. `rendering/entity-rendering`:408 — **RenderType.entityCutoutNoCull* is now* — now **RenderTypes.entityCutoutNoCull* is now* — 1.21.11's name is RenderTypes.entityCutoutNoCull (1.21.11 client/renderer/rendertype/RenderTypes.java:203-208) *(the session's own sentence)*
+358. `rendering/entity-rendering`:210 — *the other four being moving blocks, shape outlines, gizmos and particle groups, which nothing on this page submits.* — now *the other four being moving blocks (a falling block's among them), shape outlines, gizmos and particle groups, which the zombie never submits.* — FallingBlockRenderer submits a moving block (FallingBlockRenderer.java:32) *(the session's own sentence)*
+359. `rendering/entity-rendering`:96 — *each of which is drawn for what it is attached to.* — now *each of which is drawn for what it is attached to: the leash and the beam when they are in view, the …* — only the crystal escapes the frustum; the guardian and the leash are frustum-tested (GuardianRenderer.java:45-52; EntityRenderer.java:86-91) *(the session's own sentence)*
+360. `rendering/entity-rendering`:86 — *and meet the frustum only with their section,* — now *and meet the frustum only with their section, the few drawn off screen not at all,* — only the crystal escapes the frustum; the guardian and the leash are frustum-tested (GuardianRenderer.java:45-52; EntityRenderer.java:86-91) *(the session's own sentence)*
+361. `rendering/entity-rendering`:287 — *as the key into the avatar maps that pick the renderer.* — now *as the key into the players' avatar map, whichever avatar the state came from.* — at submit the players' map is keyed whatever avatar the state came from (EntityRenderDispatcher.java:113-116) *(the session's own sentence)*
+362. `rendering/entity-rendering`:7 — *handing the next a description rather than the live mob:* — now *handing the next what the stage before made of it, never the live mob:* — at submit the players' map is keyed whatever avatar the state came from (EntityRenderDispatcher.java:113-116) *(the session's own sentence)*
+363. `rendering/entity-rendering`:83 — *compiled and faded in" — belongs* — now *compiled and faded at least a third of the way in" — belongs* — at submit the players' map is keyed whatever avatar the state came from (EntityRenderDispatcher.java:113-116) *(the session's own sentence)*
+364. `rendering/entity-rendering`:153 — *is a single-int tick counter copied by value, not a handle back into the world.* — now *is a single-int tick counter copied by value, not a handle back into the world. The one real handle is a falling …* — a falling block's moving-block state holds the live light engine (FallingBlockRenderer.java:55; MovingBlockRenderState.java:22)
+365. `rendering/particles`:210 — *Everything, an explosion's samples included, then meets the engine's own two limits.* — now *Everything that reaches `ParticleEngine.add`, an explosion's samples included, then meets the engine's own two limits.* — tracking emitters bypass add (ParticleEngine.java:41-47) *(the session's own sentence)*
+366. `rendering/particles`:137 — *There are three distance rules for a particle or a level event, enforced by three different pieces of code, and two of …* — now *There are three distance rules on the two routes this section follows, the particle packet and the level event, enforced by three …* — tracking emitters bypass add (ParticleEngine.java:41-47) *(the session's own sentence)*
+367. `rendering/particles`:364 — *passes through the world until friction slows it,* — now *passes through the world for as long as it moves that fast,* — tracking emitters bypass add (ParticleEngine.java:41-47) *(the session's own sentence)*
+368. `rendering/particles`:107 — *additionally refuse air and `Blocks.MOVING_PISTON`.* — now *additionally refuse `Blocks.MOVING_PISTON`.* — tracking emitters bypass add (ParticleEngine.java:41-47) *(the session's own sentence)*
+369. `rendering/particles`:362 — *logs it and drops it.* — now *logs it and drops it, with the rest of that packet's count.* — tracking emitters bypass add (ParticleEngine.java:41-47)
+370. `rendering/particles`:190 — *and the broadcast filters on dimension and distance and nothing else* — now *and the broadcasts filter on dimension, distance and, for a level event, who caused it, never on the setting* — tracking emitters bypass add (ParticleEngine.java:41-47)
+371. `rendering/particles`:367 — *> **For a 1.21-era reader.** *Particle.getLightColor* is now > `Particle.getLightCoords`. The rest of the machinery a 1.21.11 reader knows > kept its …* — now *> **For a 1.21-era reader.** *Particle.getLightColor* is now > `Particle.getLightCoords` and *ParticleFeatureRenderer* is > `QuadParticleFeatureRenderer`. *SingleQuadParticle.Layer.TERRAIN* and *ITEMS* > each split into …* — blockquote against 1.21.11: ParticleFeatureRenderer (1.21.11 renderer/feature), Layer.TERRAIN/ITEMS, an EvictingQueue group *(the session's own sentence)*
+372. `rendering/README`:114 — *the section is rebuilt from a snapshot — inline for your own block, on a worker for the server's —* — now *the sections it touches are rebuilt from a snapshot — by default inline for your own block, on a worker for the …* — AUDIT README *(the session's own sentence)*
+373. `rendering/README`:126 — *a block entity is culled with its section rather than on its own,* — now *a block entity is never frustum-tested on its own,* — AUDIT README *(the session's own sentence)*
+374. `rendering/README`:119 — *every block, item and particle quad.* — now *block, item and particle quads.* — AUDIT README *(the session's own sentence)*
+375. `rendering/README`:132 — *three distance rules for a particle, enforced in three places* — now *three distance rules for a particle or a level event, enforced in three places* — AUDIT README
+376. `rendering/README`:23 — *and the atlases are built by [a resource reload](models-and-atlases.md).* — now *and the atlases are built by [a resource reload](models-and-atlases.md) and animated before each frame.* — AUDIT README
+377. `rendering/README`:31 — *The entire server has a third as many classes* — now *`net/minecraft/server` has a third as many classes* — AUDIT README *(the session's own sentence)*
+378. `rendering/section-meshing`:5 — *You right-click a block into place and one frame later it is simply *there* — no shimmer, no fade, and never a …* — now *You right-click a block into place and within a frame or two it is simply *there*, with no shimmer and no fade. …* — the rebuild runs in the frame after the tick, which draws the old mesh; the first frame to show it is the one after (LevelRenderer.java:263, 283, 290); a first block in a section of air waits a frame more and can leave a one-frame hole (SectionOcclusionGraph.java:300-306, 222-226), so "one frame later" and "never a hole" are dropped; the synchronous swap waits too (SRD:388-407) *(the session's own sentence)*
+379. `rendering/section-meshing`:201 — *takes one more pack from the pool each time a worker tries it.* — now *takes one more pack from the pool each time a worker tries it, until the pool is empty and no compile on …* — a drained pool never refills; acquire returns null and nothing reschedules (SectionBufferBuilderPool.java:43-45; SRD:89, 101-102) *(the session's own sentence)*
+380. `rendering/section-meshing`:264 — *a section that compiled to nothing at all is published directly by* — now *a section that compiled to no geometry is published directly by* — any result with no rendered layers is published directly, block entities or not (SRD:612-613) *(the session's own sentence)*
+381. `blocks/block-interaction`:6 — *Before the tick is over the door is open on your screen, both halves of it,* — now *Before the tick is over the door is open in your client's world, both halves of it, on your screen a frame …* — the door's mesh shows a frame after the tick (block-interaction's opening)
+382. `rendering/models-and-atlases`:30 — *| a quad's UVs, their rotation, and its chunk layer |* — now *| a quad's positions and UVs, both rotated, and its chunk layer |* — FaceBakery rotates positions and UVs (FaceBakery.java:99-105); only the cull face's re-filing is UnbakedCuboidGeometry's (:83) *(the session's own sentence)*
+383. `rendering/models-and-atlases`:193 — *in `UnbakedCuboidGeometry`, with `FaceBakery` doing the UV half of the rotation and the uvlock —* — now *in `UnbakedCuboidGeometry`, while `FaceBakery` rotates the quad's vertices and UVs and applies the uvlock —* — FaceBakery rotates positions and UVs (FaceBakery.java:99-105); only the cull face's re-filing is UnbakedCuboidGeometry's (:83)
+384. `rendering/models-and-atlases`:191 — *Three things are settled here and not later.* — now *Three things are decided here, and one of them is to put a thing off.* — the second of the three is a deferral *(the session's own sentence)*
+385. `rendering/models-and-atlases`:211 — *The item render type comes out of `Sheets` too, chosen by the partial alpha alone and by the atlas the sprite is …* — now *The item render type is picked here too, out of `Sheets`, by the partial alpha alone and by whether the sprite is …* — the chunk layer is not from Sheets (ChunkSectionLayer.java:27-28); the item types are (BakedQuad.java:73-86) *(the session's own sentence)*
+386. `rendering/models-and-atlases`:198 — *so the renderers that draw a model outside the terrain mesh — the block* — now *so the code that handles a block's model outside the terrain mesh — the block* — the block outline reads the flag to order its line, it draws no model (LevelExtractor.java:400-401) *(the session's own sentence)*
+387. `rendering/models-and-atlases`:295 — *and the display table's own fallback covering the rest.* — now *and the display table's own fallback covering the rest, bar the development-only `Minecraft.selfTest`.* — Minecraft.selfTest reads the set too (Minecraft.java:1105) *(the session's own sentence)*
+388. `rendering/models-and-atlases`:317 — *whether it may overflow its slot in the GUI.* — now *whether it may overflow its slot in the GUI, beside a scale for the swap animation.* — ClientItem.Properties has a float too (ClientItem.java:23)
+389. `rendering/models-and-atlases`:332 — *is where eleven of those thirteen borrow their geometry).* — now *is what eleven of those thirteen borrow from).* — four of the eleven borrow a texture or a submit, not geometry (BellSpecialRenderer.java:27; ShieldSpecialRenderer.java:56, 83) *(the session's own sentence)*
+390. `rendering/models-and-atlases`:161 — *so this is tens of tasks and not tens of thousands.* — now *so this is at most sixteen tasks per worker thread for each of the two maps, and not tens of thousands.* — the cap is sixteen tasks per worker thread per map (ParallelMapTransform.java:42; ModelBakery.java:96, 104)
+391. `rendering/models-and-atlases`:351 — *compass and a clock are each a `NeedleDirectionHelper`, a damped follower* — now *compass and a clock each run a `NeedleDirectionHelper`, a damped follower* — a target-less compass wobbles damped for any owner; a targeted one damps only for the local player (CompassAngleState.java:27, 44-68) *(the session's own sentence)*
+392. `rendering/models-and-atlases`:353 — *compass damps only in the local player's hands —* — now *compass that has a target damps only when its owner is the local player —* — a target-less compass wobbles damped for any owner; a targeted one damps only for the local player (CompassAngleState.java:27, 44-68) *(the session's own sentence)*
+
+### From the queue
+
+393. `rendering/entity-rendering`:229 — *Models, items and block models copy the full pose, while shadows, name tags, text and leashes copy only the 4×4* — now *Models, items, block models, flames, shape outlines and custom geometry copy the full pose, while shadows, name tags, text, leashes and moving blocks copy only the 4×4*, and *half a dozen others* is *several others* — `client/renderer/SubmitNodeCollection.java`:106-333 (pass5.md:1351)
+
+### Polished
+
+- `rendering/post-processing`:118 — *`ShaderManager.apply` then runs on the render thread and* → *`ShaderManager.apply` then runs on the Render thread and* (V7)
+- `rendering/blaze3d`:21 — *and which candidates it tries and in what order is [the window](the-window.md#trying-backends-until-one-of-them-makes-a-device)'s —* → *and which candidates it tries and in what order belongs to [the window](the-window.md#trying-backends-until-one-of-them-makes-a-device) —* (V8, the possessive on a link)
+- `rendering/entity-rendering`:272 — *`ItemStackRenderState`, [models and atlases](models-and-atlases.md#how-an-item-picks-its-model)'s business.* → *`ItemStackRenderState`, which [models and atlases](models-and-atlases.md#how-an-item-picks-its-model) covers.* (V8, the possessive on a link)
+- `rendering/entity-rendering`:380 — *relative to terrain, sky and post-processing is [visibility and the frame graph](visibility-and-the-frame-graph.md)'s subject;* → *relative to terrain, sky and post-processing is the subject of [visibility and the frame graph](visibility-and-the-frame-graph.md);* (V8, the possessive on a link)
+- `rendering/models-and-atlases`:176 — *and which is which is [block-entity rendering](block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them)'s to explain.* → *and [block-entity rendering](block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them) explains which is which.* (V8, the possessive on a link)
+- `rendering/models-and-atlases`:270 — *The GPU side is [blaze3d](blaze3d.md)'s.* → *The GPU side belongs to [blaze3d](blaze3d.md).* (V8, the possessive on a link)
+- `rendering/post-processing`:184 — *who asks for it and why a chest does not is [the GUI render tree](../client/the-gui-render-tree.md#blur-is-a-barrier-and-it-is-fussy)'s;* → *who asks for it and why a chest does not are questions for [the GUI render …* (V8, the possessive on a link)
+- `rendering/the-frame`:117 — *`Window.updateFullscreenIfChanged` at the very top of it — [the window](the-window.md#what-the-window-does-per-frame-which-is-almost-nothing)'s one per-frame call —* → *`Window.updateFullscreenIfChanged` at the very top of it — the one per-frame call of [the window](the-window.md#what-the-window-does-per-frame-which-is-almost-nothing) —* (V8, the possessive on a link)
+- `rendering/the-frame`:302 — *is [the client loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;* → *belongs to [the client loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not);* (V8, the possessive on a link)
+- `rendering/the-frame`:322 — *which two textures it is switching between is [lightmap, fog and sky](lightmap-fog-and-sky.md#how-bright-one-draw-per-tick-and-no-partial-ticks-at-all)'s.* → *which two textures it is switching between belongs to [lightmap, fog and sky](lightmap-fog-and-sky.md#how-bright-one-draw-per-tick-and-no-partial-ticks-at-all).* (V8, the possessive on a link)
+- `rendering/the-frame`:329 — *and what each does to the picture are [post-processing](post-processing.md#the-five-chains)'s.* → *and what each does to the picture belong to [post-processing](post-processing.md#the-five-chains).* (V8, the possessive on a link)
+- `rendering/the-window`:309 — *is [the client loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;* → *belongs to [the client loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not);* (V8, the possessive on a link)
+- `rendering/visibility-and-the-frame-graph`:333 — *cannot deliver it, is [section meshing](section-meshing.md#why-prioritise-chunk-updates-still-costs-you-a-frame)'s.* → *cannot deliver it, belong to [section meshing](section-meshing.md#why-prioritise-chunk-updates-still-costs-you-a-frame).* (V8, the possessive on a link)
+- `rendering/particles`:95 — ***Sixty-four** — quads in a full cube's puff, because* → ***Sixty-four quads** make a full cube's puff, because* (V9, the number device: the number and its noun one bold phrase, the sentence running on)
+- `rendering/post-processing`:146 — ***Three** — vertices in every post-processing draw, in all twenty-four passes* → ***Three vertices** make every post-processing draw, in all twenty-four passes* (V9, the number device: the number and its noun one bold phrase, the sentence running on)
+- `rendering/section-meshing`:103 — ***27** — the size of the halo a single block change marks, in *block positions*, not …* → ***Twenty-seven block positions** make the halo a single block change marks, positions and not sections.* (V9, the number device: the number and its noun one bold phrase, the sentence running on)
+- `rendering/section-meshing`:229 — ***Three** — the chunk section layers, and there are only three:* → ***Three chunk section layers** exist, and only three:* (V9, the number device: the number and its noun one bold phrase, the sentence running on)
+- `rendering/README`:94 — *for what the thing being drawn actually is* → *for what the thing being drawn is* (V5, *actually* as an intensifier)
+- `rendering/block-entity-rendering`:284 — *which is where the machines actually touch* → *which is where the machines touch* (V5, *actually* as an intensifier)
+- `rendering/models-and-atlases`:206 — *what transparency actually exists inside* → *what transparency exists inside* (V5, *actually* as an intensifier)
+- `rendering/particles`:326 — *whether the stitched sprite actually contains translucent texels* → *whether the stitched sprite contains translucent texels* (V5, *actually* as an intensifier)
+- `rendering/the-frame`:128 — *re-test whether a surface is actually held,* → *re-test whether a surface is held,* (V5, *actually* as an intensifier)
+- `rendering/the-frame`:339 — *and only once enough sections have actually been rendered.* → *and only once enough sections have been rendered.* (V5, *actually* as an intensifier)
+- `rendering/the-window`:258 — *| the pixels the renderer actually targets |* → *| the pixels the renderer targets |* (V5, *actually* as an intensifier)
+- `rendering/post-processing`:82 — *Both carry a *sampler name*, and two inputs on one pass sharing one is rejected by …* → *Both carry a *sampler name*, and two inputs on one pass sharing one is rejected by …* (V4, the em-dash chain)
+- `rendering/blaze3d`:210 — *It does not say which textures to bind or which target to draw into — and …* → *It does not say which textures to bind or which target to draw into. Those are …* (rule 3: drift outside the blockquote; V13: the drift table folded into one blockquote of at most eight lines, against 1.21.11 (Tesselator, TextureFormat, VertexFormat.Mode and IndexType, GpuDevice.getRenderer and Window.updateDisplay are 1.21.11's; RenderSystem.setShader, ShaderInstance, RenderStateShard, VertexBuffer, BufferUploader and setVsync are not))
+- `rendering/blaze3d`:394 — *> **For a 1.21-era reader.** Nearly every name you would reach for in this > corner …* → *> **For a 1.21-era reader.** *Tesselator* is gone: vertices go through a > `BufferBuilder` into a …* (rule 3: drift outside the blockquote; V13: the drift table folded into one blockquote of at most eight lines, against 1.21.11 (Tesselator, TextureFormat, VertexFormat.Mode and IndexType, GpuDevice.getRenderer and Window.updateDisplay are 1.21.11's; RenderSystem.setShader, ShaderInstance, RenderStateShard, VertexBuffer, BufferUploader and setVsync are not))
+
 ## Pass 8, session K — Part XI · Rendering: the figures *(2026-09-29)*
 
 Pass 7's session K, run inside pass 8 under [pass7-brief.md](pass7-brief.md)'s Part 1 and Part 2: the part's figures rendered
@@ -5807,31 +6328,31 @@ The gaps pass 9 has to work around:
 
 ### Figures changed — each ordering a claim
 
-- `rendering/section-meshing` f1: the first arrow is `MultiPlayerGameMode` →
+- ~~`rendering/section-meshing` f1: the first arrow is `MultiPlayerGameMode` →
   `ClientLevel` labelled `ClientLevel.setBlock` (inherited from `Level`),
   reached from `BlockItem.placeBlock` inside `useItemOn`'s prediction.
   **Correction** — it had said `useItemOn` arriving at `ClientLevel`, which is
   `MultiPlayerGameMode`'s own method (`client/multiplayer/MultiPlayerGameMode.java`:343;
-  `world/item/BlockItem.java`:151–152).
-- `rendering/entity-rendering` f2: `ZombieRenderer` → `ZombieRenderState`
+  `world/item/BlockItem.java`:151–152).~~ *(overtaken by session K's redraw; its *inherited from `Level`* is wrong in 26.3 (`client/multiplayer/ClientLevel.java`:239-253 overrides it) — pass 8, session L)*
+- ~~`rendering/entity-rendering` f2: `ZombieRenderer` → `ZombieRenderState`
   now reads *fills it, in extractRenderState* and *adds shadow pieces, in
   finalizeRenderState*. **Correction** — both had been drawn as the state's own
   methods; they are `EntityRenderer`'s, called from
   `EntityRenderer.createRenderState` (`client/renderer/entity/EntityRenderer.java`:165–168,
   :313–317, where `finalizeRenderState` runs `extractShadow`). The note naming
   five fields is now plain words and spans both lanes; the frame-graph note no
-  longer names the three drains.
-- `rendering/blaze3d` f2: the uniforms arrow is
+  longer names the three drains.~~ *(checked, and overtaken by session K's redraw (`client/renderer/entity/EntityRenderer.java`:164-170, :313-318) — pass 8, session L)*
+- ~~`rendering/blaze3d` f2: the uniforms arrow is
   `RenderSystem.bindDefaultUniforms`, a static call taking the pass
   (`com/mojang/blaze3d/systems/RenderSystem.java`:291) — **correction**, it had
   been drawn as the pass's own method; the reply says *the RenderPass, which
-  the caller must close* instead of naming `AutoCloseable`.
-- `rendering/visibility-and-the-frame-graph` f2: inside the main pass, in
+  the caller must close* instead of naming `AutoCloseable`.~~ *(checked: `RenderSystem.bindDefaultUniforms` is static and takes the pass (`com/mojang/blaze3d/systems/RenderSystem.java`:383-407) — pass 8, session L)*
+- ~~`rendering/visibility-and-the-frame-graph` f2: inside the main pass, in
   order — opaque terrain, `executeSolid`, the three depth copies,
   `executeTranslucent`, **then** `executeOutline` as its own node, translucent
   terrain, `executeTranslucentAfterTerrain`, each drain now qualified
   `FeatureRenderDispatcher.PreparedFrame` (`client/renderer/LevelRenderer.java`:399–420).
-  The split of one node into two asserts the translucent-then-outline order.
+  The split of one node into two asserts the translucent-then-outline order.~~ *(overtaken by V1's figure; 26.3 draws no depth copies (`client/renderer/LevelRenderer.java`:434-467) — pass 8, session L)*
 - ~~`world/chunk-generation-pipeline` f2: the parsed data returns from the
   worker to `ChunkMap`, where `SerializableChunkData.read` builds the chunk on
   the server thread. **Correction** — it had been drawn arriving at
@@ -7583,12 +8104,12 @@ top are one virtual call going down the override chain”).
   `ServerLevel.addFreshEntityWithPassengers` walks `Entity.getSelfAndPassengers`
   **vehicle first**; a reader of the figure alone concludes the vehicle is not
   one of the bodies. Now “once per body, the vehicle first”.~~ *(checked: `ServerLevelAccessor.java`:14–15 runs `Entity.getSelfAndPassengers`, self first; the method is declared on `ServerLevelAccessor`, not `ServerLevel` — see *Pass 8, session A*, correction 7 — pass 8, session A)*
-- `src/systems/rendering/visibility-and-the-frame-graph.md`:51-55 — five node
+- ~~`src/systems/rendering/visibility-and-the-frame-graph.md`:51-55 — five node
   labels beginning `1. ` … `5. ` rendered on the live site as the literal
   string *Unsupported markdown: list*, so five of the figure's six nodes were
   blank on the page. Out of this part, fixed anyway, and gated (see
   [pass5.md](pass5.md)). Only where a line ends changed; no arrow, no name,
-  no claim.
+  no claim.~~ *(checked: no label starts `1. ` — pass 8, session L)*
 
 ### Tools
 
@@ -9170,145 +9691,145 @@ Eleven system pages and the landing page, twelve readers, one each.
 
 **Corrections — each re-derived against the decompile by this session.**
 
-- `the-window`:36 — *"Every row but the first two lives in
+- ~~`the-window`:36 — *"Every row but the first two lives in
   com/mojang/blaze3d/platform"*, while the same sentence exempts `Minecraft`
   (row 1) and `GpuBackend` (row 3). `Window` is row 2 and *is* in *platform*
   (`com/mojang/blaze3d/platform/Window.java`). Rewritten as *two of those rows
-  live outside the package and the other six in it*.
-- `the-window`:158 — *"the two methods run the other way round from their
+  live outside the package and the other six in it*.~~ *(checked (two of the eight cast rows outside the package) — pass 8, session L)*
+- ~~`the-window`:158 — *"the two methods run the other way round from their
   names"*. `Window.calculateScale` calculates and returns; `Window.setGuiScale`
   stores and derives. Neither is inverted. What is true and more interesting is
   that the option is a **ceiling the result may miss in both directions**: the
   loop stops below it when the framebuffer would fall under `Window.BASE_WIDTH`
   × `Window.BASE_HEIGHT` (320×240), and the unicode round-up can push the
-  answer one *above* it (`Window.java`, `calculateScale`). Rewritten.
-- `the-window`:101 — *"is the subject of the last section"* for the seventh
+  answer one *above* it (`Window.java`, `calculateScale`). Rewritten.~~ *(checked (`com/mojang/blaze3d/platform/Window.java`:750-762) — pass 8, session L)*
+- ~~`the-window`:101 — *"is the subject of the last section"* for the seventh
   callback, which was in the closer; the last section is *Where to look*. The
   callback is now explained where it is introduced and the forward reference is
-  gone.
-- `the-window`:86 — *"the server's watchdog"* read as contradicting *"none of
+  gone.~~ *(checked (`com/mojang/blaze3d/platform/Window.java`:69; `client/Minecraft.java`:566) — pass 8, session L)*
+- ~~`the-window`:86 — *"the server's watchdog"* read as contradicting *"none of
   it exists on the server"*. Both are true and the sentence hid why:
   `ClientShutdownWatchdog` is in *blaze3d/platform* (client-only;
   `server-classes.txt` has no *com/mojang/blaze3d* entry at all) and calls
-  `ServerWatchdog.createWatchdogCrashReport`. Named exactly.
-- `the-frame`:37 — *"Nine zones"* over a sentence naming sixteen. Nine is right
+  `ServerWatchdog.createWatchdogCrashReport`. Named exactly.~~ *(checked (`client/ClientShutdownWatchdog.java`:33; `server-classes.txt`) — pass 8, session L)*
+- ~~`the-frame`:37 — *"Nine zones"* over a sentence naming sixteen. Nine is right
   for the frame's top-level zones but not for what the sentence listed, and the
   sentence also hid that **`Minecraft.renderFrame` pushes only eight of them**:
   *render* is pushed by `GameRenderer.render`, and *camera* — which the page
   never named at all — by `GameRenderer.update` (`Minecraft.java` `renderFrame`;
   `GameRenderer.java` `update`, `render`). Rebuilt as a table with a *pushed by*
-  column, so no count sits in a sentence.
-- `visibility-and-the-frame-graph`:64 — *"both are budgeted rather than
+  column, so no count sits in a sentence.~~ *(checked in its 26.3 form: fifteen zones, eleven `Minecraft.renderFrame`'s (`client/Minecraft.java`:1354-1489) — pass 8, session L)*
+- ~~`visibility-and-the-frame-graph`:64 — *"both are budgeted rather than
   complete"* of stages one and five. Stage five is budgeted; stage one is not.
   `SectionOcclusionGraph.runPartialUpdate` drains its whole propagation queue
   with no slice or quota (`SectionOcclusionGraph.java`). Rewritten as *the first
-  is a cache, the fifth is a budget*.
-- `lightmap-fog-and-sky`:297 — the weather said to be *"seeded from the clock"*.
+  is a cache, the fifth is a budget*.~~ *(checked (`client/renderer/SectionOcclusionGraph.java`:210-231; `client/renderer/LevelRenderer.java`:1360) — pass 8, session L)*
+- ~~`lightmap-fog-and-sky`:297 — the weather said to be *"seeded from the clock"*.
   `WeatherEffectRenderer` seeds each column's `RandomSource` from a hash of its
   own *x* and *z*; `level.getGameTime()` is passed separately and only scrolls
   the streaks (`WeatherEffectRenderer.java`). This also contradicted the page's
   own opening, which had it right. Heading and sentence rewritten, and the
   consequence — two clients see the same drops in the same places with nothing
-  sent between them — is now stated.
-- `particles` figure — the flowchart routed unlimited particles straight to
+  sent between them — is now stated.~~ *(checked (`client/renderer/WeatherEffectRenderer.java`:92-94, :224-243), given the two clients' synced time — pass 8, session L)*
+- ~~`particles` figure — the flowchart routed unlimited particles straight to
   `ParticleGroup.add`, past the queue. `ParticleEngine.add` puts **every**
   surviving particle in `ParticleEngine.particlesToAdd`; the limit decides
   whether it is queued at all, not whether it is deferred
-  (`ParticleEngine.java`). Arrow redrawn.
-- `block-entity-rendering`:266 — `ShelfRenderState.items` said to reach
+  (`ParticleEngine.java`). Arrow redrawn.~~ *(checked (`client/particle/ParticleEngine.java`:66-78, :104-110) — pass 8, session L)*
+- ~~`block-entity-rendering`:266 — `ShelfRenderState.items` said to reach
   `ChestSpecialRenderer`. It is an array of three `ItemStackRenderState`
   submitted through `ItemStackRenderState.submit`, so it reaches whatever
   special renderer *that item's own model* names — a chest only if the shelved
-  item is one (`ShelfRenderer.java`, `ShelfRenderState.java`). Rewritten.
-- `models-and-atlases`:196 — *"**twelve** separate layers"* of soft failure,
+  item is one (`ShelfRenderer.java`, `ShelfRenderState.java`). Rewritten.~~ *(checked (`client/renderer/blockentity/state/ShelfRenderState.java`:9; `client/renderer/blockentity/ShelfRenderer.java`:48-51, :86) — pass 8, session L)*
+- ~~`models-and-atlases`:196 — *"**twelve** separate layers"* of soft failure,
   enumerating eleven at most. Replaced with a two-column table (*what goes
   wrong* · *what you get instead*) and no numeral, which is the shape that
-  cannot go stale.
-- `models-and-atlases`:216 — *"Only now does the Render thread do anything"*
+  cannot go stale.~~ *(overtaken: the table stands with no numeral — pass 8, session L)*
+- ~~`models-and-atlases`:216 — *"Only now does the Render thread do anything"*
   against the page's own figure, which puts `AtlasManager.prepareSharedState`
   on the Render thread before any task runs. Rewritten to name that one prior
-  step.
-- `models-and-atlases`:84 — *"Two properties of that packing"* followed by
-  three. Reworded to two properties and a setting that rides on both.
-- `entity-rendering`:199 — *"exactly one layer in the game asks for a
+  step.~~ *(the rewrite, *exactly one thing*, was wrong: the Render thread calls every listener's shared state and reload (`server/packs/resources/SimpleReloadInstance.java`:69-83) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`models-and-atlases`:84 — *"Two properties of that packing"* followed by
+  three. Reworded to two properties and a setting that rides on both.~~ *(checked (`client/renderer/texture/SpriteLoader.java`:56-86); the slider asks for a full resource reload — see *Pass 8, session L* — pass 8, session L)*
+- ~~`entity-rendering`:199 — *"exactly one layer in the game asks for a
   **negative** order"* and never named it. It is `SulfurCubeInnerLayer`
-  (`SulfurCubeInnerLayer.java`, `order(-1)`). Named.
-- `blaze3d`:115 — *"Vulkan leaks upward in two places, not one … The two
+  (`SulfurCubeInnerLayer.java`, `order(-1)`). Named.~~ *(checked (`client/renderer/entity/layers/SulfurCubeInnerLayer.java`:51, the only `order(-`) — pass 8, session L)*
+- ~~`blaze3d`:115 — *"Vulkan leaks upward in two places, not one … The two
   exemptions are one, granted twice"*, which named three things and resolved to
   nothing. Re-derived: exactly two files outside `com/mojang/blaze3d/vulkan`
   import Vulkan bindings (`NativeLibrariesBootstrap` and `RenderPass`),
   mirroring OpenGL's two; and `BackendCreationException.Reason` has ten
   constants of which seven are Vulkan-named. Rewritten with the two facts
-  separated.
-- `block-entity-rendering`:339 — *"the six ways the table above records"*; the
+  separated.~~ *(wrong as the page stated it: OpenGL has one importer outside its backend, not two, and `FrontendRenderPass`'s Vulkan import has no OpenGL mirror (`com/mojang/blaze3d/platform/NativeLibrariesBootstrap.java`:44; `com/mojang/renderpearl/frontend/FrontendRenderPass.java`:33-34) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`block-entity-rendering`:339 — *"the six ways the table above records"*; the
   nearest table has six rows recording one thing, and the comparison table
-  seven. Replaced with what the renderers actually differ in.
-- `block-entity-rendering` — *"the two gates"* named three different pairs on
+  seven. Replaced with what the renderers actually differ in.~~ *(the replacement, *differ only in how far … and what they put in their render state*, left out the off-screen list and the gizmo renderers — see *Pass 8, session L* — pass 8, session L)*
+- ~~`block-entity-rendering` — *"the two gates"* named three different pairs on
   one page (the cast row, *Two extra gates*, *Where to look*). There are
   **three** gates: the section fade in `LevelExtractor`, the off-screen flag
   equality and the distance test, the last two both in
-  `BlockEntityRenderDispatcher.tryExtractRenderState`. Said once, as three.
-- `entity-rendering`:101 — *"three tests in two places"* followed by a list that
+  `BlockEntityRenderDispatcher.tryExtractRenderState`. Said once, as three.~~ *(checked as three visibility gates (`client/renderer/extract/LevelExtractor.java`:319; `client/renderer/blockentity/BlockEntityRenderDispatcher.java`:68, :70); *at all* overstated them — see *Pass 8, session L* — pass 8, session L)*
+- ~~`entity-rendering`:101 — *"three tests in two places"* followed by a list that
   reads as three inside `EntityRenderer.shouldRender`. `Entity.shouldRender`
   *is* the distance test, and the frustum is the second
   (`EntityRenderer.java`). Repunctuated so the appositive cannot be read as a
-  third item.
-- `entity-rendering`:277 — *"thirteen kinds of submit"* sitting against a
+  third item.~~ *(checked (`client/renderer/entity/EntityRenderer.java`:66-78) — pass 8, session L)*
+- ~~`entity-rendering`:277 — *"thirteen kinds of submit"* sitting against a
   nine-name list. Both are right and they are different populations: thirteen
   `FeatureRendererType` constants, of which only `ModelFeatureRenderer.Submit`
   and `CustomFeatureRenderer.Submit` implement `BatchableSubmit`. The list is
-  now said to be nine of the thirteen, with the other four named.
-- `post-processing` — four target counts (seven names, one/two/six, six of the
+  now said to be nine of the thirteen, with the other four named.~~ *(wrong in 26.3: twelve feature-renderer types, not thirteen (`client/renderer/feature/FeatureRenderDispatcher.java`:45-56) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`post-processing` — four target counts (seven names, one/two/six, six of the
   caller's, five internal) all correct and never reconciled. `MAIN_TARGETS` is
   1, `OUTLINE_TARGETS` 2, `SORTING_TARGETS` 6, and `LevelRenderer` creates five
   internal targets (`LevelTargetBundle.java`, `LevelRenderer.java`); one clause
-  now says the six are the main target plus those five.
-- Part-wide — **"client thread" and "Render thread" used for one thread**, 17
+  now says the six are the main target plus those five.~~ *(overtaken: `LevelTargetBundle` has two sets, of one and two names (`client/renderer/LevelTargetBundle.java`:15-16) — pass 8, session L)*
+- ~~Part-wide — **"client thread" and "Render thread" used for one thread**, 17
   of the corpus's 23 uses of the first being in this part, on the four pages
   where a worker/main split is the subject. `src/reference/threads.md` settles
   it: the Render thread *is* the client's JVM main thread, renamed. Normalised
-  to *Render thread* throughout the part.
+  to *Render thread* throughout the part.~~ *(checked in part: two *client thread* and nine lower-case *render thread* had survived the normalisation (`visibility-and-the-frame-graph`, `blaze3d`, `post-processing`); all now *Render thread* — see *Pass 8, session L* — pass 8, session L)*
 
 **Claims this session introduced.**
 
-- `the-frame`'s zone table: the *pushed by* column for all twelve rows, the
+- ~~`the-frame`'s zone table: the *pushed by* column for all twelve rows, the
   *camera* zone as `GameRenderer.update`'s, and the claim that *gpuAsync* is
-  closed before the drawing starts.
-- `the-frame`'s *What a minimized client actually stops doing*, promoted whole
+  closed before the drawing starts.~~ *(checked (`client/Minecraft.java`:1426-1429); the extract and render rows lacked the world guard — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-frame`'s *What a minimized client actually stops doing*, promoted whole
   out of the closer, with its claim that the three statements that drop out are
-  the acquire and the two guarded ones.
-- `the-frame`'s definition of a **non-ticking frame** and its three call sites,
-  moved up out of the closer into *Update and extract*.
-- `the-window`'s opening paragraph declaring the page the **platform layer**,
-  and its claim that the three subjects share a role rather than a scenario.
-- `the-window`'s *The list is never one candidate long*, *How the loop knows why
+  the acquire and the two guarded ones.~~ *(checked (`client/Minecraft.java`:1373, :1454, :1472); the limit of ten is `FramerateLimitTracker.getFramerateLimit`'s — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-frame`'s definition of a **non-ticking frame** and its three call sites,
+  moved up out of the closer into *Update and extract*.~~ *(wrong as a population: after an out-of-memory recovery every frame is non-ticking (`client/Minecraft.java`:935, :964) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-window`'s opening paragraph declaring the page the **platform layer**,
+  and its claim that the three subjects share a role rather than a scenario.~~ *(checked as structure; *every … glyph* was wrong for the unihex font (`client/gui/font/providers/UnihexProvider.java`:433-438) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-window`'s *The list is never one candidate long*, *How the loop knows why
   a window did not appear* (the `GLFWErrorScope` / `GLFWErrorCapture` pairing as
   the mechanism behind `GpuBackend.handleWindowCreationErrors`) and *The
-  seventh, which is not the constructor's*, all promoted out of the closer.
-- `the-window`'s *The corners the story does not pass through*: the claim that
+  seventh, which is not the constructor's*, all promoted out of the closer.~~ *(checked as structure — pass 8, session L)*
+- ~~`the-window`'s *The corners the story does not pass through*: the claim that
   `TextureUtil.solidify` and `TextureUtil.fillEmptyAreasWithDarkColor` are why
-  mip averaging cannot bleed a colour that was never in the texture.
-- `blaze3d`'s claim that `BackendCreationException` naming seven Vulkan failures
+  mip averaging cannot bleed a colour that was never in the texture.~~ *(wrong as a universal (`client/renderer/texture/MipmapGenerator.java`:97-110) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`blaze3d`'s claim that `BackendCreationException` naming seven Vulkan failures
   out of ten means the neutral façade layer knows a great deal about one of its
   two APIs; and the `GlHeuristics` sniffing and the two-deep submit fence,
-  promoted out of the closer, the second under *How a frame reaches the screen*.
-- `visibility-and-the-frame-graph`: the cache/budget distinction for stages one
-  and five.
-- `section-meshing`'s *Why "prioritise chunk updates" still costs you a frame*,
+  promoted out of the closer, the second under *How a frame reaches the screen*.~~ *(checked as V2 renumbered it: eleven reasons, eight Vulkan's (`com/mojang/renderpearl/api/device/BackendCreationException.java`:30) — pass 8, session L)*
+- ~~`visibility-and-the-frame-graph`: the cache/budget distinction for stages one
+  and five.~~ *(checked (same evidence) — pass 8, session L)*
+- ~~`section-meshing`'s *Why "prioritise chunk updates" still costs you a frame*,
   promoted out of the closer; and the claim that `SectionCompiler` builds **two**
-  `BlockQuadOutput` callbacks per compile and picks between them per block.
-- `models-and-atlases`: the ten-row soft-failure table; the
+  `BlockQuadOutput` callbacks per compile and picks between them per block.~~ *(checked (`client/renderer/LevelRenderer.java`:263 before :283; `client/renderer/chunk/SectionCompiler.java`:58-67) — pass 8, session L)*
+- ~~`models-and-atlases`: the ten-row soft-failure table; the
   `BlockStateModel` / `BlockModel` trap moved to first use; the atlas dump named
   as `Options.keyDebugDumpDynamicTextures` → `TextureManager.dumpAllSheets`,
-  plus `SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS`.
-- `block-entity-rendering`: the claim that 26 types are served by 24 classes
-  because `ChestRenderer` takes three of them.
-- `particles`: `ParticleRenderType`'s four constants named as the population
-  every *four* on the page counts against.
-- `post-processing`: the opening's reframing of the sixth chain as the *improved
+  plus `SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS`.~~ *(checked for the table's form and the dump; two rows (a broken blockstate file, a missing parent) were wrong — see *Pass 8, session L* — pass 8, session L)*
+- ~~`block-entity-rendering`: the claim that 26 types are served by 24 classes
+  because `ChestRenderer` takes three of them.~~ *(checked (`client/renderer/blockentity/BlockEntityRenderers.java`:37-74, 26 registrations over 24 classes, `ChestRenderer` three) — pass 8, session L)*
+- ~~`particles`: `ParticleRenderType`'s four constants named as the population
+  every *four* on the page counts against.~~ *(wrong page-internally: the section's *four* layers are not render types — see *Pass 8, session L* — pass 8, session L)*
+- ~~`post-processing`: the opening's reframing of the sixth chain as the *improved
   transparency* option, and the claim that a seventh file parses, loads and is
-  never asked for.
-- `rendering/README`: the claim that Part XI's coverage figure is the
+  never asked for.~~ *(overtaken: no transparency chain ships in 26.3 (`assets/minecraft/post_effect/`, five files) — pass 8, session L)*
+- ~~`rendering/README`: the claim that Part XI's coverage figure is the
   **second-highest in the book after Part V's** — written first as *the
   highest*, which the regenerated phrases disproved within the session (blocks
   48%, rendering 41%), and corrected before the commit. The argument reversed
@@ -9316,7 +9837,7 @@ Eleven system pages and the landing page, twelve readers, one each.
   world, and every seam a player notices is two copies disagreeing**; the figure's arrows declared to be
   reading order only, with two of them the reverse of a frame's order; the
   substrate-to-frame edge reversed; and *Where the part stops* written as a
-  section with the coverage include.
+  section with the coverage include.~~ *(checked (`generated/coverage-*.md`: V 47%, XI 41%); the sentence beside the include, *Teaching six shapes*, named four families — see *Pass 8, session L* — pass 8, session L)*
 - `src/lectures.md`: Part XI's paragraph re-argued as the one inversion in the
   book's order made for the viewer rather than for the dependencies.
 - `src/reference/naming-drift.md`: a row for the four `Camera` accessors that
@@ -11593,13 +12114,13 @@ come first.*
    smallest part of the book with a system in it", naming Part I as the
    exception.~~ *(checked (`src/generated/part-anatomy.md`, `part-player.md`: 7 classes against 32) — pass 8, session H)*
 
-6. **`rendering/README`:24 — "the largest thing on the client by a distance".**
+6. ~~**`rendering/README`:24 — "the largest thing on the client by a distance".**
    Part XI is 1,254 classes and 93,012 lines; Part X is 677 and **93,640**. By
    lines Part X is larger; by classes Part XI is nearly double. Now "the largest
    thing on the client, by classes and by a distance — nearly twice Part X's, in
    about the same number of lines". (The comparison the sentence goes on to make,
    420 classes and 53,000 lines for the whole of `net/minecraft/server`, was
-   re-derived and is right: 420 files, 52,720 lines.)
+   re-derived and is right: 420 files, 52,720 lines.)~~ *(checked in its current form (*the largest thing on the client*; `generated/part-rendering.md` against `part-client.md`); *a third the size* holds by classes only — see *Pass 8, session L* — pass 8, session L)*
 
 7. ~~**`networking/README`:125 — "the whole of `net/minecraft/network`".**
    `map_source.py`'s Part IX subtracts `net/minecraft/network/syncher` and gives
@@ -11904,10 +12425,10 @@ states.
 18. **`reference/naming-drift`:496** — backticked `Minecraft.setScreen`, which
     does not exist in 26.2 (`Minecraft.java` has only `setScreenAndShow`, and the
     field lives on `Gui`). Italicised, as the page's own rule requires.
-19. **`rendering/the-window`:302-303** — "*ScreenManager*, which never existed
+19. ~~**`rendering/the-window`:302-303** — "*ScreenManager*, which never existed
     here" against `naming-drift`:313, which lists it as a rename. Whether an older
     tree used the name is outside rule 3; the sentence now states only what 26.2
-    settles (monitor handling is `MonitorManager`) and cites the rename table.
+    settles (monitor handling is `MonitorManager`) and cites the rename table.~~ *(checked: the 1.21.11 tree has `ScreenManager`, and the blockquote now names it as now `MonitorManager` — pass 8, session L)*
 20. **`reference/math-and-primitives`:116** — "two things called `Axis`". Three:
     `Direction.Axis`, `com/mojang/math/Axis`, `ChunkPalettedStorageFix.Axis`. Now
     "two in scope", with the third named as out of it.
@@ -12542,15 +13063,15 @@ itself. Corrections first, then the claims the session introduced, which pass
 
 ### Corrections — what the page said, what the decompile says
 
-1. **`rendering/entity-rendering`:97** said "Visibility is **two tests in two
+1. ~~**`rendering/entity-rendering`:97** said "Visibility is **two tests in two
    places**. The frustum test is `EntityRenderer.shouldRender`". That method
    runs *two* tests, in order: `Entity.shouldRender(camX, camY, camZ)`, a
    distance test scaled by the entity's bounding box, and only then
    `Frustum.isVisible` (`EntityRenderer.java`:66–78). `block-entity-rendering`
    :162 had it right and the entity page had it half right, so the sibling
    taught the entity rule better than the entity page. Now **three tests in
-   two places**, with the distance half stated.
-2. **`rendering/post-processing`:12** said "every chain this game will ever
+   two places**, with the distance half stated.~~ *(checked for the two renderer tests (`client/renderer/entity/EntityRenderer.java`:66-78); the third is a look-up of the entity's own section, not the walk — see *Pass 8, session L* — pass 8, session L)*
+2. ~~**`rendering/post-processing`:12** said "every chain this game will ever
    load is named by a constant in Java, and there are only six of those",
    while its own :251 said three of the six are "built inside
    `GameRenderer.checkEntityPostEffect`". Three are `static final` fields
@@ -12558,7 +13079,7 @@ itself. Corrections first, then the claims the session introduced, which pass
    inline `Identifier.withDefaultNamespace` literals in a switch
    (`GameRenderer.java`:213–223). The page contradicted itself; the claim it
    wants — the set of ids is closed and written in Java — survives, and now
-   says three constants and three literals.
+   says three constants and three literals.~~ *(overtaken: the page says the set of chains is open (`client/renderer/GameRenderer.java`:107, :462-464) — pass 8, session L)*
 3. **`reference/submit-phases`:64** said a quad-particle group is submitted
    **once** and lands in two phases. `SubmitNodeCollection.submitQuadParticleGroup`
    (`SubmitNodeCollection.java`:250–253) builds **two** separate
@@ -12566,7 +13087,7 @@ itself. Corrections first, then the claims the session introduced, which pass
    `afterTerrain`. `particles`:287 said twice and was right; the Reference page
    said once and was wrong. Now "reaches the collector in one call and becomes
    two nodes".
-4. **`rendering/the-window`:197** said "An atlas is assembled into one with
+4. ~~**`rendering/the-window`:197** said "An atlas is assembled into one with
    `NativeImage.copyRect`, `NativeImage.resizeSubRectTo` and
    `NativeImage.fillRect`". None of the three assembles an atlas.
    `copyRect`/`fillRect` are used by `Unstitcher` (a sprite *source*, before
@@ -12574,23 +13095,23 @@ itself. Corrections first, then the claims the session introduced, which pass
    `resizeSubRectTo` has exactly one caller in the game,
    `GameRenderer.java`:512, the world-icon downscale. The atlas is assembled
    on the GPU, which `models-and-atlases`:219 already said. Rewritten to what
-   the methods do, with a sentence saying what an atlas is *not*.
-5. **`rendering/visibility-and-the-frame-graph`:61** said
+   the methods do, with a sentence saying what an atlas is *not*.~~ *(checked (`client/renderer/texture/TextureAtlas.java`:184-217); the `NativeImage.untrack` clause beside it was wrong — see *Pass 8, session L* — pass 8, session L)*
+5. ~~**`rendering/visibility-and-the-frame-graph`:61** said
    `LevelExtractor.applyFrustum` "is the last thing *extract* does".
    `LevelExtractor.extract` (`LevelExtractor.java`:96–141) runs it near the
    *top*, right after `prepareDispatchers`, and everything after it —
    entities, block entities, dirty sections — reads the list it just filled.
    Three other pages depend on that order. Rewritten to "runs near the top of
-   extract", and the consequence stated as the finding it is.
-6. **`rendering/models-and-atlases`:298** said the display block-model table
+   extract", and the consequence stated as the finding it is.~~ *(checked for the order; entities do not read the list (`client/renderer/extract/LevelExtractor.java`:288-299) — see *Pass 8, session L* — pass 8, session L)*
+6. ~~**`rendering/models-and-atlases`:298** said the display block-model table
    is used by "item frames, **block entities** and ten entity renderers". No
    block-entity renderer reads it. `BlockModelResolver` reaches the
    block-entity side only as a field of `BlockEntityRendererProvider.Context`
    (`BlockEntityRenderDispatcher.java`:102), which nothing under
    `renderer/blockentity` or `renderer/special` calls. Eleven entity
    renderers read it and nothing else does. The sentence is cut (the table is
-   now `block-entity-rendering`'s) and the owner states the `Context` fact.
-7. **`rendering/lightmap-fog-and-sky`:324** said "the weather reads neither
+   now `block-entity-rendering`'s) and the owner states the `Context` fact.~~ *(checked (`client/renderer/blockentity/BlockEntityRenderDispatcher.java`:102); *Two tables come out of a bake* meant the two block tables — see *Pass 8, session L* — pass 8, session L)*
+7. ~~**`rendering/lightmap-fog-and-sky`:324** said "the weather reads neither
    clock nor attribute, seeding each column from its own coordinates" — while
    the same page's opening (:15) said the rain's texture scrolls off the raw
    world clock. `WeatherEffectRenderer` passes `level.getGameTime()` into both
@@ -12598,21 +13119,21 @@ itself. Corrections first, then the claims the session introduced, which pass
    (`WeatherEffectRenderer.java`:93–95), and the snow's `vOffset` is
    built from `ticks & 511L` (:236). The *seed* is coordinates, the *scroll*
    is the clock. The page was contradicting itself and the closing sentence
-   was the wrong half.
-8. **`rendering/the-window`:36** said "All of it lives in
+   was the wrong half.~~ *(checked (`client/renderer/WeatherEffectRenderer.java`:92-94, :99, :101) — pass 8, session L)*
+8. ~~**`rendering/the-window`:36** said "All of it lives in
    *com/mojang/blaze3d/platform*" of a cast table whose first two rows are
    `Minecraft` (`net/minecraft/client`) and `GpuBackend`
-   (`com/mojang/blaze3d/systems`). Now "every row but the first two".
-9. **`rendering/the-window`:244** claimed the *rest of the package* and
+   (`com/mojang/blaze3d/systems`). Now "every row but the first two".~~ *(overturned by pass 6's entry, which is checked — pass 8, session L)*
+9. ~~**`rendering/the-window`:244** claimed the *rest of the package* and
    omitted seven of the twenty-five classes in it, `TextureUtil` (288 lines)
    the largest. Five of the seven are pipeline state and belong to
-   `blaze3d`; the sentence now says so and `TextureUtil` is explained.
-10. **`rendering/the-frame`:78** described the *update window* zone as
+   `blaze3d`; the sentence now says so and `TextureUtil` is explained.~~ *(misleading again in 26.3: the package account left out `Lighting` — see *Pass 8, session L* — pass 8, session L)*
+10. ~~**`rendering/the-frame`:78** described the *update window* zone as
     "reconfigures the surface if it needs it and then calls
     `GpuSurface.acquireNextTexture`". `Minecraft.java`:1341–1342 opens the zone
     with `Window.updateFullscreenIfChanged`, which `the-window`:166 states and
     `the-frame` omitted. The zone now has three statements and the first is
-    cited to its owner.
+    cited to its owner.~~ *(checked (`client/Minecraft.java`:1354-1379); the vsync sentence beside it was wrong on both halves — see *Pass 8, session L* — pass 8, session L)*
 11. **`reference/naming-drift`:396** said the frame "builds an immutable
     render state **on the game thread**". Both halves run on the Render thread
     (`Minecraft.renderFrame`), and the glossary already retired *immutable*
@@ -12622,12 +13143,12 @@ itself. Corrections first, then the claims the session introduced, which pass
     for the `hasAllNeighbors` light gate, which is two sections later under
     *The sweep that only looks at what you can see*. The anchor existed, so
     `check_links.py` passed it; repointed.~~ *(checked (`src/systems/rendering/section-meshing.md`:116) — pass 8, session D)*
-13. **`rendering/section-meshing`:282** said *BlockRenderDispatcher* is
+13. ~~**`rendering/section-meshing`:282** said *BlockRenderDispatcher* is
     "gone", while `reference/naming-drift`:302 gives `ModelBlockRenderer` as
     its successor. Both are true of different things; the drift box now says
     the name is gone and `ModelBlockRenderer` does the tesselating, and
     `BlockAndTintGetter.getShade` is separated out as the one with no
-    successor at all.
+    successor at all.~~ *(checked for `BlockRenderDispatcher`; *getShade has no successor* was wrong (`client/renderer/block/BlockAndTintGetter.java`:59) — see *Pass 8, session L* — pass 8, session L)*
 14. **`reference/submit-phases`:31** said three phases are a
     `TranslucentFeatureRenderPhase` without saying which. They are rows 4, 7
     and 8 — `seeThroughNameTags`, `translucentBlocksAndItems`,
@@ -12637,23 +13158,23 @@ itself. Corrections first, then the claims the session introduced, which pass
 
 ### Suspicions re-derived and found sound — a strike is a claim
 
-- `post-processing`:239, the F3 pie chart. The camera-entity chain runs in
+- ~~`post-processing`:239, the F3 pie chart. The camera-entity chain runs in
   `GameRenderer.render` *after* `renderLevel` has returned
   (`GameRenderer.java`:443–449), so it is inside the *world* zone but outside
   all five of `renderLevel`'s sub-zones, *screenEffects* included. Both pages
-  were right and neither needed changing.
-- `the-frame`:137, `TickRateManager.isEntityFrozen` "excludes anything with a
+  were right and neither needed changing.~~ *(checked (`client/renderer/GameRenderer.java`:521-526) — pass 8, session L)*
+- ~~`the-frame`:137, `TickRateManager.isEntityFrozen` "excludes anything with a
   player aboard", against `block-entity-rendering`:263, "never freezes a
   `Player`". `TickRateManager.java`:73 excludes both, and each page states the
-  half its own scenario needs. No contradiction.
-- `the-window`:221, the error callback "swapped three times over the game's
+  half its own scenario needs. No contradiction.~~ *(checked (`world/TickRateManager.java`:73) — pass 8, session L)*
+- ~~`the-window`:221, the error callback "swapped three times over the game's
   life". True as a lifecycle statement (`Window.java`:312, 335, 346); the
   scoped swaps are a fourth *kind*, now written as such rather than as a
-  correction to the count.
-- `the-window`:256, "*ScreenManager*, which never existed here", against
+  correction to the count.~~ *(overtaken: GLFW is gone; the `SdlDebug` sentence is checked (`com/mojang/blaze3d/systems/RenderSystem.java`:206, :220) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-window`:256, "*ScreenManager*, which never existed here", against
   `naming-drift`:312. Left: rule 3 makes the page a claim about 26.2, and the
   drift row is a claim about where a 1.21 reader should look. Logged for pass
-  9 rather than settled here.
+  9 rather than settled here.~~ *(checked: 26.3 has no *ScreenManager*; the 1.21.11 tree has one, and the blockquote now says it is `MonitorManager` — pass 8, session L)*
 
 ### Claims introduced
 
@@ -12664,64 +13185,64 @@ itself. Corrections first, then the claims the session introduced, which pass
   batch-key explanation, `RenderTypeFeatureRenderer.Group` and
   `RenderType.canConsolidateConsecutiveGeometry` moving with it. The Reference
   page keeps the 12:3 split, now enumerated, and a link.
-- The **two baked block-model tables** settled to `block-entity-rendering`
+- ~~The **two baked block-model tables** settled to `block-entity-rendering`
   (its scenario, its figure); `models-and-atlases` keeps the `BlockModel`
-  naming trap and a link.
-- The **`prepareSharedState` handshake** cut to a citation of
+  naming trap and a link.~~ *(checked (`client/resources/model/ModelManager.java`:69-70, :323-324; `models-and-atlases` keeps the trap and links here) — pass 8, session L)*
+- ~~The **`prepareSharedState` handshake** cut to a citation of
   `resource-system#the-shared-state-channel`; `models-and-atlases` keeps only
-  which end of it it is (thirteen published, two awaited).
-- **Directional shading and `CardinalLighting`** moved off `visibility` onto
-  `lightmap-fog-and-sky`'s *What is not an attribute*.
-- **The compile ordering** (`compileSections` after `FrameGraphBuilder.execute`)
+  which end of it it is (thirteen published, two awaited).~~ *(checked, overtaken in its count: 26.3 publishes twelve stitches, not thirteen (`client/resources/model/sprite/AtlasManager.java`:31), and `ParticleResources` awaits a third (`client/particle/ParticleResources.java`:222) — see *Pass 8, session L* — pass 8, session L)*
+- ~~**Directional shading and `CardinalLighting`** moved off `visibility` onto
+  `lightmap-fog-and-sky`'s *What is not an attribute*.~~ *(checked (`models-and-atlases`' neighbour `lightmap-fog-and-sky`, *What is not an attribute*); its *What does the picking is `Lighting`* was wrong — see *Pass 8, session L* — pass 8, session L)*
+- ~~**The compile ordering** (`compileSections` after `FrameGraphBuilder.execute`)
   split: `visibility` keeps where the call sits, `section-meshing` keeps what
-  it costs, each citing the other.
-- **The wall** cut on `visibility` to one sentence and an anchor into
-  `the-frame`.
-- **The frame cap** cut on `the-frame` and `the-window` to citations of
-  `the-client-loop`, which receives the *iconified, not unfocused* distinction.
-- **`ClientShutdownWatchdog`** cut on `the-window` to the one arming it owns;
+  it costs, each citing the other.~~ *(checked: `visibility-and-the-frame-graph` keeps where the call sits and `section-meshing` what it costs, each citing the other (`client/renderer/LevelRenderer.java`:263, :283) — pass 8, session L)*
+- ~~**The wall** cut on `visibility` to one sentence and an anchor into
+  `the-frame`.~~ *(checked: `visibility-and-the-frame-graph` cites `the-frame`'s wall anchor and keeps one sentence — pass 8, session L)*
+- ~~**The frame cap** cut on `the-frame` and `the-window` to citations of
+  `the-client-loop`, which receives the *iconified, not unfocused* distinction.~~ *(checked; *the top slider position never parks at all* was wrong — see *Pass 8, session L* — pass 8, session L)*
+- ~~**`ClientShutdownWatchdog`** cut on `the-window` to the one arming it owns;
   `the-client-loop` receives the fifteen-second sleep, the daemon thread and
-  the report-only-versus-halt difference.
-- **The minimised-window answer** won by `the-frame`; `the-window` cut to
-  `Window.isMinimized` plus the anchor.
-- **The backend-choice answer** won by `the-window` — its figure draws the
+  the report-only-versus-halt difference.~~ *(checked (`client/Minecraft.java`:576; `client/main/Main.java`:291) — pass 8, session L)*
+- ~~**The minimised-window answer** won by `the-frame`; `the-window` cut to
+  `Window.isMinimized` plus the anchor.~~ *(checked (`client/Minecraft.java`:1356, :1371-1377); the menu's vote spares a world opened to LAN — see *Pass 8, session L* — pass 8, session L)*
+- ~~**The backend-choice answer** won by `the-window` — its figure draws the
   retry loop — and it receives the ordered pair, `GlBackend`/`VulkanBackend`,
   the OpenGL-first default and the unclean-shutdown double downgrade from
-  `blaze3d`, which keeps one sentence.
-- **The static-pipeline precompile** and **the two-stage GLSL preprocessing**
+  `blaze3d`, which keeps one sentence.~~ *(checked for the pair (`client/PreferredGraphicsApi.java`:32-37); the downgrade is one step per start after a start that never finished loading — see *Pass 8, session L* — pass 8, session L)*
+- ~~**The static-pipeline precompile** and **the two-stage GLSL preprocessing**
   won by `blaze3d`, which receives the reload phase, the thread and the
-  all-or-nothing cache swap; `post-processing` cut to citations.
-- **The *Globals* block's seven members** moved to `blaze3d` and enumerated
+  all-or-nothing cache swap; `post-processing` cut to citations.~~ *(checked: `post-processing` cites `blaze3d` for both (`client/renderer/ShaderManager.java`:74-93) — pass 8, session L)*
+- ~~**The *Globals* block's seven members** moved to `blaze3d` and enumerated
   from `GlobalSettingsUniform.UBO_SIZE`; `post-processing` keeps the
-  consequence.
-- **`CrossFrameResourcePool`'s three-frame hold** moved off the part's last
-  page onto `visibility`, beside `createInternal`.
-- **The frame-graph inspector** moved from `post-processing` onto `visibility`,
-  which owns `FrameGraphBuilder.execute`; `post-processing` keeps the contrast.
-- **The spectator-chain answer** won by `post-processing`; `the-frame` cut to
+  consequence.~~ *(checked (`client/renderer/GlobalSettingsUniform.java`:14, :30); *in front of every draw* and *the whole of what a shader may know* were wrong — four blocks are bound, and two passes bind none — see *Pass 8, session L* — pass 8, session L)*
+- ~~**`CrossFrameResourcePool`'s three-frame hold** moved off the part's last
+  page onto `visibility`, beside `createInternal`.~~ *(checked: `visibility-and-the-frame-graph` carries it beside `createInternal` (`client/renderer/GameRenderer.java`:129, `new CrossFrameResourcePool(3)`) — pass 8, session L)*
+- ~~**The frame-graph inspector** moved from `post-processing` onto `visibility`,
+  which owns `FrameGraphBuilder.execute`; `post-processing` keeps the contrast.~~ *(checked (`client/renderer/LevelRenderer.java`:263-277; `com/mojang/blaze3d/framegraph/FrameGraphBuilder.java`:51-53) — pass 8, session L)*
+- ~~**The spectator-chain answer** won by `post-processing`; `the-frame` cut to
   one clause and an anchor. **The UI lightmap** won by `lightmap-fog-and-sky`,
   which receives the `levelLightmap`/`uiLightmap` pair; `the-frame`'s Q&A cut
-  to the answer and a link.
-- **The hand's second submit storage** won by `the-frame`, which now names
+  to the answer and a link.~~ *(checked (`the-frame` keeps a clause and the anchor `post-processing.md#the-five-chains`) — pass 8, session L)*
+- ~~**The hand's second submit storage** won by `the-frame`, which now names
   `ItemInHandRenderer` and `ScreenEffectRenderer` and pays off the hand-forward
   `entity-rendering`:293 had been making to it; `block-entity-rendering` cut to
   a citation. **The six partial ticks** stay `the-frame`'s and
   `block-entity-rendering` keeps only its own difference, which is the declared
-  pair's business.
+  pair's business.~~ *(checked (`client/renderer/GameRenderer.java`:133, :399, :763-764) — pass 8, session L)*
 
 **Coverage written.**
 
-- `models-and-atlases`: the three branching item models and **thirty-three
+- ~~`models-and-atlases`: the three branching item models and **thirty-three
   properties in three registries** (10 numeric, 10 select, 13 conditional),
   `NeedleDirectionHelper`'s per-stack damped compass needle and its
   *wobble: false* opt-out, `LocalTime`'s once-a-second re-read, and
   `DisplayContext`. This discharges `what-this-book-skips`' promise that the
-  `client/renderer/item` properties subtree is covered as a section here.
-- `models-and-atlases`: the chunk-layer decision made exact — `Transparency`
+  `client/renderer/item` properties subtree is covered as a section here.~~ *(checked for the three models and thirty-three properties; three properties keep state, not two, and per baked model, not per stack (`client/renderer/item/properties/numeric/Time.java`:14; `CompassAngle.java`:14) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`models-and-atlases`: the chunk-layer decision made exact — `Transparency`
   is two booleans and `ChunkSectionLayer.byTransparency` reads them
   translucent-first — with `Sheets` named as where the item render type comes
-  from.
-- `block-entity-rendering`: `BlockModelRenderState` as why one entry holds
+  from.~~ *(checked for the two booleans (`com/mojang/blaze3d/platform/Transparency.java`:3); *reads them in that order* and *the same two booleans pick the item render type* were wrong (`client/renderer/chunk/ChunkSectionLayer.java`:28; `client/resources/model/geometry/BakedQuad.java`:78-86) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`block-entity-rendering`: `BlockModelRenderState` as why one entry holds
   quads *and* a renderer; the built-in table's four other model kinds
   (`EmptyBlockModel`, `SelectBlockModel`, `ConditionalBlockModel`,
   `CompositeBlockModel`) and the **five bare wrappers** — bell, conduit, end
@@ -12729,41 +13250,41 @@ itself. Corrections first, then the claims the session introduced, which pass
   book with no table under it; `WallAndGroundTransformations`;
   `BlockEntityWithBoundingBoxRenderer`'s `Player.canUseGameMasterBlocks` gate;
   and the crumbling overlay's one construction site, with
-  `BlockDestructionProgress` ordering on stage before digger id.
-- `entity-rendering`: `EntityRenderers` and `EntityRendererProvider` as where
+  `BlockDestructionProgress` ordering on stage before digger id.~~ *(checked (`client/renderer/block/BlockModelRenderState.java`:24-30, :73-90) but for the chests' kind: they are a composite whose special half is conditional (`client/renderer/block/BuiltInBlockModels.java`:191-195, :293-296) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`entity-rendering`: `EntityRenderers` and `EntityRendererProvider` as where
   a shared renderer comes from; `DisplayRenderer`; and **the skin pipeline's
   drawing half**, which pays off `player-anatomy`:118's "Drawing any of it is
   Part XI's" — `AvatarRenderState` carries the whole `PlayerSkin` by value and
   seven booleans, one per `PlayerModelPart`, while `PlayerModelType` never
-  reaches the state because the dispatcher used it to pick the renderer.
-- `the-window`: `TextureUtil`'s two pre-mipmap repairs (`TextureUtil.solidify`,
+  reaches the state because the dispatcher used it to pick the renderer.~~ *(checked (`client/renderer/entity/EntityRenderers.java`:25-44); the map is rebuilt on every reload, not built once — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-window`: `TextureUtil`'s two pre-mipmap repairs (`TextureUtil.solidify`,
   `TextureUtil.fillEmptyAreasWithDarkColor`) and why they exist;
   `GLFWErrorScope` and `GLFWErrorCapture` as the scoped fourth kind of callback
-  swap and the four places that use them.
-- `lightmap-fog-and-sky`: `Lighting` — one UBO, five `Lighting.Entry` slices,
+  swap and the four places that use them.~~ *(wrong: the repairs are conditional, and the dark fill writes a colour not in the texture (`client/renderer/texture/MipmapGenerator.java`:97-110) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`lightmap-fog-and-sky`: `Lighting` — one UBO, five `Lighting.Entry` slices,
   four written once in the constructor and only `LEVEL` rewritten — and
-  `WorldBorderRenderer` as the second thing in the weather pass.
-- `visibility-and-the-frame-graph`: `ChunkSectionLayerGroup` as
+  `WorldBorderRenderer` as the second thing in the weather pass.~~ *(checked for the UBO and its slices (`com/mojang/blaze3d/platform/Lighting.java`:32-56); the weather pass is overtaken, and *only when the dimension's choice changes* was wrong — see *Pass 8, session L* — pass 8, session L)*
+- ~~`visibility-and-the-frame-graph`: `ChunkSectionLayerGroup` as
   SOLID-and-CUTOUT against TRANSLUCENT; `ViewArea` as a
   `RotatingSectionStorage` of `RenderSection`s, the same ring the dirty flags
   use; and `TranslucencyPointOfView` as three integers clamped to minus one,
   zero or plus one — **twenty-seven possible values** — with
-  `TranslucencyPointOfView.isAxisAligned` reading zero on any axis.
-- `section-meshing`: `ModelBlockRenderer.tesselateBlock` and `BlockQuadOutput`
+  `TranslucencyPointOfView.isAxisAligned` reading zero on any axis.~~ *(checked (`client/renderer/chunk/ChunkSectionLayerGroup.java`:7); `ViewArea`'s ring is the same class, not the same ring — see *Pass 8, session L* — pass 8, session L)*
+- ~~`section-meshing`: `ModelBlockRenderer.tesselateBlock` and `BlockQuadOutput`
   as how a model becomes quads, and `ModelBlockRenderer.forceOpaque` as which
-  of the compiler's two callbacks a leaf block gets.
-- `blaze3d`: `GlTransientMemory`/`VulkanTransientMemory` and
+  of the compiler's two callbacks a leaf block gets.~~ *(checked (`client/renderer/chunk/SectionCompiler.java`:58-67, :98) — pass 8, session L)*
+- ~~`blaze3d`: `GlTransientMemory`/`VulkanTransientMemory` and
   `GlConst`/`VulkanConst`; and the homeless pass-3 cut
   `RenderSystem.outputColorTextureOverride` /
   `RenderSystem.outputDepthTextureOverride`, written as the one thing that
   redirects where a draw lands, with the GUI item atlas and picture-in-picture
-  as its only setters.
-- `particles`: the eighty-odd `Particle` subclasses as a family, with
+  as its only setters.~~ *(checked as V2 overturned it: no `RenderSystem` output-override member exists in 26.3, and the atlas and picture-in-picture renderers open passes of their own (`client/gui/render/pip/PictureInPictureRenderer.java`:63-69) — pass 8, session L)*
+- ~~`particles`: the eighty-odd `Particle` subclasses as a family, with
   `ParticleProvider` in the cast, `DripParticle` and `FireworkParticles` named
   as nests of variants, and `ParticleOptions` written — which pays off
-  `data-driven-types`:186's hand-forward.
-- `the-frame`: `TimerQuery` as the GPU stopwatch that brackets the frame and is
-  only restarted once the last one has been collected.
+  `data-driven-types`:186's hand-forward.~~ *(wrong in part: `FireworkParticles` is a holder class, not a `Particle` subclass (`client/particle/FireworkParticles.java`:23) — see *Pass 8, session L* — pass 8, session L)*
+- ~~`the-frame`: `TimerQuery` as the GPU stopwatch that brackets the frame and is
+  only restarted once the last one has been collected.~~ *(checked (`com/mojang/blaze3d/systems/TimerQuery.java`:59-74); the query runs only for the debug screen's GPU line or a recording — see *Pass 8, session L* — pass 8, session L)*
 
 **The landing page**, rewritten to the role. Its argument is now stated:
 *the renderer is not allowed to look at the world*, and every seam a player
@@ -12779,34 +13300,34 @@ which counts against Part X and is this part's subject.
 
 ### Rulings made in writing
 
-- **The `map_source.py` `PARTS` change is declined** (queue pass5.md:3499).
+- ~~**The `map_source.py` `PARTS` change is declined** (queue pass5.md:3499).
   `client/resources/model` is billed to Part X and is `models-and-atlases`'
   subject; moving it would change both parts' generated totals and invalidate
   the coverage argument session J had just written into Part X's landing page.
   The mapping is by package, the package is genuinely shared, and both landing
-  pages now say so in prose. No page moves, no tool changes.
-- **The *what a player sees* column stays** on `post-processing`, with a
+  pages now say so in prose. No page moves, no tool changes.~~ *(no claim about the game: `client/resources/model` still counts against Part X (`tools/map_source.py` PARTS); the landing page's boundary sentence was wrong about the render states — see *Pass 8, session L* — pass 8, session L)*
+- ~~**The *what a player sees* column stays** on `post-processing`, with a
   sentence above the table saying it is a reading of the shaders rather than a
   citation, and the *transparency* row reworded because it was the one cell
-  doing a different job.
-- **`the-window` is not cut.** The pass-2 suggestion that the whole page might
+  doing a different job.~~ *(checked against the GLSL (`assets/minecraft/shaders/post/invert.fsh`:24; `color_convolve.fsh`:29-32) — pass 8, session L)*
+- ~~**`the-window` is not cut.** The pass-2 suggestion that the whole page might
   go is overtaken: the landing page now argues its place, and three pages open
-  on state it creates.
-- **`particles`' explosion section is not cut.** It is the book's only home for
-  the client explosion budget.
+  on state it creates.~~ *(checked — pass 8, session L)*
+- ~~**`particles`' explosion section is not cut.** It is the book's only home for
+  the client explosion budget.~~ *(checked: the page is the only home for the client explosion budget (`client/multiplayer/ClientExplosionTracker.java`:16-42) — pass 8, session L)*
 
 ### For pass 9's attention, found and not fixed
 
-- `blaze3d`:206 names `StagedVertexBuffer` in the chunk-meshing staging chain;
+- ~~`blaze3d`:206 names `StagedVertexBuffer` in the chunk-meshing staging chain;
   `the-frame`:167 and `submit-phases`:77 describe it as the feature and GUI
-  buffer. One of the three is describing the wrong buffer.
-- `models-and-atlases`' "**twelve** separate layers" of soft failure, where the
+  buffer. One of the three is describing the wrong buffer.~~ *(checked: the page no longer names `StagedVertexBuffer` in the chunk chain; meshing stages through `StagingBuffer` (`client/renderer/chunk/SectionRenderDispatcher.java`:52, :69) — pass 8, session L)*
+- ~~`models-and-atlases`' "**twelve** separate layers" of soft failure, where the
   prose enumerates eleven. Third pass to record it; it is a count assertion, so
-  it is pass 9's rather than pass 8's.
-- `entity-rendering`:191 and :257 — the pose-copy split and "half a dozen
-  others" are both stated as if exhaustive and are not (pass5.md:823).
-- `section-meshing`'s "the pool plus one" ceiling conflates concurrent compiles
-  with existing meshes.
+  it is pass 9's rather than pass 8's.~~ *(overtaken: the ten-row table has no numeral — pass 8, session L)*
+- ~~`entity-rendering`:191 and :257 — the pose-copy split and "half a dozen
+  others" are both stated as if exhaustive and are not (pass5.md:823).~~ *(checked as far as the lists go (`client/renderer/SubmitNodeCollection.java`:106-349); *half a dozen others* is a floor — pass 8, session L)*
+- ~~`section-meshing`'s "the pool plus one" ceiling conflates concurrent compiles
+  with existing meshes.~~ *(still on the page and wrong: the pool plus one bounds compiles, not meshes (`client/renderer/chunk/SectionRenderDispatcher.java`:89-99, :353) — see *Pass 8, session L* — pass 8, session L)*
 - ~~`resource-system`:242 names `ParticleResources` as a second consumer of
   `AtlasManager.PENDING_STITCH`; `models-and-atlases`' figure shows one.~~ *(checked: `client/particle/ParticleResources.java`:222–223 and `client/resources/model/ModelManager.java`:118–120 both read `AtlasManager.PENDING_STITCH`, `client/resources/model/sprite/AtlasManager.java`:32 — pass 8, session B)*
 
@@ -14388,12 +14909,12 @@ tool bug, and it had been hiding broken links.
   `FlowingFluid.getSlopeFindDistance`. `FlowingFluid.java:353` declares it
   abstract; `WaterFluid.java:86` and `LavaFluid.java:154` override.
   **Now:** `FlowingFluid.getSlopeFindDistance` in both places.~~ *(checked (`world/level/material/FlowingFluid.java`:352; `WaterFluid.java`:86; `LavaFluid.java`:155) — pass 8, session D)*
-- `rendering/lightmap-fog-and-sky`:61 said the lightning layer lerps
+- ~~`rendering/lightmap-fog-and-sky`:61 said the lightning layer lerps
   `EnvironmentAttributes.SKY_COLOR` "**a fifth** of the way";
   `environment-attributes-and-timelines`:92 says 22%. `ClientLevel.java:274` is
   `ARGB.srgbLerp(0.22F, …)`, so the owner page is right. **Now:** the rendering
   page's whole duplicate paragraph is one clause and a link, so the number is
-  stated once.
+  stated once.~~ *(checked: the page links the lerp and states no number (`client/multiplayer/ClientLevel.java`:275-276) — pass 8, session L)*
 - ~~`networking/what-the-client-is-told`:368 said the once-a-second time sync
   "carries a game time plus **a map of clock updates**".
   `MinecraftServer.java:1299-1305` broadcasts
