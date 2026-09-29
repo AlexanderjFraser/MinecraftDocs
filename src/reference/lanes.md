@@ -8,7 +8,7 @@ a page that disagrees with it. The last rows are the exceptions — lanes that s
 thread, the process, the wire, the disk, a service or the game's own code rather than for
 one class.
 
-275 lanes are classes and 10 are not. A lane is normally the initials of
+273 lanes are classes and 10 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
 rules make about a third of them: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
@@ -76,7 +76,6 @@ read it off this table.
 | `CScr` | `ChatScreen` |
 | `CSED` | `SynchedEntityData` |
 | `CSP` | `ClientSuggestionProvider` |
-| `CSR` | `ChestSpecialRenderer` |
 | `CST` | `ChunkStatusTasks` |
 | `CSug` | `CommandSuggestions` |
 | `CT` | `CombatTracker` |
@@ -117,6 +116,7 @@ read it off this table.
 | `Font` | `Font` |
 | `FP` | `FoodProperties` |
 | `FPHAI` | `FirstPersonHandsAndItems` |
+| `FPHAIR` | `FirstPersonHandsAndItemsRenderer` |
 | `FR` | `FogRenderer` |
 | `FRD` | `FeatureRenderDispatcher` |
 | `FSet` | `FontSet` |
@@ -125,6 +125,7 @@ read it off this table.
 | `GGE` | `GuiGraphicsExtractor` |
 | `GI` | `GameTestInfo` |
 | `GlCE` | `GlCommandEncoder` |
+| `GlRP` | `GlRenderPass` |
 | `GpuS` | `GpuSurface` |
 | `GR` | `GameRenderer` |
 | `GS` | `GaussianSampler` |
@@ -136,7 +137,6 @@ read it off this table.
 | `Hud` | `Hud` |
 | `ICT` | `InventoryChangeTrigger` |
 | `Ignite` | `Ignite` |
-| `IMR` | `ItemModelResolver` |
 | `InvS` | `InventoryScreen` |
 | `IOW` | `IOWorker` |
 | `IP` | `ItemParser` |
@@ -178,6 +178,7 @@ read it off this table.
 | `MC` | `Minecraft` |
 | `ME` | `MobEffect` |
 | `MEI` | `MobEffectInstance` |
+| `MFR` | `ModelFeatureRenderer` |
 | `MNBS` | `MultiNoiseBiomeSource` |
 | `Mob` | `Mob` |
 | `MoveC` | `MoveControl` |
@@ -197,7 +198,6 @@ read it off this table.
 | `PDec` | `PacketDecoder` |
 | `PDM` | `PatchedDataComponentMap` |
 | `PDS` | `PlayerDataStorage` |
-| `PE` | `ParticleEngine` |
 | `PEnc` | `PacketEncoder` |
 | `PESM` | `PersistentEntitySectionManager` |
 | `PESP` | `PoolElementStructurePiece` |
@@ -275,7 +275,6 @@ read it off this table.
 | `TDSS` | `TrackingDebugSynchronizer.SourceSynchronizer` |
 | `TF` | `TreeFeature` |
 | `TIB` | `TestInstanceBlockEntity` |
-| `Time` | `Timelines` |
 | `TL` | `TagLoader` |
 | `TLE` | `ThreadedLevelLightEngine` |
 | `TP` | `TrunkPlacer` |
@@ -293,7 +292,6 @@ read it off this table.
 | `WR` | `WorldgenRandom` |
 | `ZM` | `ZombieModel` |
 | `ZR` | `ZombieRenderer` |
-| `ZS` | `ZombieRenderState` |
 | `Auth` | *the User Authenticator thread, not a class* |
 | `Disk` | *the save on disk, not a class* |
 | `Game` | *the game's own code above Blaze3D, not a class* |

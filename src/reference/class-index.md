@@ -7,7 +7,7 @@ introduction or the lecture map — or named inside one of its figures (a lane, 
 message; `tools/check_figure_names.py` reads those), and the pages that name it. Outside it:
 the generated views, whose backticks are registry and packet ids rather than class names.
 
-3163 names across 132 pages. A row is a
+3165 names across 132 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -373,7 +373,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `CalibratedSculkSensorBlockEntity` | [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
 | `CallbackDeviceTracker` | [sound-engine](../systems/client/sound-engine.md) |
 | `CallFunction` | [functions-and-macros](../systems/commands/functions-and-macros.md), [the-execution-engine](../systems/commands/the-execution-engine.md) |
-| `Camera` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [sound-engine](../systems/client/sound-engine.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [the-frame](../systems/rendering/the-frame.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
+| `Camera` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [sound-engine](../systems/client/sound-engine.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md), [the-frame](../systems/rendering/the-frame.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `CameraRenderState` | [glossary](../reference/glossary.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [the-frame](../systems/rendering/the-frame.md) |
 | `CampfireBlock` | [recipes](../systems/items/recipes.md) |
 | `CampfireBlockEntity` | [recipes](../systems/items/recipes.md) |
@@ -1292,7 +1292,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `GameProfileArgument` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md) |
 | `GameProfileRepository` | [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `GameProtocols` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [protocol-phases](../systems/networking/protocol-phases.md) |
-| `GameRenderer` | [naming-drift](../reference/naming-drift.md), [submit-phases](../reference/submit-phases.md), [hud](../systems/client/hud.md), [sound-engine](../systems/client/sound-engine.md), [the-client-loop](../systems/client/the-client-loop.md), [the-gui-render-tree](../systems/client/the-gui-render-tree.md), [resource-system](../systems/foundations/resource-system.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [post-processing](../systems/rendering/post-processing.md), [the-frame](../systems/rendering/the-frame.md) |
+| `GameRenderer` | [naming-drift](../reference/naming-drift.md), [submit-phases](../reference/submit-phases.md), [hud](../systems/client/hud.md), [sound-engine](../systems/client/sound-engine.md), [the-client-loop](../systems/client/the-client-loop.md), [the-gui-render-tree](../systems/client/the-gui-render-tree.md), [resource-system](../systems/foundations/resource-system.md), [entity-rendering](../systems/rendering/entity-rendering.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [post-processing](../systems/rendering/post-processing.md), [the-frame](../systems/rendering/the-frame.md) |
 | `GameRenderState` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md), [the-frame](../systems/rendering/the-frame.md) |
 | `GameRule` | [hierarchy](../maps/hierarchy.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [hunger-and-experience](../systems/player/hunger-and-experience.md) |
 | `GameRuleCategory` | [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md) |
@@ -1345,6 +1345,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `GlobalSettingsUniform` | [blaze3d](../systems/rendering/blaze3d.md), [post-processing](../systems/rendering/post-processing.md) |
 | `GlobalTestReporter` | [game-tests](../systems/commands/game-tests.md) |
 | `GlPipelineRecompiler` | [blaze3d](../systems/rendering/blaze3d.md) |
+| `GlRenderPass` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `GlslCompiler` | [naming-drift](../reference/naming-drift.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [blaze3d](../systems/rendering/blaze3d.md) |
 | `GlStateManager` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `GlSurface` | [the-frame](../systems/rendering/the-frame.md) |
@@ -1389,7 +1390,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `GroundPathNavigation` | [pathfinding](../systems/entities/pathfinding.md) |
 | `GroupSlotSource` | [data-driven-types](../systems/foundations/data-driven-types.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `GsonHelper` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
-| `Gui` | [biggest](../maps/biggest.md), [glossary](../reference/glossary.md), [hud-elements](../reference/hud-elements.md), [naming-drift](../reference/naming-drift.md), [gui-and-screens](../systems/client/gui-and-screens.md), [hud](../systems/client/hud.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [the-client-loop](../systems/client/the-client-loop.md), [the-gui-render-tree](../systems/client/the-gui-render-tree.md), [resource-system](../systems/foundations/resource-system.md), [the-frame](../systems/rendering/the-frame.md), [how-a-server-dies](../systems/server/how-a-server-dies.md) |
+| `Gui` | [biggest](../maps/biggest.md), [glossary](../reference/glossary.md), [hud-elements](../reference/hud-elements.md), [naming-drift](../reference/naming-drift.md), [gui-and-screens](../systems/client/gui-and-screens.md), [hud](../systems/client/hud.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [the-client-loop](../systems/client/the-client-loop.md), [the-gui-render-tree](../systems/client/the-gui-render-tree.md), [resource-system](../systems/foundations/resource-system.md), [how-a-server-dies](../systems/server/how-a-server-dies.md) |
 | `GuiBannerResultRenderState` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md) |
 | `GuiBookModelRenderState` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md) |
 | `GuiElementRenderState` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md) |
@@ -2317,7 +2318,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `RenderSetup` | [naming-drift](../reference/naming-drift.md), [blaze3d](../systems/rendering/blaze3d.md) |
 | `RenderShape` | [naming-drift](../reference/naming-drift.md) |
 | `RenderSystem` | [packages](../maps/packages.md), [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [the-client-loop](../systems/client/the-client-loop.md), [blaze3d](../systems/rendering/blaze3d.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [post-processing](../systems/rendering/post-processing.md), [the-frame](../systems/rendering/the-frame.md), [the-window](../systems/rendering/the-window.md) |
-| `RenderTarget` | [blaze3d](../systems/rendering/blaze3d.md), [post-processing](../systems/rendering/post-processing.md) |
+| `RenderTarget` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `RenderType` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [submit-phases](../reference/submit-phases.md), [blaze3d](../systems/rendering/blaze3d.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md), [entity-rendering](../systems/rendering/entity-rendering.md), [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `RenderTypeFeatureRenderer` | [submit-phases](../reference/submit-phases.md), [entity-rendering](../systems/rendering/entity-rendering.md) |
 | `RenderTypes` | [naming-drift](../reference/naming-drift.md), [blaze3d](../systems/rendering/blaze3d.md) |
@@ -3090,6 +3091,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `VulkanBackend` | [anatomy](../systems/anatomy/anatomy.md), [blaze3d](../systems/rendering/blaze3d.md), [the-window](../systems/rendering/the-window.md) |
 | `VulkanCommandEncoder` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `VulkanGpuSurface` | [blaze3d](../systems/rendering/blaze3d.md) |
+| `VulkanRenderPass` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `VulkanTransientMemory` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `WaitingForResponseScreen` | [dialogs](../systems/commands/dialogs.md) |
 | `WakeUp` | [points-of-interest](../systems/world/points-of-interest.md) |
