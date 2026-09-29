@@ -323,7 +323,7 @@ terrain at boot. When `ServerLevelData.isInitialized` is false,
 spiral over the chunks five in each direction — the value
 `MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS` names — calling `PlayerSpawnFinder.getSpawnPosInChunk` until one of them offers a
 standable block. The bonus chest is placed here if *--bonusChest* asked for
-one. Then the flag is set, and no later boot of that world searches again.
+one. Then the flag is set, and no later boot of that world looks for a spawn again.
 
 ## Preparing the levels, which prepares nothing
 

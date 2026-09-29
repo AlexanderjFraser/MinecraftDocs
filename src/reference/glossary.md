@@ -476,7 +476,7 @@ write. → [scores, teams and stored data](../systems/commands/scoreboard-and-da
 neighbours after a change; distinct from a *shape update*, which runs on
 both sides. → [blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
 
-**NoiseChunk** — the per-chunk workspace: it binds the dimension's compiled
+**NoiseChunk** — the per-chunk workspace (a height query builds a one-column one of its own): it binds the dimension's compiled
 samplers to one context that grants the caches the density-function graph
 asked for and carries the chunk's beardifier and blender, and it holds the
 chunk's `Aquifer`. → [density
@@ -714,8 +714,8 @@ from a `ByteBuf`, with no schema and no field names. → [packets and stream cod
 start assembled in memory, and pieces written a chunk at a time. → [structure placement](../systems/worldgen/structure-placement.md)
 
 **StructurePiece** — one room, corridor or slab of a structure. In the
-hand-built half it is a Java class that writes its own blocks and constructs its
-own neighbours, chosen by no pool; the jigsaw half's `PoolElementStructurePiece`
+hand-built half it is a Java class that writes its own blocks and, in the procedural
+graphs, constructs its own neighbours, chosen by no pool; the jigsaw half's `PoolElementStructurePiece`
 is one too. Every piece carries a registered `StructurePieceType`, which is how
 it comes back off disk. → [hand-built
 structures](../systems/worldgen/hand-built-structures.md#the-idea)
@@ -807,10 +807,8 @@ The tick count, the rate and the paused flag are
 pause each independently. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#who-owns-the-clock)
 
 **World gen settings** — `WorldGenSettings`: a `WorldOptions` (the seed,
-*generate structures*, *bonus chest*) and the `LevelStem` map, a `SavedData`
-written to *data/minecraft/world_gen_settings.dat*. It is the only part of world
-generation that is saved; everything else Part XII reads is re-read from the
-enabled packs on every world open. → [creating a world](../systems/worldgen/creating-a-world.md#the-object-and-what-is-not-in-it)
+*generate structures*, *bonus chest* and a legacy string) and the `LevelStem` map, a `SavedData`
+written to *data/minecraft/world_gen_settings.dat*. It is the one piece of world generation's own settings that is saved; the worldgen registries are re-read from the enabled packs on every world open, and a template is looked for in the world's own files before the packs'. → [creating a world](../systems/worldgen/creating-a-world.md#the-object-and-what-is-not-in-it)
 
 **World-limited** — a parse-time flag, set by any of seven positional
 selector options, that confines a selector's resolve to the source's own

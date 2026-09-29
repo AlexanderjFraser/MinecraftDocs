@@ -111,7 +111,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   client falling behind is one thread deciding what to spend a frame on — which
   is the fourth time the reversal has produced the part's argument in one
   sentence. The remaining three are their own sessions' and session O's.
-  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone. **X checked, pass 8 session J** — `client/README`'s symptoms open the argument and the paragraph ends on its claim.
+  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone. **X checked, pass 8 session J** — `client/README`'s symptoms open the argument and the paragraph ends on its claim. **XII checked, pass 8 session M** — `worldgen/README`'s symptoms open the page, and the argument paragraph ends on its claim.
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -1448,7 +1448,7 @@ rule ("one class per file … the way the atlas counts everything else"), so
 *classes* means the opposite there. Session A logged this as "two size claims,
 two rules"; session L settled the Part XII half by adopting the atlas rule; the
 corpus still has both. **Pass 5 (or session O) should pick one and say it once**
-— the natural rule is the one `what-this-book-skips` already states.
+— the natural rule is the one `what-this-book-skips` already states. **XII's share, pass 8 session M**: the landing page adopts the atlas rule and says so; the atlas's own count includes `package-info.java` (477 files, 445 classes), which is session O's to rule.
 
 ~~**One editorial number worth a look.**
 `world/environment-attributes-and-timelines.md:5` opens on "at tick 12542 … the
@@ -1461,39 +1461,39 @@ end — a better sentence than the one there, if pass 5 wants it. [kind=voice]~~
 
 ## Session L — Part XII World generation (pass 4) *(2026-09-05)*
 
-**Hooks and openings rewritten around a corrected fact — re-read all of these
-for voice.** Seven were rewritten because the fact under them fell:
+~~**Hooks and openings rewritten around a corrected fact — re-read all of these
+for voice.** Seven were rewritten because the fact under them fell:~~ **record** (pass 8 session M) — a lead-in; its items are settled one by one below.
 
-- `worldgen/README.md`'s **opening paragraph**, which now carries a
+- ~~`worldgen/README.md`'s **opening paragraph**, which now carries a
   three-clause qualification ("not because nothing here reads the world … but
   because everything it reads is itself a function of that seed and those
   packs"). It is accurate and it is the longest sentence on the page. The
-  premise deserves a shorter shape.
-- `jigsaw-and-templates`' **opening**, whose lamp post is gone and whose
+  premise deserves a shorter shape.~~ **second edition** (pass 8 session M) — the paragraph was rewritten again this session to say where the premise frays; a shorter shape is a restructure (R9).
+- ~~`jigsaw-and-templates`' **opening**, whose lamp post is gone and whose
   mechanism now needs four sentences where the false version needed two. The
   clause "What the depth limit does is stop offering the asked-for pool at
-  all" is doing a lot of work in one line.
-- `trees`' **crown paragraph**, which now ends on "the asymmetry is in the [kind=voice]
+  all" is doing a lot of work in one line.~~ **ruled** (pass 8 session M) — the opening's four sentences are the mechanism; the depth gate this session found went into the loop's section, not the hook.
+- ~~`trees`' **crown paragraph**, which now ends on "the asymmetry is in the [kind=voice]
   code and vanilla data cannot express it" — true, and a stranger note to end
   a section on than the section was written for. Its header line
   ("a ceiling the crown's size was decided before") is grammatically awkward
   and was chosen for accuracy, not sound; so were the two blurbs that repeat
-  it in `worldgen/README.md` and `lectures.md`.
-- `structure-placement`'s **verified line** and its *Whether it is worth
+  it in `worldgen/README.md` and `lectures.md`.~~ **ruled** (pass 8 session M) — the crown paragraph now ends on the fancy oak's smaller crown, and the header line is the verified line, which the polish does not change (V16).
+- ~~`structure-placement`'s **verified line** and its *Whether it is worth
   laying out* section, which now explain a deferral that lasts one statement.
   The section's title still promises a decision the section no longer
-  describes. [kind=lecture]
-- `density-functions`' **opening**, which now names two files where it named
-  one, and loses some of the "small, honest, readable" rhythm it had. [kind=voice]
+  describes. [kind=lecture]~~ **overtaken** (pass 8 session M) — the section is *The layout is deferred, and the centre is not*, and says the deferral lasts no time on the generation path.
+- ~~`density-functions`' **opening**, which now names two files where it named
+  one, and loses some of the "small, honest, readable" rhythm it had. [kind=voice]~~ **ruled** (pass 8 session M) — the two files are the hook's argument: the twelve-line file and the fifteen-hundred-line one it adds.
 - ~~`biomes`' **world-spawn answer**, which went from two sentences to five and
   is now the longest *Questions players ask* answer on the page.~~ **Kept, pass 6
   session L**: it is the purest consequence on the page — a player asking why
   they always spawn near the origin — so A2 keeps it, and it is one paragraph,
   which is the budget. Two of the six answers around it moved into the body and
   one was cut, so it is now the longest of two rather than of six.
-- `creating-a-world`'s **hook**, whose "every widget is an edit to it" became
+- ~~`creating-a-world`'s **hook**, whose "every widget is an edit to it" became
   a clause plus an exception list. The exception list is the kind of
-  named-qualifier hedge this pass is meant to hunt.
+  named-qualifier hedge this pass is meant to hunt.~~ **ruled** (pass 8 session M) — the list is what the hook sets aside, each item going somewhere named; it carries its population.
 
 **Structural findings, not acted on.**
 
@@ -1522,9 +1522,9 @@ for voice.** Seven were rewritten because the fact under them fell:
   subject want separating.~~ **Done, session L:** the section is five
   selectors, and `Feature.NO_OP` is a parenthetical after them saying what it
   is instead — the spelling of an empty slot in a data pack.
-- `hand-built-structures`' `StructurePiece.placeBlock` cast row is now three
+- ~~`hand-built-structures`' `StructurePiece.placeBlock` cast row is now three
   clauses long and contains a negation ("not a choke point"), which is the
-  *not X but Y* tic in a table cell. [kind=voice]
+  *not X but Y* tic in a table cell. [kind=voice]~~ **ruled** (pass 8 session M) — the negation corrects the belief the row's first clause invites, that the conventional path is the only one.
 - ~~**The *Questions players ask* closer** is on nine of the eleven Part XII
   pages, well over session P's at-most-half rule of thumb. `terrain`,
   `biomes` and `structure-placement` have five, five and six answers each.~~
@@ -1534,13 +1534,13 @@ for voice.** Seven were rewritten because the fact under them fell:
   one to read, because its two surviving answers were the payoff its own opening
   scenario promised and had been sitting 190 lines below it.
 
-**Wording debt of the session's own making.** Several fixes name a file path
+~~**Wording debt of the session's own making.** Several fixes name a file path
 or a JSON key in italics where the surrounding prose uses backticks for
 everything else (*terrain_adaptation*, *use_expansion_hack*,
 *skip_existing_chunks*, *min_clipped_height*, *blending_data*). The convention
 is right — `verify_names.py` rejects them backticked — but the mixture inside
 one paragraph reads unevenly, and a corpus-wide look at how data keys are
-typeset is worth one pass-5 sweep.
+typeset is worth one pass-5 sweep.~~ **ruled** (pass 8 session M) — data keys stay italic, since the name gate reads backticks as code names; the part is consistent in that.
 
 
 ## Session K — Part XI Rendering (pass 4) *(2026-09-04)*
@@ -2347,7 +2347,7 @@ correction):
   not a fact.
 
 
-- **2026-09-03, session M — Part XII.** Eight system pages plus a landing
+- ~~**2026-09-03, session M — Part XII.** Eight system pages plus a landing
   page and a Reference page. **Every page landed inside the 260–340 brief or
   below it** — 204 to 288, with the landing page at 143 and the Reference
   page at 152 — and three pages came in under 240, which is the first time a
@@ -2363,9 +2363,9 @@ correction):
   already has the rest). Two more facts were **moved rather than cut** and
   are in [pass4.md](pass4.md) instead: the minus-one default write radius
   and `WorldGenRegion.getChunk` throwing, both now stated only on
-  `features-and-placement`, which is where they bite.
+  `features-and-placement`, which is where they bite.~~ **record** (pass 8 session M) — pass 5's drafting record; nothing to act on.
 
-  Wording debt: [kind=record]
+  ~~Wording debt: [kind=record]~~ **record** (pass 8 session M) — a lead-in.
 
   - ~~**The *questions players ask* device is on six of the eight pages**,
     which is the ratio session K flagged in Part X and the trap the old
@@ -2375,7 +2375,7 @@ correction):
     should consider a rule — at most half the pages in a part.~~ **Overtaken,
     pass 6 session L**: A2 reversed the at-most-half rule into a smell and put a
     test in its place, so the ratio is a description and never a target.
-  - **Session K's two formulas are gone from Part XII too.** No page says
+  - ~~**Session K's two formulas are gone from Part XII too.** No page says
     "the one sentence a player recognises" and none carries a
     names-you-will-hunt-for list; two pages use the *for a 1.21-era reader*
     blockquote instead (`density-functions` on the two vocabularies for the
@@ -2385,7 +2385,7 @@ correction):
     third blockquote, on `blending`, and it was the one carrying a Part IV
     rename rather than a Part XII one; it is now a row in `naming-drift`. Two
     left, both about this part's own vocabulary, which is what the device is
-    for.
+    for.~~ **record** (pass 8 session M) — overtaken in its content: `density-functions`' blockquote now carries only the cache markers and `DensityFunction.compute`, and `jigsaw-and-templates`' the generated folder that did move.
   - ~~**Second person, now five parts wide and needing a ruling rather than
     another flag.** `terrain` opens with *you dig into a cave*, `biomes`
     with *walk out of a desert*, `trees` with *plant a single dark-oak
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands. **XI's share, pass 8 session L**: second edition — a page's skeleton is structure, which pass 8 does not change (R9).
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands. **XI's share, pass 8 session L**: second edition — a page's skeleton is structure, which pass 8 does not change (R9). **XII's share, pass 8 session M**: second edition — a page's skeleton is structure (R9).
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -3425,9 +3425,9 @@ was an artefact of that, and was broken at H2 level on the merits anyway.
   was carrying three citations for three different subjects. Renaming both to
   what their sections are *about* sorted the citations by itself, and one of
   `biomes`' four was repointed to a different section entirely. Part XIII is all
-  that is left. [kind=lecture] **VIII checked, pass 8 session H**: no Part VIII heading begins *The trace*.
+  that is left. [kind=lecture] **VIII checked, pass 8 session H**: no Part VIII heading begins *The trace*. **XII's share, pass 8 session M**: overtaken — no Part XII heading reads *The trace:* now.
 
-**Two structural outliers**, for the same sweep: `functions-and-macros`
+~~**Two structural outliers**, for the same sweep: `functions-and-macros`
 has no cast table (it opens on *The pipeline*), and ~~`hand-built-structures`
 buries its cast inside *The idea*~~ — both differ from every other page in
 their part, and either is fine if it is deliberate. **Ruled deliberate, pass 6
@@ -3440,7 +3440,7 @@ session M**, and the opposite of the other case: the cast table was there all
 along, sitting under a heading that said *The pipeline*, so the page looked
 like the one page in the book with no cast when it simply had no cast
 *heading*. It has one now, after the figure, which is where a pipeline page
-wants it.
+wants it.~~ **ruled** (pass 8 session M) — both halves were settled by pass 6 (sessions L and M).
 
 **Wording debt from the four session-P pages.** All four were drafted by
 Opus agents against the shared brief and accepted after the session
@@ -3465,7 +3465,7 @@ the paragraph after the sequence diagram ("Three details in that order are
 worth stopping on") is a list in prose clothing and could be three
 bold-led paragraphs. All four use the *For a 1.21-era reader* blockquote;
 none uses the myth table; three carry a *Questions* closer, so the
-session's own pages score 3 of 4 on the device it just flagged. **XI's share, pass 8 session L**: `block-entity-rendering`'s *why* column stays, its numbers checked and its reasons readings; the second edition decides whether a table cell may carry an inferred reason.
+session's own pages score 3 of 4 on the device it just flagged. **XI's share, pass 8 session L**: `block-entity-rendering`'s *why* column stays, its numbers checked and its reasons readings; the second edition decides whether a table cell may carry an inferred reason. **XII's share, pass 8 session M**: `blending` has no closer now and its 193 sits in *Two maps*; `creating-a-world`'s three details stay one paragraph (second edition, R9).
 
 ## From pass-4 session H — Part VIII The player *(2026-09-04)*
 
@@ -5141,7 +5141,7 @@ for other passes and the cuts it logged.*
   eye:** eleven of the fifteen were *members* of classes the pages still name
   (`NormalNoise.create`, `Climate.Sampler.sample`, `PoolElementStructurePiece.place`),
   which is what A12 is for — a list of a class's methods is the field inventory,
-  and the class is the door. [kind=lecture] **VI's share confirmed, pass 8 session F.** **VII's share confirmed, pass 8 session G.**
+  and the class is the door. [kind=lecture] **VI's share confirmed, pass 8 session F.** **VII's share confirmed, pass 8 session G.** **XII's share, pass 8 session M**: second edition — Part XII's *Where to look* sections are prose reading routes, and a door the page names is allowed (A12).
 
 ### For pass 7 (the figures)
 
@@ -6254,43 +6254,43 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 ## Pass 6, session L — Part XII · World generation (2026-09-14)
 
-**Logged cuts** (A9: a cut is a move or a logged cut, never a silence).
+~~**Logged cuts** (A9: a cut is a move or a logged cut, never a silence).~~ **record** (pass 8 session M) — a lead-in.
 
-- `density-functions`' dead-code answer kept its four names but lost the
+- ~~`density-functions`' dead-code answer kept its four names but lost the
   sentence framing them as a puzzle; the *shift*-versus-*offset* naming note,
   which `reference/density-function-nodes.md` cites, is now the section's lead.
-  [kind=record]
-- `biomes`' *Does the biome decide which mobs spawn?* — a two-line answer that
+  [kind=record]~~ **record** (pass 8 session M) — nothing to act on; the section is corrected this session (V6: `Density` names its numbers).
+- ~~`biomes`' *Does the biome decide which mobs spawn?* — a two-line answer that
   was a second telling of the `MobSpawnSettings` sentence four paragraphs above
-  it. The structure-override clause moved into that sentence. [kind=record]
-- `blending`'s *Why is the seam wide for hills and narrow for caves?* and
+  it. The structure-override clause moved into that sentence. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
+- ~~`blending`'s *Why is the seam wide for hills and narrow for caves?* and
   *Does any of this happen in a brand-new world?* — both second tellings, of
   *One measurement, five consumers* and of *The flag is a nullable field*
   respectively. The two facts neither of those sections had —
   `IOWorker.getOrCreateOldDataForRegion` and
   `SharedConstants.DEBUG_DISABLE_BLENDING` — moved into the flag section.
-  [kind=record]
-- `structure-placement`'s *Do structures override the biome for mob spawning?*
+  [kind=record]~~ **record** (pass 8 session M) — nothing to act on; both names are still in the flag section.
+- ~~`structure-placement`'s *Do structures override the biome for mob spawning?*
   — a near-verbatim second telling of the inflated-box paragraph in *Which
-  chunks have to be told*. [kind=record]
-- `hand-built-structures`' *Does `/locate stronghold` point at the portal?* —
+  chunks have to be told*. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
+- ~~`hand-built-structures`' *Does `/locate stronghold` point at the portal?* —
   cut as another page's material under pass 5's one-home rule; the *why* behind
   the portal pointer (it is the regeneration loop's exit condition) moved into
-  the trace section, which `structure-placement` now cites by name. [kind=record]
-- `jigsaw-and-templates`' *What is a village made of, if not blocks?* — the
+  the trace section, which `structure-placement` now cites by name. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
+- ~~`jigsaw-and-templates`' *What is a village made of, if not blocks?* — the
   third telling of a sentence the trace and *From a piece to blocks* both
-  carry. [kind=record]
-- `features-and-placement`' `FeatureCountTracker` /
+  carry. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
+- ~~`features-and-placement`' `FeatureCountTracker` /
   `SharedConstants.DEBUG_FEATURE_COUNT` aside — a note for a reader running a
   development build, appended to the coverage answer. Both names leave the
-  book. [kind=record]
-- `creating-a-world`'s *The rest of the family* went from thirteen lines of
+  book. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
+- ~~`creating-a-world`'s *The rest of the family* went from thirteen lines of
   inventory to the two classes the page's own argument needs.
   `OptimizeWorldScreen` and `FileFixerProgressScreen` leave the book with it;
-  both are save migration, which rule 3 puts out of scope. [kind=record]
-- Twelve names left the book with the ten rewritten *Where to look* lists and
+  both are save migration, which rule 3 puts out of scope. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
+- ~~Twelve names left the book with the ten rewritten *Where to look* lists and
   were judged not worth a sentence — nine of them members of classes the pages
-  still name. Listed in the A12 entry above. [kind=record]
+  still name. Listed in the A12 entry above. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
 
 **For pass 7 — the figures.**
 
@@ -6328,36 +6328,36 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 **For pass 8 — the voice.**
 
-- `creating-a-world`'s cast row for `WorldLoader` says *two hops to the main
+- ~~`creating-a-world`'s cast row for `WorldLoader` says *two hops to the main
   thread* with no population; the body never names them. Pick the reading, say
-  it, or drop the number. [kind=voice]
-- `creating-a-world`'s *Three details in that order are worth stopping on* is a
+  it, or drop the number. [kind=voice]~~ **done** (pass 8 session M) — the row now says *hops to the thread that called it*.
+- ~~`creating-a-world`'s *Three details in that order are worth stopping on* is a
   list in prose clothing and wants three bold lead-ins — pass-5 session P's own
   entry, still true, and structural enough that session L left it rather than
-  reshape a section it had already rewritten twice. [kind=voice]
-- `blending` uses *cell* for the quart cell, the noise cell and the density
+  reshape a section it had already rewritten twice. [kind=voice]~~ **second edition** (pass 8 session M) — three bold-led paragraphs are a restructure (R9).
+- ~~`blending` uses *cell* for the quart cell, the noise cell and the density
   cell within forty lines; the page now defines the first, which makes the
-  other two read as the same thing. [kind=voice]
-- `biomes` calls both the jittered biome border and the altitude at which snow
+  other two read as the same thing. [kind=voice]~~ **done** (pass 8 session M) — the eight-block cell is a *noise cell* now, and the quart and the density cells are named where they are used.
+- ~~`biomes` calls both the jittered biome border and the altitude at which snow
   falls *ragged*, twenty lines apart and from two different causes.
-  [kind=voice]
-- `terrain` italicises *interpolated* three times as though it were being
-  defined and never defines it. [kind=voice]
-- `jigsaw-and-templates` uses *size*, *depth limit*, *depth cap* and
-  `JigsawStructure.MAX_DEPTH` for two things across four sections. [kind=voice]
-- `hand-built-structures` uses *regenerate* for the stronghold's retry loop and
-  for the ocean monument's load-time rebuild, which are unrelated. [kind=voice]
-- `structure-placement`'s *the 128-block cage* arrives as a definite noun for a
-  thing the page has not introduced. [kind=voice]
+  [kind=voice]~~ **done** (pass 8 session M) — the snow line is *uneven*; *ragged* is the border's alone.
+- ~~`terrain` italicises *interpolated* three times as though it were being
+  defined and never defines it. [kind=voice]~~ **overtaken** (pass 8 session M) — the page defines it: an *interpolated* node samples its input at cell corners only.
+- ~~`jigsaw-and-templates` uses *size*, *depth limit*, *depth cap* and
+  `JigsawStructure.MAX_DEPTH` for two things across four sections. [kind=voice]~~ **done** (pass 8 session M) — the page says *depth limit* for the size field, and `JigsawStructure.MAX_DEPTH` is the cap on it.
+- ~~`hand-built-structures` uses *regenerate* for the stronghold's retry loop and
+  for the ocean monument's load-time rebuild, which are unrelated. [kind=voice]~~ **ruled** (pass 8 session M) — the prose says *rebuild* for the monument; `OceanMonumentStructure.regeneratePiecesAfterLoad` is Mojang's name.
+- ~~`structure-placement`'s *the 128-block cage* arrives as a definite noun for a
+  thing the page has not introduced. [kind=voice]~~ **done** (pass 8 session M) — the cage is introduced as *a 128-block cage*.
 
 **Two notes for session O.**
 
-- **A2 perturbs the tool the same way A4 does.** Dissolving a closer drops the
+- ~~**A2 perturbs the tool the same way A4 does.** Dissolving a closer drops the
   `q` token and returns the material as `p`, so a part that applies A2 hard
   comes out with pages that *measure* more alike than they did going in. Three
   of Part XII's four within-part twin pairs are artefacts of this session's own
   dissolutions. Two of the four rulings now change what `pass6_shape.py`
-  reports; the audit should say so once rather than thirteen times. [kind=record]
+  reports; the audit should say so once rather than thirteen times. [kind=record]~~ **record** (pass 8 session M) — nothing to act on.
 - ~~**A cut on this part's page moved another part's coverage number.**
   `creating-a-world` is a Part XII page, but the classes its trimmed *rest of
   the family* section named — `OptimizeWorldScreen` and
@@ -6369,13 +6369,13 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   gone stale — but it is the first time a session's cut has moved a part it did
   not open, and session O should know it can happen in both directions before it
   reads the thirteen landing pages.~~ *Record: a note for session O; the phrase is generated and reads 27% on 2026-09-28 — pass 8 session J.*
-- **The landing page came out shorter, which is the first time in four
+- ~~**The landing page came out shorter, which is the first time in four
   sessions.** 179 lines outside the watch order to 166, with A6's move, the
   coverage include and two real trims. Sessions I, J and K each reported A6
   making a landing page longer; the difference here was that the seventh
   section replaced a hand-counted number with an include and the *Reference*
   bibliography was tightened at the same time. Still over the template's
-  hundred, and still the largest in the book.
+  hundred, and still the largest in the book.~~ **ruled** (pass 8 session M) — the landing page's length is a budget, not a fact; the second edition may cut it.
 
 ## Pass 6, session M — Part XIII · Commands and data packs (2026-09-14)
 
@@ -7017,7 +7017,7 @@ Part 3; these are the pieces of work that ruling created.
 
 ~~**From pass 7, session L — Part XII.** [kind=book]~~ *Record: a lead-in; Part XII's units under it route there by their pages — pass 8 session J.*
 
-- **Part XII's sections that wanted a figure and did not get one**, as the
+- ~~**Part XII's sections that wanted a figure and did not get one**, as the
   viewers asked: `terrain`'s *Carving, and who chooses the block* — a four-way
   branch (lava below the carver's level; otherwise the aquifer answers no
   carve, air or fluid; the nether carver never asks), and the page's hook;
@@ -7030,21 +7030,21 @@ Part 3; these are the pieces of work that ruling created.
   of which want a top-down grid mermaid cannot draw (the `<figure class="map">`
   route); `hand-built-structures`' ocean-monument maze carving. None was drawn:
   each is a new claim, and the session's budget went to the fifteen figures the
-  part already had. [kind=book]
-- **`density-functions`' *The six caches* sorts six classes by two properties
+  part already had. [kind=book]~~ **second edition** (pass 8 session M) — each figure would be a new claim (R10).
+- ~~**`density-functions`' *The six caches* sorts six classes by two properties
   in three paragraphs** — keyed on the chunk or on position alone, and which
   may answer a single point — which is a two-column table the prose is reading
-  aloud. [kind=book]
+  aloud. [kind=book]~~ **overtaken** (pass 8 session M) — 26.3 has one cache node, and the section is *The one cache, and what a single point may use*.
 
 **For pass 8, from pass 7 session L.**
 
-- `structure-placement`'s heading *Five decisions, on five different clocks*
+- ~~`structure-placement`'s heading *Five decisions, on five different clocks*
   now sits over a figure whose fifth box writes blocks and whose fourth builds
-  an object; whether *decisions* is the word is voice. [kind=voice]
-- The sequence-diagram self-messages across Part XII still begin with bare
+  an object; whether *decisions* is the word is voice. [kind=voice]~~ **ruled** (pass 8 session M) — a heading is an anchor (V15), and the five boxes are what the section calls decisions.
+- ~~The sequence-diagram self-messages across Part XII still begin with bare
   verbs (*reseed*, *pick*, *measure*, *out if*) — the gate notes them under
   F12(d) and they read well, but pass 8 should settle one register for a
-  self-message's first word. [kind=voice] **Routed to Part XII (session M), pass 8 session J**: the router files this block under Part X because the Part XII lead-in above it is a bold paragraph, not a heading.
+  self-message's first word. [kind=voice] **Routed to Part XII (session M), pass 8 session J**: the router files this block under Part X because the Part XII lead-in above it is a bold paragraph, not a heading.~~ **ruled** (pass 8 session M) — a bare verb on its owner's lane is prose (Part 2), and Part XII's self-messages read that way.
 
 ~~**From pass 7, session M — Part XIII.** [kind=book]~~ *Record: a lead-in; Part XIII's units under it route there by their pages — pass 8 session J.*
 

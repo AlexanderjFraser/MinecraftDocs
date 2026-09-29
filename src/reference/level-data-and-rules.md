@@ -318,8 +318,8 @@ accessors. `Level.canHaveWeather` is sky light, no ceiling, not the End.
 
 The seed and the dimension list are `WorldGenSettings` — `SavedData`,
 *world_gen_settings.dat*, server-global, and written not at world creation but
-by the `MinecraftServer` constructor, which pushes it into the storage on every
-boot ([creating a world](../systems/worldgen/creating-a-world.md) is where it
+by the server's first save, the `MinecraftServer` constructor having pushed it
+into the storage, as it does on every boot ([creating a world](../systems/worldgen/creating-a-world.md) is where it
 comes from) — holding
 `WorldOptions`
 (`WorldOptions.seed`, `WorldOptions.generateStructures`,

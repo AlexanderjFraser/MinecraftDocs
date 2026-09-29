@@ -378,7 +378,7 @@ and order-independent transparency.
 | *MultiNoiseBiomeSource.Preset* | `MultiNoiseBiomeSourceParameterList.Preset` |
 | *BiomeSpecialEffects.fogColor* / *skyColor* / music / ambient sound | `EnvironmentAttributes.*` via `Biome.getAttributes` |
 | the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters |
-| *StructureTemplateManager* folder *structures/* | *structure/* |
+| *StructureTemplateManager*'s folder for saved templates, *generated/&lt;namespace&gt;/structures/* | *generated/&lt;namespace&gt;/structure/*, the singular a data pack's templates were already read from |
 | *level.dat* field *WorldGenSettings* | its own file — `WorldGenSettings` is `SavedData`, written to *data/minecraft/world_gen_settings.dat*; `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS` is all that is left of the key |
 | *ConfiguredFeature* / *FeatureConfiguration* / *FeaturePlaceContext* | gone — a `Feature` carries its own parameters; its instances are `Registries.FEATURE` |
 | *PlacedFeature.placeWithBiomeCheck* / *PlacementModifier.getPositions* | `FeaturePlacer.placeWithBiomeCheck` / `PlacementModifier.modify` |

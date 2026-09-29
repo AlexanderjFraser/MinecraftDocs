@@ -3,8 +3,7 @@
 > Verified against **Minecraft 26.3** · Part XII · A stronghold is generated: a piece grammar written in Java, a graph assembled at an imaginary height and moved down afterwards, and a whole structure thrown away and rebuilt because it had no portal room.
 
 Every stronghold has exactly one end portal. Not usually, not almost always —
-exactly one, in every stronghold in every world, and the mechanism is not a
-counter or a guarantee. The portal room is weighted heavily, capped at one
+exactly one, in every stronghold in every world, and the grammar alone does not guarantee it. The portal room is weighted heavily, capped at one
 placement, and forbidden near the entrance; and if the maze finishes without
 one, `StrongholdStructure` **clears the whole builder, adds one to the seed
 and generates the entire stronghold again.** It is the only structure in the
@@ -14,9 +13,7 @@ game that regenerates itself until it likes the result.
 traces a village, and a village is a jigsaw: pieces come from a data-pack registry and find each
 other through connector blocks. That is one of the sixteen structure types.
 **The other fifteen use an older assembler that is still the majority of the
-code** — 32 classes and about 10,200 lines under
-`levelgen/structure/structures`, against roughly 1,300 lines for the whole
-jigsaw package. Strongholds, mineshafts, nether fortresses, ocean monuments,
+code** — thirty classes and about 10,000 lines under `levelgen/structure/structures`, against about 1,550 for the whole jigsaw package, aliases included. Strongholds, mineshafts, nether fortresses, ocean monuments,
 woodland mansions, end cities, ruined portals, igloos, shipwrecks, ocean
 ruins, desert pyramids, jungle temples, swamp huts, buried treasure and
 nether fossils are all built this way.
@@ -53,8 +50,7 @@ Three things about that base class do most of the work.
 
 `StructurePiece.setOrientation` derives both from the facing direction, and a
 south-facing piece is expressed as a **left-right mirror** rather than a
-180° rotation. That trick is why every piece in this package is written once,
-in a north-facing local frame, and comes out correct in all four horizontal
+180° rotation. That trick is why nearly every hand-written piece in this package is written once, in a north-facing local frame, and comes out correct in all four horizontal
 facings.
 
 ### Local Y is measured from the box floor
@@ -62,9 +58,7 @@ facings.
 `StructurePiece.getWorldX`,
 `StructurePiece.getWorldY` and `StructurePiece.getWorldZ` map local
 coordinates into the world, and because Y is relative to the floor, moving a
-finished graph vertically is free. When the orientation is null the transform
-is the identity, which is how `BuriedTreasurePieces` gets away with a
-bounding box one block wide.
+finished graph vertically is free. When the orientation is null the transform is the identity, which is how a mineshaft's one room and its crossings write in world coordinates.
 
 ### `StructurePiece.addChildren` is not a framework hook
 
@@ -100,11 +94,11 @@ All of this runs at `ChunkStatus.STRUCTURE_STARTS`
 inside the same
 [`Structure.GenerationStub`](structure-placement.md#the-layout-is-deferred-and-the-centre-is-not)
 consumer the jigsaw assembler runs in — so the
-whole graph is built in memory, on a worldgen worker, with no world access
+whole graph is built in memory, on the worldgen executor, with no world access
 and no blocks written. The stub's generator is an *either*, and one structure
 takes the branch nothing else takes:
 `MineshaftStructure.findGenerationPoint` hands it a builder it has
-already filled instead of a consumer to run later.
+already filled instead of a consumer to run later, so a presence check that reaches a mineshaft candidate lays the whole graph out too, on the Server thread ([structure placement](structure-placement.md#the-layout-is-deferred-and-the-centre-is-not)).
 
 ```mermaid
 sequenceDiagram
@@ -133,7 +127,7 @@ sequenceDiagram
     SStr-->>ChunkG: the StructureStart, written at FEATURES
 ```
 
-*The whole stronghold is grown in memory by one method on `StrongholdStructure`, and the outer loop is the one that throws it all away: a try ends only when the start piece holds a portal room.*
+*The whole stronghold is grown in memory by one method on `StrongholdStructure`, and the outer loop is the one that throws it all away: it ends only when a try's start piece holds a portal room.*
 
 The structure only ever asks a piece to grow; the piece does the picking, the
 collision test and the adding, and each piece it adds joins the start piece's
@@ -142,7 +136,7 @@ pending list for a later pass.
 **It is built at an imaginary height.** The start piece is constructed at a
 fixed Y — sixty-four for strongholds and fortresses, fifty for mineshafts —
 with no idea where the ground is. Every collision test, every staircase
-descent and the floor guard that refuses a box below Y 10 happens in that
+descent and the floor guard that refuses a box at or below Y 10 happens in that
 frame. Only afterwards does `StructurePiecesBuilder.moveBelowSeaLevel` shift
 the whole graph so its top sits below sea level. Nether fortresses use
 `StructurePiecesBuilder.moveInsideHeights` to land in a band, and a mesa
@@ -150,28 +144,17 @@ mineshaft uses `StructurePiecesBuilder.offsetPiecesVertically` to sit between
 sea level and the surface. This is the payoff for local-Y-from-the-floor.
 
 **The weight table is static, and so is the piece the loop is forced to place
-next.** `StrongholdPieces.resetPieces` — the *reset* in the diagram — clears a
-remaining-piece list, a running weight total and a one-shot "place this type
-next" override that the previous piece may have set, and all three live in
-**private static fields** on `StrongholdPieces`, reset from inside a generation
-lambda on the worldgen executor. The nether fortress is worse: its placement
-counters are static array elements merely reset when a start piece is
-constructed, so its per-structure budget is an illusion. Two strongholds
-generating at once would interfere, visibly. It is rare enough not to bite, and
-it is the sharpest contrast with the stateless jigsaw path.
+next.** `StrongholdPieces.resetPieces` — the *reset* in the diagram — refills a remaining-piece list with the whole table, zeroes the placement counts in the static weight table and clears a one-shot "place this type next" override that only the start piece ever sets, and all three are reached through **static fields** on `StrongholdPieces`, reset from inside a generation
+lambda on the worldgen executor. The nether fortress shares less: its lists live on its start piece, and only the placement counts in its static weight tables are shared, reset when a start piece is constructed. Two strongholds laid out at once would interfere; what keeps it from happening is the worldgen executor, which runs one task at a time per dimension, and only the overworld has strongholds in the shipped data, so only `/place structure` racing generation could. It is the sharpest contrast with the stateless jigsaw path.
 
-**Growth stops when the budget is spent, not when the depth runs out.**
+**Growth stops when the budget is spent or no door can take a piece.**
 `StrongholdPieces.STRONGHOLD_PIECE_WEIGHTS` pairs each piece class with a
-weight *and* a maximum placement count: corridors and turns are unlimited, a
-room crossing may appear six times, a library twice, a portal room once — and
+weight *and* a maximum placement count: most corridors and turns are unlimited, a room crossing may appear six times, a library twice, a portal room once — and
 the library and portal room additionally refuse to appear before a certain
 depth. The picker makes up to five weighted attempts, rejecting whichever
-type was placed immediately before, and falls back to a filler corridor. The
-depth cap is fifty, far more than any real stronghold reaches; what actually
-ends generation is the picker returning nothing once every limited type has
-hit its limit.
+type was placed immediately before, and falls back to a filler corridor. Two bounds sit beside the budget — a depth cap of fifty, and a square reaching 112 blocks from the start piece's corner on each axis, outside which no new piece may begin — and inside them the picker returns nothing once every limited type has hit its limit.
 
-**Collision is the other brake, and some pieces negotiate.** Each candidate
+**Collision is a brake too, and some pieces negotiate.** Each candidate
 constructor computes its box and asks
 `StructurePiecesBuilder.findCollisionPiece`; a hit means the candidate simply
 is not built. A mineshaft corridor tries decreasing lengths until one fits,
@@ -181,23 +164,12 @@ And the loop's exit condition is a piece of bookkeeping that looks like a
 feature. The portal room's entire `StructurePiece.addChildren` body is a record
 of itself on the start piece, which is how `StrongholdStructure` knows whether
 to run again. That record is also reachable as
-`StrongholdPieces.StartPiece.getLocatorPosition`, an override that returns the
-portal room's position where the base method returns the start chunk's corner —
+`StrongholdPieces.StartPiece.getLocatorPosition`, an override that returns the portal room's position where the base method returns the centre of the piece's box —
 so a stronghold is the one structure in the game that knows where its own
 landmark is, and **nothing in 26.3 calls the method**
 ([what `/locate` answers with](structure-placement.md#what-locate-asks-and-what-it-answers-with)).
 
-The whole-graph move that ends the loop is also the idiom on its way out.
-`StructurePiecesBuilder.moveBelowSeaLevel`,
-`StructurePiecesBuilder.offsetPiecesVertically`, `TemplateStructurePiece.move`
-and the mansion's siting helper are all marked for removal, and the jigsaw path
-has nothing deprecated in it at all: Mojang has flagged the idiom, not just the
-methods. Three separate *magic start Y* constants in this package are read by
-nothing — the literals are retyped at their use sites, which is a trap for
-anyone changing one — and one discarded random draw is load-bearing, because
-`MineshaftStructure.findGenerationPoint` opens by drawing a double and throwing
-it away, a random-stream alignment relic that has to stay or every mineshaft in
-every existing world moves.
+The whole-graph move that ends the loop is also deprecated: `StructurePiecesBuilder.moveBelowSeaLevel`, `StructurePiecesBuilder.offsetPiecesVertically`, `TemplateStructurePiece.move` and the siting helper the mansion and the end city share are all marked so, and the jigsaw package declares nothing deprecated of its own. The start heights have names — `StrongholdPieces.MAGIC_START_Y` and `NetherFortressPieces.MAGIC_START_Y` at sixty-four, `MineshaftPieces.MAGIC_START_Y` at fifty — and one discarded random draw is load-bearing: `MineshaftStructure.findGenerationPoint` opens by drawing a double and throwing it away, and without that draw every mineshaft a seed generated from then on would be laid out differently.
 
 ## The four families
 
@@ -206,7 +178,7 @@ every existing world moves.
 | **procedural piece graphs** | the pieces write their own blocks and construct their own neighbours — the pattern in its pure form | `StrongholdPieces`, `MineshaftPieces`, `NetherFortressPieces` |
 | **grid and graph solvers** | a layout is *solved* first and pieces are emitted afterwards, so neither ever calls `StructurePiecesBuilder.findCollisionPiece` — the layout **is** the collision guarantee | `WoodlandMansionPieces`, `OceanMonumentPieces` |
 | **template-backed pieces** | procedural placement, `.nbt` content, and therefore the same processors and the same `StructureTemplate.placeInWorld` the jigsaw path uses | `EndCityPieces`, `RuinedPortalPiece`, `OceanRuinPieces`, `ShipwreckPieces`, `IglooPieces`, `NetherFossilPieces`, `WoodlandMansionPieces` |
-| **one-shot surface buildings** | no graph and no children: one box, dropped on the ground, over `ScatteredFeaturePiece`, or — for buried treasure — no ground-finder at all | `DesertPyramidPiece`, `JungleTemplePiece`, `SwampHutPiece`, `BuriedTreasurePieces` |
+| **one-shot surface buildings** | no graph and no children: one box, dropped on the ground, over `ScatteredFeaturePiece`, or — for buried treasure — a ground scan of its own | `DesertPyramidPiece`, `JungleTemplePiece`, `SwampHutPiece`, `BuriedTreasurePieces` |
 
 The nether fortress is the most elaborate of the first family: it runs *two*
 weight tables and a mode switch, where a castle entrance is a one-way door
@@ -215,14 +187,7 @@ one-in-eight roll per branch. `WoodlandMansionPieces` is in the table twice
 because it genuinely is: its layout is solved and its rooms are then stamped
 from `.nbt` files.
 
-Beside each of those piece families sits a thin `Structure` subclass —
-`RuinedPortalStructure`, `DesertPyramidStructure`, `OceanRuinStructure`,
-`ShipwreckStructure`, `WoodlandMansionStructure`, `NetherFossilStructure` and
-the rest — which is the settings wrapper and the entry point and nothing more,
-usually a `SinglePieceStructure` of forty lines. Two of them do more than
-wrap. `RuinedPortalStructure` draws the decay setup, below. And
-`DesertPyramidStructure` is where the book's one live `Structure.afterPlace`
-lives: once the pyramid's blocks are down it collects every candidate
+Beside each of those piece families sits a `Structure` subclass — `RuinedPortalStructure`, `DesertPyramidStructure`, `OceanRuinStructure`, `ShipwreckStructure`, `WoodlandMansionStructure`, `NetherFossilStructure` and the rest — which is the settings wrapper and the entry point. For the jungle temple that is all, a `SinglePieceStructure` of forty lines, and the swamp hut's, the igloo's, buried treasure's and the ocean ruins' are nearly as thin; the other ten add something of their own — a siting rule, a scan for ground, a generation loop, a rebuild at load, or work after the blocks are down. Two are worth stopping on. `RuinedPortalStructure` draws the decay setup, below. And `DesertPyramidStructure`, a `SinglePieceStructure` too, has one of the two live `Structure.afterPlace` overrides (the other, `WoodlandMansionStructure`'s, fills the space under the mansion with cobblestone down to the ground): once the pyramid's blocks are down it collects every candidate
 position its pieces recorded, shuffles them from a positional random source,
 turns five to seven into suspicious sand and the rest into plain sand — which
 is why a pyramid's archaeology is the same in two worlds with one seed and
@@ -236,27 +201,19 @@ monument's rooms are never saved**: they are held privately on the main
 building, never reach the builder, and their save method is empty anyway —
 `StructureStart.loadStaticStart` carries a hardcoded type check that calls
 `OceanMonumentStructure.regeneratePiecesAfterLoad`, which reads position and
-orientation from the save and rebuilds every room from the world seed, so the
-monument comes back identical rather than merely present. Every other structure
-deserialises what it wrote. **A saved bounding box is not always where the
-structure is**: buried treasure rewrites its own box while placing, igloos are
-built at a hardcoded Y 90 and re-seated at write time from the live heightmap
-and then put *back*, and shipwrecks latch a flag so the second chunk does not
-move them again — for those types the persisted box is a placement hint. Two
-pieces go further and deliberately **widen the chunk they were given**, a
-ruined portal and a nether fossil both encapsulating the writable area so they
-are placed whole from one chunk rather than sliced across several; since
+orientation from the save and rebuilds every room from the world seed, so the monument comes back identical rather than merely present. Every other structure's pieces are read back from what they wrote, a template piece's box recomputed from its template on the way. **A saved bounding box is not always where the
+structure is**: buried treasure rewrites its own box while placing, igloos are built at a hardcoded Y 90 and re-seated at write time from the live heightmap, with only their template position put *back*, so a reloaded igloo's box is recomputed at Y 90, and shipwrecks latch a flag so the second chunk does not
+move them again — for those types the box is a placement hint. Two
+pieces go further and deliberately **widen the chunk they were given**, a ruined portal and a nether fossil both encapsulating the writable area so they are placed whole rather than sliced — the portal from the chunk holding its centre, the fossil from every chunk it touches; since
 `BoundingBox` is mutable and shared between the pieces of one start, that
 widening leaks, harmlessly today because both structures have exactly one piece.
 And **a template-backed piece still cleans up after a connector it never
 used**: `TemplateStructurePiece.postProcess` scans what it placed for jigsaw
-blocks and replaces each with its final state, so a stray jigsaw block in a
-mansion `.nbt` resolves quietly instead of connecting to anything.
+blocks and replaces each with its final state, so the jigsaw block inside each of five ruined-portal templates resolves quietly instead of connecting to anything.
 `Beardifier`'s projection test is the only place at runtime where the two
 assemblers are told apart.
 
-Almost nothing here is data-driven, and that is the point. Piece choice,
-weights, budgets, layout rules and adjacency are all Java.
+Almost nothing here is data-driven, and that is the point. Piece choice, weights, budgets, layout rules and adjacency are Java, bar a few knobs a structure's JSON sets: the ruined portal's weighted setups, the ocean ruin's odds of a large ruin and of a cluster, and the shipwreck's beached flag, which picks its template list.
 `Registries.STRUCTURE` still supplies the settings wrapper
 ([structure placement](structure-placement.md#the-cast)) and the templated
 families read `.nbt` files, but **a data pack cannot add a room to a
@@ -270,12 +227,10 @@ data-driven type pattern: a registry whose instances are Java grammars
 recursed out from the entrance on an 11×11 grid, rooms are stamped alongside
 them, and then an edge-cleaning pass runs **repeatedly until nothing
 changes**, filling any cell with enough occupied neighbours. That pass is why
-a mansion is a solid block of building rather than the thin maze the corridor
-walk actually produced. Rooms are then greedily merged into 2×2, 1×2 and 1×1
+a mansion is a solid block of building rather than the thin maze the corridor walk produced. Rooms are then greedily merged into 2×2, 1×2 and 1×1
 units, with type, id and flags packed into a single integer per cell — and a
 room that ends up with no corridor edge becomes a **secret room**, reachable
-only from above. A mansion may also have two floors instead of three: the
-third needs a second-floor room with a door to hang its staircase on, and if
+only from above. A mansion may also have two floors instead of three: the third needs a second-floor one-by-two room with a door to hang its staircase on, and if
 there is none, or no free direction to grow into, the third-floor grid is
 blanked entirely.
 
@@ -292,20 +247,14 @@ section is generated into a scratch list and tagged with one shared random
 `StructurePiece.genDepth` — used as a **group identity, not a depth**. The
 section is accepted only if every collision it finds is with a piece carrying
 the *parent's* tag; one foreign overlap discards the entire candidate list
-atomically. Bridges opt out with a tag of minus one, and the ship becomes
-likelier the longer the bridge gets, with at most one per city.
+atomically. A bridge tags its first span minus one, a tag no parent carries, so the tower hung off its far end may not overlap it, and the section's shared tag replaces the mark before the bridge itself is checked; the ship becomes likelier the deeper a section sits in the city's recursion, with at most one per city.
 
-**Ruined portal decay is a processor stack, not code.** The rot, the
-gold-block gaps, the lava-to-magma substitutions and the mossiness are
-`StructureProcessor`s assembled per portal and stored in the saved piece, so
-decay reproduces exactly on reload. What makes it unusual is that the stack is
+**Ruined portal decay is mostly a processor stack.** The ageing, the gold-block gaps, the lava-to-magma substitutions and the mossiness are `StructureProcessor`s assembled per portal and rebuilt at load from the settings the piece saves, so decay reproduces exactly on reload; the netherrack spread, the netherrack columns under the portal, the vines and the leaves are the piece's own code. What makes it unusual is that the stack is
 built in Java and appears in no data pack at all
 ([the processors](jigsaw-and-templates.md#the-processors-and-what-the-shipped-lists-use)):
-`BlockAgeProcessor` — which is the mossiness, not a separate step —
+`BlockAgeProcessor` — which is the ageing and the mossiness at once —
 `LavaSubmergedBlockProcessor` and `BlackstoneReplaceProcessor` are
-`RuinedPortalPiece`'s alone. Which of the five decay setups a portal gets —
-surface, buried, in a mountain, on the ocean floor, in the nether — is
-`RuinedPortalStructure`'s weighted draw, made before any piece exists.
+`RuinedPortalPiece`'s alone. Which placement a portal gets — on the surface, partly buried, underground, in a mountain, on the ocean floor or in the nether — is settled from the setups its JSON lists before any piece exists: a weighted draw for the standard and mountain portals, which list two, and the one setup for the other five.
 
 ## Where to look
 
@@ -317,14 +266,14 @@ vocabulary a piece writes with. `StructurePiece.addChildren` is the method to
 read for what it *does not* do. Then `StrongholdStructure` beside
 `StrongholdPieces` — the regeneration loop, `StrongholdPieces.resetPieces` and
 `StrongholdPieces.STRONGHOLD_PIECE_WEIGHTS` in one sitting — and
-`StructurePiecesBuilder` for the accessor and
+`StructurePiecesBuilder` for the builder `StructurePiece.addChildren` is handed and
 `StructurePiecesBuilder.moveBelowSeaLevel` for the move. After that pick one
 family per shape: `MineshaftPieces` for inline recursion,
 `WoodlandMansionPieces` or `OceanMonumentPieces` for a solver,
 `RuinedPortalPiece` for the template-backed kind, and `ScatteredFeaturePiece`
 with `SinglePieceStructure` for the one-shot buildings. One door the page does
 not open: `OceanMonumentStructure.regeneratePiecesAfterLoad`, the only
-load-time rebuild in the game.
+structure whose pieces are rebuilt from the seed at load rather than read back.
 
 ---
 

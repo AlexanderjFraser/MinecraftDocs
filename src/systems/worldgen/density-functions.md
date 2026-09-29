@@ -29,21 +29,20 @@ the terrain steps that sample the result are
 [terrain](terrain.md#filling-the-noise-six-loops-one-number-at-the-bottom).
 
 Nothing here touches a block, and nothing here differs between two worlds
-built from the same seed and the same packs. This is the layer that *the
-seed* actually means.
+built from the same settings and the same packs. This is the layer that *the seed* means.
 
 ## The cast
 
 | class | what it owns | its clock |
 |---|---|---|
 | `DensityFunction` | the description, which answers no number for a position: `DensityFunction.compileSampler` builds its sampler, `DensityFunction.rewriteChildren` lets a rule rebuild it, and `DensityFunction.range` and `DensityFunction.domainAxes` are the static analysis | — |
-| `DensityFunctions` | the factories, the registration of the node types, and the codecs that dispatch a JSON *type* to one of them | data-pack load |
+| `DensityFunctions` | the factories, the registration of the node types, and the codecs that dispatch a JSON *type* to one of them | start-up, then data-pack load |
 | `DensitySampler` | the compiled form, the only one that answers a number: `DensitySampler.sampleValue` for one point, `DensitySampler.sampleVolume` for a whole `DensityVolume` at once | compiled once per dimension |
 | `CacheFunction` | a cache *request*, wrapping one function; it refuses to compile | replaced once per dimension |
 | `NoiseRouter` | the eight functions a generator asks for, as one record; `NoiseRouter.createClimateSampler` turns six of them into a `Climate.Sampler` | — |
-| `NoiseRouterData` | vanilla's graph, written in Java and *emitted* as the JSON that ships | build time |
+| `NoiseRouterData` | vanilla's graph, written in Java and *emitted* as the JSON that ships | build time, and at run time for `NoiseRouterData.none` and `NoiseRouterData.peaksAndValleys` |
 | `RandomState` | the per-dimension instantiation: the seed's random factories, the noise memo, the `DensityFunctionCompiler`, the `MaterialSystem` | once per level |
-| `NoiseChunk` | the per-chunk run: the chunk's `DensityVolume`, its aquifer, and the one `SamplerContext` every sampler it hands out is bound to | once per chunk |
+| `NoiseChunk` | one run of the graph: its `DensityVolume` — the chunk's, or one column's for a height query — its aquifer, and the one `SamplerContext` every sampler it hands out is bound to | once per chunk, and once per height query |
 
 Underneath all of it is the *synth* package: `NormalNoise` (a noise
 *definition* — octaves, amplitudes, normalisation — which `NormalNoise.create`
@@ -55,10 +54,7 @@ built from `SmearedPerlinNoise` octaves), `LegacyFbmInitializer` (the old
 construction the two nether climate noises keep), and `SimplexNoise`, which no
 noise definition reaches: the End islands node uses it directly, and the
 fixed-seed noises `Biome` keeps for its own per-block temperature are built
-from it ([biomes](biomes.md#what-a-biome-still-owns)). Every seeded noise
-is a `Noise`. `Noises` holds the sixty-four keys for the definitions
-and `Noises.instantiate` seeds one from a positional factory. With `NoiseUtils`
-that is the whole package, ten classes.
+from it ([biomes](biomes.md#what-a-biome-still-owns)). Every seeded noise is a `Noise`, and with `NoiseUtils` that is the whole package. `Noises`, one package up, holds the sixty-four keys for the definitions, and `Noises.instantiate` seeds one from a positional factory.
 
 ## Three forms of one graph
 
@@ -79,7 +75,7 @@ comes through the rewrite as it was.
 |---|---|---|---|
 | a pointer at another entry, `DensityFunctions.HolderHolder` | a pointer | the graph it pointed at | that graph's sampler |
 | a cache request, `CacheFunction` | refuses to compile | a numbered `DensityFunctionCompiler.PreparedCache`, one per distinct input | a `CachingDensitySampler` that asks the context for its cell |
-| a noise leaf, `NoiseFunction` | a definition, no seed | unchanged | a seeded `Noise`, from the compile context |
+| a seeded leaf: `NoiseFunction`, and the shift, blended-noise and end-islands nodes | a definition, no seed | unchanged | seeded from the compile context |
 | the blend and beardifier leaves, `SimpleDensityFunction` | three singletons | unchanged | a `ContextBoundSampler` that asks the context, else answers 1, 0 or 0 |
 | a subgraph that ignores an axis its parent uses | as written | wrapped in a `SliceFunction` at zero on that axis | computed once, copied along that axis |
 | who samples it | nothing | nothing | everything, each against its own `SamplerContext` |
@@ -115,16 +111,15 @@ an id without a registry context to read it against
 A string becomes a `DensityFunctions.HolderHolder` — a live pointer
 at another entry, which is how a graph references a graph.
 
-Two things a reader of the JSON cannot see wait for the compile; construction
+Two things a reader of the JSON cannot see happen at the compile; construction
 keeps every node as the file wrote it. The compiler **folds**:
 `BinaryFunction.compileSampler` turns a two-argument node with one constant
 argument into a sampler that carries the constant, such as
 `BinaryFunction.ConstAddSampler`, so a node type in the file is not
-necessarily the sampler that runs. And the **bounds** are a static analysis of
-the data pack: `DensityFunction.range` answers from a node's children without
+necessarily the sampler that runs. And it **reads the bounds**, a static analysis of the data pack: `DensityFunction.range` answers from a node's children without
 a position — one that talks back, because compiling a *min* or a *max* over
 two ranges that cannot possibly overlap logs a warning naming both arguments,
-and compiles only the side that always wins.
+and compiles only the side that wins whenever the inputs stay inside their declared ranges.
 
 `DensityFunctions.HolderHolder` is the one parsed node that cannot be written back
 out: it is not registered, and asking it for its codec throws. It exists only
@@ -135,8 +130,7 @@ which recognises it and emits the id string it came from.
 
 `RandomState.create` forks the seed into one positional factory — from which
 `RandomState.getOrCreateRandomFactory` hands out named ones, *aquifer* and
-*ore* among them, each an `XoroshiroRandomSource` unless the settings ask for
-the legacy family
+*ore* among them, each a factory of `XoroshiroRandomSource`s unless the settings ask for the legacy family
 ([math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither))
 — and builds a `DensityFunctionCompiler`, rewriting nothing: the first
 `RandomState.getSampler` for a function rewrites and compiles it, once for the
@@ -150,23 +144,16 @@ and the ore veins read functions of their own, from the settings' *aquifers*
 block and the two ore-vein material rules; the aquifer's *surface_level*,
 sampled on a quart grid, is how it finds the ground it should put a water
 table under. Nothing in
-the decoration or structure packages ever mentions `DensityFunction` at all;
-they reach the substrate only through the beardifier and the heights the
-generator hands them.
-A density function is seeded inside the compile and nowhere else, through the
-`DensityFunction.CompileContext` that `RandomState` implements: a noise leaf
+the decoration or structure packages ever mentions `DensityFunction` at all; they reach the substrate only through the beardifier, the heights the generator hands them and the `Climate.Sampler` a structure's biome test reads — the generator's own for a structure start, and one that `StructureCheck` and `JigsawPlacement.generateJigsaw` each build for themselves.
+A density function is seeded inside the compile and nowhere else, through the `DensityFunction.CompileContext` that `RandomState` builds: a noise leaf
 gets a seeded `Noise` from `RandomState.getOrCreateNoise`, a memo keyed by the
-definition's id; `BlendedNoise` gets a random source forked by the name
-*terrain*; the end-islands node gets a `LegacyRandomSource` on the bare seed.
+definition's id; `BlendedNoise` gets a random source forked by the name *terrain*, or under the legacy family a `LegacyRandomSource` on the bare seed; the end-islands node gets a `LegacyRandomSource` on the bare seed.
 The parsed graph itself is never touched.
 
 Two details in there matter later. The **two nether climate noises are
 special-cased** into a legacy construction over a `LegacyRandomSource` and
 therefore skip the memo entirely. And the compiler keeps its own memo of the
-caches it has prepared, keyed by what each one wraps, so a cache reached from
-five router fields is prepared **once and stays one object** — which is
-precisely what makes the per-chunk caching in the next step pay, because five
-router fields that share a cache share its number, and a number is one cell in
+caches it has prepared, keyed by what each one wraps, so a cache reached from several router fields is prepared **once and stays one object** — which is precisely what makes the per-chunk caching in the next step pay, because router fields that share a cache share its number, and a number is one cell in
 a context.
 
 The memo goes further than that, because it keys on the wrapped node *itself*
@@ -174,8 +161,7 @@ and the nodes are records: two separately parsed but structurally identical
 cache requests are equal, and so are merged into one object with one cache.
 
 The compiled form is the only one anything ever samples, and away from the
-fill it is sampled in production: the biome step, the structure checks, the spawn
-search and the F3 noise readout, which
+fill it is sampled in production: the biome step, the structure starts and checks, the height queries behind `ChunkGenerator.getBaseHeight`, the spawn search and the F3 noise readout, which
 `NoiseBasedChunkGenerator.addDebugScreenInfo` fills from the settings' own
 *debug_functions* list, all run the dimension's compiled samplers against
 contexts of their own. That is the whole reason a compiled sampler has to stay
@@ -272,7 +258,7 @@ something other than their child's range is the catalogue's
 ([the node catalogue](../../reference/density-function-nodes.md#bounds)). What
 this page owns is what the compiler does with a bound — settles a *min* or a
 *max* from it, and hands the sampler the other side's limit so that a single
-point can skip that side — and that **every form reports the same bound**.
+point can skip that side — and that **every form that reports a bound reports the same one**.
 
 **Seeding changes nothing.** A noise leaf answers from its definition, not
 from a seeded noise: `NormalNoise.range` is fixed when the definition is
@@ -288,28 +274,20 @@ settled on the range the running graph has.
 
 ## What nothing reaches
 
-Three names in this package read as machinery and are reached by nothing, and
-one of them is the most misleading thing in the catalogue.
+Among the names in this system that read as machinery and are reached by nothing, two are worth a warning, and one of them is the most misleading thing in the catalogue.
 `DensityFunctions.shift`, the three-dimensional domain warp, is written by no
 shipped file: vanilla uses only the two two-dimensional warps, which read the
 *same* noise parameters with their axes swapped, behind a registry id called
 *offset* rather than *shift*
 ([which ids vanilla uses](../../reference/density-function-nodes.md#what-vanilla-actually-uses)).
-Beside it, `Density`
-writes down the three conventions this whole system rests on — surface at
-zero, and the two values a node reaches for when it wants to end an argument —
-as constants **nothing anywhere reads**, the routers spelling the same numbers
-as literals; and `NoiseUtils.biasTowardsExtreme` is a curve with no callers in
-a package where every other class builds or samples a noise.
+Beside it, `NoiseUtils.biasTowardsExtreme` is a curve with no callers in a package where every other class builds or samples a noise. `Density` cannot join them: its three values are compile-time constants, which javac writes into whatever uses them, so the decompile cannot say who reads them — but it names the three conventions this whole system rests on: surface at zero, and the 64 and −64 a node reaches for when it wants to end an argument.
 
-## The two nodes that read the world
+## The nodes that read the world
 
 Everything in the catalogue — every noise, spline, selector and cache — reads
-no block, no chunk and no level, which is why the whole system can run on a
-worldgen worker with nothing loaded, one chunk-status task at a time
+no block, no chunk and no level, which is why the whole system can run on the [worker pool](../../reference/threads.md#the-threads-a-lecture-leans-on) with nothing loaded, one chunk-status task at a time
 ([the chunk generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)).
-Two nodes are the exception, and both keep the property anyway by the same
-trick: they read only what the sampling context carries, and everything in it
+Four nodes from two sources are the exception, and all keep the property anyway by the same trick: they read only what the sampling context carries, and everything in it
 was harvested before the first sample. The three blend nodes reach
 `BlendingData` through the blender
 ([blending at the old-chunk border](blending.md#one-measurement-five-consumers));
@@ -318,14 +296,9 @@ the *beardifier* node reads a `Beardifier`, whose
 at `ChunkStatus.STRUCTURE_REFERENCES`
 ([structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)).
 
-That is what *deterministic* means here, stated once: the graph is a function
-of the seed and the packs because the only two things in it that read anything
-read work the same seed and the same packs already produced.
+That is what *deterministic* means here, stated once: the only two sources anything in the graph reads hold work done before the first sample — structures the same seed and the same packs placed, and, beside a chunk an older version left, what that chunk's blocks measure — so the graph is a function of the seed and the packs everywhere except beside such a chunk, which is the part's one deliberate exception ([world generation](README.md)).
 
-> **For a 1.21-era reader.** Three of the six climate functions have two
-> names. `NoiseRouter` calls them *vegetation*, *ridges* and *continents*;
-> `Climate.Sampler` calls the same three *humidity*, *weirdness* and
-> *continentalness*. Neither vocabulary is wrong and both ship. The cache
+> **For a 1.21-era reader.** The cache
 > markers *flat_cache*, *cache_2d*, *cache_once* and *cache_all_in_cell* are
 > gone, and *cache* does their work; *DensityFunction.compute* is gone, and
 > `DensitySampler.sampleValue` does its work on the compiled form.

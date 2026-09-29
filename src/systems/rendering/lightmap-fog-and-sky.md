@@ -69,10 +69,10 @@ Some of the old per-dimension and per-biome data survived the migration
 unchanged. `DimensionType.skybox` is a
 three-valued `DimensionType.Skybox` — `DimensionType.Skybox.NONE`,
 `DimensionType.Skybox.OVERWORLD`, `DimensionType.Skybox.END` — and it is a
-*branch*, not a colour. `BiomeSpecialEffects` still exists, hollowed out to
+*branch*, not a colour. `BiomeSpecialEffects` holds only
 `BiomeSpecialEffects.waterColor`, `BiomeSpecialEffects.grassColorOverride`,
 `BiomeSpecialEffects.grassColorModifier` and the foliage colours: every fog
-and sky colour left it for `Biome.getAttributes`. None of it crosses the
+and sky colour comes from `Biome.getAttributes`. None of it crosses the
 network as pixels — the inputs arrive as registry sync during configuration,
 attribute maps filtered through `EnvironmentAttributeMap.NETWORK_CODEC`, then
 world time and weather during play ([protocol

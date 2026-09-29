@@ -30,7 +30,7 @@ position and whether it is attempted at all; this is what happens after
 
 | class | its slot | what varies |
 |---|---|---|
-| `TreeFeature` | the algorithm — a record, so *final*, one implementation, no subclasses — and the nine fields it runs on: five of them are the parts below, three hold `BlockStateProvider`s ([features and placement](features-and-placement.md#what-a-feature-may-write-and-where-it-may-read)) for the trunk, the foliage and the dirt column laid under the trunk, and one is the *ignore vines* flag | the fields, never the algorithm |
+| `TreeFeature` | the algorithm — a record, so *final*, one implementation, no subclasses — and the nine fields it runs on: five of them are the parts below, three hold `BlockStateProvider`s ([features and placement](features-and-placement.md#what-a-feature-may-write-and-where-it-may-read)) for the trunk, the foliage and the soil block laid under each trunk column by every trunk placer but `UpwardsBranchingTrunkPlacer`, and one is the *ignore vines* flag | the fields, never the algorithm |
 | `TrunkPlacer` | writes the logs, returns where crowns hang | 10 registered types |
 | `FoliagePlacer` | writes the leaves around one attachment | 12 registered types |
 | `RootPlacer` | writes roots, and may lift the trunk off the ground | **1** registered type |
@@ -53,8 +53,8 @@ sequenceDiagram
     participant TP as TrunkPlacer
     participant FolP as FoliagePlacer
     participant RootP as RootPlacer
-    participant TDec as TreeDecorator
     participant WGL as WorldGenLevel
+    participant TDec as TreeDecorator
 
     rect rgba(0, 0, 0, 0.04)
     Note over TF,WGL: nothing written yet
@@ -78,14 +78,13 @@ sequenceDiagram
     end
     TF->>TDec: place, with the logs, leaves and roots sorted by Y
     TDec->>WGL: hives, vines, podzol, propagules
-    TF->>TF: updateLeaves, rewriting every leaf's distance
+    TF->>TF: updateLeaves, rewriting the distance of every leaf it reaches
 ```
 
 *Everything in the shaded band happens before a block is written, which is where all three ways out are; below it nothing is undone, and the crown was sized before the scan measured the room.*
 
 The two crown numbers are `FoliagePlacer.foliageHeight` and
-`FoliagePlacer.foliageRadius`, and the second is what `TreeFeature` hands to
-every `FoliagePlacer.createFoliage` call; every block any slot writes goes to
+`FoliagePlacer.foliageRadius`, and both are what `TreeFeature` hands to every `FoliagePlacer.createFoliage` call, beside the clipped height; every block any slot writes goes to
 the `WorldGenLevel` the feature was handed. Four things in that diagram are the
 page's real content.
 
@@ -140,18 +139,15 @@ and returns attachments.
 | `MegaJungleTrunkPlacer` | the giant trunk, plus side branches laid along a random angle every few levels, each attachment nudged **−2** |
 | `DarkOakTrunkPlacer` | a leaning 2×2 trunk whose lean is two minus a draw from three, so two steps, one or none with equal chance, plus a ring of downward log stubs on a one-in-three roll per position — placed relative to the *original* trunk, not the leaned one. Its main attachment sits on the top log rather than above it |
 | `FancyTrunkPlacer` | see below |
-| `BendingTrunkPlacer` | rises, nudges once, then walks *horizontally* for a sampled bend length — and emits an attachment at every position along the whole arc, including ones where the log was not placed |
+| `BendingTrunkPlacer` | rises, nudges once or twice, then walks *horizontally* for a sampled bend length — and emits an attachment at every position of the arc above a minimum height, including ones where the log was not placed |
 | `UpwardsBranchingTrunkPlacer` | a straight column that rolls a probability after each log and, on success, runs a diagonal staircase branch outward, attaching foliage at every branch log. The one placer that widens what counts as free |
-| `CherryTrunkPlacer` | one to three branches that random-walk toward a computed endpoint, choosing vertical or horizontal per step by the remaining ratio, with the log axis rotated sideways for the horizontal runs. It derives a **fourth branch-height provider in its constructor that no codec ever sees**, which is why the codec insists the declared range spans at least two blocks |
+| `CherryTrunkPlacer` | one or two side branches that random-walk toward a computed endpoint, choosing vertical or horizontal per step by the remaining ratio, with the log axis rotated sideways for the horizontal runs — and, when the drawn count is three, a third that is the trunk going on straight up. It derives **one more branch-height provider in its constructor that no codec ever sees**, which is why the codec insists the declared range spans at least two blocks |
 | `PoplarTrunkPlacer` | a straight column with one to four single sideways logs stuck out at one level, a sampled number of logs below the top, and its one attachment a block above those stubs — in a shipped poplar, down inside the trunk, which the crown then wraps. It draws a fresh shuffle of the four directions for every level and uses one |
 
-`FancyTrunkPlacer` is the one worth watching, because it is the only placer
-that plans before it writes. It works out a crown position per level from a
+`FancyTrunkPlacer` is the one worth watching, because it is the only trunk placer that plans before it writes. It works out a crown position per level from a
 circle equation, then walks the line from trunk to crown *twice*: once with
 placement switched off, purely to ask whether every block on the way is free,
-and again for real only if it was. A branch whose base has slid below the
-trunk top is clamped, which is the whole "branches slope down as they go out"
-look. And it carries one computation that cannot do anything: the number of
+and again for real only if it was. Each branch's base sits below its crown, by a fixed share of the distance out, and one that would sit above the trunk top is clamped to it, which is the whole "branches rise as they go out" look. And it carries one computation that cannot do anything: the number of
 crown candidates it tries per level is a minimum taken against one, over an
 expression that is never below one, so the answer is always **one** — and the
 named density constant that expression multiplies therefore has no effect on
@@ -159,8 +155,7 @@ any tree of any height.
 
 ## The foliage placers
 
-A foliage placer gets one attachment and three numbers: a height, a radius, and
-an **offset** it samples itself from a configured `IntProvider` — how far above
+A foliage placer gets one attachment and, beside the clipped tree height, which none of them reads, three numbers: a height, a radius, and an **offset** it samples itself from a configured `IntProvider` — how far above
 the attachment its rows start. Its two real degrees of freedom are how the radius
 changes with height and which positions inside a row it *skips*, and the skip
 test is asked in **signed** coordinates, running from minus the radius to plus
@@ -174,14 +169,14 @@ it, which one other does.
 | `BlobFoliagePlacer` | the plain oak blob: radius tapers by half the row index, corners clipped on a coin flip and always clipped on the row at *y* = 0 |
 | `FancyFoliagePlacer` | the blob's subclass, but the skip test is a genuine circle rather than a corner roll |
 | `BushFoliagePlacer` | the blob with a much steeper taper — the full row index, not half of it |
-| `SpruceFoliagePlacer` | the saw-tooth: a radius that grows a block per row and resets to nothing whenever it reaches a ceiling that is itself climbing. The only placer whose row loop is bounded by the foliage height alone rather than the offset |
+| `SpruceFoliagePlacer` | the saw-tooth: a radius that grows a block per row and resets to its minimum — nothing the first time, one after — whenever it reaches a ceiling that is itself climbing. The only placer whose offset adds rows rather than lifting the crown |
 | `PineFoliagePlacer` | one cone, and the only placer that overrides `FoliagePlacer.foliageRadius` — it adds a draw scaled by the trunk height on top of the configured radius |
-| `AcaciaFoliagePlacer` | not a loop at all: three explicit rows, with a cross cut through the flat plate. Its declared foliage height is a constant zero |
-| `DarkOakFoliagePlacer` | two explicit rows, or three or four when the trunk is 2×2, wider with it, and **the only placer that overrides the signed skip test with a working one** — it removes the four true corners of the widest row before the signed-to-absolute fold can hide them |
+| `AcaciaFoliagePlacer` | not a loop at all: three explicit rows at two heights, with a cross cut through the flat plate. Its declared foliage height is a constant zero |
+| `DarkOakFoliagePlacer` | two explicit rows, or three or four when the trunk is 2×2, wider with it, and **the only placer that overrides the signed skip test with a working one** — on the widest row of a two-by-two tree it skips the nine positions whose signed coordinates are each −r, r or r + 1 (the grid runs from −r to r + 1): the four true corners and the five one block in from them on the positive side, whose mirror images are kept |
 | `MegaJungleFoliagePlacer` | registered as *jungle_foliage_placer*, not *mega_jungle*. A circle plus a hard Manhattan cap that skips anything seven or more blocks out |
 | `MegaPineFoliagePlacer` | the only one that iterates absolute world Y, so it can make its taper jagged by widening every other row |
 | `RandomSpreadFoliagePlacer` | **never places a row.** It fires a configured number of shots at a box, each coordinate the difference of two draws, so the leaves cluster toward the attachment and thin out. Its skip test is unreachable dead code, and it ignores the offset the base class sampled for it |
-| `CherryFoliagePlacer` | two narrowing cap rows, a stack of full-radius rows, then the only two uses of the hanging-leaves row helper. It punches probabilistic holes: an edge hole on the bottom row, and on wide rows an unconditional corner removal plus a probabilistic diagonal band |
+| `CherryFoliagePlacer` | two narrowing cap rows, a stack of full-radius rows, then the only two uses of the hanging-leaves row helper. It punches probabilistic holes: an edge hole on the row at *y* = −1, the wider of its two hanging-leaves rows, and on every row of radius three or more an unconditional corner removal plus a probabilistic diagonal band |
 | `PoplarFoliagePlacer` | a diamond rather than a square: each row keeps what lies within a Manhattan distance of the centre, two diagonally opposite quadrants reaching a block further than the other two, a coin flip per crown choosing the pair, and a configured chance of a hole at each rim position. It runs rows of its own and overrides both inherited skip tests to throw, and it is the only placer that writes logs — a cross of sideways logs laid through one row of a wide enough crown, over leaves it has just placed |
 
 Two of the contract's parameters are dead in all twelve implementations:
@@ -191,8 +186,7 @@ Two of the contract's parameters are dead in all twelve implementations:
 ## Roots, and the tree that plants itself by failing
 
 `RootPlacerType` registers one type. `MangroveRootPlacer` is the only root
-placer in the game, and the base class exists for it: `RootPlacer.trunkOffsetY`
-is what lifts a mangrove's trunk one to three blocks clear of the mud, and
+placer in the game, and the base class exists for it: `RootPlacer.trunkOffsetY` is what lifts the trunk clear of the mud (one to three blocks for *mangrove*, three to seven for the commoner *tall_mangrove*), and
 `RootPlacer.aboveRootPlacement` carries the one optional decoration a root
 gets — `AboveRootPlacement`, the moss carpet that lands on top of one — while
 the mangrove's own parameters sit in `MangroveRootPlacement`.
@@ -216,8 +210,7 @@ provider instead, and that branch skips the base implementation entirely — so
 `TreeFeature` accumulates four sets as it writes — roots, logs, leaves and
 decorations, each filled through a consumer the feature hands down to whichever
 placer is writing — and passes the first three to each `TreeDecorator` as a
-`TreeDecorator.Context`, which sorts all three **ascending by Y**. That sort
-is the reason five different decorators can say "the lowest log" and mean it.
+`TreeDecorator.Context`, which sorts all three **ascending by Y**. That sort is the reason five different decorators can say "the lowest log" and mean the bottom of the set — usually the soil block laid under the trunk, which goes into the log set too.
 A decorator returns nothing, so one that finds no valid spot is
 indistinguishable from one that succeeded.
 
@@ -233,30 +226,20 @@ empty one, with no water in or beside it, and works a fallen log as well as a
 standing trunk. **One changes a block the tree has already placed**:
 `CreakingHeartDecorator` shuffles the tree's logs and converts one that is
 completely surrounded by other logs — a random such log, not the first. **Two
-write on the ground around the tree**: `AlterGroundDecorator` (the podzol discs
-under a mega spruce, which reach several blocks beyond the trunk) and
-`PlaceOnGroundDecorator` (leaf litter, over an inflated box). And **one is not
+write on the ground around the tree**: `AlterGroundDecorator` (the podzol discs under a mega spruce, which reach several blocks beyond the trunk) and `PlaceOnGroundDecorator` (leaf litter, over an inflated box) — and `PaleMossDecorator`, besides its hanging moss, lays a patch on the ground at a configured chance (four in five in both shipped pale oaks), a whole moss-patch feature placed at the trunk's foot whose blocks go into none of the tree's sets. And **one is not
 a tree's at all**: `AttachedToLogsDecorator` belongs to `FallenTreeFeature`.
 
-Then the last step, and it is the one that reaches furthest.
+Then the last of the feature's own steps, and it is the one that reaches furthest.
 `TreeFeature.updateLeaves` runs a bucketed breadth-first walk out from the
-**log** set and rewrites `BlockStateProperties.DISTANCE` on every block in
-the tree's bounding box that has that property. Three consequences follow,
-and all three are visible in game. A neighbouring tree's leaves caught inside
+**log** set and rewrites `BlockStateProperties.DISTANCE` on every block with that property it reaches inside the tree's bounding box. Three consequences follow, and the first two are visible in game. A neighbouring tree's leaves caught inside
 the box get rewritten too. Blocks in the prevents-nearby-decay tag report
-distance zero and act as extra roots for the walk. And the decoration and
-root sets are marked as *occupied* before the walk starts, so a
-decorator-placed block or a mangrove root **blocks leaf-distance propagation
-through itself**. Anything the walk cannot reach within six steps keeps the
+distance zero and act as extra roots for the walk. And the decoration and root sets are marked as *occupied* before the walk starts, which changes nothing a player sees — no shipped decorator's or root's block would carry the walk anyway — and matters to the shape update that follows. Anything the walk cannot reach within six steps keeps the
 `BlockStateProperties.DISTANCE` of 7 the foliage provider gave it — already decaying — and falls
 apart on its first random tick
 ([random ticks](../world/scheduled-ticks.md#the-other-kind-of-turn-random-ticks)).
 
 None of that clearance machinery is shared with the rest of decoration — the
-scan is `TreeFeature`'s alone — but those four consumers, the sets they fill and
-the final shape update are exactly the machinery `StructureTemplate` uses to fix
-block shapes at the edge of a placed structure, and every block the consumers
-write goes in with the same flags: update neighbours, update clients, and *known
+scan is `TreeFeature`'s alone — but the final shape update is `StructureTemplate.updateShapeAtEdge`, the pass that fixes block shapes at the edge of a placed structure, and every block the four consumers write goes in with one flag word: update neighbours, update clients, and *known
 shape* ([the flag word](../blocks/blocks-and-states.md#the-flag-word)).
 
 ## Five species, side by side
@@ -266,8 +249,8 @@ shape* ([the flag word](../blocks/blocks-and-states.md#the-flag-word)).
 | oak | straight, 4 + two draws | blob, radius 2 | — | two layers | — |
 | fancy oak | fancy, base 3 | fancy, radius 2, offset **4** | — | two layers, min clipped **4** | — |
 | dark oak | dark oak, 6 + draws | dark oak, radius **0** — all the width is hardcoded in the placer | — | three layers | — (pale oak adds moss, and a creaking heart) |
-| cherry | cherry, 7, one to three branches | cherry, radius 4, four hole probabilities | — | two layers | — (a 5% bee-nest variant exists) |
-| mangrove | upwards branching, per-log branch probability | random spread, 70 shots | mangrove, trunk lifted 1–3 | two layers | vines, propagules, a 1% bee nest |
+| cherry | cherry, 7, one to three branches | cherry, radius 4, two hole chances and two hanging-leaves chances | — | two layers | — (a 5% bee-nest variant exists) |
+| mangrove | upwards branching, per-log branch probability | random spread, 70 shots | mangrove, trunk lifted 1–3 (3–7 for *tall_mangrove*) | two layers | vines, propagules, a 1% bee nest |
 
 The columns nobody expects to matter are where the personality lives: dark
 oak's configured leaf radius is *zero*, and mangrove's foliage placer is the
@@ -294,10 +277,7 @@ it grows one sapling or a 2×2 of them, it replaces each with whatever the fluid
 there would be, so a waterlogged propagule grows into water, and it puts them
 all back if the feature fails.
 
-**Do leaves know which tree they came from?** No. Nothing in the placed tree
-records its species; a leaf's only per-block state is
-`BlockStateProperties.DISTANCE` and `BlockStateProperties.WATERLOGGED`, the
-first written by the feature's own breadth-first pass and the second taken
+**Do leaves know which tree they came from?** No. Nothing in the placed tree records which feature grew it; a leaf's only per-block state is `BlockStateProperties.DISTANCE`, `BlockStateProperties.WATERLOGGED` and the persistent flag, the first written by the feature's own breadth-first pass and the second taken
 from what was already in the world. A log carries a `BlockStateProperties.AXIS` the placer
 that wrote it chooses, and that is the whole of it. `FoliagePlacer.tryPlaceLeaf` also refuses to overwrite a leaf a
 player placed, by testing the persistent flag.
@@ -316,8 +296,7 @@ sets. Read `TreeFeature.CODEC` beside it for the nine fields, and
 `FeatureSize.getSizeAtHeight` with `TwoLayersFeatureSize` for the clearance
 profile the scan tests against. Then one placer per slot, and the most
 instructive are not the simplest: `TrunkPlacer.isFree` for what *free* means
-and who gets to widen it, `FancyTrunkPlacer` for the only placer that plans
-before it writes, `FoliagePlacer.createFoliage` with
+and who gets to widen it, `FancyTrunkPlacer` for the only trunk placer that plans before it writes, `FoliagePlacer.createFoliage` with
 `FoliagePlacer.shouldSkipLocation` for the row-and-skip contract and
 `DarkOakFoliagePlacer` for the one working override of it, and
 `MangroveRootPlacer.placeRoots` for a recursion whose success condition reads

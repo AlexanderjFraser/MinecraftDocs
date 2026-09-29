@@ -243,7 +243,7 @@ this with two layers, `ClientRegistryLayer.STATIC` and
 ```mermaid
 flowchart TD
     WL["WorldLoader.load, on Util.backgroundExecutor"]:::worker
-    RDL["RegistryDataLoader.load, twice: the world<br/>registries, then the dimensions"]:::worker
+    RDL["RegistryDataLoader.load for the world<br/>registries, then the dimensions"]:::worker
     T1["one RegistryLoadTask: feature"]:::worker
     T2["one RegistryLoadTask: placed feature"]:::worker
     T3["… one per RegistryDataLoader.RegistryData, 51 then 1"]:::worker

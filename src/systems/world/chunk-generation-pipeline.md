@@ -331,9 +331,7 @@ decorates and calls `Blender.generateBorderTicks`
 
 *FEATURES* is the interesting one, because a tree at a chunk edge writes into
 a neighbour and nothing about that neighbour's status says it is safe. What
-makes it safe is the executor: the layer steps its chunks one at a time, and
-every worldgen task in the dimension is serialised behind the one
-`ConsecutiveExecutor`, so no two feature steps in a dimension are ever
+makes it safe is the executor: the layer steps its chunks one at a time, and every step the dimension runs inline, decoration among them, is serialised behind the one `ConsecutiveExecutor`, so no two feature steps in a dimension are ever
 running at once. The ordinary cross-chunk write is the plain
 `ChunkAccess.setBlockState`, which takes and releases the section per write;
 only `OreFeature` holds a section open across many writes, through

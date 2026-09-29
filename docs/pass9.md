@@ -74,6 +74,594 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session M — Part XII · World generation *(2026-09-29)*
+
+Eleven pages, each checked under Part 2 by its own agent while the session read the part whole (the whole-part read
+was written before any report was opened and listed 131 items; three of them the reports did not reach: the aquifer's
+one field named *preliminary_surface_level* on `terrain` and *surface_level* on `density-functions` and `blending`,
+`terrain`'s link text still saying *the caches* after the density page had corrected its heading to one cache, and
+`features-and-placement`'s *fifty-eight algorithms* for types six of which write nothing). Each prompt carried the
+page's pass 5–7 ledger entries and, added by script because `pass8_prompts.py` leaves them out, every pass 8 entry on
+the page (V1's, V2's, C's and D's) plus V2's own *For the part session (M)* paragraph, which the router had not
+attached to seven of the pages. **421 corrections**, every one re-derived in `reference/26.3` before it was made:
+280 from the reports and the whole-part read, and **141 from the record's audit** — eleven agents re-deriving
+every changed sentence against the tree, its neighbours and the corpus — **94 of them in sentences this session had
+just written** — the audit's share about one in three of the session's corrections, I's rate, above L's. The 88 pass 5–7 ledger entries on these pages struck (44 checked, 23 wrong in whole or in part, 20 overtaken by the version, one a question answered); the pass 8
+entries on these pages were checked as claims in the prompts and are session P's. Part XII's queue settled: 37 units
+struck, six shared units given XII's share.
+
+**The three worst.** The landing page's premise: generation a function of the seed and the packs *block for block,
+forever*, with *no player* having a say. Two edges fray, and the page now says so — no rule in `ChunkPyramid` orders a
+chunk's decoration against a neighbour's (each asks only that its neighbours have reached *TERRAIN*, and no step may
+ask a neighbour for its own status), so two trees meeting at a chunk border depend on which chunk decorated first; and
+`StructureTemplateManager` tries the world's own generated folder before the packs, so a template a structure block
+saved shadows a data pack's, and the ground a beard shapes round it follows — and the audit had to correct the
+rewritten premise twice more (a player is an entity; the world type, in the saved dimension list, is an input the seed
+is not). `biomes` and `starting-a-server` had the climate search run *once, the first time the world is ever loaded,
+and never again* (C's handoff); it runs at every load for each dimension whose settings name a spawn target, and a new
+world runs it a second time for its spawn. And `structure-placement`'s scenario typed `/locate structure village`,
+which fails (the tag is `#village`), then said every candidate in unexplored terrain is loaded — the session's own
+correction — when a candidate that fails the frequency roll or the test never is, the eye of ender's radius of a
+hundred is never used (its one target is the stronghold, whose ring search takes none), and a cartographer's map
+searches a hundred cells, not fifty.
+
+**V6, twice.** `density-functions` still called `Density`'s three constants ones *nothing anywhere reads* (session
+A's handoff; V2 had kept the sentence), and `hand-built-structures` — not in session A's table — called the three
+`MAGIC_START_Y` constants *read by nothing*, *the literals retyped at their use sites*. All six are `static final` with
+literal initializers; both sentences now give the numbers with the names, and the audit moved `Density` out from
+under *What nothing reaches*, where it still read as a third dead name.
+
+**Heading corrected**: `density-functions` *The two nodes that read the world* — four node types from two sources —
+is now *The nodes that read the world* (no inbound link). No other heading was false.
+
+**Every 1.21 blockquote re-read against the 1.21.11 tree**: `density-functions`' opened on two vocabularies for three
+climate functions, which 1.21.11 shared, and is cut to the cache markers and `DensityFunction.compute`;
+`jigsaw-and-templates`' said the data-pack folder had been *structures/*, which 1.21.11 already read as *structure/* —
+what moved is the world's generated folder — and the box, and `reference/naming-drift`'s row, now say so. The other
+five were confirmed name by name.
+
+**One paragraph moved**: on `jigsaw-and-templates` the ground paragraph now comes before the collision paragraph, so
+*the sections below take the loop's steps in order* is true (the loop asks for the ground before it tests the box).
+
+### Figures changed
+
+- `blending` f1: R3's label puts the `Blender`'s term *inside* the final density at *TERRAIN* (it read *around* it); the
+  BD→R5 edge says the border ticks read the old chunk's own old area with no blender. Nodes and other arrows unchanged.
+- `blending` f2: the *BIOMES* band's note reads *the blender built on the worldgen executor, the fill forked to the
+  worker pool* — asserts the fill and its `getBiomeResolver` call run on the pool (`world/level/chunk/ChunkGenerator.java`:136,
+  147); the resolver message reads *wrapped again if the chunk is being deepened* — asserts the second wrap is conditional
+  (`world/level/levelgen/NoiseBasedChunkGenerator.java`:98). Lanes and order unchanged; seven lanes, rendered at 0.698
+  and 11.2px, on the floor.
+- `biomes` f1: the top note reads *forked to the worker pool as createBiomes*. Unchanged otherwise.
+- `trees` f1: lanes reordered to first use (WGL before TDec); the last message reads *updateLeaves, rewriting the distance
+  of every leaf it reaches* — asserts the walk rewrites only the leaves it reaches. Order of messages unchanged.
+- `jigsaw-and-templates` f1: the note reads *on the worldgen executor*; the stub's message reads *the stub's consumer,
+  once the biome test passes* (`world/level/levelgen/structure/Structure.java`:182); inside the loop, after the alternative
+  box, the arrows now assert the code's order — the attach test, then `getFirstFreeHeight` unless both pieces are rigid,
+  then collide and subtract, then `addJunction` on both pieces, then queue the child unless its parent was at the limit
+  (`world/level/levelgen/structure/pools/JigsawPlacement.java`:327, 338–346, 358–359, 384–390).
+- `creating-a-world` f1: the subgraph reads *mostly the worker pool* (it was *a worker thread*); the 4→1 edge reads *the
+  pack list changed* (it was *packs or flags changed*). Nodes and arrows unchanged. f2: the band notes capitalised only.
+- `README` f1: the dashed CW→DF label reads *chose the settings and packs*. Order unchanged.
+- `foundations/identifiers-and-registries` f1: the RDL node reads *RegistryDataLoader.load for the world registries, then
+  the dimensions* — the *twice* dropped, since a world load calls it a third time for the reloadable registries
+  (`server/ReloadableServerRegistries.java`:37). Arrows unchanged.
+- Every Part XII figure and the registry figure rendered after the edits (`node tools/render_figures.js --no-build --pages
+  systems/worldgen --pages foundations/identifiers-and-registries`): the lowest is `blending` f2 at 0.698 and 11.2px, the
+  rest 0.756 and 12.1px or better; no name broken (`tools/pass7/broken_names.py`: 0).
+
+### Captions written
+
+- `README` f1: *The part laid against the chunk-status ladder and numbered to the watch order; a solid arrow is the order
+  the game runs, a dashed one says what it means in its label. The structure arc, at `ChunkStatus.STRUCTURE_STARTS` and
+  `ChunkStatus.STRUCTURE_REFERENCES`, is first in the game and, before lecture ten, last in the lectures.*
+- `blending` f1: *One old chunk's `BlendingData` fans out five ways: three consumers go through the `Blender` and its two
+  maps of measured columns, the carving pass through the filter `Blender.of` builds from nine chunks' old areas, and the
+  border ticks read the old chunk's own old area with no blender at all.*
+- `structure-placement` f1: *Five decisions, one at world start and four on the chunk-status ladder, with the statuses
+  between them on the arrows: a structure is decided at the second status and writes no block until the biome and
+  terrain statuses are past.*
+- `jigsaw-and-templates` f1: *A village is a queue drained in memory at the second status and written chunk by chunk at
+  `ChunkStatus.FEATURES`; at the depth limit a piece is still queued, and only the fallback pool is offered to it.*
+- `hand-built-structures` f1: *The whole stronghold is grown in memory by one method on `StrongholdStructure`, and the
+  outer loop is the one that throws it all away: it ends only when a try's start piece holds a portal room.*
+- `creating-a-world` f1: *Stages one to three are one `WorldLoader.load` call, mostly off the Render thread, and the
+  screen is stage four — the only stage that can send the whole load back to the start.*
+- The other nine Part XII captions stand word for word (`python tools/pass7/captions.py systems/worldgen`).
+
+### For later sessions
+
+- **O** — "worldgen worker" still names a thread on four pages outside the part (`entities/entity-anatomy`:37, 39,
+  `world/chunk-anatomy`:26, `world/points-of-interest`:31, 181, `world/scheduled-ticks`:39, 42, 43), where Part XII now
+  says *the worldgen executor* or *the worker pool*. The POI hook and the tick bookings come through
+  `WorldGenRegion.setBlock` at *FEATURES*, the worldgen executor (`server/level/WorldGenRegion.java`:340); the
+  `ImposterProtoChunk` row's reader needs tracing before it is renamed.
+- **O** — the atlas's Part XII size phrase counts `package-info.java` (477 files and 49,303 lines against 445 classes and
+  49,175 lines), the same finding as L's Vulkan count.
+- **O** — `reference/structure-spawn-overrides` (generated): a *full* box on a structure that is not NONE includes the
+  beardifier's twelve-block margin (`world/level/levelgen/structure/StructureStart.java`:78); the typed prose in
+  `gen_reference.py` says only *anywhere in the structure's*. And `reference/density-function-nodes`, corrected here in
+  two sentences, wants a read against the corrected `density-functions` whole.
+- **O** — `blending`'s pass 5 entry says its 1.21 box moved to `reference/naming-drift`; the table holds no `Blender`,
+  `FlatCache`, `BlendOffset` or `Direction8` row. Whether the box or the row is owed is O's ruling.
+- **P** — the pass 8 entries on these pages (V1, V2, C and D), checked as claims in the prompts and not struck here;
+  this session's diff; and the items the audit left as low or unverifiable, each in its page's `.audit.md`: for
+  example `structure-placement`'s *a couple of thousand blocks away* (a village cell is 544 blocks), the `README`
+  figure drawing blending only inside *TERRAIN* though it also acts at *BIOMES* and *FEATURES*, `README`'s *either order
+  works* for eight and nine (each links the other forward), `jigsaw-and-templates` f1 drawing the drain loop on the
+  `JPP` lane (the loop is `JigsawPlacement`'s), and `hand-built-structures`' inventory of static state, which leaves out
+  the end city's `shipCreated` flag on a static generator (safe for the stronghold's reason).
+
+### Corrections
+
+1. `worldgen/README`:3 — said "the one system in the game that nothing can perturb: a world reproducible from a seed and a data pack alone, and the single deliberate exception to it". True: generation is built to be reproducible from saved settings and packs, frays at decoration order and at world templates, and has one deliberate exception. Evidence: `server/WorldLoader.java`:40, `world/level/levelgen/WorldOptions.java`:15, `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:69.
+2. `worldgen/README`:10 — said "determined by two things: the world seed, and the data packs … only the seed and the dimension list are actually saved". True: the inputs are the saved `WorldGenSettings` (seed, dimension list, generate_structures, bonus_chest, legacy options) plus the packs, and the flag gates STRUCTURE_STARTS. Evidence: `world/level/levelgen/WorldOptions.java`:15, `world/level/chunk/status/ChunkStatusTasks.java`:49.
+3. `worldgen/README`:10 — said "No entity, no player and no tick has any say in it", now "No entity and no tick…". True: a player is an entity and saves the template the second fray names, and a redstone pulse saves one too. Evidence: `world/entity/player/Player.java`:130, `server/network/ServerGamePacketListenerImpl.java`:929, `world/level/block/StructureBlock.java`:91.
+4. `worldgen/README`:10 — said "Give the same seed and the same packs … block for block, forever", now "…every biome, every structure's place and every block of terrain". True: the same seed and packs with a different world type disagree everywhere, because the preset lives in the saved dimension list. Evidence: `data/minecraft/worldgen/world_preset/amplified.json`, `world/level/storage/LevelStorageSource.java`:183.
+5. `worldgen/README`:15 — said "everything it reads is itself a function of that seed and those packs". True: it is a function of those settings and those packs *(page-internal)*.
+6. `worldgen/README`:15 — new: "Decoration writes into its neighbours, and no rule orders a chunk's decoration against a neighbour's…". CONFIRMED: FEATURES requires neighbours only at TERRAIN, with write radius 1. Evidence: `world/level/chunk/status/ChunkPyramid.java`:23.
+7. `worldgen/README`:15 — new: "a template a structure block saved into the world is tried before the packs'". CONFIRMED, and it reaches the terrain through the beard. Evidence: `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:69, `world/level/levelgen/structure/pools/SinglePoolElement.java`:96, `world/level/levelgen/Beardifier.java`:78.
+8. `worldgen/README`:15 — said "it is the only place generation reads something the current seed did not produce: the boundary with chunks an older version generated". True: the template in the sentence before is also something the seed did not produce. The new link text rightly takes in `BelowZeroRetrogen`. Evidence: `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:69, `world/level/chunk/status/ChunkStatusTasks.java`:96-103.
+9. `worldgen/README`:28 — said "are taught *last* here". True: last except lecture ten *(page-internal; src/lectures.md:330-333)*.
+10. `worldgen/README`:60 (caption) — said "first in the game and last in the lectures". True: the same as item 9 *(page-internal)*.
+11. `worldgen/README`:64 — said "two lectures with six between them", now "with the chunk's making between them". True: pieces become blocks inside FEATURES, one decoration step at a time, before that step's features, so only biomes and terrain lie between. Evidence: `world/level/chunk/ChunkGenerator.java`:384-419.
+12. `worldgen/README`:73 — said "only through the beardifier and the heights the generator hands them", now "+ for the structure checks, a `Climate.Sampler` of their own". True: every start looks up biomes through the caching sampler the generator builds, and only `StructureCheck` and `JigsawPlacement` build their own. Evidence: `world/level/chunk/ChunkGenerator.java`:544, `world/level/levelgen/structure/Structure.java`:236, `world/level/levelgen/structure/StructureCheck.java`:76, `world/level/levelgen/structure/pools/JigsawPlacement.java`:180.
+13. `worldgen/README`:90 — said "`Biome` has been hollowed out … a dozen gameplay switches now reach the player", now "`Biome` holds little … twenty-three gameplay attributes reach the player". True: there are 23 gameplay attributes, but only five are syncable, so 18 never reach the client, and `Biome` still holds its climate, colours and generation settings. Evidence: `world/attribute/EnvironmentAttributes.java`:48-70, `world/level/biome/Biome.java`:77-80.
+14. `worldgen/README`:113 — said "the one place world generation reads the world", now "…reads what the seed did not make". True: world templates are read too. The columns and splines clauses are CONFIRMED. Evidence: `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:69, `world/level/levelgen/blending/BlendingData.java`:44-49, `world/level/levelgen/NoiseRouterData.java`:365-366.
+15. `worldgen/README`:134 — said "each page needs the one before it", now "leans on the ones before it". True: five never links one or four, and six links only five; every page from two on leans on at least one earlier page *(page-internal)*.
+16. `worldgen/README`:138 — said "at the cost of nine forward references". True: ten links one page among one to nine, and none of them links back. The new wording is CONFIRMED *(page-internal; creating-a-world.md:151)*.
+17. `worldgen/README`:151 — said "four smaller families". True: there is a fifth, the material rules and conditions, 18 unnamed classes and 754 lines, CONFIRMED *(page-internal; tools/pass5_coverage.py)*. Its head is taught at terrain.md:220-233.
+18. `worldgen/README`:168 — said "which lecture eight places". True: three of the six are hand-built, and lecture seven only lists spawn overrides among a structure's settings. Evidence: `data/minecraft/worldgen/structure/fortress.json`, `world/level/levelgen/structure/Structure.java`:187.
+19. `worldgen/README`:173 — said "twenty-five rows … the two every part uses". Now "can use" *(polish)*. The 25 is CONFIRMED (naming-drift.md:366-394).
+20. `worldgen/README`:174 — said "ten headwords". True: 25 *(page-internal; glossary.md, 25 entries linking a Part XII page)*.
+21. `reference/glossary`:811 — said "It is the only part of world generation that is saved; everything else Part XII reads is re-read from the enabled packs", now "…bar the templates…". True: the first half is CONFIRMED, but generation also reads chunks it has saved, meaning structure starts, `StructureCheck`'s scan and the old chunks blending measures. Evidence: `world/level/chunk/storage/SerializableChunkData.java`:273, `world/level/levelgen/structure/StructureCheck.java`:131-135.
+22. `worldgen/density-functions`:39 — said the `DensityFunctions` clock is "data-pack load" — the node types register at start-up, and the codecs run at data-pack load — `core/registries/BuiltInRegistries.java`:300; `resources/RegistryDataLoader.java`:98
+23. `worldgen/density-functions`:45 — said the `NoiseChunk` clock is "once per chunk" — `iterateNoiseColumn`, behind `getBaseHeight` and `getBaseColumn`, also builds a one-column `NoiseChunk` per query, with no `Beardifier` and an empty `Blender` — `world/level/levelgen/NoiseBasedChunkGenerator.java`:141–151, 184, 191. The row's *owns* column now disagrees.
+24. `worldgen/density-functions`:57 — said the whole package is "ten classes" after a list that included `Noises` — the ten *synth* classes are the other ten names. `Noises` is one package up, in *levelgen*, and the count is dropped — `world/level/levelgen/Noises.java`:1, 11; `world/level/levelgen/synth/` (ten files)
+25. `worldgen/density-functions`:78 — said the only seeded leaf is `NoiseFunction`, which becomes "a seeded `Noise`" — four kinds are seeded from the compile context: `NoiseFunction`, the three shift records, `BlendedNoise` and `EndIslandFunction` — `world/level/levelgen/densityfunction/generator/NoiseFunction.java`:27; `…/generator/ShiftNoiseFunction.java`:42, 114, 143; `world/level/levelgen/synth/BlendedNoise.java`:90; `…/generator/EndIslandFunction.java`:49. Optional nit.
+26. `worldgen/density-functions`:123 — said the compiler keeps "the side that always wins" — the side wins whenever the inputs stay inside their declared ranges, and a noise's range is six times an estimated deviation, not a maximum — `world/level/levelgen/densityfunction/op/BinaryFunction.java`:203–215, 258–270; `world/level/levelgen/synth/NormalNoise.java`:59
+27. `worldgen/density-functions`:134 — said each named random is "an `XoroshiroRandomSource`" — each is a positional factory of them — `world/level/levelgen/RandomState.java`:115–119; `world/level/levelgen/XoroshiroRandomSource.java`:116–143
+28. `worldgen/density-functions`:148 — said the decoration and structure packages reach the substrate "only through the beardifier and the heights" — the structure package also reads `Climate.Sampler`s. The session's "for the structure checks, a `Climate.Sampler` of their own" is still too narrow: every structure start's biome test reads one the generator hands in, and `StructureCheck` and `JigsawPlacement` build their own — `world/level/chunk/ChunkGenerator.java`:544, 619; `world/level/levelgen/structure/Structure.java`:92, 233–257; `world/level/levelgen/structure/StructureCheck.java`:76; `world/level/levelgen/structure/pools/JigsawPlacement.java`:180.
+29. `worldgen/density-functions`:149 — said "the `DensityFunction.CompileContext` that `RandomState` implements" — an anonymous class that `RandomState`'s constructor builds implements it — `world/level/levelgen/RandomState.java`:28, 61–84
+30. `worldgen/density-functions`:151 — said `BlendedNoise` gets a random source forked by the name *terrain*, unconditionally — under the legacy family it gets a `LegacyRandomSource` on the bare seed, which four of the seven shipped settings ask for — `world/level/levelgen/RandomState.java`:66–67, 77; `world/level/levelgen/synth/BlendedNoise.java`:32; `data/minecraft/worldgen/noise_settings/nether.json` (and `caves`, `end`, `floating_islands`: `legacy_random_source` true)
+31. `worldgen/density-functions`:157 — said "a cache reached from five router fields" — no vanilla cache is reached from five. The shift caches are reached from all eight overworld fields, continents, erosion and ridges from four, and offset from three. The count becomes *several* — `data/minecraft/worldgen/density_function/shift_x.json`; `world/level/levelgen/densityfunction/DensityFunctionCompiler.java`:64–73
+32. `worldgen/density-functions`:263 — said "every form reports the same bound" — the parsed and optimised forms report the same bound, and the compiled form reports none — `world/level/levelgen/densityfunction/DensitySampler.java`:3–30; `…/DensityFunctionCompiler.java`:80; `…/op/SliceFunction.java`:135–136
+33. `worldgen/density-functions`:279 — said "Three names in this package … are reached by nothing", with `Density` among them — `Density`'s members are compile-time constants, and the names sit in three packages. The session's "Two names in this system" is still an exhaustive count, and the system breaks it: `DensityFunctions.floor`, `DensityFunctions.ceil`, `DensityFunctions.round`, `DensityFunctions.truncate` and `RandomState.sampleBlockValueUncached` have no callers either — `world/level/levelgen/densityfunction/DensityFunctions.java`:262, 350–388; `world/level/levelgen/RandomState.java`:129–132.
+34. `worldgen/density-functions`:285 — said `Density`'s constants are ones "**nothing anywhere reads**, the routers spelling the same numbers as literals" — all three are compile-time constants, which javac writes into whatever uses them, so the decompile cannot show who reads them — `world/level/levelgen/Density.java`:5–7; `world/level/levelgen/NoiseRouterData.java`:204, 379. The new sentence is true, but under *What nothing reaches* it reads as a third dead name.
+35. `worldgen/density-functions`:287 — the heading said "The two nodes that read the world" — four node types read the context — `world/level/levelgen/densityfunction/generator/SimpleDensityFunction.java`:29, 32, 35; `…/op/BlendDensityFunction.java`:52, 78. The old anchor has no inbound link.
+36. `worldgen/density-functions`:292 — said "Two nodes are the exception" — four nodes, from two sources: the blender and the beardifier — `world/level/levelgen/NoiseChunk.java`:24, 29; `…/generator/SimpleDensityFunction.java`:29–35; `…/op/BlendDensityFunction.java`:52, 78
+37. `worldgen/density-functions`:301 — said the two things read "work the same seed and the same packs already produced" — beside a chunk an older version left, blending reads what that chunk's blocks measure — `world/level/levelgen/blending/BlendingData.java`:96–101, 182–203. The session's sentence still asserts "the graph is a function of the seed and the packs" before naming the exception, and "the only two things in it" counts sources against :292's four nodes.
+38. `worldgen/density-functions`:303 — the 1.21 blockquote said "Three of the six climate functions have two names…" — this is true of 26.3 and of 1.21.11 alike, so it is not drift and it leaves the blockquote. Biomes keeps the two vocabularies (`biomes.md`:74–75) — `world/level/levelgen/NoiseRouter.java`:9; `world/level/biome/Climate.java`:140
+39. `worldgen/biomes`:6 — the fog and the sky change *at* a different line — they change along a different line and blend across it through the probe's Gaussian over quart cells. The grass boundary is softened too, by the client's box blur, so the contrast must not suggest otherwise — `world/attribute/GaussianSampler.java`:23-40; `world/attribute/EnvironmentAttributeProbe.java`:41; `client/multiplayer/ClientLevel.java`:1003-1024.
+40. `worldgen/biomes`:14 — "this book and the code both call a quart cell" — the book calls it a quart cell; the code's word is *quart* — `core/QuartPos.java`:3.
+41. `worldgen/biomes`:24 — `BiomeSource` runs "on a worldgen worker" — it runs on the worker pool, leaving the worldgen executor as L81-82 says — `world/level/chunk/ChunkGenerator.java`:136 *(page-internal)*.
+42. `worldgen/biomes`:27 — `OverworldBiomeBuilder` runs at "build time" — it runs at each world load, when the parameter-list registry is decoded — `world/level/biome/MultiNoiseBiomeSourceParameterList.java`:35-41,87-93; `resources/RegistryDataLoader.java`:98.
+43. `worldgen/biomes`:28 — the biome container is "written once" — it is written at generation and rewritten by `/fillbiome` — `server/commands/FillBiomeCommand.java`:125. **Optional proposed:** "written at generation or by `/fillbiome`, saved, shipped".
+44. `worldgen/biomes`:44 (figure 1, note) — "forked to the createBiomes executor" — there is no such executor; the job goes to the worker pool under the name *createBiomes* — `world/level/chunk/ChunkGenerator.java`:136; `TracingExecutor.java`:11,67.
+45. `worldgen/biomes`:65 — the wrappers act "only … beside chunks an older version generated" — the blender's acts beside them, `BelowZeroRetrogen`'s inside one being deepened — `world/level/levelgen/BelowZeroRetrogen.java`:104-117; `world/level/levelgen/blending/Blender.java`:81.
+46. `worldgen/biomes`:69 — biomes are decided "not for it" (the terrain) — the decided palettes serve only the TERRAIN task's surface pass, not its shape — `world/level/chunk/status/ChunkStatusTasks.java`:92; `world/level/levelgen/NoiseBasedChunkGenerator.java`:468.
+47. `worldgen/biomes`:71 — (new) the carvers get their biomes from the palettes by implication — the carvers work theirs out again from the biome source, uncached, memoised per chunk — `world/level/levelgen/NoiseBasedChunkGenerator.java`:271,285-292,314-317.
+48. `worldgen/biomes`:74 — "`RandomState` builds the climate sampler" — `NoiseRouter.createClimateSampler` builds it and `RandomState.createClimateSampler` binds it; and it is made of six functions, four of which shape the land — `world/level/levelgen/NoiseRouter.java`:15-17; `world/level/levelgen/RandomState.java`:105-107.
+49. `worldgen/biomes`:81 — the base class "forks to *createBiomes*" — it forks to the worker pool, under the name *createBiomes* — `world/level/chunk/ChunkGenerator.java`:132-137.
+50. `worldgen/biomes`:98 — "each biome declares a `Climate.ParameterPoint`" — the list pairs points with biomes, a biome declares none, and 52 of the 61 biomes in the two presets have several — `world/level/biome/Climate.java`:153; `world/level/biome/OverworldBiomeBuilder.java`:415-426; `world/level/biome/Biome.java`:42-52.
+51. `worldgen/biomes`:154 — grass colour follows "exactly the same ragged line" as snow — it comes from the same jittered read, but snow is decided at the heightmap position and the rendered tint is blurred — `client/multiplayer/ClientLevel.java`:1007,1019; `server/level/ServerLevel.java`:584-586.
+52. `worldgen/biomes`:170 — `NaturalSpawner` "asks the attribute map every tick" — it reads the spawn attribute through the attribute system every tick — `world/level/NaturalSpawner.java`:94; `server/level/ServerChunkCache.java`:380.
+53. `worldgen/biomes`:185 — fog, sky, clouds, sound, music and particles "have all left it for the attribute stack" (version history) — they are attributes — `world/attribute/EnvironmentAttributes.java`:20,28,30,43,44,46.
+54. `worldgen/biomes`:189 — "the tint does not come from the biome at all" — grass and foliage colour come from the biome's own base temperature and downfall through the colormaps; water still comes from the effects — `world/level/biome/Biome.java`:216-240,257-258.
+55. `worldgen/biomes`:203 — "adding one biome adds a layer every position in the dimension then falls through" — a layer is added per attribute, so only a biome that names an attribute no other biome names adds one, and every dimension pays — `world/attribute/EnvironmentAttributeSystem.java`:66-72,90-98.
+56. `worldgen/biomes`:227 — the climate search runs "once, the first time the world is ever loaded, and never again" — it runs at every load for each dimension whose settings name a spawn target, and a brand-new world runs it again for its spawn — `server/level/ChunkMap.java`:183; `world/level/levelgen/NoiseBasedChunkGenerator.java`:114-124; `server/MinecraftServer.java`:456-458,511.
+57. `worldgen/biomes`:230 — "two spiral passes out to a maximum radius of 2,048 blocks" — the first spiral reaches 2,048 blocks around the origin; the second, finer, is centred on the first's best, so the answer can lie beyond 2,048 — `world/level/levelgen/NoiseSpawnFinder.java`:17-18,28.
+58. `worldgen/terrain`:8 — when the hole came to be filled, the answer *was still on file* (V2's hook) — the aquifer works out a cell's table on first use, so a cell no open point reached during the fill is first computed in the carving step. The answer agrees because it is determined by the same inputs, not because it was stored. Now *the aquifer gave the same answer* — `world/level/levelgen/Aquifer.java`:198–200, 441–452.
+59. `worldgen/terrain`:29 — cast: *the whole per-dimension recipe* followed by seven things — the record has four more (spawn target, mob-generation switch, legacy-random flag, debug functions), one of which the page names at :302. Now *the per-dimension recipe* — `world/level/levelgen/NoiseGeneratorSettings.java`:25.
+60. `worldgen/terrain`:33 — cast: `OreVeinRule` *before any surface rule* (V2's) — the overworld's tree runs the bedrock floor first. Now *after the bedrock floor and before any surface rule* — `data/minecraft/worldgen/material_rule/overworld.json`.
+61. `worldgen/terrain`:34 — cast: `MaterialSystem`, when: *the surface step* (V2's) — `MaterialSystem.topMaterial` also runs in the carving step. Now *the surface step and the carvers' re-skin* — `world/level/levelgen/NoiseBasedChunkGenerator.java`:370.
+62. `worldgen/terrain`:101 — link text *the other passenger* made `BelowZeroRetrogen` this page's other passenger, where :73–75 and :93 make the pair the beardifier and the blender. Now *blending's other passenger* — *(page-internal)*; `world/level/levelgen/NoiseChunk.java`:24–30 sets only the beardifier and blender context keys.
+63. `worldgen/terrain`:103 — *which is exactly what makes the aquifer's answers agree between filling and carving* (V2's) — every cached value is determined by its inputs, so sharing the instance saves recomputing and does not create the agreement. Now *so the carving step reuses what the fill worked out … being functions of the seed and the position, they would come out the same if they were not* — `world/level/levelgen/Aquifer.java`:129, 236–239, 441–452, 455–498.
+64. `worldgen/terrain`:160 — *1,225 corner samples per interpolated density term, per chunk* (V2's) — true only of the fill's 4×8 terms over the whole chunk. *chunk_surface_level*'s sixteen-wide, one-tall term has four corners over the surface pass's 16×1×16 volume, and the veins' terms run over the narrowed volume. Now *per chunk for each four-by-eight interpolated term the fill reads*. All five are sampled over the full volume, because both range-choice branches and both *min* arguments are volume-sampled whole — `world/level/levelgen/densityfunction/op/InterpolatedFunction.java`:96–106; `world/level/levelgen/material/MaterialRuleContext.java`:74; `world/level/levelgen/material/MaterialSystem.java`:115–118; `world/level/levelgen/densityfunction/op/RangeChoiceFunction.java`:135–144; `world/level/levelgen/densityfunction/op/BinaryFunction.java`:638–643.
+65. `worldgen/terrain`:173 — *The Y direction matters because the two worldgen heightmaps are updated as blocks are written and the first non-air block seen from the top is the answer* (V2's) — a heightmap update reaches the same height walking either way, and the ocean-floor map counts motion-blocking material, not any non-air block. Now *so walking down, a column's height for each map is settled by the first block that counts for it* — `world/level/levelgen/Heightmap.java`:109–137, 176; `world/level/levelgen/NoiseBasedChunkGenerator.java`:542, 553–556.
+66. `worldgen/terrain`:201 — the exclusion *forbids a local water table wherever it is positive* (V2's) — it is sampled once per aquifer cell, at the cell's randomised centre. Now *in any aquifer cell where it is positive* — `world/level/levelgen/Aquifer.java`:447–448, 455, 509.
+67. `worldgen/terrain`:201 — the sixth function called *preliminary_surface_level* — the config's field is *surface_level*, and the overworld points it at *overworld/preliminary_surface_level*. Now says both — `world/level/levelgen/Aquifer.java`:570–573; `data/minecraft/worldgen/noise_settings/overworld.json`.
+68. `worldgen/terrain`:203 — `Aquifer.FluidPicker` *and* `Aquifer.FluidStatus` *are the global fallback* — the status is the record of every table, local ones included, as :280 already said. Now the picker is the fallback and the status the record of any one table, local or global — `world/level/levelgen/Aquifer.java`:47–57, 497; `world/level/levelgen/NoiseBasedChunkGenerator.java`:85–88.
+69. `worldgen/terrain`:207 — the overworld's tree tries the veins *ahead of every surface rule* (V2's) — the bedrock floor comes first. Now *after its bedrock floor and ahead of every surface rule* — `data/minecraft/worldgen/material_rule/overworld.json`; `data/minecraft/worldgen/material_rule/bedrock_floor.json`.
+70. `worldgen/terrain`:228 — the column walk's *tries the ore veins before any surface rule* (V2's) — same fact. Now *after its bedrock floor, before any surface rule* — `data/minecraft/worldgen/material_rule/overworld.json`.
+71. `worldgen/terrain`:235 — *composes a surface out of the shipped conditions* — a pack may add condition entries; only the eleven condition types are fixed. Now *the shipped condition types* — `core/registries/Registries.java`:269; `core/registries/BuiltInRegistries.java`:298; `world/level/levelgen/material/MaterialRules.java`:160–171.
+72. `worldgen/terrain`:245 — *Development builds can switch off much more* (V2's) — the flags are read from JVM system properties by the shipped game. Now *Debug flags … set from JVM system properties in any build* — `SharedConstants.java`:51, 113–119, 167–185.
+73. `worldgen/terrain`:253 — `MaterialSystem` *owns the noises … for the badlands bands and the icebergs*, naming the frozen-ocean extension's noises twice. Now *the badlands bands and the surface rules* — `world/level/levelgen/material/MaterialSystem.java`:54–63.
+74. `worldgen/terrain`:279 — `applyCarvingMask` *walks the mask one column at a time* (V2's) — the mask hands over runs of set bits split per column, lower runs first, so a column with two carved runs is visited twice. Now *walks the mask's carved runs, each top down* — `world/level/chunk/CarvingMask.java`:38–61; `world/level/levelgen/NoiseBasedChunkGenerator.java`:344–349.
+75. `worldgen/terrain`:286 — *What a cave may not eat through is decided by one tag* — true of block kinds; the blender's carving filter and the aquifer's barrier also withhold positions. Now *What kind of block* — `world/level/levelgen/NoiseBasedChunkGenerator.java`:350, 354, 361; `world/level/levelgen/Aquifer.java`:299–301.
+76. `worldgen/terrain`:309 — *the lava is not in the settings at all* (V2's) — the settings' aquifer lava noise makes local lava tables at or below Y −10, and the Nether's default fluid is lava; the −54 floor is what is absent. Now *the lava floor* — `world/level/levelgen/NoiseBasedChunkGenerator.java`:85, 91; `world/level/levelgen/Aquifer.java`:550–566; `data/minecraft/worldgen/noise_settings/overworld.json`.
+77. `worldgen/terrain`:314 — *a data pack moves it only by sinking the sea beneath it* (V2's) — a default fluid of lava makes the global picker answer lava up to sea level, and the aquifer answers lava wherever the global answer is. Now *only through the sea: by sinking the sea beneath it, or by making the settings' default fluid lava* — `world/level/levelgen/NoiseBasedChunkGenerator.java`:87, 91; `world/level/levelgen/Aquifer.java`:207–209.
+78. `worldgen/terrain`:316 — *marked for the chunk's first live tick rather than flowed … so the water table you can see in a cross-section becomes real fluid ticks* (V2's, its Q2) — only positions the aquifer flags are marked; the bulk of a table is placed as source blocks and never marked, and post-processing ticks only the marked ones. Now *placed as still water … flags only the fluid it places that could flow … those few* — `world/level/levelgen/Aquifer.java`:281–292, 325–333; `world/level/levelgen/NoiseBasedChunkGenerator.java`:557–560, 363–365; `world/level/chunk/LevelChunk.java`:648–666.
+79. `worldgen/blending`:7 — for roughly a hundred blocks *either side* of the line — the blend reaches twenty-seven quart cells, about 108 blocks, from the old chunk's edge columns into the new ground only — `world/level/levelgen/blending/Blender.java`:164–168
+80. `worldgen/blending`:10 — a ground height "the game read off the old chunk's blocks a moment earlier" — measured from the old chunk's own blocks; a saved height is restored and never measured again — `world/level/levelgen/blending/BlendingData.java`:171–173
+81. `worldgen/blending`:10 — the overworld's terrain splines "are not consulted" — they are sampled over the volume and weighted to nothing: at alpha zero the lerp keeps its fixed target — `world/level/levelgen/densityfunction/op/LerpFunction.java`:211–222
+82. `worldgen/blending`:15 — the old blocks are what "the game does not remember" — it saves the heights and re-measures the densities and biomes — `world/level/levelgen/blending/BlendingData.java`:56, :79–93, :175–176
+83. `worldgen/blending`:29 — a chunk "cannot ask its neighbours … because most of them do not exist yet" — the dependency window guarantees all of them at *STRUCTURE_STARTS* out to eight, and `Blender.of` asks all 193 after a yes — `world/level/chunk/status/ChunkPyramid.java`:19, :21.
+84. `worldgen/blending`:53 — the empty blender is "not an empty map but an anonymous subclass" — it is an anonymous subclass constructed over two empty maps (and a null filter) — `world/level/levelgen/blending/Blender.java`:47–61
+85. `worldgen/blending`:57 — "a development build can drop it" — any build can, when the JVM properties *MC_DEBUG_ENABLED* and *MC_DEBUG_DISABLE_BLENDING* are set — `SharedConstants.java`:51, :120, :173–184
+86. `worldgen/blending`:64 — the Blender row's "used on the worldgen executor" — built there, asked from the worker pool inside the *createBiomes* and *buildTerrain* forks — `world/level/chunk/ChunkGenerator.java`:136, :147; `world/level/levelgen/NoiseBasedChunkGenerator.java`:398–400, :523.
+87. `worldgen/blending`:68 — `NoiseRouterData` decides "which router functions are blendable at all", "world creation, once" — it decides which ones the shipped data makes blendable; it runs at build time and ships as JSON, and a world decodes its router from the packs — `data/registries/VanillaRegistries.java`:82; `resources/RegistryDataLoader.java`:98; `server/Bootstrap.java`:136–140
+88. `worldgen/blending`:85 — figure 1: *blend_density* "round the final density" — inside it: *blend_density* wraps the slide under the ×0.64, the interpolation, the squeeze, the noodle *min* and the beardifier *add* — `world/level/levelgen/NoiseRouterData.java`:147, :246–249
+89. `worldgen/blending`:87 — figure 1: the border ticks "read directly" the sixteen measured columns — they read only the chunk's old area — `world/level/levelgen/blending/Blender.java`:313–317
+90. `worldgen/blending`:90 — caption 1: "One measurement fans out five ways", the filter built "from nine chunks' `BlendingData`" — two of the five read only old areas, never the measured columns — `world/level/levelgen/blending/Blender.java`:316–317, :450–451
+91. `worldgen/blending`:96 — the two maps' asymmetry "is the whole reason" for the seam widths — the reaches (twenty-seven cells and two) set the widths, and the maps' radii follow from them — `world/level/levelgen/blending/Blender.java`:64–67, :168, :217.
+92. `worldgen/blending`:101 — the status test means "a half-built chunk in the queue contributes nothing", and only chunks "loaded whole from the save" pass — a fresh chunk fails the first test, and the second turns away a flagged chunk whose status, deepening target folded in, is before *BIOMES* — `server/level/ChunkMap.java`:651; `world/level/levelgen/blending/BlendingData.java`:100; `world/level/chunk/ChunkAccess.java`:284–294.
+93. `worldgen/blending`:118 — the old area is the sections "the old chunk actually had blocks in" — it is the minimum and maximum sections saved with it, which the upgrade writes as the old world's whole height — `world/level/levelgen/blending/BlendingData.java`:69–72, :93; `util/datafix/fixes/BlendingDataFix.java`:46, :52, :61
+94. `worldgen/blending`:139 — the height scan "starts at the *WORLD_SURFACE_WG* heightmap" — it starts at the lower of that heightmap and the old area's top — `world/level/levelgen/blending/BlendingData.java`:182–186
+95. `worldgen/blending`:174 — figure 2's note: BIOMES "on the worldgen executor" — the blender is built there, but the fill and its `getBiomeResolver` call fork to the worker pool — `world/level/chunk/status/ChunkStatusTasks.java`:74; `world/level/chunk/ChunkGenerator.java`:136, :147.
+96. `worldgen/blending`:322 — the border ticks are "the one hook that fires on the *old* side rather than the new one" — the one hook that acts only on old chunks; the BIOMES and TERRAIN hooks also act on an old chunk being deepened — `world/level/levelgen/blending/Blender.java`:88–96, :313–315, :394, :414–416.
+97. `worldgen/blending`:336 — "the order of the statuses makes the heightmap read safe" — `ChunkAccess.getHeight` primes a missing map on demand — `world/level/chunk/ChunkAccess.java`:182–195.
+98. `worldgen/blending`:341 — a deepened chunk is "being *deepened* rather than blended" — it may carry *blending_data* as well — `util/datafix/fixes/BlendingDataFix.java`:47–53
+99. `worldgen/blending`:348 — the deepening resolver takes the rest "from the chunk's existing biome column" — from the one quart the chunk has at Y 0 in each column, which the fill (only the 64 blocks below it) never rewrites — `world/level/levelgen/BelowZeroRetrogen.java`:116; `world/level/chunk/ProtoChunk.java`:330–331
+100. `worldgen/blending`:329 — the face walk runs "up to that column's *MOTION_BLOCKING* height" — up to the lower of that height and the old area's top — `world/level/levelgen/blending/Blender.java`:343.
+101. `worldgen/blending`:39 — "A chunk counts as old if its stored *DataVersion* is below 4997…" gives "old" a second, wider sense than :19's flag (*page-internal* against :19–20 and :52) — `world/level/chunk/storage/IOWorker.java`:130; `world/level/levelgen/blending/Blender.java`:108–109; `util/datafix/fixes/BlendingDataFix.java`:38–46.
+102. `worldgen/blending`:75 — five consumers of "one measurement" — two read only the old area (*page-internal* against caption 1; the heading is an anchor, so it stays) — `world/level/levelgen/blending/Blender.java`:316–317, :450–451.
+103. `worldgen/blending`:184 — figure 2: "getBiomeResolver, then wrapped once more" — the second wrap happens only when the chunk is being deepened — `world/level/levelgen/NoiseBasedChunkGenerator.java`:98; `world/level/levelgen/BelowZeroRetrogen.java`:105.
+104. `worldgen/features-and-placement`:7 — "sorted once at world load" — sorted once per generator, the first time its memoised supplier is read: on the client when `WorldOpenFlows` validates the world, on a dedicated server at the first chunk that decorates — `world/level/chunk/ChunkGenerator.java`:107 (:114-116, :357; `client/gui/screens/worldselection/WorldOpenFlows.java`:432)
+105. `worldgen/features-and-placement`:16 — "All three are registries of dispatched types, which makes this the largest single instance of the data-driven type pattern in the game" — the *what* and the *where* dispatch on a type registry; the *who*, the biome, is a plain record codec, and "largest" had no measure — `world/level/biome/Biome.java`:42 (`world/level/levelgen/feature/Feature.java`:22, `world/level/levelgen/placement/PlacementModifier.java`:13)
+106. `worldgen/features-and-placement`:49 — `Feature.place` returns "whether it wrote anything" — it returns whether it succeeded; `NoOpFeature` returns true and writes nothing — `world/level/levelgen/feature/NoOpFeature.java`:19-21
+107. `worldgen/features-and-placement`:116 — the writable box covers "exactly the centre chunk" — it covers the centre chunk's columns from one above the minimum Y to the top — `world/level/chunk/ChunkGenerator.java`:490-493
+108. `worldgen/features-and-placement`:123 — "edges to one graph per step" — one graph for every step, its nodes (step, feature index) pairs, split per step only after the one sort — `world/level/biome/FeatureSorter.java`:36-37 (:44, :131-136)
+109. `worldgen/features-and-placement`:127 — "the smallest offending set" — a minimal one: sources are dropped one at a time until no single removal keeps the cycle — `world/level/biome/FeatureSorter.java`:104-121
+110. `worldgen/features-and-placement`:153 — "scatter-then-count gives ten trees in one" — ten `Feature.place` calls at one position — `world/level/levelgen/placement/RepeatingPlacement.java`:16-17 (`FeaturePlacer.java`:78).
+111. `worldgen/features-and-placement`:169 — "so both orders ship" drew on the base and its survival-checked variant, but the base has no predicate; the predicate-first order is the plains trees' — `net/minecraft/data/worldgen/placement/VegetationPlacements.java`:161, :169, :300
+112. `worldgen/features-and-placement`:171 — `PlacementContext` is "more world than anything else in this system gets" — it holds the level and the generator, the same two `Feature.place` is handed — `world/level/levelgen/placement/PlacementContext.java`:13-15 (`world/level/levelgen/feature/Feature.java`:30).
+113. `worldgen/features-and-placement`:175 — `SurfaceRelativeThresholdFilter` keeps a position "if a heightmap reading above or below it falls in a range" — it keeps it when its own Y lies between the reading plus a minimum and plus a maximum — `world/level/levelgen/placement/SurfaceRelativeThresholdFilter.java`:22-26
+114. `worldgen/features-and-placement`:177 — "Four simply move a position", `OffsetPlacement` "jitters", `FixedPlacement` "names absolute positions" — `EnvironmentScanPlacement` can emit nothing and `FixedPlacement` replaces the position — `world/level/levelgen/placement/EnvironmentScanPlacement.java`:28-57 (`OffsetPlacement.java`:50).
+115. `worldgen/features-and-placement`:218 — a truncated tree is "written without complaint" — each refused write is an error line in the log — `server/level/WorldGenRegion.java`:318-320 (`util/Util.java`:855)
+116. `worldgen/features-and-placement`:218 — "A read outside the write zone is a warning" — it is logged at error level, and it still happens — `server/level/WorldGenRegion.java`:194-195, :281 (`util/Util.java`:855).
+117. `worldgen/features-and-placement`:226 — "the graph fixes the *order*, not the exclusion" — it fixes neither: `ChunkStatus.FEATURES` asks its neighbours only for `ChunkStatus.TERRAIN`, no step may require a neighbour at its own status, and the first task to claim a chunk decorates it — `world/level/chunk/status/ChunkPyramid.java`:23 (`ChunkStep.java`:100-103, `server/level/GenerationChunkHolder.java`:234)
+118. `worldgen/features-and-placement`:226 — "every worldgen task in a dimension is serialised behind one executor" — the biome and terrain forks go to the pool and light has its own executor; decoration runs inline on the worldgen one — `server/level/ChunkMap.java`:185-190 (`world/level/chunk/ChunkGenerator.java`:133-136, `world/level/chunk/status/ChunkStatusTasks.java`:112-122)
+119. `worldgen/features-and-placement`:226 — "all eight neighbours write into it when *they* decorate" after it has decorated — only neighbours that decorate later change it later, and the page never states what the landing page cites it for — `server/level/WorldGenRegion.java`:102 (`world/level/levelgen/feature/TreeFeature.java`:108-121, `world/level/chunk/ProtoChunk.java`:156).
+120. `worldgen/features-and-placement`:238 — `BlockPredicateFilter` is "the one modifier in the chain that can refuse a position on the strength of what is already there" — `SurfaceWaterDepthFilter` refuses on heightmaps and `BiomeFilter` on the biome — `world/level/levelgen/placement/SurfaceWaterDepthFilter.java`:22-25 (`BiomeFilter.java`:27-29)
+121. `worldgen/features-and-placement`:239 — "four are boolean combinators over the other twelve" — three are; `true` combines nothing — `world/level/levelgen/blockpredicates/BlockPredicateType.java`:18-21
+122. `worldgen/features-and-placement`:239 — "six height providers, which are distribution shapes over one range" — four are; one is a constant anchor and one a weighted list of providers — `world/level/levelgen/heightproviders/ConstantHeight.java`:12 (`WeightedListHeight.java`:16)
+123. `worldgen/features-and-placement`:239 — "ten state providers, which pick a block from a weight, a noise or a rule" — also a fixed state, a pick from a set, and three that adjust another provider's state — `world/level/levelgen/feature/stateproviders/BlockStateProviderTypes.java`:9-18.
+124. `worldgen/features-and-placement`:246 — "it is one of three doors into a feature" — the other growing blocks and the End call features directly too — `world/level/block/grower/TreeGrower.java`:108 (`MushroomBlock.java`:91, `NyliumBlock.java`:63, `GrassBlock.java`:98, `world/level/dimension/end/EnderDragonFight.java`:491, `world/level/block/entity/TheEndGatewayBlockEntity.java`:176).
+125. `worldgen/features-and-placement`:246 — "and bone meal run … so there is no placement chain" — true of a sapling's bone meal; grass's runs a placed feature with one — `world/level/block/SaplingBlock.java`:75-76 (`GrassBlock.java`:98, `data/minecraft/worldgen/placed_feature/grass_bonemeal.json`).
+126. `worldgen/features-and-placement`:246 — the always-true default was given as the reason there is no guard — nothing on the growth path asks it; its callers are `WorldGenRegion.setBlock` and `OreFeature` — `world/level/WorldGenLevel.java`:11-13 (`server/level/WorldGenRegion.java`:333, `world/level/levelgen/feature/OreFeature.java`:152)
+127. `worldgen/features-and-placement`:250 — "Fifty-eight algorithms" — fifty-eight feature types, some of which are no algorithm — `world/level/levelgen/feature/FeatureTypes.java`:9-66
+128. `worldgen/features-and-placement`:252 — "reached the same way as every other" — the bonus chest, the end podium, the end gateway and the end island are reached only by direct calls — `server/MinecraftServer.java`:554 (`EnderDragonFight.java`:491, :507, `TheEndGatewayBlockEntity.java`:176)
+129. `worldgen/features-and-placement`:252 — "each is one `Feature.place` writing blocks from its own parameters" — six selectors and `NoOpFeature` write none of their own, as :184 and :196 say — *(page-internal)*.
+130. `worldgen/features-and-placement`:194 — `OverlayFeature` "reporting success if any wrote" — it reports success if any entry succeeded — `world/level/levelgen/feature/OverlayFeature.java`:41 (`world/level/levelgen/placement/FeaturePlacer.java`:78, :86).
+131. `worldgen/features-and-placement`:272 — `ChunkGenerator.validate` "for where the cycle is caught" — it only forces the memoised sort; the client catches — `world/level/chunk/ChunkGenerator.java`:114-116 (`client/gui/screens/worldselection/WorldOpenFlows.java`:432-434)
+132. `worldgen/features-and-placement`:274 — "one example of each shape a modifier can take" — the page names five shapes — `world/level/levelgen/placement/PlacementModifierTypes.java`:10-27.
+133. `worldgen/features-and-placement`:277 — "reading the two side by side is the ladder" — the ladder is the value types; and the new wording implies a difference where there is none — `world/level/levelgen/placement/PlacementContext.java`:13-15 (`world/level/levelgen/feature/Feature.java`:30).
+134. `worldgen/features-and-placement`:280 — "the busiest of the four value families" — the page has no four, and by types `BlockPredicate` has sixteen to `BlockStateProvider`'s ten — `world/level/levelgen/blockpredicates/BlockPredicateType.java`:9-24 (`BlockStateProviderTypes.java`:9-18).
+135. `worldgen/features-and-placement`:9 — "That is how the same seed grows the same forest" — the draws are the same, but at a chunk border what they grow depends on which chunk decorated first — `world/level/chunk/status/ChunkPyramid.java`:23 (`server/level/WorldGenRegion.java`:102).
+136. `worldgen/trees`:33 — said the third provider is for "the dirt column laid under the trunk" — it is one soil block under each trunk column, dirt unless the ground is already dirt, mud, moss or podzol, laid through the trunk consumer — `world/level/levelgen/feature/trunkplacers/TrunkPlacer.java`:58–65; `data/minecraft/worldgen/block_state_provider/soil_beneath_tree.json`; `world/level/levelgen/feature/trunkplacers/UpwardsBranchingTrunkPlacer.java`:55–78.
+137. `worldgen/trees`:52–57 — the figure declared `TDec` before `WGL` — the lanes are now in first-use order (WGL at the root write, TDec at the decorators) — *(page-internal)*
+138. `worldgen/trees`:81 — the figure said `updateLeaves` rewrites "every leaf's distance" — only leaves the walk reaches within six steps inside the box — `world/level/levelgen/feature/TreeFeature.java`:222–227, :249–250
+139. `worldgen/trees`:143 — Bending "nudges once" — once or twice, the second on a coin flip — `world/level/levelgen/feature/trunkplacers/BendingTrunkPlacer.java`:55–56
+140. `worldgen/trees`:143 — "an attachment at every position along the whole arc" — the rise attaches only from `min_height_for_leaves` up, and the horizontal walk attaches at every position — `world/level/levelgen/feature/trunkplacers/BendingTrunkPlacer.java`:63–64, :77.
+141. `worldgen/trees`:145 — "one to three branches that random-walk" — at most two random-walk, and a drawn three adds the trunk going straight up — `world/level/levelgen/feature/trunkplacers/CherryTrunkPlacer.java`:72, :76–77, :90–91, :100–102.
+142. `worldgen/trees`:145 — "a fourth branch-height provider" — one more than the codec's (four `IntProvider`s, two of them branch heights) — `world/level/levelgen/feature/trunkplacers/CherryTrunkPlacer.java`:31–39, :52
+143. `worldgen/trees`:148, :300 — "the only placer that plans before it writes" — the only *trunk* placer; `MangroveRootPlacer` simulates too — `world/level/levelgen/feature/rootplacers/MangroveRootPlacer.java`:38–72, `world/level/levelgen/feature/trunkplacers/FancyTrunkPlacer.java`:67, :74
+144. `worldgen/trees`:151 — "a branch whose base has slid below the trunk top is clamped … branches slope down" — the base sits 0.381 × the horizontal distance below its crown and is clamped when it would be above the trunk top, so branches rise — `world/level/levelgen/feature/trunkplacers/FancyTrunkPlacer.java`:70–71
+145. `worldgen/trees`:159 — "one attachment and three numbers" — it is also handed the clipped tree height, which no `createFoliage` reads — `world/level/levelgen/feature/foliageplacers/FoliagePlacer.java`:42–43; `world/level/levelgen/feature/TreeFeature.java`:99.
+146. `worldgen/trees`:173 — Spruce "resets to nothing" — resets to its minimum, 0 the first time and 1 after — `world/level/levelgen/feature/foliageplacers/SpruceFoliagePlacer.java`:36, :42–43
+147. `worldgen/trees`:173 — "the only placer whose row loop is bounded by the foliage height alone" — Cherry and Poplar loops are too; what is Spruce's alone is that the offset adds rows instead of lifting the crown — `world/level/levelgen/feature/foliageplacers/SpruceFoliagePlacer.java`:39; `CherryFoliagePlacer.java`:51, :58; `PoplarFoliagePlacer.java`:45, :54.
+148. `worldgen/trees`:175 — Acacia "three explicit rows" — three rows at two heights — `world/level/levelgen/feature/foliageplacers/AcaciaFoliagePlacer.java`:32–34, :39
+149. `worldgen/trees`:176 — DarkOak "removes the four true corners … before the signed-to-absolute fold can hide them", and the corrected text's "whose coordinates each lie on an edge of the signed grid" — it skips {−r, r, r+1}² (nine positions), and r is not an edge — `world/level/levelgen/feature/foliageplacers/DarkOakFoliagePlacer.java`:33, :52; `FoliagePlacer.java`:64–66, :76–80.
+150. `worldgen/trees`:180 — Cherry "an edge hole on the bottom row" — the edge hole is on y = −1, the wider hanging-leaves row, and the bottom row is −2 — `world/level/levelgen/feature/foliageplacers/CherryFoliagePlacer.java`:62–63, :73, :77–79.
+151. `worldgen/trees`:190, :254 — "lifts a mangrove's trunk one to three blocks" / "trunk lifted 1–3" — 1–3 for *mangrove*, 3–7 for *tall_mangrove*, which is 85% of both worldgen and sapling growth — `data/minecraft/worldgen/feature/tall_mangrove.json`, `data/minecraft/worldgen/feature/mangrove_vegetation.json`, `world/level/block/grower/TreeGrower.java`:229
+152. `worldgen/trees`:214 — five decorators say "the lowest log" "and mean it" — they mean the bottom of the sorted set, usually the soil block, which the trunk consumer puts into the log set — `world/level/levelgen/feature/trunkplacers/TrunkPlacer.java`:62, `world/level/levelgen/feature/TreeFeature.java`:142–145, `world/level/levelgen/feature/treedecorators/TreeDecorator.java`:45
+153. `worldgen/trees`:230 — "Two write on the ground" as a closed group — `PaleMossDecorator` also places a ground patch — `world/level/levelgen/feature/treedecorators/PaleMossDecorator.java`:54–61; `data/minecraft/worldgen/feature/pale_oak.json`.
+154. `worldgen/trees`:233 — "Then the last step" — the last of `TreeFeature`'s own steps, with `StructureTemplate.updateShapeAtEdge` after it — `world/level/levelgen/feature/TreeFeature.java`:178, :180
+155. `worldgen/trees`:235 — "rewrites `DISTANCE` on every block in the tree's bounding box that has that property" — only on blocks the walk reaches within six steps — `world/level/levelgen/feature/TreeFeature.java`:222–227, :244–250
+156. `worldgen/trees`:235 — "all three are visible in game" — the first two are; the third changes no block a player sees — `world/level/levelgen/feature/TreeFeature.java`:197–205, `world/level/block/LeavesBlock.java`:126–127
+157. `worldgen/trees`:237 — "a decorator-placed block or a mangrove root **blocks leaf-distance propagation through itself**" — no shipped decorator or root block has `DISTANCE` or is in `#prevents_nearby_leaf_decay`, so the walk would never enter them; the pre-fill matters only to the shape handed to the edge update — `world/level/levelgen/feature/TreeFeature.java`:197–205, :178–180; `data/minecraft/tags/block/prevents_nearby_leaf_decay.json`.
+158. `worldgen/trees`:243 — "those four consumers, the sets they fill and the final shape update are exactly the machinery `StructureTemplate` uses" — only the static `StructureTemplate.updateShapeAtEdge` is shared, and `StructureTemplate` builds its own shape from its `placed` list — `world/level/levelgen/structure/templatesystem/StructureTemplate.java`:382–397, :451; `world/level/levelgen/feature/TreeFeature.java`:180.
+159. `worldgen/trees`:253 — cherry "four hole probabilities" — two hole chances and two hanging-leaves chances — `world/level/levelgen/feature/foliageplacers/CherryFoliagePlacer.java`:17–24, `data/minecraft/worldgen/feature/cherry.json`
+160. `worldgen/trees`:281 — "Nothing in the placed tree records its species" — the block ids record the species; nothing records which feature grew the tree — `world/level/block/Blocks.java`:229–264
+161. `worldgen/trees`:281 — "a leaf's only per-block state is `DISTANCE` and `WATERLOGGED`" — also `PERSISTENT` — `world/level/block/LeavesBlock.java`:157
+162. `worldgen/structure-placement`:5 — `/locate structure village`, "answer comes back instantly", "naming a chunk in a world that has never been generated" — only a leading `#` makes a tag, and there is no structure `village`, so the command is `/locate structure #village`. The chunk named has been generated to structure starts by the command itself, but nobody has visited it — `commands/arguments/ResourceOrTagKeyArgument.java`:52; `server/commands/LocateCommand.java`:86-88; `world/level/chunk/ChunkGenerator.java`:328; `data/minecraft/tags/worldgen/structure/village.json`. ("instantly" → "at once" is polish.)
+163. `worldgen/structure-placement`:27 — `ChunkGeneratorStructureState` built "once per world", its filter "on the main thread", its ring searches "on the background pool" — once per dimension: one per `ChunkMap`, and one `ChunkMap` per `ServerLevel`. The filter runs on the Server thread and the ring searches on the worker pool — `server/level/ChunkMap.java`:183; `server/level/ServerLevel.java`:253; `world/level/chunk/ChunkGeneratorStructureState.java`:163.
+164. `worldgen/structure-placement`:30 — the two `…Manager`s "both live on the level" — both are *reached from* the level; the template loader lives on the server — `server/level/ServerLevel.java`:1372-1373. ("worldgen and main thread" → "worldgen and the Server thread" is polish.)
+165. `worldgen/structure-placement`:45 — caption: "Five decisions on the chunk-status ladder" — one of the five (filter the sets, place the rings) is at world start, and four are on the ladder — `server/level/ServerLevel.java`:253 *(page-internal against the figure's node W)*.
+166. `worldgen/structure-placement`:65 — `AbstractSpreadingStructurePlacement` was named but never introduced — it is the class both placement types the shipped sets use extend, and its `isStructureChunk` adds the frequency roll and the exclusion zone — `world/level/levelgen/structure/placement/AbstractSpreadingStructurePlacement.java`:66-69; `RandomSpreadStructurePlacement.java`:14; `ConcentricRingsStructurePlacement.java`:21.
+167. `worldgen/structure-placement`:87 — "A chunk on a biome border therefore usually gets *a* village" — nothing in the remove-and-reroll is about borders: any slot whose first pick fails gets whichever other village the ground allows — `world/level/chunk/ChunkGenerator.java`:578-603; `data/minecraft/worldgen/structure_set/villages.json`.
+168. `worldgen/structure-placement`:92 — "`Structure.findGenerationPoint` does not return pieces", with no exception — true for fifteen of the sixteen types; the mineshaft returns a filled builder — `world/level/levelgen/structure/structures/MineshaftStructure.java`:43-46; `world/level/levelgen/structure/Structure.java`:277-292.
+169. `worldgen/structure-placement`:92 — `getPiecesBuilder` called "on the same line it takes the stub back", "the deferral lasts one statement" — it is called as soon as the stub has passed its biome test, three statements later — `world/level/levelgen/structure/Structure.java`:93, 95-96.
+170. `worldgen/structure-placement`:95 — "a presence question costs a centre and never a layout", for every type — the mineshaft builds its whole piece graph in `findGenerationPoint`, so a presence check lays one out — `world/level/levelgen/structure/structures/MineshaftStructure.java`:43-46; `world/level/levelgen/structure/StructureCheck.java`:128; `data/minecraft/loot_table/chests/abandoned_camp_secret_chest.json`:213-215.
+171. `worldgen/structure-placement`:118 — the generating route was named as `ServerLevel.onStructureStartsAvailable` — that is the hop both routes share; the generating route's own task is `ChunkStatusTasks.generateStructureStarts`, beside the loading pyramid's `ChunkStatusTasks.loadStructureStarts` — `world/level/chunk/status/ChunkStatusTasks.java`:46-60; `server/level/ServerLevel.java`:1893-1896. (Also "main-thread-only" → "Server-thread-only", polish.)
+172. `worldgen/structure-placement`:133 — "every step from this one through `ChunkStatus.FEATURES` — four of the ten — requires structure starts eight chunks out", all because discovery is outside-in — only STRUCTURE_REFERENCES, TERRAIN and FEATURES read structures; BIOMES reads none but declares the same radius, so the count of four stands and the "why" covers three — `world/level/chunk/status/ChunkPyramid.java`:17, 19, 21, 23; `world/level/chunk/ChunkGenerator.java`:132-137.
+173. `worldgen/structure-placement`:137 — the inflated box is what "the spawn overrides all see" — only an override declaring the *full* box sees it; a *piece* override tests piece boxes — `world/level/chunk/ChunkGenerator.java`:519-523.
+174. `worldgen/structure-placement`:137 — "the margin in which a village counts as 'here' for mob spawning" — villages declare no spawn overrides; the margin decides spawns for a *full* override on a structure that is not NONE, such as the pillager outpost's — `data/minecraft/worldgen/structure/village_plains.json` (`"spawn_overrides": {}`, and likewise the other four); `data/minecraft/worldgen/structure/pillager_outpost.json` (`"bounding_box": "full"`, `"terrain_adaptation": "beard_thin"`).
+175. `worldgen/structure-placement`:151 — "only two of its five values use the kernel … the two beard modes, where junctions contribute at half the weight of the pieces", and bury and encapsulate use a linear falloff — true of piece terms only. Every jigsaw junction uses the beard kernel at 0.4 whatever the (non-NONE) mode, which is half of a beard-mode piece's 0.8 — `world/level/levelgen/Beardifier.java`:82-95, 202-211, 219.
+176. `worldgen/structure-placement`:173 — "`StructurePiece.postProcess` must be idempotent" — nothing calls a piece twice for the same area; what each call must do is write only inside the chunk box it is handed — `world/level/levelgen/structure/StructureStart.java`:97-98; `world/level/chunk/ChunkGenerator.java`:406, 485-494; `world/level/levelgen/structure/StructurePiece.java`:176-179.
+177. `worldgen/structure-placement`:177 — "on a result of `CHUNK_LOAD_NEEDED` … for up to a hundred expanding rings of grid cells" — the search runs radius 0 to 100 inclusive, and 100 is the command's radius; a dolphin passes fifty — `world/level/chunk/ChunkGenerator.java`:216; `server/commands/LocateCommand.java`:93; `world/entity/animal/dolphin/Dolphin.java`:405.
+178. `worldgen/structure-placement`:177 — the pause is "a cache miss being paid for on the server thread" (the session's text: "chunk generation") — in unexplored ground the pause is generation, but across explored ground it is the disk scans `StructureCheck` joins before the test — `world/level/levelgen/structure/StructureCheck.java`:88-89, 135; `world/level/chunk/ChunkGenerator.java`:328.
+179. `worldgen/structure-placement`:183 — "A stronghold's portal room can be two hundred blocks from it" — the code bounds it to about 130 blocks on an axis and about 178 on the diagonal, so "well over a hundred" — `world/level/levelgen/structure/structures/StrongholdPieces.java`:185, 1021-1023; `world/level/levelgen/structure/structures/StrongholdStructure.java`:35; `world/level/levelgen/structure/placement/StructurePlacement.java`:24.
+180. `worldgen/structure-placement`:207 — "the two chunk statuses … `StructureStart.placeInChunk` is the third" (the session's text: "the first two chunk statuses … the last") — `createStructures` runs at the *second* chunk status, as the page says at L47-48, and FEATURES is not the last status — `world/level/chunk/status/ChunkStatus.java`:20-29 *(page-internal against L47-48)*.
+181. `worldgen/jigsaw-and-templates`:7 — "Nothing measured the distance" — nothing measures a street; the one distance bound is the free-space box around the centre, which the page gives to `JigsawStructure.MaxDistance` — `world/level/levelgen/structure/pools/JigsawPlacement.java`:121
+182. `worldgen/jigsaw-and-templates`:39 — "the target name it will only meet" — the target name it looks for; a candidate with no name meets any target — `world/level/block/JigsawBlock.java`:85
+183. `worldgen/jigsaw-and-templates`:68 — figure 1 asked for the ground before the attach test, subtracted the box after the junctions, and queued every child — the attach test, then the ground unless both are rigid, then the collision and the subtraction, then the junctions, then the queue only below the limit — `world/level/levelgen/structure/pools/JigsawPlacement.java`:327
+184. `worldgen/jigsaw-and-templates`:82 — caption "written chunk by chunk at the last" status — at `ChunkStatus.FEATURES`, the sixth of ten — `world/level/chunk/status/ChunkStatus.java`:25
+185. `worldgen/jigsaw-and-templates`:84 — "the only thing the depth limit changes is which pool a jigsaw block is offered" — it also stops queuing what a piece at the limit places — `world/level/levelgen/structure/pools/JigsawPlacement.java`:387.
+186. `worldgen/jigsaw-and-templates`:84 — "`Structure.GenerationStub.getPiecesBuilder` runs the stub on the next line" — it runs the stub once the stub has passed its biome test — `world/level/levelgen/structure/Structure.java`:182
+187. `worldgen/jigsaw-and-templates`:84 — "`JigsawPlacement.Placer` does everything inside the loop" — `JigsawPlacement.Placer.tryPlacingChildren` is the loop's body; the loop is `JigsawPlacement`'s — `world/level/levelgen/structure/pools/JigsawPlacement.java`:166. The sentence's "in order" needs item 37.
+188. `worldgen/jigsaw-and-templates`:89 — "all 188 shipped pool files" — 245, every one with exactly `elements` and `fallback` — `data/minecraft/worldgen/template_pool` (245 files)
+189. `worldgen/jigsaw-and-templates`:91 — the fallback was "tried whenever nothing in the first list fits" — unless that list holds an empty element, which ends the search, fallback included; 31 of 245 pools hold one, among them every village houses and decor pool and no street pool — `world/level/levelgen/structure/pools/JigsawPlacement.java`:286
+190. `worldgen/jigsaw-and-templates`:93 — "*rigid* keeps the parent piece's vertical offset" — only when the parent is rigid too — `world/level/levelgen/structure/pools/JigsawPlacement.java`:338
+191. `worldgen/jigsaw-and-templates`:97 — "`LegacySinglePoolElement` is the same with an older block-shape rule" — with a wider ignore rule, which drops the template's air — `world/level/levelgen/structure/pools/LegacySinglePoolElement.java`:31
+192. `worldgen/jigsaw-and-templates`:118 — "Four details" — five — *(page-internal)*
+193. `worldgen/jigsaw-and-templates`:126 — "so a pool can insist" — a template: the placement priority is the source jigsaw block's, read from the template — `world/level/levelgen/structure/pools/JigsawPlacement.java`:280.
+194. `worldgen/jigsaw-and-templates`:129 — "their target names to agree" — the source's target is the candidate's name, or the candidate has none — `world/level/block/JigsawBlock.java`:85.
+195. `worldgen/jigsaw-and-templates`:136 — "the next one on the shuffled list is tried" — its other connectors and rotations come first — `world/level/levelgen/structure/pools/JigsawPlacement.java`:283.
+196. `worldgen/jigsaw-and-templates`:136 — "the child gets a fresh private shape … so a room built inside a room does not fight the village outside it" — one shape of the source piece's box, shared by every inward child, which is how a village street carries its houses — `world/level/levelgen/structure/pools/JigsawPlacement.java`:230
+197. `worldgen/jigsaw-and-templates`:169 — "inflates a candidate's box upward … A house that fits can therefore be rejected for the rooms it would have wanted above it" — only a candidate at most sixteen tall, and only for its inward-facing jigsaws; in a village the street is raised for its houses — `world/level/levelgen/structure/pools/JigsawPlacement.java`:298.
+198. `worldgen/jigsaw-and-templates`:173 — "it is the default that ships" — *apply_waterlogging* is the default — `world/level/levelgen/structure/structures/JigsawStructure.java`:33
+199. `worldgen/jigsaw-and-templates`:176 — "thirty-four structure files … six set the expansion hack (the five villages and the pillager outpost, the only pools whose pieces stack)" — fifty-two files and twenty-four, the eighteen abandoned camps added — `data/minecraft/worldgen/structure` (52 files, 24 with `use_expansion_hack` true) — `world/level/levelgen/structure/structures/JigsawStructure.java`:46.
+200. `worldgen/jigsaw-and-templates`:193 — "by state, by block, by tag, or by any of those on a random roll" — ten types, adding height, always_true, all_of, any_of and not, with no random tag test — `world/level/levelgen/structure/templatesystem/RuleTestType.java`:9
+201. `worldgen/jigsaw-and-templates`:199 — "`CappedProcessor` runs another processor a bounded number of times" — it lets it change at most a sampled number of the blocks — `world/level/levelgen/structure/templatesystem/CappedProcessor.java`:53
+202. `worldgen/jigsaw-and-templates`:240 — "three `TemplateSource`s … `TemplatePathFactory` is what turns an id into a path in each" — two, or three when a gametest source is set; the factory builds only the path a template is saved to — `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:70
+203. `worldgen/jigsaw-and-templates`:268 — "a creative player" — a creative-mode operator: creative and the gamemaster permission — `world/entity/player/Player.java`:1839
+204. `worldgen/jigsaw-and-templates`:268 — "`JigsawBlockEntity` syncs its pool, target and joint" — it syncs all seven fields — `world/level/block/entity/JigsawBlockEntity.java`:148
+205. `worldgen/jigsaw-and-templates`:270 — "Both are exceptions to the rule that a finished structure reaches the client as nothing but ordinary blocks in a chunk packet" — neither sends anything structure-shaped; the client sees the jigsaw block's fields and the blocks as they are written — `world/level/levelgen/structure/pools/JigsawPlacement.java`:195
+206. `worldgen/jigsaw-and-templates`:277 — "Whether a neighbour may differ in rotation is the joint type's decision" — only on an up- or down-facing connector; two side-facing ones fix it by facing each other — `core/FrontAndTop.java`:8
+207. `worldgen/jigsaw-and-templates`:279 — "The `.nbt` folder is *data/<namespace>/structure/*, not *structures/* … the plural directory … is not read" — the plural was the world's generated folder; data packs already read *structure/* in 1.21.11, and old saves' folders are moved — `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:46 (1.21.11 tree, same file, :59–60)
+208. `worldgen/jigsaw-and-templates`:286 — "`JigsawPlacement.Placer` under it is the loop" — the loop's body — `world/level/levelgen/structure/pools/JigsawPlacement.java`:166
+209. `worldgen/jigsaw-and-templates`:295 — "the four lines" and "the three sources" — cut, and "the sources" — `world/level/levelgen/structure/templatesystem/StructureTemplateManager.java`:70
+210. `worldgen/jigsaw-and-templates`:11 — the opening still says the depth limit's one act is taking the pool away, "a substitution, not a stop condition" — it is also a stop, one piece further out — `world/level/levelgen/structure/pools/JigsawPlacement.java`:387.
+211. `worldgen/jigsaw-and-templates`:3 — "a growth limit that works by taking the right pool away" (and `README.md`:124–125) — it takes the pool away, then stops the queue — `world/level/levelgen/structure/pools/JigsawPlacement.java`:387.
+212. `worldgen/jigsaw-and-templates`:59 — figure arrow "the stub's consumer, run at once" — the stub runs once it has passed its biome test — `world/level/levelgen/structure/Structure.java`:182.
+213. `worldgen/jigsaw-and-templates`:84 — "the sections below take the loop's steps in order", with the collision paragraph before the ground paragraph — the loop asks for the ground before the collision test — `world/level/levelgen/structure/pools/JigsawPlacement.java`:338.
+214. `worldgen/jigsaw-and-templates`:142 — "that box is exactly what the collision test then tests" — for a structure with the hack, every village street included, the tested box is the raised one — `world/level/levelgen/structure/pools/JigsawPlacement.java`:353.
+215. `worldgen/jigsaw-and-templates`:38 — cast "the assembly loop and its priority queue" — `Placer` holds the loop's body and the queue; the loop is `JigsawPlacement`'s — `world/level/levelgen/structure/pools/JigsawPlacement.java`:166.
+216. `worldgen/jigsaw-and-templates`:129 — "an *aligned* joint additionally requires the rotations to match, while a rollable one does not" (and the cast at :39) — the difference exists only on up- or down-facing connectors — `core/FrontAndTop.java`:8.
+217. `worldgen/hand-built-structures`:6 — the mechanism is "not a counter or a guarantee" — the cap of one *is* a counter (at most one); only "at least one" is the retry, so the grammar alone does not guarantee it — `world/level/levelgen/structure/structures/StrongholdPieces.java`:53; `…/StrongholdStructure.java`:48
+218. `worldgen/hand-built-structures`:16 — "32 classes and about 10,200 lines … roughly 1,300 lines for the whole jigsaw package" — 30 classes and 10,037 lines are the old assembler's (the 10,198 total includes `JigsawStructure` and `package-info`); `pools` with `pools/alias` is 1,555 — `world/level/levelgen/structure/structures/` and `world/level/levelgen/structure/pools/` (`wc -l`)
+219. `worldgen/hand-built-structures`:53 — "every piece in this package is written once, in a north-facing local frame" — nearly every hand-written piece: `MineShaftRoom`, `MineShaftCrossing` and `BuriedTreasurePiece` never call `setOrientation`, and template pieces are pinned north — `world/level/levelgen/structure/structures/MineshaftPieces.java`:114, :806; `…/BuriedTreasurePieces.java`:27; `world/level/levelgen/structure/TemplateStructurePiece.java`:41
+220. `worldgen/hand-built-structures`:61 — null orientation "is how `BuriedTreasurePieces` gets away with a bounding box one block wide" — buried treasure reads its box and writes world positions itself; the identity serves the mineshaft's room and crossings — `world/level/levelgen/structure/StructurePiece.java`:121, :146; `…/structures/MineshaftPieces.java`:203, :886.
+221. `worldgen/hand-built-structures`:97 — "on a worldgen worker" — on the level's one worldgen executor, a `ConsecutiveExecutor` — `server/level/ChunkMap.java`:185
+222. `worldgen/hand-built-structures`:130 — the caption said "a try ends only when the start piece holds a portal room" — each try ends when its pending list drains; the loop of tries ends only on a portal room — `world/level/levelgen/structure/structures/StrongholdStructure.java`:40-48
+223. `worldgen/hand-built-structures`:139 — "refuses a box below Y 10" — a box at Y 10 is refused too (`minY() > 10`) — `world/level/levelgen/structure/structures/StrongholdPieces.java`:1293; `…/NetherFortressPieces.java`:1314
+224. `worldgen/hand-built-structures`:147 — `resetPieces` clears "a running weight total", in "private static fields" — it zeroes the static table's placement counts, and the total is recomputed at every pick; the counts are fields of objects in a static array — `world/level/levelgen/structure/structures/StrongholdPieces.java`:66-79, :81-96.
+225. `worldgen/hand-built-structures`:148 — "The nether fortress is worse … its per-structure budget is an illusion" — the fortress shares less: its lists and previous piece are on its start piece, and only the static tables' counts are shared — `world/level/levelgen/structure/structures/NetherFortressPieces.java`:1134-1160
+226. `worldgen/hand-built-structures`:148 — "Two strongholds generating at once would interfere, visibly. It is rare enough not to bite" — the worldgen executor is serial per dimension, so only `/place structure` racing generation could — `util/thread/AbstractConsecutiveExecutor.java`:86-98; `server/commands/PlaceCommand.java`:143.
+227. `worldgen/hand-built-structures`:152 — "corridors and turns are unlimited" — most are; the chest corridor is capped at four — `world/level/levelgen/structure/structures/StrongholdPieces.java`:48.
+228. `worldgen/hand-built-structures`:155 — "The depth cap is fifty, far more than any real stronghold reaches; what actually ends generation is the picker" — the distribution is unverifiable, and a 112-block bound was missing — `world/level/levelgen/structure/structures/StrongholdPieces.java`:183, :185, :129.
+229. `worldgen/hand-built-structures`:167 — the base `getLocatorPosition` returns "the start chunk's corner" — it returns the centre of the piece's box — `world/level/levelgen/structure/StructurePiece.java`:110-111
+230. `worldgen/hand-built-structures`:172 — "marked for removal … the mansion's siting helper … the jigsaw path has nothing deprecated in it at all: Mojang has flagged the idiom" — `@Deprecated`, not `forRemoval`; the helper is shared with the end city; the jigsaw package declares nothing deprecated of its own but calls deprecated `BoundingBox` methods — `world/level/levelgen/structure/pieces/StructurePiecesBuilder.java`:26, :39; `…/TemplateStructurePiece.java`:118; `…/Structure.java`:159; `…/structures/EndCityStructure.java`:35.
+231. `worldgen/hand-built-structures`:172 — "Three separate magic start Y constants … read by nothing — the literals are retyped at their use sites" — they are compile-time constants that javac inlines, so the decompile cannot show whether they are read; now named with their values only — `world/level/levelgen/structure/structures/StrongholdPieces.java`:47; `…/NetherFortressPieces.java`:36; `…/MineshaftPieces.java`:50
+232. `worldgen/hand-built-structures`:172 — the draw "has to stay or every mineshaft in every existing world moves" — saved starts are reloaded; removing the draw would change the layout of mineshafts generated afterwards — `world/level/levelgen/structure/structures/MineshaftStructure.java`:40; `world/level/chunk/storage/SerializableChunkData.java`:545.
+233. `worldgen/hand-built-structures`:181 — buried treasure has "no ground-finder at all" — it has a ground scan of its own — `world/level/levelgen/structure/structures/BuriedTreasurePieces.java`:39-45
+234. `worldgen/hand-built-structures`:190 — "a thin `Structure` subclass … nothing more, usually a `SinglePieceStructure` … Two of them do more than wrap … the book's one live `Structure.afterPlace`" — 2 of 15 are `SinglePieceStructure`s; most add something; there are two live `afterPlace` overrides — `world/level/levelgen/structure/structures/DesertPyramidStructure.java`:27, :36; `…/JungleTempleStructure.java`:8; `…/WoodlandMansionStructure.java`:58
+235. `worldgen/hand-built-structures`:190 — (new sentence) "for the desert pyramid and the jungle temple that is all" — the pyramid's `afterPlace` is its own; four other wrappers are as thin; the additions include generation loops and a rebuild — `world/level/levelgen/structure/structures/DesertPyramidStructure.java`:36; `…/SwampHutStructure.java`, `…/IglooStructure.java`, `…/BuriedTreasureStructure.java`, `…/OceanRuinStructure.java` (`findGenerationPoint`).
+236. `worldgen/hand-built-structures`:190 — (new) the mansion's `afterPlace` "fills the ground under the mansion" — it places cobblestone down from the floor through air and liquid to solid ground — `world/level/levelgen/structure/structures/WoodlandMansionStructure.java`:64-74.
+237. `worldgen/hand-built-structures`:204 — "Every other structure deserialises what it wrote" — pieces are read back, but a template piece's box is recomputed from its template — `world/level/levelgen/structure/TemplateStructurePiece.java`:57
+238. `worldgen/hand-built-structures`:205 — igloos "re-seated … and then put *back*" — only the template position is put back; the box stays re-seated — `world/level/levelgen/structure/structures/IglooPieces.java`:109, :120; `world/level/levelgen/structure/TemplateStructurePiece.java`:75.
+239. `worldgen/hand-built-structures`:207 — "placed whole from one chunk rather than sliced across several" — the portal is placed whole from the chunk holding its centre; the fossil from every chunk it touches — `world/level/levelgen/structure/structures/RuinedPortalPiece.java`:117-118; `…/NetherFossilPieces.java`:66
+240. `worldgen/hand-built-structures`:212 — "a stray jigsaw block in a mansion `.nbt`" — no mansion template holds one (0 of 73); `portal_1` to `portal_5` hold one each (final state netherrack ×4, air ×1) — `data/minecraft/structure/ruined_portal/portal_1.nbt` to `portal_5.nbt`; `world/level/levelgen/structure/TemplateStructurePiece.java`:92-109
+241. `worldgen/hand-built-structures`:216 — "Piece choice, weights … are all Java", corrected by the session to "all but the ruined portal's weighted setups" — the ocean ruin's large and cluster odds and the shipwreck's beached flag are JSON too — `data/minecraft/worldgen/structure/ocean_ruin_cold.json`; `world/level/levelgen/structure/structures/OceanRuinPieces.java`:85, :89; `…/ShipwreckPieces.java`:43.
+242. `worldgen/hand-built-structures`:233 — the third floor needs "a second-floor room with a door" — a one-by-two room with the door flag — `world/level/levelgen/structure/structures/WoodlandMansionPieces.java`:211-212
+243. `worldgen/hand-built-structures`:250 — "Bridges opt out with a tag of minus one", corrected by the session to "while they are checked" — the -1 is overwritten with the section's tag before the bridge is checked, and is read only while the tower off the bridge's far end is checked — `world/level/levelgen/structure/structures/EndCityPieces.java`:125, :146, :151, :229-232.
+244. `worldgen/hand-built-structures`:250 — "the ship becomes likelier the longer the bridge gets" — the chance rises with the section's recursion depth — `world/level/levelgen/structure/structures/EndCityPieces.java`:143
+245. `worldgen/hand-built-structures`:252 — "a processor stack, not code … stored in the saved piece" — mostly a stack, rebuilt at load from saved settings; some decay is the piece's own code — `world/level/levelgen/structure/structures/RuinedPortalPiece.java`:65-68, :73-87, :120-129.
+246. `worldgen/hand-built-structures`:257 — "the five decay setups — surface, buried, in a mountain, on the ocean floor, in the nether" — six placements, `underground` included, drawn from the JSON's setups — `world/level/levelgen/structure/structures/RuinedPortalPiece.java`:270; `data/minecraft/worldgen/structure/ruined_portal.json`.
+247. `worldgen/hand-built-structures`:269 — "`StructurePiecesBuilder` for the accessor" — `StructurePieceAccessor` is gone; `addChildren` takes the builder — `world/level/levelgen/structure/StructurePiece.java`:87.
+248. `worldgen/creating-a-world`:5 — clicking *Create New World* made "nothing happen for a moment" — the click first draws a *Preparing for world creation...* screen, which stays frozen while the load runs — `client/gui/screens/worldselection/CreateWorldScreen.java`:150, :242; `client/Minecraft.java`:2467-2468
+249. `worldgen/creating-a-world`:15 — "the client's main thread", parked, ran "other people's tasks" — it is the Render thread, and the queued tasks include the load's own main-thread steps (the function library's apply, the result factory) — `server/WorldLoader.java`:54-57; `server/ReloadableServerResources.java`:75; `util/thread/BlockableEventLoop.java`:143-151.
+250. `worldgen/creating-a-world`:17 — "the object the screen exists to edit, `WorldGenSettings`, was built halfway through that load" — the load's callback builds a `WorldGenSettings`, whose options and dimensions the screen's context takes apart and edits; the saved object is a new one — `client/gui/screens/worldselection/CreateWorldScreen.java`:130; `client/gui/screens/worldselection/WorldCreationContext.java`:22-23
+251. `worldgen/creating-a-world`:20 — *Create* "barely touches it" — *Create* packs the edited options and the unbaked selection into a fresh `WorldGenSettings` — `client/gui/screens/worldselection/CreateWorldScreen.java`:267-268.
+252. `worldgen/creating-a-world`:19 — "Two of the buttons throw the whole load away and run it again" — only when they change the enabled-pack list — `client/gui/screens/worldselection/CreateWorldScreen.java`:387-388.
+253. `worldgen/creating-a-world`:22 — "the three different programs that build one" — several programs build one, and of the page's three columns *Re-Create* builds none: it hands the screen a context, and `CreateWorldScreen.onCreate` builds the object — `client/gui/screens/worldselection/CreateWorldScreen.java`:268; `client/gui/screens/worldselection/WorldOpenFlows.java`:112, :189; `gametest/framework/GameTestServer.java`:115; `server/Main.java`:264; `world/level/storage/LevelStorageSource.java`:180.
+254. `worldgen/creating-a-world`:28 — `WorldGenSettings` "built on the worker, read on the server thread" (now "built on the Render thread on this page's route, on a worker on the others; read on the Server thread") — every load builds one on the worker pool, this page's included, and *Create* builds another on the Render thread; it is read on the Server thread and, by the structure-starts step, on the worker pool — `client/gui/screens/worldselection/CreateWorldScreen.java`:130, :268; `server/WorldLoader.java`:43-46, :58; `world/level/chunk/status/ChunkStatusTasks.java`:49; `server/MinecraftServer.java`:445.
+255. `worldgen/creating-a-world`:29 — `WorldOptions` named three of its "four fields" — the fourth is a legacy string, an old customised world's options — `world/level/levelgen/WorldOptions.java`:20-23
+256. `worldgen/creating-a-world`:31 — `WorldLoader` "worker, with two hops to the main thread" — worker, with hops (the pack step, the function library's apply, the result factory) to the thread that called it: the Render thread on the client, and on the servers the caller draining `Util.blockUntilDone`'s queue — `server/WorldLoader.java`:33, :49, :54-57; `util/Util.java`:1214-1226
+257. `worldgen/creating-a-world`:35 — `MinecraftServer` handed the object to `SavedDataStorage` on the "server thread" — it does so in its constructor, which `MinecraftServer.spin` runs on the calling thread before the Server thread starts (the Render thread for a single-player world) — `server/MinecraftServer.java`:312, :315, :349; `client/Minecraft.java`:2277-2279.
+258. `worldgen/creating-a-world`:41 (figure 1) — subgraph "a worker thread" — mostly: the pack step and the load's apply and assembly steps run on the caller's thread — `server/WorldLoader.java`:33, :54-57.
+259. `worldgen/creating-a-world`:46 (figure 1) — the loop edge "packs or flags changed" — the enabled-pack list alone decides, because the feature set is carried over — `client/gui/screens/worldselection/CreateWorldScreen.java`:385; `client/gui/screens/worldselection/WorldCreationUiState.java`:227
+260. `worldgen/creating-a-world`:50 (caption 1) — stages one to three "off the render thread" — mostly off the Render thread — `server/WorldLoader.java`:33, :54-57
+261. `worldgen/creating-a-world`:54 — the callback ran "between loading the registries and compiling the recipes" — it runs between the dimension pass and the reloadable registries (loot tables, predicates, advancements, recipes and four more), which in 26.3 are a registry pass of their own — `server/WorldLoader.java`:43-49; `server/ReloadableServerRegistries.java`:37; `resources/RegistryDataLoader.java`:100.
+262. `worldgen/creating-a-world`:61 — `DIMENSION_REGISTRIES` "is the last of the registry passes a world load walks" — it is the last before the callback; `RegistryDataLoader.RELOADABLE_REGISTRIES` follows, inside `ReloadableServerResources.loadResources` — `resources/RegistryDataLoader.java`:100; `server/ReloadableServerResources.java`:69; `server/ReloadableServerRegistries.java`:37.
+263. `worldgen/creating-a-world`:97 — rebuilt the context "on almost every change" — it rebuilds whenever a generation setting changes; the name, difficulty, Allow Commands and game-rule setters never rebuild it — `client/gui/screens/worldselection/WorldCreationUiState.java`:85-110, :112-116, :157-160, :170-173, :179-185, :219-222, :307-310.
+264. `worldgen/creating-a-world`:107 — a round trip "discards every layer you edited" — it discards a *Presets* choice, which is a new object; a layer deleted from the stack the button gave you was deleted from the world preset registry's own object, and it comes back when the button returns to *Superflat*, until a pack change reloads the registry — `world/level/levelgen/presets/WorldPreset.java`:46-47; `client/gui/screens/worldselection/PresetEditor.java`:41-44; `client/gui/screens/CreateFlatWorldScreen.java`:182; `world/level/levelgen/flat/FlatLevelGeneratorSettings.java`:99; `client/gui/screens/worldselection/CreateWorldScreen.java`:419-425.
+265. `worldgen/creating-a-world`:112 — "the only thing that ever selects it is `CreateWorldScreen.testWorld`" — that is the only thing on the client; the game-test server builds its world from it, and a dedicated server's *level-type* can name it — `gametest/framework/GameTestServer.java`:111; `server/dedicated/DedicatedServerProperties.java`:297-303.
+266. `worldgen/creating-a-world`:116 — "the buffet world is the whole of that biome source's use in the game" — a superflat world and a *Debug Mode* world use it too — `world/level/levelgen/FlatLevelSource.java`:41; `world/level/levelgen/DebugLevelSource.java`:51
+267. `worldgen/creating-a-world`:124 — "a part where everything else is a record" (now "nearly everything else is immutable") — `WorldOptions`, `WorldGenSettings` and `WorldPreset` are classes, and the part's generation objects are mutable (`StructureTemplate.fillFromWorld` rewrites a template's palettes) — `world/level/levelgen/WorldOptions.java`:12; `world/level/levelgen/WorldGenSettings.java`:14; `world/level/levelgen/structure/templatesystem/StructureTemplate.java`:83, :105.
+268. `worldgen/creating-a-world`:129 — added that the object is "the world preset registry's own" — it is only while the stack is the one the world-type button gave you; a *Presets* choice, a pack reload or a *Re-Create* gives a settings object no registry holds — `world/level/levelgen/presets/WorldPreset.java`:46-47; `client/gui/screens/worldselection/PresetEditor.java`:44, :56; `world/level/levelgen/flat/FlatLevelGeneratorSettings.java`:99; `client/gui/screens/worldselection/CreateWorldScreen.java`:419-425.
+269. `worldgen/creating-a-world`:149 — the test was "*blocks motion or holds a fluid*" — it is the `BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP` tag (`#minecraft:blocks_motion`) or a fluid — `world/level/levelgen/Heightmap.java`:176-177; `data/minecraft/tags/block/blocks_motion_in_heightmap.json`:3
+270. `worldgen/creating-a-world`:167 — the fast path ran when "the enabled-pack list and the feature set both come back unchanged" — the enabled-pack list alone decides, because the new configuration carries the current feature set — `client/gui/screens/worldselection/CreateWorldScreen.java`:385; `client/gui/screens/worldselection/WorldCreationUiState.java`:227
+271. `worldgen/creating-a-world`:235-236 — a different question "of the overworld than of the other two", with the End's being a vanilla-parameter `MultiNoiseBiomeSource` — each of the three asks its own question, and the End's requires a `TheEndBiomeSource` — `world/level/levelgen/WorldDimensions.java`:149-164, :177-186.
+272. `worldgen/creating-a-world`:250 — "The game rules take a third route to disk, beside those two" — they reach disk by the same first save as the settings (*game_rules.dat*); their own route is the in-memory one, an `Optional` handed to the server constructor — `server/MinecraftServer.java`:361-364; `client/Minecraft.java`:2277-2279; `client/server/IntegratedServer.java`:98
+273. `worldgen/creating-a-world`:259 — the screen was "one of three programs that produce a `WorldGenSettings`" — it is one of several; the demo world, through `WorldOpenFlows.createFreshLevel`, and the game-test server make one too — `client/gui/screens/TitleScreen.java`:227; `client/gui/screens/worldselection/WorldOpenFlows.java`:112; `gametest/framework/GameTestServer.java`:115.
+274. `worldgen/creating-a-world`:265 — *Re-Create*'s "who builds it" is `WorldOpenFlows.recreateWorldData` — that method builds a `WorldCreationContext` from the saved options and stems; the `WorldGenSettings` is built by `CreateWorldScreen.onCreate` — `client/gui/screens/worldselection/WorldOpenFlows.java`:189; `client/gui/screens/worldselection/CreateWorldScreen.java`:268.
+275. `worldgen/creating-a-world`:266 — *level-seed* read "once", in the `DedicatedServerProperties` constructor — the constructor runs again on every properties update — `server/dedicated/DedicatedServerProperties.java`:179-183, :198-199
+276. `worldgen/creating-a-world`:267 — "*default* and *largebiomes* as legacy aliases" — both parse as ids first (`minecraft:default`, `minecraft:largebiomes`), so the legacy map is never reached; neither is a preset, so both fall to the warning and *normal* — `server/dedicated/DedicatedServerProperties.java`:288, :297-306; `resources/Identifier.java`:97
+277. `worldgen/creating-a-world`:281 — `WorldOpenFlows.recreateWorldData` "then hands `CreateWorldScreen.createFromExisting`" the settings — it returns a pair, and its caller in the world list calls `CreateWorldScreen.createFromExisting` — `client/gui/screens/worldselection/WorldSelectionList.java`:692, :699, :715, :728; `client/gui/screens/worldselection/WorldOpenFlows.java`:160
+278. `worldgen/creating-a-world`:284 — `EditWorldScreen`'s list left out *Open Backups Folder* — `client/gui/screens/worldselection/EditWorldScreen.java`:105
+279. `worldgen/creating-a-world`:289 — "Two of the nineteen classes … both for the same reason: they are where the split the blockquote describes is paid for" — the sentence named three classes, and the `WorldOpenFlows` half is about the confirmation chain, not the split — *(page-internal)*
+280. `worldgen/creating-a-world`:295 — "a chain of eight methods … each of which can stop and put a confirmation screen in the way … the shape every route in this page's family takes" — the chain includes the upgrade (`upgradeAndOpenWorld`, the file fixer) between version compatibility and the world stem; `Minecraft.doWorldLoad` shows only the loading screen; and the demo world's and the servers' routes put no screen in the way — `client/gui/screens/worldselection/WorldOpenFlows.java`:249-519, :333, :98-123; `client/Minecraft.java`:2267-2270.
+
+### The record's audit: corrections to what the session wrote or left
+
+281. `worldgen/blending`:29 — *but that is 193 chunks to reach for an answer that is almost always no.* — now *but that is 193 chunks to reach for an answer that, in a world this version created, is always no.* — in a world this version created the save check always answers no, not almost always (world/level/chunk/storage/IOWorker.java:130) *(the session's own sentence)*
+282. `worldgen/blending`:39 — *A chunk counts as old if its stored *DataVersion* is below 4997 or if it already carries a *blending_data* …* — now *The save check counts a chunk if its stored *DataVersion* is below 4997 or if it already carries a …* — the save check is a wider net than the flag: a yes can still end in the empty blender (IOWorker.java:130; world/level/levelgen/blending/Blender.java:108-109)
+283. `worldgen/blending`:62 — *| built per step on the worldgen executor, asked from the worker pool |* — now *| built per step on the worldgen executor, asked from the worker pool; the border ticks run inline at …* — the border ticks run inline at FEATURES, not from the worker pool (world/level/chunk/status/ChunkStatusTasks.java:120) *(the session's own sentence)*
+284. `worldgen/blending`:74 — *at three chunk statuses — two inside the density graph, three nowhere near it.* — now *at three chunk statuses — two inside the density graph, three nowhere near it, and two of the five reading …* — two of the five consumers read only the old area, not the measured columns (Blender.java:316-317, 450-451)
+285. `worldgen/blending`:93 — *That asymmetry follows the two reaches — the height blend looks twenty-seven cells out and the density blend …* — now *That asymmetry follows the two reaches — the height blend looks twenty-seven quart cells out and the density …* — the reaches set the seam widths and are counted in quart cells, which the sentence left unsaid (Blender.java:64-67, 168, 217) *(the session's own sentence)*
+286. `worldgen/blending`:98 — *The second turns away an old chunk saved before its biomes existed — during the *BIOMES* step the dependency …* — now *The second turns away a flagged chunk whose status, with any deepening target folded in, is before *BIOMES*.* — the population the session's sentence described was empty; the test turns away a flagged chunk whose status, deepening target folded in, is before BIOMES (world/level/levelgen/blending/BlendingData.java:100; world/level/chunk/ChunkAccess.java:284-294) *(the session's own sentence)*
+287. `worldgen/blending`:171 — *Note over CST,BDFS: ChunkStatus.BIOMES, built on the worldgen executor* — now *Note over CST,BDFS: ChunkStatus.BIOMES, the blender built on the worldgen executor, the fill forked to the …* — figure 2's note: the blender is built on the worldgen executor, but the fill forks to the worker pool (ChunkStatusTasks.java:74; world/level/chunk/ChunkGenerator.java:136, 147) *(the session's own sentence)*
+288. `worldgen/blending`:181 — *NBC->>Blender: getBiomeResolver, then wrapped once more* — now *NBC->>Blender: getBiomeResolver, wrapped again if the chunk is being deepened* — figure 2: the second wrap happens only for a chunk being deepened (world/level/levelgen/NoiseBasedChunkGenerator.java:98; world/level/levelgen/BelowZeroRetrogen.java:105) *(the session's own sentence)*
+289. `worldgen/blending`:267 — *It measures distance in cells with the Y difference doubled — cells are twice as tall as they are wide —* — now *It measures distance in noise cells with the Y difference doubled — noise cells are twice as tall as they are …* — the cells measured are noise cells, the page's other sense of cell being the quart cell (BlendingData.java:39)
+290. `worldgen/blending`:318 — *and this is the one hook that runs only on the *old* side.* — now *and this is the one hook that acts only on the *old* side.* — the BIOMES and TERRAIN hooks also act on an old chunk being deepened; this one acts only on old chunks, and is called for every chunk (Blender.java:88-96, 313-315; ChunkStatusTasks.java:120) *(the session's own sentence)*
+291. `worldgen/blending`:325 — *from the bottom of the old area up to that column's *MOTION_BLOCKING* height.* — now *from the bottom of the old area up to that column's *MOTION_BLOCKING* height, capped at the top of the old …* — the face walk stops at the lower of the heightmap and the old area's top (Blender.java:343)
+292. `worldgen/blending`:331 — *The heightmap read is safe whatever the chunk's history: `ChunkAccess.getHeight` primes a missing map on …* — now *The heightmap read is safe whatever the chunk's history: an old chunk loaded at *TERRAIN* had its four final …* — an old chunk loaded at TERRAIN never runs buildTerrain; its maps were primed as it was read from the save (world/level/chunk/storage/SerializableChunkData.java:262-272; ChunkStatusTasks.java:107; ChunkAccess.java:182-195) *(the session's own sentence)*
+293. `worldgen/trees`:33 — *the foliage and the soil block laid under each trunk column,* — now *the foliage and the soil block laid under each trunk column by every trunk placer but …* — UpwardsBranchingTrunkPlacer never lays the soil block, so neither mangrove does (world/level/levelgen/feature/trunkplacers/UpwardsBranchingTrunkPlacer.java:55-78; TrunkPlacer.java:58-63) *(the session's own sentence)*
+294. `worldgen/trees`:87 — *and the second is what `TreeFeature` hands to every `FoliagePlacer.createFoliage` call;* — now *and both are what `TreeFeature` hands to every `FoliagePlacer.createFoliage` call, beside the clipped height;* — both crown numbers are handed to every createFoliage call, beside the clipped height (world/level/levelgen/feature/TreeFeature.java:99) *(the session's own sentence)*
+295. `worldgen/trees`:144 — *| `CherryTrunkPlacer` | one to three branches — a third, when drawn, is the trunk going on straight up — that …* — now *| `CherryTrunkPlacer` | one or two side branches that random-walk toward a computed endpoint, choosing …* — at most two branches random-walk; the third, when the drawn count is three, is the trunk going on (world/level/levelgen/feature/trunkplacers/CherryTrunkPlacer.java:72-77, 90-102) *(the session's own sentence)*
+296. `worldgen/trees`:158 — *A foliage placer gets one attachment and, beside a tree height none of them reads, three numbers:* — now *A foliage placer gets one attachment and, beside the clipped tree height, which none of them reads, three …* — the height every placer ignores is the clipped tree height, which the page names at :101 (FoliagePlacer.java:43) *(the session's own sentence)*
+297. `worldgen/trees`:175 — *— on the widest row of a two-by-two tree it skips every position whose coordinates each lie on an edge of the …* — now *— on the widest row of a two-by-two tree it skips the nine positions whose signed coordinates are each −r, r …* — the grid's edges are -r and r+1 only; the five extra skipped positions are one block in from the corners on the positive side, and their mirrors are kept (world/level/levelgen/feature/foliageplacers/DarkOakFoliagePlacer.java:52; FoliagePlacer.java:65-80) *(the session's own sentence)*
+298. `worldgen/trees`:179 — *It punches probabilistic holes: an edge hole on the wide row, and on wide rows an unconditional corner …* — now *It punches probabilistic holes: an edge hole on the row at *y* = −1, the wider of its two hanging-leaves …* — the edge hole is on the row at y = -1, and the corner and diagonal cuts apply to every row of radius three or more (world/level/levelgen/feature/foliageplacers/CherryFoliagePlacer.java:62-73) *(the session's own sentence)*
+299. `worldgen/trees`:229 — *— and `PaleMossDecorator`, besides its hanging moss, lays a patch on the ground as well.* — now *— and `PaleMossDecorator`, besides its hanging moss, lays a patch on the ground at a configured chance (four …* — the ground patch is a whole moss-patch feature at a configured chance, four in five in both shipped pale oaks, and its blocks enter none of the tree's sets (world/level/levelgen/feature/treedecorators/PaleMossDecorator.java:54-61) *(the session's own sentence)*
+300. `worldgen/trees`:236 — *which changes nothing a player sees — no decorator's or root's block would carry the walk anyway —* — now *which changes nothing a player sees — no shipped decorator's or root's block would carry the walk anyway —* — a pack's decorator could carry the walk; only the shipped ones do not (world/level/levelgen/feature/TreeFeature.java:223-250; the shipped decorator blocks carry no DISTANCE) *(the session's own sentence)*
+301. `worldgen/trees`:242 — *the pass that fixes block shapes at the edge of a placed structure, and every block the consumers write goes …* — now *the pass that fixes block shapes at the edge of a placed structure, and every block the four consumers write …* — the four consumers write with one flag word, 19 (world/level/levelgen/feature/TreeFeature.java:140-164) *(the session's own sentence)*
+302. `worldgen/biomes`:5 — *The grass changes colour at one line. The fog and the sky change along a *different* line, a couple of blocks …* — now *The grass changes colour along one line, softened over a few blocks. The fog and the sky change along a …* — the grass boundary is softened too, by the client's blur, and the fog and sky fade over a band several times as wide (world/attribute/GaussianSampler.java:23-40; client/multiplayer/ClientLevel.java:1003-1024) *(the session's own sentence)*
+303. `worldgen/biomes`:25 — *indexed by a `Climate.RTree` | built once per world |* — now *indexed by a `Climate.RTree` | built at each world load |* — the parameter list and its RTree are built at each world load (world/level/biome/MultiNoiseBiomeSourceParameterList.java:87-93; world/level/biome/Climate.java:162-168)
+304. `worldgen/biomes`:64 — *The two wrappers `NoiseBasedChunkGenerator.decorateBiomeResolver` adds only do anything beside or inside …* — now *The two wrappers `NoiseBasedChunkGenerator.decorateBiomeResolver` adds only do anything beside or inside …* — BelowZeroRetrogen's wrapper acts inside a chunk being deepened, not beside one (world/level/levelgen/BelowZeroRetrogen.java:104-117; Blender.java:81) *(the session's own sentence)*
+305. `worldgen/biomes`:71 — *the climate sampler `RandomState.createClimateSampler` binds is made of the depth, continents, erosion and …* — now *four of the six functions in the climate sampler `RandomState.createClimateSampler` binds are the very depth, …* — the sampler has six functions, four of which shape the land (world/level/levelgen/NoiseRouter.java:15-17; world/level/levelgen/RandomState.java:105-107) *(the session's own sentence)*
+306. `worldgen/biomes`:186 — *the tint does not come from the effects at all: grass and foliage colour are a lookup into the colormap …* — now *the grass and foliage tints do not come from the effects at all: they are a lookup into the colormap images …* — the water tint does come from the effects; the grass and foliage tints use the base temperature and downfall (world/level/biome/Biome.java:216-240, 257-258) *(the session's own sentence)*
+307. `worldgen/biomes`:224 — *The search runs whenever the world is loaded, since each dimension's structure state asks for it, but only a …* — now *The search runs every time the world is loaded, since the structure state of a dimension whose settings name …* — the search runs at every load for a dimension whose settings name a spawn target, and a new world runs it again for its spawn (server/level/ChunkMap.java:183; NoiseBasedChunkGenerator.java:114-124; server/MinecraftServer.java:456-458, 511) *(the session's own sentence)*
+308. `server/starting-a-server`:326 — *Then the flag is set, and no later boot of that world searches again.* — now *Then the flag is set, and no later boot of that world looks for a spawn again.* — the climate search behind ChunkGenerator.getOrigin reruns at every boot; the spawn search does not (server/level/ChunkMap.java:183)
+309. `worldgen/features-and-placement`:8 — *That is how the same seed grows the same forest — and it is also why* — now *That is how the same seed grows the same forest, all but where two chunks' trees meet …* — trees meeting at a chunk border depend on which chunk decorated first (world/level/chunk/status/ChunkPyramid.java:23)
+310. `worldgen/features-and-placement`:152 — *count-then-scatter gives ten trees in ten places, scatter-then-count gives ten attempts at one spot.* — now *count-then-scatter gives ten attempts in ten places, scatter-then-count ten attempts at one spot.* — count-then-scatter gives ten attempts, not ten trees: each position still has to pass the filters (world/level/levelgen/placement/RepeatingPlacement.java:16-17) *(the session's own sentence)*
+311. `worldgen/features-and-placement`:170 — *What every one of them is handed is a `PlacementContext`, which carries the level and the generator: the …* — now *What every one of them is handed is a `PlacementContext`, which carries the level, the generator and — the …* — the context carries the level, the generator and the top feature; the block reads and heightmaps go through the level (world/level/levelgen/placement/PlacementContext.java:13-15) *(the session's own sentence)*
+312. `worldgen/features-and-placement`:176 — *and `FixedPlacement` swaps it for the absolute positions it names.* — now *and `FixedPlacement` swaps it for those of the absolute positions it names that lie in its chunk.* — FixedPlacement keeps only the positions that lie in its chunk (world/level/levelgen/placement/FixedPlacement.java:30-34) *(the session's own sentence)*
+313. `worldgen/features-and-placement`:193 — *reporting success if any wrote.* — now *reporting success if any entry succeeded.* — OverlayFeature reports success if any entry succeeded, and a NoOpFeature entry succeeds without writing (world/level/levelgen/feature/OverlayFeature.java:41; world/level/levelgen/placement/FeaturePlacer.java:78, 86)
+314. `worldgen/features-and-placement`:221 — *([a read too far crashes, a read too wide only …* — now *([a read too far crashes, a read too wide is only …* — a read too wide is logged, not warned about on screen (server/level/WorldGenRegion.java:194-195) *(the session's own sentence)*
+315. `worldgen/features-and-placement`:223 — *A radius of one in both directions means a chunk goes on changing after it has decorated: all eight …* — now *A radius of one in both directions means a chunk can go on changing after it has decorated: any of its eight …* — only neighbours that decorate later write into a decorated chunk; FEATURES asks neighbours only for TERRAIN and no step may ask a neighbour for its own status, so which of two decorates first is whichever task gets there (ChunkPyramid.java:23; world/level/chunk/status/ChunkStep.java:100-103; server/level/GenerationChunkHolder.java:234) *(the session's own sentence)*
+316. `worldgen/features-and-placement`:236 — *ten state providers, which pick a block from a weight, a noise or a rule.* — now *ten state providers, which pick a block from a fixed state, a weight, a noise or a rule, or adjust the one …* — the ten providers include a fixed state and one that adjusts another's pick (world/level/levelgen/feature/stateproviders/BlockStateProviderTypes.java:9-18) *(the session's own sentence)*
+317. `worldgen/features-and-placement`:242 — *and a sapling's growth is a third, beside the other growing blocks and the End's own features: …* — now *and a sapling's growth is a third, beside the other growing blocks, the bonus chest and the End's own …* — a sapling grows from a random tick or from bone meal, and the bonus chest is another run outside generation (world/level/block/SaplingBlock.java:75-76; world/level/block/grower/TreeGrower.java:108; server/MinecraftServer.java:554) *(the session's own sentence)*
+318. `worldgen/features-and-placement`:248 — *each is one `Feature.place` writing blocks from its own parameters.* — now *each is one `Feature.place` working from its own parameters.* — six features write no blocks of their own and NoOpFeature writes nothing, as the page says above (page-internal) *(the session's own sentence)*
+319. `worldgen/features-and-placement`:270 — *`PlacementFilter`, `RepeatingPlacement` and `HeightmapPlacement` are examples of three of the shapes a …* — now *`PlacementFilter` and `RepeatingPlacement` are two of the shapes a modifier can take and `HeightmapPlacement` …* — HeightmapPlacement is an example of a third shape, not one of the first two (world/level/levelgen/placement/PlacementModifierTypes.java:10-27; world/level/levelgen/placement/HeightmapPlacement.java:10) *(the session's own sentence)*
+320. `worldgen/features-and-placement`:273 — *reading the two side by side shows how much of the world each is given.* — now *reading the two side by side shows that both are handed the same level and generator, and that only the …* — both are handed the same level and generator; only the modifier is told which placed feature it serves (PlacementContext.java:13-15; world/level/levelgen/feature/Feature.java:30) *(the session's own sentence)*
+321. `worldgen/features-and-placement`:276 — *`BlockStateProvider`, the family that picks what a feature writes.* — now *`BlockStateProvider`, the family that picks what many features write, a tree's trunk and leaves among them.* — state providers pick for many features, trees among them, not for every feature (world/level/levelgen/feature/foliageplacers/FoliagePlacer.java:132) *(the session's own sentence)*
+322. `world/chunk-generation-pipeline`:334 — *and every worldgen task in the dimension is serialised behind the one `ConsecutiveExecutor`,* — now *and every step the dimension runs inline, decoration among them, is serialised behind the one …* — the fill and the biome step fork to the worker pool; only the steps the dimension runs inline are serialised (NoiseBasedChunkGenerator.java:398-400; ChunkStatusTasks.java:46-54)
+323. `worldgen/terrain`:33 — *| the surface step, after the bedrock floor and before any surface rule |* — now *| the surface step: in the overworld's tree, after the bedrock floor and before any surface rule |* — the floating-islands tree has no bedrock floor and tries the veins first (data/minecraft/worldgen/material_rule/overworld_floating_islands.json) *(the session's own sentence)*
+324. `worldgen/terrain`:103 — *That one instance then serves all three steps, so the carving step reuses what the fill worked out: the water …* — now *That one workspace then serves all three steps, so the carving step reuses what the aquifer has already …* — the surface levels are pre-filled when the aquifer is built, and the tables follow the blender beside an old chunk (world/level/levelgen/Aquifer.java:129, 144-166; data/minecraft/worldgen/density_function/overworld/preliminary_surface_level.json) *(the session's own sentence)*
+325. `worldgen/terrain`:246 — *the ore veins and fluid generation outright.* — now *the ore veins and every aquifer's water and lava outright.* — the flag empties the aquifers' water and lava; the surface rules still write swamp water (NoiseBasedChunkGenerator.java:91; Aquifer.java:209, 279; data/minecraft/worldgen/material_rule/overworld/surface.json) *(the session's own sentence)*
+326. `worldgen/terrain`:253 — *and `MaterialSystem` owns the noises they need along with the ones for the badlands bands and the surface …* — now *and `MaterialSystem` holds the noises they need along with the one that offsets the badlands bands and the …* — MaterialSystem holds one badlands noise and the two surface-depth noises; a noise-threshold condition gets its noise from RandomState (world/level/levelgen/material/MaterialSystem.java:62-79; world/level/levelgen/material/condition/NoiseThresholdCondition.java:25) *(the session's own sentence)*
+327. `worldgen/terrain`:316 — *`Aquifer` flags only the fluid it places that could flow — where two water tables meet, or water sits over …* — now *`Aquifer` flags only the fluid it places near the border between two aquifer cells, and there only where it …* — the flag is set only near an aquifer-cell border where the tables differ, or where water sits on the lava floor, and post-processing runs when the chunk starts ticking (Aquifer.java:73, 281-292, 325-333; server/level/ChunkMap.java:739-749; world/level/chunk/LevelChunk.java:663-665) *(the session's own sentence)*
+328. `worldgen/structure-placement`:45 — *a structure is decided at the second status and writes nothing until the biome and terrain statuses are past.** — now *a structure is decided at the second status and writes no block until the biome and terrain statuses are …* — caption: the start and the references are written into the chunk at their statuses; what waits is every block (ChunkGenerator.java:622, 654) *(the session's own sentence)*
+329. `worldgen/structure-placement`:65 — *`AbstractSpreadingStructurePlacement` — the class both shipped placements extend — adds in* — now *`AbstractSpreadingStructurePlacement` — the class both placement types the shipped sets use extend — adds in* — three placement types are registered; the third, dimension_origin, implements the interface directly (world/level/levelgen/structure/placement/StructurePlacements.java:9-11; DimensionOriginStructurePlacement.java:7) *(the session's own sentence)*
+330. `worldgen/structure-placement`:95 — *so a map that hunts a mineshaft lays one out for every candidate it tests (* — now *so a map that hunts a mineshaft lays one out, on the Server thread, for every candidate in unexplored ground …* — the disk scan, the cache and the frequency roll come first, so the layout runs only for unexplored candidates that pass the roll, and on the Server thread (world/level/levelgen/structure/StructureCheck.java:83-89, 102, 128; data/minecraft/worldgen/structure_set/mineshafts.json) *(the session's own sentence)*
+331. `worldgen/structure-placement`:97 — *What is *not* deferred is the centre: the start template,* — now *For a jigsaw, what is *not* deferred is the centre: the start template,* — the paragraph is jigsaw's (the start template) and now follows the mineshaft (world/level/levelgen/structure/pools/JigsawPlacement.java:116)
+332. `worldgen/structure-placement`:133 — *and this is why the steps that read structures through those references — this one, *TERRAIN* and *FEATURES* …* — now *and this is why the steps that read structures — this one, which reads the starts of the 17×17 around it to …* — STRUCTURE_REFERENCES reads its neighbours' starts to write the references; only TERRAIN and FEATURES read back through them (ChunkGenerator.java:647; world/level/StructureManager.java:78) *(the session's own sentence)*
+333. `worldgen/structure-placement`:137 — *counts as "here" for its spawn override; a village has none.* — now *counts as "here" for its spawn override; a village declares no spawn override at all.* — "a village has none" read as no margin; villages declare no spawn override (data/minecraft/worldgen/structure/village_plains.json) *(the session's own sentence)*
+334. `worldgen/structure-placement`:177 — *Occasionally the command stops for a second before answering, and that is chunk generation being paid for on …* — now *Occasionally the command stops for a second before answering, and that is the search's disk reads and chunk …* — a candidate failing the frequency roll or the test gets START_NOT_PRESENT; the eye of ender's one target is the stronghold, whose ring search takes no radius; all ten cartographer maps set a hundred; and across explored ground the pause is disk reads (StructureCheck.java:88-89, 102-111, 135; ChunkGenerator.java:194-196, 258-272; data/minecraft/villager_trade/cartographer/*; world/level/storage/loot/functions/ExplorationMapFunction.java:32, 41) *(the session's own sentence)*
+335. `worldgen/structure-placement`:207 — *`ChunkGenerator.createReferences` are the first two chunk statuses, in that order, and …* — now *`ChunkGenerator.createReferences` are the structure's first two chunk statuses, in that order, and …* — the first two chunk statuses are EMPTY and STRUCTURE_STARTS, and FEATURES is not the last (world/level/chunk/status/ChunkStatus.java:20-29) *(the session's own sentence)*
+336. `worldgen/density-functions`:43 — *| `NoiseRouterData` | vanilla's graph, written in Java and *emitted* as the JSON that ships | build time |* — now *| `NoiseRouterData` | vanilla's graph, written in Java and *emitted* as the JSON that ships | build time, and …* — two of its members run at run time (server/level/ChunkMap.java:180; world/level/biome/MultiNoiseBiomeSource.java:112)
+337. `worldgen/density-functions`:45 — *| `NoiseChunk` | the per-chunk run: the chunk's `DensityVolume`, its aquifer, and the one `SamplerContext` …* — now *| `NoiseChunk` | one run of the graph: its `DensityVolume` — the chunk's, or one column's for a height query …* — a height query's volume is one column (NoiseBasedChunkGenerator.java:184) *(the session's own sentence)*
+338. `worldgen/density-functions`:114 — *Two things a reader of the JSON cannot see wait for the compile; … And the **bounds** are a static analysis of the data pack: `DensityFunction.range` answers* — now *Two things a reader of the JSON cannot see happen at the compile; … And it **reads the bounds**, a static analysis of the data pack: `DensityFunction.range` …* — the bounds do not wait for the compile; only the min/max settlement reads them there (world/level/levelgen/densityfunction/op/BinaryFunction.java:203-215) *(the session's own sentence)*
+339. `worldgen/density-functions`:147 — *they reach the substrate only through the beardifier, the heights the generator hands them and, for the …* — now *they reach the substrate only through the beardifier, the heights the generator hands them and the …* — every structure start's biome test reads a sampler the generator hands in, and StructureCheck and JigsawPlacement.generateJigsaw build their own (ChunkGenerator.java:544, 619; StructureCheck.java:76; JigsawPlacement.java:180) *(the session's own sentence)*
+340. `worldgen/density-functions`:164 — *fill it is sampled in production: the biome step, the structure checks, the spawn search and the F3 noise …* — now *fill it is sampled in production: the biome step, the structure starts and checks, the height queries behind …* — the height queries and the structure-start step sample the compiled form too (NoiseBasedChunkGenerator.java:191-196; ChunkGenerator.java:544)
+341. `worldgen/density-functions`:277 — *Two names in this system read as machinery and are reached by nothing, and one of them is the most misleading …* — now *Among the names in this system that read as machinery and are reached by nothing, two are worth a warning, …* — the count was exhaustive and the system breaks it: floor, ceil, round, truncate and sampleBlockValueUncached have no callers either (world/level/levelgen/densityfunction/DensityFunctions.java:262, 350-388; RandomState.java:129-132) *(the session's own sentence)*
+342. `worldgen/density-functions`:283 — *And `Density` names the three conventions this whole system rests on: surface at zero, and the 64 and −64 a …* — now *`Density` cannot join them: its three values are compile-time constants, which javac writes into whatever …* — under What nothing reaches, Density read as a third dead name; its values are compile-time constants (world/level/levelgen/Density.java:5-7) *(the session's own sentence)*
+343. `worldgen/density-functions`:299 — *That is what *deterministic* means here, stated once: the graph is a function of the seed and the packs …* — now *That is what *deterministic* means here, stated once: the only two sources anything in the graph reads hold …* — the sentence asserted the conclusion before its exception, and counted two things against the page's four nodes from two sources (BlendingData.java:96-101, 182-203) *(the session's own sentence)*
+344. `worldgen/README`:73 — *and reach the substrate only through the beardifier, the heights the generator hands them and, for the …* — now *and reach the substrate only through the beardifier, the heights the generator hands them and the …* — the same sampler sentence as density-functions, the same fix (ChunkGenerator.java:544; StructureCheck.java:76; JigsawPlacement.java:180) *(the session's own sentence)*
+345. `reference/density-function-nodes`:114 — *`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk,* — now *`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk and for each height query,* — every NoiseChunk enables caches, the height query's included (world/level/levelgen/NoiseChunk.java:32)
+346. `reference/density-function-nodes`:144 — *A *min* or *max* whose two ranges cannot overlap logs a warning when it is compiled, and only the side that …* — now *A *min* or *max* whose two ranges cannot overlap logs a warning when it is compiled, and only the side that …* — the side wins only while the inputs stay inside their declared ranges (BinaryFunction.java:203-215; world/level/levelgen/synth/NormalNoise.java:59)
+347. `worldgen/terrain`:30 — *| built when the terrain task starts, closed when it ends |* — now *| built when the terrain task starts, closed when it ends; a height query builds a one-column one of its own |* — a height query builds a throwaway NoiseChunk of its own (NoiseBasedChunkGenerator.java:141-151, 184, 191)
+348. `reference/glossary`:479 — ***NoiseChunk** — the per-chunk workspace: it binds* — now ***NoiseChunk** — the per-chunk workspace (a height query builds a one-column one of its own): it binds* — the same, for the glossary's headword (NoiseBasedChunkGenerator.java:184)
+349. `worldgen/README`:3 — *the one system in the game built to be reproducible from a seed and a data pack alone, where it frays,* — now *the one system in the game built to be reproducible from a world's settings and its data packs alone, where …* — the verified line said a seed and a data pack; the opening lists the saved settings (server/WorldLoader.java:40; world/level/levelgen/WorldOptions.java:15) *(the session's own sentence)*
+350. `worldgen/README`:10 — *Everything in this part is determined by the world's saved settings* — now *Everything this part generates is determined by the world's saved settings* — a sapling grown in play is outside the claim; the claim is about what the part generates (world/level/block/SaplingBlock.java:38-40) *(the session's own sentence)*
+351. `worldgen/README`:10 — *No entity and no tick has any say in it. Give the same seed and the same packs to two copies* — now *No entity and no tick is among those inputs. Give the same settings and the same packs to two copies* — a player is an entity and saves the template the second fray names; and the world type in the saved dimension list makes two worlds with one seed and one pack list disagree everywhere (server/network/ServerGamePacketListenerImpl.java:929; data/minecraft/worldgen/world_preset/amplified.json) *(the session's own sentence)*
+352. `worldgen/README`:15 — ***everything it reads is itself a function of that seed and those packs**.* — now ***everything it reads is itself a function of those settings and those packs**.* — the inputs are the settings, not the seed alone (page-internal)
+353. `worldgen/README`:15 — *can depend on which chunk was made first (* — now *can depend on which of the two decorated first (* — a chunk can reach TERRAIN before its neighbour and still decorate after it (ChunkPyramid.java:23; GenerationChunkHolder.java:234) *(the session's own sentence)*
+354. `worldgen/README`:15 — *a template a structure block saved into the world is tried before the packs' ([where a template comes …* — now *a template a structure block saved into the world is tried before the packs', so every later piece that names …* — the saved template reaches the terrain through the beard, and the next sentence's "the only place generation reads something the current seed did not produce" was contradicted by it (world/level/levelgen/structure/templatesystem/StructureTemplateManager.java:69; world/level/levelgen/Beardifier.java:78) *(the session's own sentence)*
+355. `worldgen/README`:38 — *-.->|"chose the seed and packs"|* — now *-.->|"chose the settings and packs"|* — figure 1's label: the Create screen chooses the world type too, which is the dimension list (page-internal against creating-a-world)
+356. `worldgen/README`:64 — *told in run order it is two lectures with the chunk's making between them,* — now *told in run order it is two lectures with biomes and terrain between them,* — pieces become blocks inside FEATURES, so only biomes and terrain lie between the two lectures (ChunkGenerator.java:384-419) *(the session's own sentence)*
+357. `worldgen/README`:90 — *for lecture two: `Biome` holds little, and the sky, the fog, the music and twenty-three gameplay attributes …* — now *for lecture two: the sky, the fog, the music and twenty-three gameplay attributes come out of a stack of …* — Biome still holds its climate, colours and generation settings, and eighteen of the twenty-three attributes never reach the client (world/level/biome/Biome.java:77-80; world/attribute/EnvironmentAttributes.java:48-70) *(the session's own sentence)*
+358. `worldgen/README`:113 — *4. [Blending at the old-chunk border](blending.md) — the one place world generation reads what the seed did …* — now *4. [Blending at the old-chunk border](blending.md) — the part's deliberate exception, where generation reads …* — world templates are read too; the exception is the old chunks (StructureTemplateManager.java:69; BlendingData.java:44-49) *(the session's own sentence)*
+359. `worldgen/README`:115 — *in an order the whole dimension agreed on before any chunk existed — and which* — now *in one order the whole dimension shares, sorted once — and which* — on a dedicated server the sort first runs at the first decoration; only the client validates while opening a world (ChunkGenerator.java:107, 114-115; client/gui/screens/worldselection/WorldOpenFlows.java:432)
+360. `worldgen/README`:134 — *in the order it is made, and each page leans on the ones before it.* — now *in the order it is made, and each page from two on leans on one before it.* — five never links one or four and six links only five (page-internal) *(the session's own sentence)*
+361. `worldgen/README`:157 — *[terrain](terrain.md#carving-and-who-chooses-the-block) and [jigsaw* — now *[terrain](terrain.md#carving-and-who-chooses-the-block), [its surface …* — the fifth family, the material rules and conditions, has its head on terrain's surface-pass section (page-internal)
+362. `reference/glossary`:811 — *It is the one piece of world generation's own settings that is saved; everything else Part XII reads is …* — now *It is the one piece of world generation's own settings that is saved; the worldgen registries are re-read …* — generation also reads the templates a world saved, before the packs'; the registries are what is re-read (StructureTemplateManager.java:69) *(the session's own sentence)*
+363. `lectures`:317 — *The three structure lectures run *first* in the game and are watched *last* here:* — now *The three structure lectures run *first* in the game and are watched *last* here, bar lecture ten:* — lecture ten comes after them (page-internal against lectures.md's own list)
+364. `lectures`:335 — *One to six are the chunk being made, in the order it is made, and each needs the one before it.* — now *One to six are the chunk being made, in the order it is made, and each from two on leans on one before it.* — five never links one or four (page-internal)
+365. `lectures`:349 — *two, where `Biome` has been hollowed out into one layer of a modifier stack;* — now *two, where the biome is one layer of a modifier stack;* — rule 3: history wording; the biome is one layer of the stack (page-internal)
+366. `worldgen/blending`:13 — *Everywhere else in world generation, a chunk is a function of the seed and the data packs. Here it is a …* — now *Everywhere else in world generation, a chunk is built to be a function of the world's settings and its data …* — the old premise, which both frays break (the landing page's premise, corrected above)
+367. `worldgen/density-functions`:31 — *nothing here differs between two worlds built from the same seed and the same packs.* — now *nothing here differs between two worlds built from the same settings and the same packs.* — the world type in the saved dimension list picks the router (data/minecraft/worldgen/world_preset/amplified.json)
+368. `worldgen/jigsaw-and-templates`:247 — *its box and writes the result into the world's generated directory — excluding structure void, which is how a …* — now *its box — excluding structure void, which is how a saved template gets its holes — and, saved from its …* — a redstone-triggered save only replaces the loader's copy, which generation reads all the same (world/level/block/StructureBlock.java:88-91; world/level/block/entity/StructureBlockEntity.java:354-369)
+369. `rendering/lightmap-fog-and-sky`:72 — *`BiomeSpecialEffects` still exists, hollowed out to `BiomeSpecialEffects.waterColor`, … and the foliage colours: every fog and sky colour left it for `Biome.getAttributes`.* — now *`BiomeSpecialEffects` holds only `BiomeSpecialEffects.waterColor`, … and the foliage colours: every fog and sky colour comes from `Biome.getAttributes`.* — rule 3: history wording ("still exists, hollowed out", "left it for") outside the blockquote (world/level/biome/BiomeSpecialEffects.java:11)
+370. `worldgen/hand-built-structures`:61 — *which is how a mineshaft's rooms and crossings write in world coordinates.* — now *which is how a mineshaft's one room and its crossings write in world coordinates.* — a mineshaft has exactly one room (world/level/levelgen/structure/structures/MineshaftStructure.java:53) *(the session's own sentence)*
+371. `worldgen/hand-built-structures`:100 — *`MineshaftStructure.findGenerationPoint` hands it a builder it has already filled instead of a consumer to …* — now *`MineshaftStructure.findGenerationPoint` hands it a builder it has already filled instead of a consumer to …* — a presence check lays the mineshaft graph out too, on the Server thread (StructureCheck.java:128; structure-placement)
+372. `worldgen/hand-built-structures`:147 — *clears a remaining-piece list, the placement counts in the static weight table and a one-shot "place this …* — now *refills a remaining-piece list with the whole table, zeroes the placement counts in the static weight table …* — the list is refilled, not cleared, and only the start piece sets the override (world/level/levelgen/structure/structures/StrongholdPieces.java:66-79, 657-659) *(the session's own sentence)*
+373. `worldgen/hand-built-structures`:148 — *which runs one task at a time per dimension, so only `/place structure` racing generation could.* — now *which runs one task at a time per dimension, and only the overworld has strongholds in the shipped data, so …* — two dimensions could each generate strongholds on their own executors; only the overworld has them in the shipped data (data/minecraft/tags/worldgen/biome/has_structure/stronghold.json) *(the session's own sentence)*
+374. `worldgen/hand-built-structures`:150 — ***Growth stops when the budget is spent, not when the depth runs out.*** — now ***Growth stops when the budget is spent or no door can take a piece.*** — the lead rested on the removed "far more than any real stronghold reaches" (page-internal)
+375. `worldgen/hand-built-structures`:155 — *and a square 112 blocks out from the start on each axis that no piece may leave —* — now *and a square reaching 112 blocks from the start piece's corner on each axis, outside which no new piece may …* — the test applies to a new piece's door foot, measured from the start piece's corner, so a piece may extend past it (StrongholdPieces.java:185) *(the session's own sentence)*
+376. `worldgen/hand-built-structures`:190 — *which is the settings wrapper and the entry point; for the desert pyramid and the jungle temple that is all, …* — now *which is the settings wrapper and the entry point. For the jungle temple that is all, a …* — the desert pyramid has an afterPlace of its own, four other wrappers are as thin as the jungle temple's, and the additions include generation loops and a rebuild; the mansion's fill is cobblestone down to the ground (world/level/levelgen/structure/structures/DesertPyramidStructure.java:27, 36; WoodlandMansionStructure.java:64-74) *(the session's own sentence)*
+377. `worldgen/hand-built-structures`:205 — *with only their template position put *back*, and shipwrecks latch a flag so the second chunk does not move …* — now *with only their template position put *back*, so a reloaded igloo's box is recomputed at Y 90, and shipwrecks …* — only the igloo's template position is put back, so a reloaded box is recomputed at Y 90 (world/level/levelgen/structure/structures/IglooPieces.java:109, 120; world/level/levelgen/structure/TemplateStructurePiece.java:57) *(the session's own sentence)*
+378. `worldgen/hand-built-structures`:216 — *Piece choice, weights, budgets, layout rules and adjacency are Java, all but the ruined portal's weighted …* — now *Piece choice, weights, budgets, layout rules and adjacency are Java, bar a few knobs a structure's JSON sets: …* — the ocean ruin's large and cluster odds and the shipwreck's beached flag are JSON too (data/minecraft/worldgen/structure/ocean_ruin_cold.json; world/level/levelgen/structure/structures/ShipwreckPieces.java:43) *(the session's own sentence)*
+379. `worldgen/hand-built-structures`:250 — *Bridges opt out with a tag of minus one while they are checked, and the ship becomes likelier* — now *A bridge tags its first span minus one, a tag no parent carries, so the tower hung off its far end may not …* — the minus one is replaced with the section's tag before the bridge is checked, and is read only while the tower off its far end is checked (world/level/levelgen/structure/structures/EndCityPieces.java:125, 146, 151, 229-232) *(the session's own sentence)*
+380. `worldgen/hand-built-structures`:252 — *The rot, the gold-block gaps, the lava-to-magma substitutions and the mossiness are … the netherrack spread and the vines are the piece's own code. … `BlockAgeProcessor` — which is the mossiness, not a separate step —* — now *The ageing, the gold-block gaps, the lava-to-magma substitutions and the mossiness are … the netherrack spread, the netherrack columns under the portal, the vines and the leaves … … `BlockAgeProcessor` — which is the ageing and the mossiness at once —* — no rot processor is in the stack: the cracking is BlockAgeProcessor's ageing, beside its mossiness; the piece's own code also lays the netherrack columns and the leaves (world/level/levelgen/structure/structures/RuinedPortalPiece.java:98-129; world/level/levelgen/structure/templatesystem/BlockAgeProcessor.java:64, 90) *(the session's own sentence)*
+381. `worldgen/hand-built-structures`:257 — *is `RuinedPortalStructure`'s weighted draw over the setups its JSON lists, made before any piece exists.* — now *is settled from the setups its JSON lists before any piece exists: a weighted draw for the standard and …* — only the standard and mountain portals list two setups; the other five take their one without a draw (world/level/levelgen/structure/structures/RuinedPortalStructure.java:61-80) *(the session's own sentence)*
+382. `worldgen/hand-built-structures`:269 — *`StructurePiecesBuilder` for the builder every piece is handed* — now *`StructurePiecesBuilder` for the builder `StructurePiece.addChildren` is handed* — only addChildren receives the builder (world/level/levelgen/structure/StructurePiece.java:87) *(the session's own sentence)*
+383. `worldgen/hand-built-structures`:275 — *`OceanMonumentStructure.regeneratePiecesAfterLoad`, the only load-time rebuild in the game.* — now *`OceanMonumentStructure.regeneratePiecesAfterLoad`, the only structure whose pieces are rebuilt from the seed …* — template boxes and the portal's processor stack are rebuilt at load too; the monument is the one rebuilt from the seed (TemplateStructurePiece.java:55-57)
+384. `reference/glossary`:717 — *it is a Java class that writes its own blocks and constructs its own neighbours, chosen by no pool;* — now *it is a Java class that writes its own blocks and, in the procedural graphs, constructs its own neighbours, …* — only the procedural graphs construct their own neighbours (page-internal against hand-built-structures' family table)
+385. `worldgen/creating-a-world`:14 — *on a background thread, with the Render thread parked on `BlockableEventLoop.managedBlock`,* — now *mostly on the [worker pool](../../reference/threads.md#the-threads-a-lecture-leans-on), with the Render …* — the pack step and the apply and assembly steps run on the Render thread; the registry tasks run on the worker pool (server/WorldLoader.java:33, 54-57) *(the session's own sentence)*
+386. `worldgen/creating-a-world`:19 — *Two of the buttons throw the whole load away and run it again.* — now *Two of the buttons throw the whole load away and run it again whenever they change the pack list.* — the buttons reload only when they change the pack list (client/gui/screens/worldselection/CreateWorldScreen.java:387-388)
+387. `worldgen/creating-a-world`:22 — *This page is where it comes from, where it goes, and three of the programs that build one.* — now *This page is where it comes from, where it goes, and the dedicated server's and *Re-Create*'s routes to one.* — of the page's three columns Re-Create builds none; it hands the screen a context (client/gui/screens/worldselection/WorldOpenFlows.java:189; CreateWorldScreen.java:268) *(the session's own sentence)*
+388. `worldgen/creating-a-world`:28 — *| built on the Render thread on this page's route, on a worker on the others; read on the Server thread |* — now *| built on the worker pool in every load, and again on the Render thread by *Create*; read on the Server …* — every load builds one on the worker pool, this page's included, and the structure-starts step reads it on the worldgen executor (CreateWorldScreen.java:130, 268; world/level/chunk/status/ChunkStatusTasks.java:49) *(the session's own sentence)*
+389. `worldgen/creating-a-world`:35 — *| its constructor on the caller's thread, the Render thread for a single-player world |* — now *| the hand-off in its constructor, on the caller's thread — the Render thread for a single-player world; the …* — the write is the first save, on the Server thread (client/server/IntegratedServer.java:98) *(the session's own sentence)*
+390. `worldgen/creating-a-world`:41 — *subgraph WL["mostly a worker thread"]* — now *subgraph WL["mostly the worker pool"]* — figure 1: the stages run mostly on the worker pool, the book's term (WorldLoader.java:33, 40-57) *(the session's own sentence)*
+391. `worldgen/creating-a-world`:54 — *in the gap between loading the worldgen registries and loading the reloadable ones* — now *in the gap between loading the world and dimension registries and loading the reloadable ones* — WORLD_REGISTRIES holds chat types, enchantments and more beside worldgen, and the dimension pass also sits in the gap (resources/RegistryDataLoader.java:98; server/RegistryLayer.java:10) *(the session's own sentence)*
+392. `worldgen/creating-a-world`:97 — *rebuilds it whenever a generation setting changes, and then walks a listener list so* — now *rebuilds it whenever a generation setting changes, and on every change of any kind walks a listener list so* — the listener walk runs on every change, not only after a rebuild (client/gui/screens/worldselection/WorldCreationUiState.java:102-116) *(the session's own sentence)*
+393. `worldgen/creating-a-world`:107 — *so a trip through *Superflat* and back to *Default* discards whatever the *Presets* screen chose — though not …* — now *so leaving *Superflat* and coming back to it discards whatever the *Presets* screen chose, but not a layer …* — a layer deleted from the button's stack was deleted from the registry's own object and comes back with Superflat, until a pack change reloads the registry; at Default there is no stack (world/level/levelgen/presets/WorldPreset.java:46-47; client/gui/screens/worldselection/PresetEditor.java:41-44) *(the session's own sentence)*
+394. `worldgen/creating-a-world`:112 — *is in neither tag and appears on no button:* — now *is in neither tag, so the world-type button never cycles to it:* — in the screen CreateWorldScreen.testWorld opens, the preset is the world-type button's value; no button cycles to it (CreateWorldScreen.java:144, 710; WorldCreationUiState.java:61) *(the session's own sentence)*
+395. `worldgen/creating-a-world`:116 — *the source a superflat and a debug world use too.* — now *the source a superflat and a *Debug Mode* world use too.* — one word, one sense: the Debug Mode type, not the developer-only recreate world (world/level/levelgen/DebugLevelSource.java:51) *(the session's own sentence)*
+396. `worldgen/creating-a-world`:124 — *`FlatLevelGeneratorSettings` is the odd object in a part where nearly everything else is immutable.* — now *`FlatLevelGeneratorSettings` is the odd object among the settings this page handles, where `WorldOptions`, …* — StructureTemplate and the part's generation objects are mutable; the contrast holds among this page's settings (world/level/levelgen/structure/templatesystem/StructureTemplate.java:83, 105) *(the session's own sentence)*
+397. `worldgen/creating-a-world`:129 — *— the same object, not a copy, and the world preset registry's own —* — now *— the same object, not a copy, and, while the stack is the one the world-type button gave you, the world …* — a Presets choice, a pack reload or Re-Create gives a settings object no registry holds (world/level/levelgen/flat/FlatLevelGeneratorSettings.java:99; CreateWorldScreen.java:419-425) *(the session's own sentence)*
+398. `worldgen/creating-a-world`:182 — *The two routes into that method differ in one boolean.* — now *The two routes into that method differ in one boolean, and in the screen a failure returns to.* — the two routes also differ in the screen a failure returns to (CreateWorldScreen.java:363, 374)
+399. `worldgen/creating-a-world`:236 — *`WorldDimensions.isStableNether` requires a `NoiseBasedChunkGenerator` on the vanilla nether settings and a …* — now *`WorldDimensions.isStableNether` requires the nether's dimension type, a `NoiseBasedChunkGenerator` on the …* — the nether and End checks test the dimension type first too (world/level/levelgen/WorldDimensions.java:132, 152, 180) *(the session's own sentence)*
+400. `worldgen/creating-a-world`:239 — *and Superflat and Buffet pass by not having a* — now *and Superflat and Single Biome pass by not having a* — the preset's name is Single Biome, as the page says at :110 (assets/minecraft/lang/en_us.json)
+401. `worldgen/creating-a-world`:241 — *the only shipped one that fails is *Flat (all dimensions)*, which gives the nether and the end flat …* — now *the only shipped one that fails is *Flat All Dimensions*, which gives the nether and the end flat generators …* — the game calls it Flat All Dimensions, and it is a button's value in the test world's screen (assets/minecraft/lang/en_us.json:4132; CreateWorldScreen.java:144, 710)
+402. `worldgen/creating-a-world`:259 — *— the demo and debug worlds and the game-test server make one too — and setting three of them side by side is* — now *— the demo world and the developer-only *DEBUG recreate* button make one through …* — the debug world here is the DEBUG recreate button's normal-preset world, not the Debug Mode type, and Re-Create builds none (client/gui/screens/worldselection/SelectWorldScreen.java:57, 110-129) *(the session's own sentence)*
+403. `worldgen/creating-a-world`:265 — *| who builds it | `CreateWorldScreen.onCreate` | `Main.createNewWorldData` | …* — now *| who builds it | `CreateWorldScreen.onCreate` | `Main.createNewWorldData` | `CreateWorldScreen.onCreate` …* — recreateWorldData builds a WorldCreationContext; onCreate builds the settings (WorldOpenFlows.java:189; CreateWorldScreen.java:268)
+404. `worldgen/creating-a-world`:295 — *which is the shape most routes in this page's family take.* — now *which is the shape of every route from the world list's own buttons, and of neither the demo world's nor a …* — the demo world's and the servers' routes interpose no screen; the world list's buttons do (WorldOpenFlows.java:98-123, 237-242; client/gui/screens/worldselection/WorldSelectionList.java:705) *(the session's own sentence)*
+405. `foundations/identifiers-and-registries`:246 — *RDL["RegistryDataLoader.load, twice: the world<br/>registries, then the dimensions"]:::worker* — now *RDL["RegistryDataLoader.load for the world<br/>registries, then the dimensions"]:::worker* — figure: a world load calls RegistryDataLoader.load a third time, for the reloadable registries (WorldLoader.java:49; server/ReloadableServerRegistries.java:37)
+406. `reference/level-data-and-rules`:320 — **world_gen_settings.dat*, server-global, and written not at world creation but by the `MinecraftServer` …* — now **world_gen_settings.dat*, server-global, and written not at world creation but by the server's first save, …* — the constructor hands the settings over; the first save writes the file (server/MinecraftServer.java:349; IntegratedServer.java:98)
+407. `reference/glossary`:809 — *a `WorldOptions` (the seed, *generate structures*, *bonus chest*)* — now *a `WorldOptions` (the seed, *generate structures*, *bonus chest* and a legacy string)* — WorldOptions has a fourth field, the legacy string (world/level/levelgen/WorldOptions.java:20-23)
+408. `worldgen/biomes`:23 — *`FixedBiomeSource` (one biome everywhere, which is what a buffet world is)* — now *`FixedBiomeSource` (one biome everywhere, which is what a Single Biome world is, and what a superflat and a …* — a superflat and a Debug Mode world use FixedBiomeSource too, and the preset's name is Single Biome (world/level/levelgen/FlatLevelSource.java:41; DebugLevelSource.java:51)
+409. `worldgen/jigsaw-and-templates`:3 — *and a growth limit that works by taking the right pool away.* — now *and a growth limit that takes the right pool away a piece before it stops the queue.* — the depth limit also stops queuing what a piece at the limit places (JigsawPlacement.java:387)
+410. `worldgen/jigsaw-and-templates`:13 — *so at the limit the fallback is the only thing left. The edge of a village is a substitution, not a stop …* — now *so at the limit the fallback is the only thing left, and stop queuing whatever a piece there places. The edge …* — the same stop, in the opening (JigsawPlacement.java:387)
+411. `worldgen/jigsaw-and-templates`:38 — *| `JigsawPlacement.Placer` | the assembly loop and its priority queue;* — now *| `JigsawPlacement.Placer` | the body of the assembly loop, and the priority queue that loop drains;* — Placer holds the loop's body and the queue; the loop that drains it is JigsawPlacement's (JigsawPlacement.java:166-170, 213)
+412. `worldgen/jigsaw-and-templates`:39 — *and a `JigsawBlockEntity.JointType` deciding whether rotation must match.* — now *and a `JigsawBlockEntity.JointType` deciding whether rotation must match, which matters only on an up- or …* — the joint type matters only on up- or down-facing connectors (core/FrontAndTop.java:8) *(the session's own sentence)*
+413. `worldgen/jigsaw-and-templates`:59 — *JS->>JP: the stub's consumer, run at once: the free-space shape* — now *JS->>JP: the stub's consumer, once the biome test passes: the free-space shape* — figure 1: the stub runs once it has passed its biome test (world/level/levelgen/structure/Structure.java:182)
+414. `worldgen/jigsaw-and-templates`:84 — *The alternative box is the page's opening in one frame:* — now *The alternative box and the loop's last arrow are the page's opening in one frame:* — the alternative box draws one of the two effects; the loop's last arrow is the other (page-internal) *(the session's own sentence)*
+415. `worldgen/jigsaw-and-templates`:126 — *so a template can insist its connections are made before its siblings'.* — now *so a template can have the piece hung on one of its connectors expanded before everything queued at a lower …* — the priority orders the child against the whole queue, not against siblings, and is the template's (JigsawPlacement.java:280; util/SequencedPriorityIterator.java:67) *(the session's own sentence)*
+416. `worldgen/jigsaw-and-templates`:129 — *an *aligned* joint additionally requires the rotations to match, while a rollable one does not.* — now *an *aligned* joint additionally requires the rotations to match, while a rollable one does not — a difference …* — the difference exists only on up- or down-facing connectors (core/FrontAndTop.java:8) *(the session's own sentence)*
+417. `worldgen/jigsaw-and-templates`:146 — *A candidate that intersects is simply not built, and the next rotation, connector or candidate is tried.* — now *A candidate that intersects is simply not built, and the candidate's next connector is tried, then its next …* — after a failed test the candidate's next connector is tried, then its next rotation, then the next candidate (JigsawPlacement.java:283-325) *(the session's own sentence)*
+418. `worldgen/jigsaw-and-templates`:136 — *under the source's jigsaw block and puts the candidate's box there, and that box is exactly what the …* — now *under the source's jigsaw block and puts the candidate's box there, and that box — raised first by the …* — for a structure with the expansion hack the tested box is the raised one; and the ground is asked for before the collision test, so the two paragraphs are now in the loop's order (JigsawPlacement.java:338-358)
+419. `worldgen/jigsaw-and-templates`:169 — *And **the expansion hack** inflates a candidate at most sixteen blocks tall *upward* before the collision …* — now *And **the expansion hack** stretches a candidate at most sixteen blocks tall *upward* before the collision …* — the hack raises the top to room for the tallest piece, which equals "by" only for a two-tall candidate (JigsawPlacement.java:354-355) *(the session's own sentence)*
+420. `worldgen/README`:124 — *A growth limit that works by taking the right pool away.* — now *A growth limit that takes the right pool away a piece before it stops the queue.* — the landing page's blurb, the same stop (JigsawPlacement.java:387)
+421. `reference/naming-drift`:381 — *| *StructureTemplateManager* folder *structures/* | *structure/* |* — now *| *StructureTemplateManager*'s folder for saved templates, *generated/&lt;namespace&gt;/structures/* | …* — 1.21.11 already read the data-pack folder as structure/; only the world's generated folder was plural (1.21.11 StructureTemplateManager.java:59-60, 69; 26.3 StructureTemplateManager.java:45-49)
+
+### Polished
+
+- `worldgen/density-functions`:32 — "the layer that *the seed* actually means" — "the layer that *the seed* means" — *(polish)*
+- `worldgen/density-functions`:290 — "a worldgen worker" becomes "the worker pool", the book's term — *(polish)* — `world/level/levelgen/NoiseBasedChunkGenerator.java`:523
+- `worldgen/biomes`:176 — "ragged" snow lines — "uneven", so the word does not collide with the jittered read's "ragged border" *(polish)*.
+- `worldgen/terrain`:39 — *to a background worker* → *to the worker pool* *(polish)*; the pipeline page's name for `Util.backgroundExecutor` — `world/level/levelgen/NoiseBasedChunkGenerator.java`:398, 523.
+- `worldgen/terrain`:86 — *is [structure placement]'s* → *belongs to [structure placement]* *(polish)*.
+- `worldgen/terrain`:105, :169 — link text *the caches, and which of them a single point may use* → the heading's own words, *the one cache, and what a single point may use* *(polish)*.
+- `worldgen/terrain`:121 — the 768 number device reworded *(polish)*.
+- `worldgen/terrain`:162 — the *Six* number device reworded *(polish)*.
+- `worldgen/blending`:41 — (polish) "the background executor" becomes "the worker pool", the book's name for `Util.backgroundExecutor` — `world/level/chunk/storage/IOWorker.java`:126.
+- `worldgen/blending`:66 — (polish) the IOWorker row's "the background executor" becomes "the worker pool" — `world/level/chunk/storage/IOWorker.java`:126.
+- `worldgen/blending`:103 — (polish) "**Seven** — the radius in chunks the height blend reaches" becomes "**Seven chunks** is the radius the height blend reaches" — `world/level/levelgen/blending/Blender.java`:65
+- `worldgen/blending`:144 — (polish) "eight-block-tall cell" becomes "eight-block-tall noise cell" — `world/level/levelgen/blending/BlendingData.java`:39
+- `worldgen/blending`:270 — (polish) "cells … cells are twice as tall as they are wide" becomes "noise cells … noise cells…", to match :144 and keep :104's "the cell here is the quart" to one sense (*page-internal*)
+- `worldgen/features-and-placement`:106 — dashes around the per-step lists became parentheses — *(polish)* *(page-internal)*
+- `worldgen/features-and-placement`:246 — "server main thread" became "Server thread", the book's name for it — *(polish)* *(page-internal)*
+- `worldgen/structure-placement`:31 — *(polish)* "actually asks" → "asks"; "main thread only" → "Server thread only".
+- `worldgen/structure-placement`:71, :145 — *(polish)* "background pool" / "background job" → "worker pool" / "worker-pool job", the book's term — `world/level/chunk/ChunkGeneratorStructureState.java`:163; `world/level/levelgen/NoiseBasedChunkGenerator.java`:523.
+- `worldgen/structure-placement`:113 — *(polish)* "server thread" → "Server thread".
+- `worldgen/jigsaw-and-templates`:10 — "the pool the piece actually asked for" — "actually" cut *(polish)*
+- `worldgen/jigsaw-and-templates`:38 — "worldgen worker" (cast, and the figure's note at :55) — "the worldgen executor", the one `ConsecutiveExecutor` the status runs inline on, as the pipeline page names it *(polish)* — `server/level/ChunkMap.java`:185
+- `worldgen/jigsaw-and-templates`:157 — "the depth cap" — "the depth limit", the page's one word for it *(polish)*
+- `worldgen/jigsaw-and-templates`:209 — "actually" cut, here and at :224 *(polish)*
+- `worldgen/hand-built-structures`:230 — "the thin maze the corridor walk actually produced" — *(polish)*
+- `worldgen/creating-a-world`:32-34 — *render thread* — *Render thread* — *(page-internal)* *(polish)*, TEMPLATE.md:363
+- `worldgen/creating-a-world`:245 — *server thread* — *Server thread*, as also in figure 2's two Notes (:208, :222) — *(page-internal)* *(polish)*
+- `worldgen/creating-a-world`:305 — "fifty-one lines" — "short" — *(polish)*: sizes rot; `world/level/levelgen/WorldGenSettings.java` is 51 lines
+- `worldgen/creating-a-world`:313 — "the first forty lines of the `MinecraftServer` constructor" — "the opening" — *(polish)* — `server/MinecraftServer.java`:319-364
+- `worldgen/README`:113 — said "re-measures … switched off entirely", now "measures … have no say". *(polish)* The facts are unchanged (blending.md:114-121; `world/level/levelgen/NoiseRouterData.java`:366).
+- `worldgen/README`:173 — said "actually lives in". Now "lives in" *(polish)*.
+- `worldgen/terrain`:201 — *and *surface_level* — the overworld's names the *preliminary_surface_level* function —* → *and *surface_level* — which the overworld points at its *preliminary_surface_level* function —* (V8, the page's own words for the field; the audit round)
+- `worldgen/structure-placement`:27 — *the filter on the Server thread, the ring searches on the worker pool |* → *the filter on the Server thread, the ring searches on the [worker …* (the worker pool, linked once a page (TEMPLATE.md, Voice); the audit round)
+- `worldgen/biomes`:23 — *the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on the worker pool |* → *the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on the [worker …* (the worker pool, linked once a page; the audit round)
+- `worldgen/blending`:39 — *The scan runs on the worker pool, the caller joins it,* → *The scan runs on the [worker pool](../../reference/threads.md#the-threads-a-lecture-leans-on), the caller …* (the worker pool, linked once a page; the audit round)
+- `worldgen/density-functions`:288 — *which is why the whole system can run on the worker pool with nothing loaded,* → *which is why the whole system can run on the [worker …* (the worker pool, linked once a page; the audit round)
+- `worldgen/terrain`:39 — *the fill, the surface pass and the carvers to the worker pool as one task* → *the fill, the surface pass and the carvers to the [worker …* (the worker pool, linked once a page; the audit round)
+- `worldgen/hand-built-structures`:157 — ***Collision is the other brake, and some pieces negotiate.*** → ***Collision is a brake too, and some pieces negotiate.*** (a count the sentence does not make; the audit round)
+- `worldgen/jigsaw-and-templates`:176 — *twenty-four set the expansion hack (* → *twenty-four turn the expansion hack on (* (the field is required, so every file sets it; the audit round)
+- `worldgen/jigsaw-and-templates`:136 — *— raised first by the expansion hack where the structure sets it —* → *— raised first by the expansion hack where the structure sets it ([below](#the-boxes-drawn-round-the-loop)) —* (a forward mention linked to where the term is taught; the audit round)
+- `trees`:189 — the mangrove root's lift, *— one to three blocks for mangrove, three to seven for the commoner tall_mangrove —* → the same in parentheses (V4, the em-dash chain)
+- `blending`:115 — *the first time anyone asks — `BlendingData.getOrUpdateBlendingData` fetches one chunk* → *the first time anyone asks: …* (V4, the em-dash chain)
+
 ## Pass 8, session L — Part XI · Rendering: the check and the polish *(2026-09-29)*
 
 Twelve pages, each checked under Part 2 by its own agent while the session read the part whole (the whole-part read was
@@ -6420,12 +7008,12 @@ The gaps pass 9 has to work around:
   invisible link keeps the box below. Caption: *nothing points into the bottom
   box: its title says where the last two live, and neither needs the other or
   the lecture above it.*~~ *(checked (`networking/README`:40–42: the invisible link is the only edge into the bottom box) — pass 8, session I)*
-- `worldgen/README` f1: **arrow retargeted** — density functions now point at
+- ~~`worldgen/README` f1: **arrow retargeted** — density functions now point at
   2 · Biomes, labelled *is sampled by*, instead of *is made of* into the
   structure box; the reading paragraph says the biome step is the first status
   to read the field, through the `NoiseChunk` built there (per
   `worldgen/terrain`'s cast and its figure). The arrow key moved into the
-  caption. The argument's symptom paragraph moved to the front.
+  caption. The argument's symptom paragraph moved to the front.~~ *(checked (`world/level/chunk/ChunkGenerator.java`:143); its *through the `NoiseChunk` built there* was V2's to remove, and is gone — pass 8, session M)*
 - ~~`world/README` f1 caption: *four pages and the live chunk make the ring, and
   five arrows carry a chunk round it; chunk anatomy hands the ring its
   vocabulary, lecture one hands the live chunk its values, and the last four act
@@ -6908,7 +7496,7 @@ file name and one ordinary word were).
 
 ### Figures redrawn, and the orderings they assert
 
-- **`biomes` figure 1** — eight lanes to six: `ChunkStatusTasks` is a note and
+- ~~**`biomes` figure 1** — eight lanes to six: `ChunkStatusTasks` is a note and
   `Climate.RTree` is inside `Climate.ParameterList`'s self-message. Asserts:
   the generator builds the `NoiseChunk` and wraps the resolver *before*
   `ChunkAccess.fillBiomesFromNoise`; `ChunkAccess` loops over sections and
@@ -6917,51 +7505,51 @@ file name and one ordinary word were).
   → `Climate.Sampler.sample` → `Climate.ParameterList.findValue` →
   `Climate.ParameterList.findValueIndex`, and the holder returns through the
   biome source into the new container. Caption: *no block is read and none is
-  written*.
-- **`blending` figure 1** — the dotted annotation node cut; the five consumers
+  written*.~~ *(checked for the lanes and the self-message; the `NoiseChunk` and per-cell `Climate.Sampler.sample` assertions overtaken by 26.3 (`world/level/chunk/ChunkGenerator.java`:139-152) — pass 8, session M)*
+- ~~**`blending` figure 1** — the dotted annotation node cut; the five consumers
   on one row in status order, the two direct ones on arrows labelled *read
   directly*. Asserts: carving mask and border ticks read `BlendingData`
-  without a blender; *blend_density* wraps the final density.
-- **`blending` figure 2** — two shaded bands, *BIOMES* and *NOISE*. Asserts:
+  without a blender; *blend_density* wraps the final density.~~ *(checked for the five consumers; the carving half overtaken (the filter now rides the blender), and *blend_density round the final density* was wrong — see *Pass 8, session M* — pass 8, session M)*
+- ~~**`blending` figure 2** — two shaded bands, *BIOMES* and *NOISE*. Asserts:
   `Blender.of` asks `ChunkMap.isOldChunkAround` through the region; the
   193-position loop calls `BlendingData.getOrUpdateBlendingData`; the generator
   calls `NoiseChunk.forChunk`, whose constructor calls
   `Blender.blendOffsetAndFactor` for 25 columns, *then* asks
   `Blender.getBiomeResolver`; at *NOISE* a second blender is built and not
-  used, and the cached `NoiseChunk` calls `Blender.blendDensity`.
-- **`creating-a-world` figure 1** — stages 1–3 inside a *worker thread*
+  used, and the cached `NoiseChunk` calls `Blender.blendDensity`.~~ *(overtaken: the figure's bands are *BIOMES* and *TERRAIN* (`world/level/chunk/status/ChunkPyramid.java`:12-33 has no NOISE) — pass 8, session M)*
+- ~~**`creating-a-world` figure 1** — stages 1–3 inside a *worker thread*
   subgraph; stage 4 loops back to 1 on *packs or flags changed*; *Create* goes
-  to 5.
-- **`creating-a-world` figure 2** — `autonumber` removed (its 9.7px digits were
+  to 5.~~ *(checked as drawn; the *worker thread* subgraph held the pack step, which runs on the Render thread — see *Pass 8, session M* — pass 8, session M)*
+- ~~**`creating-a-world` figure 2** — `autonumber` removed (its 9.7px digits were
   the only small type, and the prose cites no number); the `MinecraftServer`
   lane is now `IntegratedServer`, the object constructed; two bands. Asserts:
   `IntegratedServer`'s construction, and with it the hand-off of
   `WorldGenSettings` to its `SavedDataStorage`, happen on the render thread
   after `level.dat` is written; the two settings files are written by the
-  server thread's first save.
-- **`density-functions` figure 1** — the three 1,729px panels are a four-node
+  server thread's first save.~~ *(checked (`client/Minecraft.java`:2274 before :2277-2279; `server/MinecraftServer.java`:312-349) — pass 8, session M)*
+- ~~**`density-functions` figure 1** — the three 1,729px panels are a four-node
   `LR` flowchart (parsed → seeded → wrapped, and seeded → `RandomState.sampler`)
   plus a node × form table. Asserts: three visitors, not two; the pointer is
   resolved only in the wrapped form; the null noise leaf answers 0.0; the F3
-  readout samples the seeded form.
-- **`features-and-placement` figure 1** — edge labels carry the count of
+  readout samples the seeded form.~~ *(overtaken by V2's redraw (three forms and a binding) — pass 8, session M)*
+- ~~**`features-and-placement` figure 1** — edge labels carry the count of
   positions; direction `TD`. Order unchanged (it is `trees_plains`' shipped
-  order, with a rarity roll added at the head, which the caption now says).
-- **`features-and-placement` figure 2** — seven lanes to five
+  order, with a rarity roll added at the head, which the caption now says).~~ *(checked (`data/minecraft/worldgen/placed_feature/trees_plains.json`) — pass 8, session M)*
+- ~~**`features-and-placement` figure 2** — seven lanes to five
   (`ChunkStatusTasks` a note, `FeatureSorter` in a self-message), with nested
   loops per step, per placed feature, per modifier and per surviving position.
   Asserts: `ChunkGenerator.featuresPerStep` is read, not recomputed;
   `WorldgenRandom.setFeatureSeed` runs before every feature; structures come
-  first in each step.
-- **`hand-built-structures` figure 1** — `StructureStart` lane cut, the drain
+  first in each step.~~ *(checked (`world/level/chunk/ChunkGenerator.java`:107, :357, :454 before :458; structures before features) — pass 8, session M)*
+- ~~**`hand-built-structures` figure 1** — `StructureStart` lane cut, the drain
   loop driven from `StrongholdStructure`. Asserts, in order per try: `clear`,
   reseed, `StrongholdPieces.resetPieces`, `addPiece` of a new start piece,
   `addChildren` on the start piece, then *while the pending list is not empty*
   `addChildren` on a randomly removed piece, whose own code picks, runs
   `findCollisionPiece`, and adds to the builder *and* the pending list; then
   `moveBelowSeaLevel`; the outer loop ends only when the start piece has
-  recorded a portal room; `build` is called by the structure after the loop.
-- **`jigsaw-and-templates` figure 1** — a `JigsawPlacement` lane added (key row
+  recorded a portal room; `build` is called by the structure after the loop.~~ *(checked (`world/level/levelgen/structure/structures/StrongholdStructure.java`:31-48) — pass 8, session M)*
+- ~~**`jigsaw-and-templates` figure 1** — a `JigsawPlacement` lane added (key row
   `JP`), `StructureTemplatePool` lane cut, an `alt` for the depth limit, a
   *FEATURES* band. Asserts: `JigsawPlacement.addPieces` makes the centre and
   the stub; the stub's consumer builds the free-space shape and runs the
@@ -6970,104 +7558,104 @@ file name and one ordinary word were).
   unless both pieces are rigid; a junction is added to both pieces; the child
   is queued by placement priority. At *FEATURES*, `postProcess` reaches the
   piece through `StructureStart.placeInChunk` and `placeInWorld` is called
-  through the pool element.
-- **`structure-placement` figure 1** — the statuses between the five decisions
-  written on the edges, `BIOMES` and `NOISE` no longer one box.
-- **`terrain` figure 1** — edge labels shortened; asserts the `NoiseChunk` is
+  through the pool element.~~ *(checked in the main; the figure drew the height before the attach test and the junctions before the subtraction, and queued every child — see *Pass 8, session M* — pass 8, session M)*
+- ~~**`structure-placement` figure 1** — the statuses between the five decisions
+  written on the edges, `BIOMES` and `NOISE` no longer one box.~~ *(checked (`world/level/chunk/status/ChunkStatus.java`:20-29) — pass 8, session M)*
+- ~~**`terrain` figure 1** — edge labels shortened; asserts the `NoiseChunk` is
   built at *BIOMES* and interpolation is disarmed after *NOISE*; the fifth box
-  is labelled as a later page's.
-- **`terrain` figure 2** — subgraph titles cut to what fits on one line (the
+  is labelled as a later page's.~~ *(overtaken by V2's figure; the current one checked (`world/level/levelgen/NoiseBasedChunkGenerator.java`:398-523) — pass 8, session M)*
+- ~~**`terrain` figure 2** — subgraph titles cut to what fits on one line (the
   old ones were clipped and overlapped), the method names moved to a six-row
-  table beside it with a *samples the graph* column.
-- **`trees` figure 1** — a shaded band for *nothing written yet*, holding all
+  table beside it with a *samples the graph* column.~~ *(overtaken: the table is now *loop, runs, what it does*, each row checked (`world/level/levelgen/densityfunction/op/InterpolatedFunction.java`:112-185) — pass 8, session M)*
+- ~~**`trees` figure 1** — a shaded band for *nothing written yet*, holding all
   three ways out; the scan drawn as a loop of `TrunkPlacer.isFree` calls; lanes
   reordered by first use. Asserts: `RootPlacer.placeRoots` simulates in full
   before writing, and its roots are the first write; `TreeFeature.updateLeaves`
-  is the feature's own last step.
-- **`worldgen/README` figure 1** — `TD`, short subgraph titles, the undirected
+  is the feature's own last step.~~ *(checked for the band and the three ways out; the lanes were not in first-use order and `TreeFeature.updateLeaves` is not the last step — see *Pass 8, session M* — pass 8, session M)*
+- ~~**`worldgen/README` figure 1** — `TD`, short subgraph titles, the undirected
   link removed, the *is made of* arrow dashed and labelled, and a dashed
-  *pieces become blocks* arrow from the structure box to *FEATURES*.
+  *pieces become blocks* arrow from the structure box to *FEATURES*.~~ *(checked (the figure's `TD`, subgraphs and dashed *pieces become blocks*; `world/level/chunk/ChunkGenerator.java`:406) — pass 8, session M)*
 
 ### Corrections — re-derived against the decompile before the fix
 
-- `biomes` figure 1: `CPList->>CRT: findValueIndex` drew
+- ~~`biomes` figure 1: `CPList->>CRT: findValueIndex` drew
   `Climate.ParameterList`'s own method arriving at the tree, and the holder
   returned from the tree straight to `LevelChunkSection`.
   `Climate.ParameterList.findValue` calls its own `findValueIndex`, which calls
   `index.search` (Climate.java:251–280); `MultiNoiseBiomeSource.getNoiseBiome`
   returns the holder (MultiNoiseBiomeSource.java:65–72). The caller's method
-  at the callee, **Part XII, the tenth part of ten**.
-- `features-and-placement` figure 2: `ChunkG->>FS: featuresPerStep` drew
+  at the callee, **Part XII, the tenth part of ten**.~~ *(checked (`world/level/biome/Climate.java`:180-181, :204-210) — pass 8, session M)*
+- ~~`features-and-placement` figure 2: `ChunkG->>FS: featuresPerStep` drew
   `ChunkGenerator`'s memoised field (ChunkGenerator.java:88, :100) as a call
-  into `FeatureSorter` on every chunk; it is read at :329.
-- `features-and-placement`: *the chain above has used ten of them* — the chain
-  has seven; ten is the page's count of modifiers named. Reworded.
-- `jigsaw-and-templates` figure 1: `JS->>JPP: findGenerationPoint` —
+  into `FeatureSorter` on every chunk; it is read at :329.~~ *(checked (`world/level/chunk/ChunkGenerator.java`:95, :107, :357) — pass 8, session M)*
+- ~~`features-and-placement`: *the chain above has used ten of them* — the chain
+  has seven; ten is the page's count of modifiers named. Reworded.~~ *(checked (seven chain nodes, three more by the section's count) — pass 8, session M)*
+- ~~`jigsaw-and-templates` figure 1: `JS->>JPP: findGenerationPoint` —
   `JigsawStructure.findGenerationPoint` samples the start height and calls the
   static `JigsawPlacement.addPieces` (JigsawStructure.java:118–124), not the
   placer, which is built later inside the stub's consumer
   (JigsawPlacement.java:104–112, :149–158); the free-space shape is built there
-  too, not after the stub by the placer.
-- `jigsaw-and-templates` figure 1: *loop until the priority queue drains,
+  too, not after the stub by the placer.~~ *(checked (`world/level/levelgen/structure/structures/JigsawStructure.java`:117-124) — pass 8, session M)*
+- ~~`jigsaw-and-templates` figure 1: *loop until the priority queue drains,
   depth within the limit* — a child at the limit is still queued
   (`depth + 1 <= maxDepth`, JigsawPlacement.java:377) and offered only the
   fallback (:263), which is the page's own opening; the loop runs until the
-  queue drains.
-- `jigsaw-and-templates` figure 1: `PESP->>STemp: placeInWorld` — the call is
+  queue drains.~~ *(checked (`world/level/levelgen/structure/pools/JigsawPlacement.java`:275-279, :387); the prose's *the only thing the depth limit changes* was not — see *Pass 8, session M* — pass 8, session M)*
+- ~~`jigsaw-and-templates` figure 1: `PESP->>STemp: placeInWorld` — the call is
   made by the pool element (`PoolElementStructurePiece.place` →
   `SinglePoolElement.place` → `StructureTemplate.placeInWorld`,
   PoolElementStructurePiece.java:96–101, SinglePoolElement.java:143–147); now
-  labelled *through its pool element*.
-- `trees` figure 1: `TF->>WGL: updateLeaves` — `TreeFeature.updateLeaves` is
+  labelled *through its pool element*.~~ *(checked (`PoolElementStructurePiece.java`:96-101 → `SinglePoolElement.java`:143-147) — pass 8, session M)*
+- ~~`trees` figure 1: `TF->>WGL: updateLeaves` — `TreeFeature.updateLeaves` is
   `TreeFeature`'s private static (TreeFeature.java:171, :181); `FoliageAttachments`
   is no class (`FoliagePlacer.FoliageAttachment`, :85); `leafRadius` is a local
-  holding `FoliagePlacer.foliageRadius` (:69).
-- `hand-built-structures` figure 1: `SPB-->>SStart: build` —
+  holding `FoliagePlacer.foliageRadius` (:69).~~ *(checked (`world/level/levelgen/feature/TreeFeature.java`:188, :178) — pass 8, session M)*
+- ~~`hand-built-structures` figure 1: `SPB-->>SStart: build` —
   `Structure.generate` calls `StructurePiecesBuilder.build` and constructs the
   `StructureStart` (Structure.java:94–95); the drain loop is
   `StrongholdStructure`'s (StrongholdStructure.java:38–45), the start piece's
   `addChildren` runs once before it (:37), and each new piece goes onto
   `StrongholdPieces.StartPiece`'s pending list (StrongholdPieces.java:189–190),
-  not the builder's.
-- `terrain`: *the two outer levels are where the sampling happens* — the cell
+  not the builder's.~~ *(checked (`world/level/levelgen/structure/Structure.java`:96-97; `StrongholdPieces.java`:189-190) — pass 8, session M)*
+- ~~`terrain`: *the two outer levels are where the sampling happens* — the cell
   row level samples nothing; the samples are at the cell column
   (`NoiseChunk.advanceCellX` → `fillSlice`, NoiseChunk.java:258) and the cell
   (`NoiseChunk.selectCellYZ` fills every *cache_all_in_cell* term,
   NoiseChunk.java:296–319). Reworded, and the figure's title *advanceCellX
-  fills the next corner slice* is now a table row.
-- `terrain` figure 1: SURFACE handing *a preliminary surface level* to
+  fills the next corner slice* is now a table row.~~ *(overtaken: 26.3 samples every corner in one volume call (`InterpolatedFunction.java`:110) — pass 8, session M)*
+- ~~`terrain` figure 1: SURFACE handing *a preliminary surface level* to
   CARVERS — the value is the `NoiseChunk`'s, computed during the noise fill
-  (the page's own :100 and :187); the label is gone.
-- `density-functions` figure 1: *as wrapped — the only form that runs*
+  (the page's own :100 and :187); the label is gone.~~ *(checked (the label is gone) — pass 8, session M)*
+- ~~`density-functions` figure 1: *as wrapped — the only form that runs*
   disagreed with the page's F3 readout paragraph; *a second visitor* for
   `NoiseChunk.forChunk` disagreed with the page's *second* visitor, which is
   the climate flattener — `RandomState`'s constructor runs two
-  (RandomState.java:94, :95–119), so the per-chunk one is the third.
-- `blending` figure 2: `Blender->>CM: isOldChunkAround` — `Blender.of` asks
+  (RandomState.java:94, :95–119), so the per-chunk one is the third.~~ *(overtaken: F3 samples compiled samplers (`world/level/levelgen/NoiseBasedChunkGenerator.java`:158-166) — pass 8, session M)*
+- ~~`blending` figure 2: `Blender->>CM: isOldChunkAround` — `Blender.of` asks
   the `WorldGenRegion` (Blender.java:72), which asks `ChunkMap`
   (WorldGenRegion.java:106–107); now labelled *through the region*. The
   generator's self-message *wrap the biome resolver* is
-  `Blender.getBiomeResolver` (NoiseBasedChunkGenerator.java:96), now an arrow.
-- `blending` figure 1: *the final slide* — `NoiseRouterData.postProcess` wraps
+  `Blender.getBiomeResolver` (NoiseBasedChunkGenerator.java:96), now an arrow.~~ *(checked (`world/level/levelgen/blending/Blender.java`:81 → `server/level/WorldGenRegion.java`:122-123 → `IOWorker.java`:48) — pass 8, session M)*
+- ~~`blending` figure 1: *the final slide* — `NoiseRouterData.postProcess` wraps
   its argument named `slide` in `blend_density` (NoiseRouterData.java:224–225);
-  *the final density* is the book's word.
-- `creating-a-world` figure 2: the `MinecraftServer` lane received
+  *the final density* is the book's word.~~ *(checked for where `postProcess` wraps the slide (`world/level/levelgen/NoiseRouterData.java`:246-247); calling that *the final density* was not — see *Pass 8, session M* — pass 8, session M)*
+- ~~`creating-a-world` figure 2: the `MinecraftServer` lane received
   `new IntegratedServer`; the lane is now the object. `saveDataTag` is
   `LevelStorageSource.LevelStorageAccess`'s (LevelStorageSource.java:614,
   called at Minecraft.java:2233), not a message the disk receives; relabelled
-  *level.dat, through a temp file*.
+  *level.dat, through a temp file*.~~ *(checked (`world/level/storage/LevelStorageSource.java`:614-641) — pass 8, session M)*
 
 ### Checked and found sound
 
-- `features-and-placement` figure 1's order — block predicate before biome
+- ~~`features-and-placement` figure 1's order — block predicate before biome
   filter — is `trees_plains.json`'s shipped order; the code's
   `VegetationPlacements.treePlacement` with a sapling puts it after. Both
-  ship, as the page says.
-- `jigsaw-and-templates`: `getFirstFreeHeight` is asked exactly when not both
-  pieces are rigid (JigsawPlacement.java:328–368).
-- `hand-built-structures`: the builder is the accessor
+  ship, as the page says.~~ *(checked (`data/worldgen/placement/VegetationPlacements.java`:161, :169, :300); the page's *so both orders ship* drew on the wrong pair — see *Pass 8, session M* — pass 8, session M)*
+- ~~`jigsaw-and-templates`: `getFirstFreeHeight` is asked exactly when not both
+  pieces are rigid (JigsawPlacement.java:328–368).~~ *(checked (`world/level/levelgen/structure/pools/JigsawPlacement.java`:338-346) — pass 8, session M)*
+- ~~`hand-built-structures`: the builder is the accessor
   (`StructurePiecesBuilder.findCollisionPiece`, StructurePiecesBuilder.java:24),
-  so the stronghold figure's label is right.
+  so the stronghold figure's label is right.~~ *(overtaken: 26.3 has no `StructurePieceAccessor`; *Where to look*'s *for the accessor* went with it — see *Pass 8, session M* — pass 8, session M)*
 
 ## Pass 7, session J — Part X · The client: the figures *(2026-09-15)*
 
@@ -9492,7 +10080,7 @@ foot.
 
 ### Corrections (re-derived against the decompile by this session)
 
-- `src/systems/worldgen/terrain.md` — the page said *"all four shipped
+- ~~`src/systems/worldgen/terrain.md` — the page said *"all four shipped
   configured carvers anchor it eight blocks above the world's **bottom**"*.
   **Three** do. `reference/26.2/data/minecraft/worldgen/configured_carver/`:
   *cave*, *cave_extra_underground* and *canyon* each carry
@@ -9504,16 +10092,16 @@ foot.
   `context.getMinGenY() + 31`, so `WorldCarver.getCarveState` and the
   configuration's `lavaLevel` are never reached. The page now says *the three
   overworld configured carvers*, and says in the carving section that the
-  nether one's lava level is read by nothing.
-- `src/systems/worldgen/terrain.md` — the page said *"Three carvers are
+  nether one's lava level is read by nothing.~~ *(overtaken: 26.3's carvers carry no lava level and `NetherWorldCarver` is gone — pass 8, session M)*
+- ~~`src/systems/worldgen/terrain.md` — the page said *"Three carvers are
   registered"* and, seventy lines later, *"all four shipped configured
   carvers"*, with nothing distinguishing the populations. Both counts are
   right: `WorldCarver.java:33-35` registers `CAVE`, `NETHER_CAVE` and `CANYON`,
   and four configured carvers ship because the cave carver is configured twice
   (*cave* and *cave_extra_underground* both declare `"type": "minecraft:cave"`;
   `data/minecraft/worldgen/biome/plains.json` lists all three of the overworld
-  ones). The page now says so where the three are named.
-- `src/systems/worldgen/biomes.md` — the page said `ChunkStatus.BIOMES`
+  ones). The page now says so where the three are named.~~ *(overtaken for the registered count (two types, `world/level/levelgen/carver/WorldCarverTypes.java`:9-10); four configured carvers still ship — pass 8, session M)*
+- ~~`src/systems/worldgen/biomes.md` — the page said `ChunkStatus.BIOMES`
   *"precedes `ChunkStatus.NOISE`, and the two do not depend on each other at
   all"*, three lines under its own figure captioning BIOMES as *"which NOISE
   and SURFACE both require"*.
@@ -9521,16 +10109,16 @@ foot.
   `NOISE` and `SURFACE` each `addRequirement(ChunkStatus.BIOMES, 1)`. The
   dependency is real and enforced; what is true is that the **noise fill never
   reads a biome** — what the noise step collects from the biome step is the
-  chunk's `NoiseChunk` workspace. Rewritten to that.
-- `src/systems/worldgen/features-and-placement.md` — the page filed
+  chunk's `NoiseChunk` workspace. Rewritten to that.~~ *(checked (`world/level/chunk/status/ChunkPyramid.java`:21; no biome read in the fill); the NOISE/SURFACE wording overtaken by 26.3 — pass 8, session M)*
+- ~~`src/systems/worldgen/features-and-placement.md` — the page filed
   `SurfaceRelativeThresholdFilter` with the modifiers that *"move a position
   rather than counting or filtering it"*. It is a filter:
   `net/minecraft/world/level/levelgen/placement/SurfaceRelativeThresholdFilter.java:1`
   reads `public class SurfaceRelativeThresholdFilter extends PlacementFilter`,
   making **five** `PlacementFilter` subclasses, not the four the page names.
   The fifteen are now accounted for as 5 filters + 3 repeating + 2 height +
-  4 movers + 1 deprecated.
-- `src/systems/worldgen/blending.md` — the cast row gave `Blender` *"the four
+  4 movers + 1 deprecated.~~ *(checked (`world/level/levelgen/placement/SurfaceRelativeThresholdFilter.java`:10); the filter's description was not — see *Pass 8, session M* — pass 8, session M)*
+- ~~`src/systems/worldgen/blending.md` — the cast row gave `Blender` *"the four
   answers — the height alpha and offset, the blended density, the biome
   override, and where carvers may not dig"*, which the page's own body
   contradicts sixty lines later. `Blender.java` has **three** instance
@@ -9538,8 +10126,8 @@ foot.
   `getBiomeResolver`:236); `generateBorderTicks`:271 and
   `addAroundOldChunksCarvingMaskFilter`:336 are **static** and read
   `BlendingData` off the chunks directly. Cast row rewritten to three, saying
-  the other two never ask an instance anything.
-- `src/systems/worldgen/creating-a-world.md` — the page said
+  the other two never ask an instance anything.~~ *(checked for the three answers and the static border ticks; the carving half overtaken; the row's *when* was wrong — see *Pass 8, session M* — pass 8, session M)*
+- ~~`src/systems/worldgen/creating-a-world.md` — the page said
   `WorldDimensions.checkStability` *"asks, per key, whether the built-in three
   carry the vanilla dimension type, the vanilla noise settings **and** the
   vanilla biome source"*. It asks a different question of the overworld.
@@ -9548,8 +10136,8 @@ foot.
   **only if** the biome source `instanceof MultiNoiseBiomeSource`; it never
   looks at the noise settings. `isStableNether`:149-175 and its End counterpart
   do require a `NoiseBasedChunkGenerator` on the vanilla noise settings *and* a
-  vanilla-parameter-list `MultiNoiseBiomeSource`.
-- `src/systems/worldgen/creating-a-world.md` — following from the above, the
+  vanilla-parameter-list `MultiNoiseBiomeSource`.~~ *(checked for the overworld and the nether; the End asks for a `TheEndBiomeSource`, not a multi-noise one — see *Pass 8, session M* — pass 8, session M)*
+- ~~`src/systems/worldgen/creating-a-world.md` — following from the above, the
   page said the stability warning *"does come from a world type as well as from
   data packs"*. No preset a player can select raises it. Every preset in the
   *normal* and *extended* tags keeps the vanilla nether and end noise
@@ -9557,13 +10145,13 @@ foot.
   preset that fails is *flat_all_dimensions*, which is in neither tag
   (`data/minecraft/tags/worldgen/world_preset/normal.json`, `extended.json`)
   and is reachable only through `CreateWorldScreen.testWorld`. Rewritten to say
-  the warning is in practice a data-pack warning.
-- `src/systems/worldgen/README.md` — the hand-counted coverage number said
+  the warning is in practice a data-pack warning.~~ *(checked for the presets and the data-pack warning; *reachable only through `CreateWorldScreen.testWorld`* was not so — see *Pass 8, session M* — pass 8, session M)*
+- ~~`src/systems/worldgen/README.md` — the hand-counted coverage number said
   *"A quarter of the part's lines are named on no page here"*. The generated
   phrase says **19%** (`src/generated/coverage-worldgen.md`, written by
   `pass5_coverage.py --write` from the same `PARTS` mapping the size phrase
-  uses). Replaced with the include; the page no longer hand-counts.
-- `src/systems/worldgen/trees.md` — the opening glossed `TreeGrower`'s six
+  uses). Replaced with the include; the page no longer hand-counts.~~ *(checked (`generated/coverage-worldgen.md`, 17%); the sentence beside the include named four families where five stand — see *Pass 8, session M* — pass 8, session M)*
+- ~~`src/systems/worldgen/trees.md` — the opening glossed `TreeGrower`'s six
   slots as *"a normal tree and a mega tree, each with a secondary variant, plus
   two flowering variants"*, and this session first rewrote *secondary* as the
   bone-meal variant, which is wrong.
@@ -9572,11 +10160,11 @@ foot.
   `secondaryFlowers`, and `getConfiguredFeature`:69-80 shows *secondary* is the
   probability alternative (`random.nextFloat() < this.secondaryChance`) while
   *flowers* is the near-a-flower pair. The published sentence says that.
-  `TreeGrower.java:207` confirms `DARK_OAK` fills only the mega slot.
+  `TreeGrower.java:207` confirms `DARK_OAK` fills only the mega slot.~~ *(overtaken: 26.3's `TreeGrower` has three weighted lists (`world/level/block/grower/TreeGrower.java`:47-49) — pass 8, session M)*
 
 ### Claims introduced, by page
 
-- `density-functions` — **new section** *What a bound is worth, and which form
+- ~~`density-functions` — **new section** *What a bound is worth, and which form
   told you*, asserting that the two rewrites move a bound in opposite
   directions (seeding widens, wrapping changes), and that
   `NoiseChunk.BlendAlpha` / `NoiseChunk.BlendOffset` are inner classes of the
@@ -9590,43 +10178,43 @@ foot.
   A promoted paragraph in *Seed* asserts the memo merges structurally identical
   subgraphs because the nodes are records. A promoted paragraph asserts
   `NoiseBasedChunkGenerator.addDebugScreenInfo` is the one production path that
-  samples the seeded form.
-- `biomes` — heading `## The trace: a chunk's biomes` → `## Deciding a chunk's
+  samples the seeded form.~~ *(overtaken by V2's rewrite; its replacement *every form reports the same bound* was not so of the compiled form — see *Pass 8, session M* — pass 8, session M)*
+- ~~`biomes` — heading `## The trace: a chunk's biomes` → `## Deciding a chunk's
   biomes, cell by cell` (four inbound anchors repointed; one, from
   `density-functions`, sent to `#the-search-and-the-axis-that-is-not-sampled`
   instead). New: the six climate numbers named in the cast
   (`Climate.java:159`), *quart cell* defined in the opening, the data-pack
   answer moved into *The search*, the client's hollow `Biome` and the
-  per-dimension layer cost moved into *What a biome still owns*.
-- `terrain` — the opening now says *four* chunk statuses where it said three.
+  per-dimension layer cost moved into *What a biome still owns*.~~ *(checked (the heading and its anchors); the opening's *the code calls a quart cell* was not so — see *Pass 8, session M* — pass 8, session M)*
+- ~~`terrain` — the opening now says *four* chunk statuses where it said three.
   Two promoted passages in *Four statuses*: the beardifier as a density term
   built with the workspace, and the blender/`BelowZeroRetrogen` pair. New
   arithmetic claim: *"four by four by forty-eight cells have five by five by
   forty-nine corners between them"*. The heightmap-liveness paragraph and the
   superflat paragraph are promoted closer answers. The aquifer's four noises
-  are now named individually (`NoiseRouter` barrier, floodedness, spread, lava).
-- `blending` — the opening was re-entered on a thing seen rather than the word
+  are now named individually (`NoiseRouter` barrier, floodedness, spread, lava).~~ *(overtaken: 26.3 has one terrain status; the arithmetic (5×5×49) checked (`InterpolatedFunction.java`:97-106) — pass 8, session M)*
+- ~~`blending` — the opening was re-entered on a thing seen rather than the word
   *You*, and now names *offset*, *factor* and *jaggedness* where it used to say
   *the three splines*; it asserts **"At the seam the overworld's terrain splines
   are not consulted"**, which is a restatement of the body's alpha-zero claim.
   *old area* is now defined as the band between the minimum and maximum
   sections (`BlendingData.java:50`, `:69-72`); *quart* is defined. A promoted
   paragraph closes *What the blender actually answers* with the two ways a
-  visible edge survives. Three H3s under that H2.
-- `features-and-placement` — **new section** *The order is a graph, and a graph
+  visible edge survives. Three H3s under that H2.~~ *(checked for the opening; its *the splines are not consulted* was not so (`world/level/levelgen/densityfunction/op/LerpFunction.java`:203-215) — see *Pass 8, session M* — pass 8, session M)*
+- ~~`features-and-placement` — **new section** *The order is a graph, and a graph
   can have a cycle*, which is the hook's mechanism promoted out of the closer.
   **A7 variation**: the fold flowchart now leads the page as *The chain, before
   anything else*, ahead of the cast, with a new claim that list order *is* the
   meaning. Heading renamed to *One chunk's decoration, from the corner
   outward* (three inbound repointed). The value-type ladder is re-argued as
   four rungs with six types on them. The neighbour-writes paragraph and the
-  structures-share-the-step-loop paragraph are promoted closer answers.
-- `trees` — the six `TreeGrower` slots re-glossed (see Corrections). New: the
+  structures-share-the-step-loop paragraph are promoted closer answers.~~ *(checked for the section; the four-rung ladder overtaken by V2's three, and *the four value families* it left was wrong — see *Pass 8, session M* — pass 8, session M)*
+- ~~`trees` — the six `TreeGrower` slots re-glossed (see Corrections). New: the
   foliage *offset* defined as how far below the attachment the rows start, and
   the signed-then-folded skip test explained. The ten decorators re-grouped as
   6 + 1 + 2 + 1, a regrouping this session made. The shared-machinery paragraph
-  moved from the closer into *The decorators*.
-- `structure-placement` — the opening lost its second hook (*"the difference is
+  moved from the closer into *The decorators*.~~ *(checked for the signed skip test; the offset overturned by V2, the grouping now seven, one, two and one; the shared-machinery paragraph was not so — see *Pass 8, session M* — pass 8, session M)*
+- ~~`structure-placement` — the opening lost its second hook (*"the difference is
   a cache"*) and now lands on the arithmetic alone. **New section** *What
   `/locate` asks, and what it answers with*, holding three promoted closer
   answers; this is the target `hand-built-structures` now cites, which breaks
@@ -9638,8 +10226,8 @@ foot.
   and the background pool (`ChunkGeneratorStructureState.java:146-161`).
   The *terrain_adaptation* paragraph now names the desert pyramid and the
   mineshaft as the twenty-three's examples, which the old text referred to
-  without ever giving.
-- `jigsaw-and-templates` — heading renamed (one inbound repointed). **New
+  without ever giving.~~ *(checked for the section, the headings and the cast; *a presence question costs a centre and never a layout* was not so of the mineshaft — see *Pass 8, session M* — pass 8, session M)*
+- ~~`jigsaw-and-templates` — heading renamed (one inbound repointed). **New
   section** *The boxes drawn round the loop*, split out of *The assembly loop*.
   New claims: the five things written on a jigsaw block, listed once in the
   cast; **two** priorities, selection and placement, both real
@@ -9649,8 +10237,8 @@ foot.
   a fresh private shape when a jigsaw points inside its own piece's box
   (`JigsawPlacement.java:250-259`, `:396`). `getFirstFreeHeight` promoted into
   the loop. The processor sections were **reordered** so what a processor is
-  precedes the section that orders them. The blockquote moved to the foot.
-- `hand-built-structures` — heading `## The trace: a stronghold` → `## A
+  precedes the section that orders them. The blockquote moved to the foot.~~ *(checked for the seven fields, the two priorities and the shape in `PieceState`; the *fresh private shape* and *Four details* were not so — see *Pass 8, session M* — pass 8, session M)*
+- ~~`hand-built-structures` — heading `## The trace: a stronghold` → `## A
   stronghold, built twice if it has to be`. The closer dissolved whole: the
   static-state paragraph, the portal-pointer/exit-condition paragraph, the
   deprecation paragraph and a new H3 *What a Java piece keeps that a template
@@ -9659,16 +10247,16 @@ foot.
   `StructurePieceAccessor` every piece asks
   (`structure/pieces/StructurePiecesBuilder.java:12`). Four H3s under *The
   idea*. New answer to the reload question, re-asked: the monument comes back
-  *identical*, not different (`OceanMonumentStructure.java:66-85`).
-- `creating-a-world` — the *world_gen_settings.dat* fact moved out of the
+  *identical*, not different (`OceanMonumentStructure.java:66-85`).~~ *(checked for the heading, the H3s and the monument's identical rebuild (`OceanMonumentStructure.java`:72-79); the accessor half overtaken — pass 8, session M)*
+- ~~`creating-a-world` — the *world_gen_settings.dat* fact moved out of the
   blockquote into the body, the blockquote trimmed and moved to the foot.
   New: the seven presets counted out against the two tags; the
   `isStableOverworld` asymmetry (see Corrections); *The rest of the family*
   cut from thirteen lines to two classes; heading *The same object, from a
   properties file* → *The same object, built two other ways*; the stage-4
   figure label now says *a change to the enabled packs or the feature set*
-  rather than *any data-pack change*.
-- `worldgen/README` — **A6**: *Where the part stops* moved from after
+  rather than *any data-pack change*.~~ *(checked (the settings-file fact in the body, the blockquote at the foot, seven presets); the stage-4 label overtaken — pass 8, session M)*
+- ~~`worldgen/README` — **A6**: *Where the part stops* moved from after
   *Reference this part uses* to before it, and its hand-counted *a quarter*
   replaced by `{{#include ../../generated/coverage-worldgen.md}}`. The figure
   key sentence moved above the figure. *A substrate, a pipeline, and a wing*
@@ -9676,7 +10264,7 @@ foot.
   out of lecture one*. The `PatrolSpawner` / `PhantomSpawner` correction kept;
   the Xoroshiro correction moved into *Reference this part uses*, where it
   reads as a pointer rather than a caveat. Lecture 5's blurb gained *"and which
-  a data pack can make impossible"*.
+  a data pack can make impossible"*.~~ *(checked (section order and the key sentence above the figure) — pass 8, session M)*
 
 ### Names
 
@@ -12407,11 +12995,11 @@ states.
 13. **`reference/level-data-and-rules`:16-21** — "Four parts point here"; five do
     (`networking/README`:117 is the fifth), which `check_deps.py` now enforces
     from the shelf's side.
-14. **`worldgen/creating-a-world`:96-97** — `world_gen_settings.dat` is written
+14. ~~**`worldgen/creating-a-world`:96-97** — `world_gen_settings.dat` is written
     "beside *raids.dat*". `WorldGenSettings` goes into `MinecraftServer`'s
     server-global `savedDataStorage` (`MinecraftServer.java`:355); `Raids` goes
     into `ServerLevel.getDataStorage()` (`ServerLevel.java`:259), which is
-    per-dimension. Different folders; the clause is cut.
+    per-dimension. Different folders; the clause is cut.~~ *(checked (`server/MinecraftServer.java`:346-349, a server-global storage; `Raids` per dimension) — pass 8, session M)*
 15. **`reference/naming-drift`:42 and :383** — "Two hundred and forty-three rows",
     twice. The thirteen part tables hold **245** (3+4+31+18+12+18+30+9+24+20+27+13+36).
 16. **`reference/naming-drift`:416-417** — the bullet still italicised
@@ -12812,7 +13400,7 @@ every fact below was changed with the decompile open.*
 
 ### Corrections
 
-- `worldgen/terrain`:231–233 said the carvers' lava level "is a constant in the
+- ~~`worldgen/terrain`:231–233 said the carvers' lava level "is a constant in the
   generator, not a data-pack field", **and the same page's own carve-state
   paragraph at :210 called it *configured***. `CarverConfiguration.lavaLevel`
   is a `VerticalAnchor` field on the configured carver
@@ -12821,56 +13409,56 @@ every fact below was changed with the decompile open.*
   *above_bottom: 8* (`data/minecraft/worldgen/configured_carver/*.json`), which
   is why it does not move with the sea level — it is anchored to the world's
   bottom, not below its sea. The answer is rewritten to say that; :210 now
-  names the field.
-- `worldgen/terrain`:41–43 said `NoiseBasedChunkGenerator` "overrides
+  names the field.~~ *(overtaken: no lava level in 26.3's carvers; the lava floor is `createFluidPicker`'s (`world/level/levelgen/NoiseBasedChunkGenerator.java`:84-93) — pass 8, session M)*
+- ~~`worldgen/terrain`:41–43 said `NoiseBasedChunkGenerator` "overrides
   [`createBiomes`] only to use the chunk's cached sampler". The override
   (`NoiseBasedChunkGenerator.java`:85–99) forks *and* builds the chunk's
   `NoiseChunk` *and* wraps the biome resolver in `Blender` and
   `BelowZeroRetrogen`. The whole fork inventory was Part IV's and is now a
-  citation; the three jobs are stated on `worldgen/biomes` instead.
-- `worldgen/biomes`:75 said "Only the noise generator does the above", where
+  citation; the three jobs are stated on `worldgen/biomes` instead.~~ *(overtaken: `NoiseBasedChunkGenerator` overrides only `decorateBiomeResolver` (`NoiseBasedChunkGenerator.java`:95-100) — pass 8, session M)*
+- ~~`worldgen/biomes`:75 said "Only the noise generator does the above", where
   "the above" includes the *init_biomes* fork drawn in the figure directly
   over it. The base `ChunkGenerator.createBiomes`
   (`ChunkGenerator.java`:121–126) forks for every generator; the override is
   about the three lines below the fork. Rewritten, and it now agrees with
-  `terrain`.
-- `worldgen/density-functions`:17–18 called `DensityFunctions` "the library of
+  `terrain`.~~ *(checked (`world/level/chunk/ChunkGenerator.java`:132-137, one `createBiomes`, three generators) — pass 8, session M)*
+- ~~`worldgen/density-functions`:17–18 called `DensityFunctions` "the library of
   thirty-four node types you build one out of". Thirty-four is a count of
   registered **ids** (`DensityFunctions.bootstrap`), not of classes: six ids
   are one `DensityFunctions.Marker`, seven are one `DensityFunctions.Mapped`,
   and *old_blended_noise* is `BlendedNoise`, which is not a `DensityFunctions`
-  member (`DensityFunctions.java`:56). Rewritten.
-- `worldgen/density-functions`'s *The six caches, and the three a single point
+  member (`DensityFunctions.java`:56). Rewritten.~~ *(overtaken: 26.3 registers forty-four ids over twenty-four classes (`world/level/levelgen/densityfunction/DensityFunctions.java`:85-148), and the page says so — pass 8, session M)*
+- ~~`worldgen/density-functions`'s *The six caches, and the three a single point
   may use* named **two** single-point-safe classes in a section whose heading
   promises three, and never named the sixth cache at all. The third is
   `NoiseChunk.BlendDensity` (`NoiseChunk.java`:892–922), which tests no context
-  and answers from anywhere. Written in, with what it is.
-- `worldgen/blending`:320–322 said "Height and biome are **averaged** over
+  and answers from anywhere. Written in, with what it is.~~ *(overtaken: 26.3 has one *cache* node (`DensityFunctions.java`:141) — pass 8, session M)*
+- ~~`worldgen/blending`:320–322 said "Height and biome are **averaged** over
   every measured column", where the page's own :260–268 says the biome answer
   "is not a blend" and :328 calls it a threshold. Rewritten: both are drawn
   from the same map at the same radius, the height averaged over it and the
-  biome taken from the nearest entry in it.
-- `worldgen/hand-built-structures`:90 called `MineshaftStructure`'s pre-filled
+  biome taken from the nearest entry in it.~~ *(checked (`world/level/levelgen/blending/Blender.java`:164-187, :284-304) — pass 8, session M)*
+- ~~`worldgen/hand-built-structures`:90 called `MineshaftStructure`'s pre-filled
   builder "the only *Either.right* in the game". `Either.right` is an everyday
   idiom across the corpus; what is unique is the right branch of
   `Structure.GenerationStub`'s own `Either` (`Structure.java`:250–253 — every
-  other construction takes the left). Rescoped.
-- `worldgen/structure-placement`:131 said "almost every later step in the
+  other construction takes the left). Rescoped.~~ *(checked (`world/level/levelgen/structure/Structure.java`:277-281; `MineshaftStructure.java`:46 the one `Either.right`) — pass 8, session M)*
+- ~~`worldgen/structure-placement`:131 said "almost every later step in the
   generation pyramid requires structure starts within eight", against
   `terrain`'s "six of the generation steps". Six of the twelve, and they are
   contiguous: `ChunkPyramid.GENERATION_PYRAMID` declares
   `addRequirement(ChunkStatus.STRUCTURE_STARTS, 8)` on *STRUCTURE_REFERENCES*
-  through *FEATURES* and nowhere else. Rewritten as that range.
-- `worldgen/README`:14 said "the surface pass reads its neighbours' biomes" as
+  through *FEATURES* and nowhere else. Rewritten as that range.~~ *(checked at the later entry (`world/level/chunk/status/ChunkPyramid.java`:17-23, four of ten) — pass 8, session M)*
+- ~~`worldgen/README`:14 said "the surface pass reads its neighbours' biomes" as
   an example of generation reading the world. The pass that reads a
   *neighbourhood* is the carvers (17×17 source chunks, `terrain`:191–197);
   `SurfaceSystem.buildSurface` reads one biome per column, through
   `biomeManager::getBiome` (`SurfaceSystem.java`:103, 114). Replaced with the
-  carvers.
-- `worldgen/biomes`' two-borders table listed the jittered read's users without
+  carvers.~~ *(checked (`world/level/levelgen/NoiseBasedChunkGenerator.java`:280-289, the 17×17 loop and `ChunkAccess.carverBiome`) — pass 8, session M)*
+- ~~`worldgen/biomes`' two-borders table listed the jittered read's users without
   world generation. The surface rules read the biome through
   `BiomeManager.getBiome`, the jittered entry point (`SurfaceSystem.java`:103).
-  The row gains the surface pass, and `terrain` now states which read it is.
+  The row gains the surface pass, and `terrain` now states which read it is.~~ *(checked (`world/level/levelgen/material/MaterialSystem.java`:122 passes `biomeManager::getBiome`) — pass 8, session M)*
 - ~~`world/scheduled-ticks`:13 offered "a sapling sprouting after bonemeal" as an
   example of a scheduled tick. `SaplingBlock.performBonemeal` calls
   `SaplingBlock.advanceTree` in the same call (`SaplingBlock.java`:81–82) and
@@ -12878,14 +13466,14 @@ every fact below was changed with the decompile open.*
   The same list's "a piece of amethyst budding" is also a random tick
   (`BuddingAmethystBlock.java`:28). Replaced with a dispenser firing
   (`DispenserBlock.java`:138) and a redstone torch burning out.~~ *(checked (`world/level/block/DispenserBlock.java`:131; `RedstoneTorchBlock.java`:82, :94) — pass 8, session D)*
-- `worldgen/README`:170 said the level-data Reference page is "which lecture
+- ~~`worldgen/README`:170 said the level-data Reference page is "which lecture
   nine links to"; the page that links it is lecture **ten**,
-  `creating-a-world`.
-- `worldgen/README` and `src/lectures.md` disagreed about how many statuses lie
+  `creating-a-world`.~~ *(checked (`creating-a-world` links `level-data-and-rules#dimensions-and-the-seed`) — pass 8, session M)*
+- ~~`worldgen/README` and `src/lectures.md` disagreed about how many statuses lie
   between a structure being decided and its blocks being written — three
   against four, from unstated baselines. Both now count from named statuses:
   decided at `ChunkStatus.STRUCTURE_STARTS`, written at
-  `ChunkStatus.FEATURES`, three statuses after the noise fill.
+  `ChunkStatus.FEATURES`, three statuses after the noise fill.~~ *(checked as the page now stands (`world/level/chunk/status/ChunkStatus.java`:21-26); its *six between them* was not so in run order — see *Pass 8, session M* — pass 8, session M)*
 - ~~`foundations/data-driven-types`:190 said the trace on
   `features-and-placement` "walks a tree through all" nine feature sub-object
   rows; five of the nine carry *trees* in their own *taught in* column and the
@@ -12900,40 +13488,40 @@ every fact below was changed with the decompile open.*
 
 ### Suspicions re-derived and found sound (no change)
 
-- `worldgen/blending`:47 "the scan runs on the background executor" — correct.
+- ~~`worldgen/blending`:47 "the scan runs on the background executor" — correct.
   `IOWorker.createOldDataForRegion` submits to `Util.backgroundExecutor()`
   (`IOWorker.java`:98–126) and joins `scanChunk` from inside it; the IO lane is
-  underneath, not the submitting pool.
-- `worldgen/README`:12 "the decoration step reads block states, heights and the
+  underneath, not the submitting pool.~~ *(checked (`world/level/chunk/storage/IOWorker.java`:98-126, `Util.backgroundExecutor`); the page now says *the worker pool* — pass 8, session M)*
+- ~~`worldgen/README`:12 "the decoration step reads block states, heights and the
   carving mask through `PlacementContext`" — correct, and the class was named
   on no page. `PlacementContext` has `getBlockState`, `getHeight`,
   `getCarvingMask` and `topFeature`, and extends `WorldGenerationContext`.
-  Named on `features-and-placement` this session.
-- `features-and-placement`:222 "a structure and a feature at the same index in
+  Named on `features-and-placement` this session.~~ *(overtaken: 26.3's `PlacementContext` has no carving mask (`world/level/levelgen/placement/PlacementContext.java`:24-46), and V2 took it off the page — pass 8, session M)*
+- ~~`features-and-placement`:222 "a structure and a feature at the same index in
   the same step draw the *same* feature seed" — correct.
   `WorldgenRandom.setFeatureSeed` is *seed + index + 10000 × step*
   (`WorldgenRandom.java`:59–63) with no structure/feature discriminator, and
   `ChunkGenerator.applyBiomeDecoration` restarts the index at zero for each
-  half (`ChunkGenerator.java`:356, 415).
-- `jigsaw-and-templates`:156 "never structure void, which
+  half (`ChunkGenerator.java`:356, 415).~~ *(checked (`world/level/levelgen/WorldgenRandom.java`:59-63; `world/level/chunk/ChunkGenerator.java`:385, :454) — pass 8, session M)*
+- ~~`jigsaw-and-templates`:156 "never structure void, which
   `JigsawReplacementProcessor` handles instead" — correct as far as it went,
   and now stated more precisely: structure void never reaches a template,
   because `StructureBlockEntity` excludes it when it saves
-  (`StructureBlockEntity.java`:380).
-- `hand-built-structures`:206 "the forty shipped processor lists between them
+  (`StructureBlockEntity.java`:380).~~ *(checked (`world/level/block/entity/StructureBlockEntity.java`:380; no shipped palette holds structure void) — pass 8, session M)*
+- ~~`hand-built-structures`:206 "the forty shipped processor lists between them
   use four types" — correct. Forty files under
   *data/minecraft/worldgen/processor_list/*, using rule (35), protected blocks
   (7), block rot (6) and capped (4). Moved to `jigsaw-and-templates` with the
-  counts and the two class names the corpus lacked.
-- `trees`' "thirty-nine configured tree features" against
+  counts and the two class names the corpus lacked.~~ *(checked (the sentence left this page; forty lists, four types) — pass 8, session M)*
+- ~~`trees`' "thirty-nine configured tree features" against
   `what-this-book-skips`' "50 tree kits" — both correct, different
   populations: 39 shipped *configured_feature* files of type *minecraft:tree*,
   50 `ResourceKey<ConfiguredFeature>` constants on `TreeFeatures`. `trees` now
-  says which it counts and why the other number exists.
+  says which it counts and why the other number exists.~~ *(overtaken: 45 tree features and 57 keys, checked (`data/minecraft/worldgen/feature`, `TreeFeatures.java`) — pass 8, session M)*
 
 ### Claims introduced
 
-**`worldgen/density-functions`** — the fifteen router functions partition
+~~**`worldgen/density-functions`** — the fifteen router functions partition
 6 climate / 5 aquifer (its four noises plus *preliminary_surface_level*, which
 `Aquifer.NoiseBasedAquifer` samples per column) / 3 ore veins / 1 final
 density; `PerlinSimplexNoise`'s only three instances are `Biome`'s fixed-seed
@@ -12942,36 +13530,36 @@ temperature noises; `SimplexNoise` is the End islands node's;
 thing in the Q&A; all six installed classes carry `DensityFunction.fillArray`
 and `CacheOnce` keeps a second counter for it; the beardifier splice's
 consequence ("every noise dimension is beardified whether or not its router
-JSON mentions one") moved here from `terrain`.
+JSON mentions one") moved here from `terrain`.~~ *(overtaken in the main (the router is eight fields, `world/level/levelgen/NoiseRouter.java`:9); the End islands' `SimplexNoise` and `NoiseUtils.biasTowardsExtreme`'s no callers still hold — pass 8, session M)*
 
 **`reference/density-function-nodes`** — *Bounds* rewritten from 36 lines of
 prose to an eight-row table plus one paragraph; the three wrap singletons
 became a table; two unregistered `DensityFunctions` members named as absent
 from the catalogue; the deck rewritten to admit four sections.
 
-**`worldgen/terrain`** — the aquifer reads five router functions, named; the
+~~**`worldgen/terrain`** — the aquifer reads five router functions, named; the
 surface rule tree is two registries of dispatched types
 (`SurfaceRules.RuleSource`, `SurfaceRules.ConditionSource`) and branches on
 the *jittered* biome read; `CaveWorldCarver`, `CanyonWorldCarver`,
 `CaveCarverConfiguration`, `CanyonCarverConfiguration` and
 `CarverDebugSettings` named; ore veins contrasted with `OreFeature`; the
 noise fill "holds every section across its noise range" (cited to
-`chunk-anatomy`).
+`chunk-anatomy`).~~ *(overtaken in part (the aquifer's functions are `Aquifer.Config`'s, the rules `MaterialRule`/`MaterialCondition`); the jittered read, the carver classes and the held sections checked — pass 8, session M)*
 
-**`worldgen/biomes`** — `BiomeSources.bootstrap` registers four sources, all
+~~**`worldgen/biomes`** — `BiomeSources.bootstrap` registers four sources, all
 four named with what each is for; `BiomeResolver` named as the interface;
 `MultiNoiseBiomeSourceParameterList` and `MultiNoiseBiomeSourceParameterLists`
 named, two presets; `FillBiomeCommand` named; the probe's Gaussian pass is
 unconditional and the server passes no interpolator (moved to
 `world/environment-attributes-and-timelines`); the box blur moved to
 `client/the-client-level`; `BiomeColors` reaches the effects through four
-`ColorResolver`s with no probe in the path.
+`ColorResolver`s with no probe in the path.~~ *(checked (`world/level/biome/BiomeSources.java`:11-14; `BiomeResolver.java`:8-11; the probe's unconditional pass, `world/attribute/EnvironmentAttributeProbe.java`:36-43) — pass 8, session M)*
 
-**`worldgen/blending`** — the *For a 1.21-era reader* box moved to
+~~**`worldgen/blending`** — the *For a 1.21-era reader* box moved to
 `reference/naming-drift`'s Part IV table as a row; the three counts (five
-consumers, four answers, three questions) reconciled in one clause.
+consumers, four answers, three questions) reconciled in one clause.~~ *(checked for the page (no blockquote); `naming-drift` has no blending row now, which session O may judge — pass 8, session M)*
 
-**`worldgen/features-and-placement`** — `PlacementContext` and
+~~**`worldgen/features-and-placement`** — `PlacementContext` and
 `FeaturePlaceContext` named and what each carries; the fourth value-type rung
 (`BlockStateProvider`) added, with registered counts 14 / 6 / 8 for the
 predicate, height and state families; `SurfaceRelativeThresholdFilter` named as
@@ -12979,9 +13567,9 @@ the fifteenth modifier; `PlacementFilter` defined over the chain's four
 filters; `FeatureCountTracker` behind `SharedConstants.DEBUG_FEATURE_COUNT`;
 */place feature* named as the third door into `Feature.place`; the
 sixty-three-algorithm tail declined in writing; `Feature.NO_OP` separated from
-the five selectors.
+the five selectors.~~ *(overtaken in the main by V1 and V2; what `PlacementContext` carries was misstated — see *Pass 8, session M* — pass 8, session M)*
 
-**`worldgen/jigsaw-and-templates`** — §7's three unnamed `JigsawStructure`
+~~**`worldgen/jigsaw-and-templates`** — §7's three unnamed `JigsawStructure`
 fields written, with the shipped-data census: six structures set the expansion
 hack (five villages and the pillager outpost) and **exactly one** — trial
 chambers — sets either `DimensionPadding` (10) or `LiquidSettings`
@@ -12994,64 +13582,64 @@ three `TemplateSource`s and `TemplatePathFactory` written as *Where a template
 comes from*, with the first-source-wins rule; the **structure block** taken
 (save mode excludes structure void, load mode builds a `StructurePlaceSettings`
 with a `BlockRotProcessor` for integrity); `PoolAliasBindings`' three kinds;
-the debug flag named.
+the debug flag named.~~ *(checked for the padding, the liquid settings and the validation; the expansion-hack census is 26.2's (24 of 52 in 26.3) and `TemplatePathFactory`'s role was wrong — see *Pass 8, session M* — pass 8, session M)*
 
-**`worldgen/structure-placement`** — `StructurePlacement.getLocatePos` moved in
+~~**`worldgen/structure-placement`** — `StructurePlacement.getLocatePos` moved in
 from `hand-built-structures` as its own Q&A; the presence cache split into its
 own section, with the second feed (`ChunkStatusTasks.loadStructureStarts`)
 named; the per-chunk write split into its own section; `StructureType` and
 `StructurePlacementType` named; the figure's five boxes and the heading's count
-reconciled.
+reconciled.~~ *(checked (`StructurePlacement.getLocatePos`, `ChunkStatusTasks.loadStructureStarts`, `StructureType`); `StructurePlacementType` overtaken (not in 26.3, not on the page) — pass 8, session M)*
 
-**`worldgen/hand-built-structures`** — the `*Structure` wrapper family named as
+~~**`worldgen/hand-built-structures`** — the `*Structure` wrapper family named as
 settings wrappers, with `RuinedPortalStructure`'s five decay setups and
 `DesertPyramidStructure.afterPlace`'s five-to-seven suspicious sand;
 `BuriedTreasurePieces` given a row in the four-families table;
 `WoodlandMansionPieces`' double membership explained; `StructurePieceType`
-named in the cast; "chunk workers" settled to the worldgen executor.
+named in the cast; "chunk workers" settled to the worldgen executor.~~ *(checked in part: the five-to-seven, the buried-treasure row, the mansion's two rows and the executor stand; the thin-wrapper sentence and *five decay setups* were wrong — see *Pass 8, session M* — pass 8, session M)*
 
-**`worldgen/trees`** — the thirty-nine/fifty count scoped; the five registry
+~~**`worldgen/trees`** — the thirty-nine/fifty count scoped; the five registry
 type classes named; two counted headings renamed (*The trunk placers*, *The
 foliage placers*) so a release cannot break an anchor; the decorator heading
-corrected — the leaf pass does not undo the decorators, it is blocked by them.
+corrected — the leaf pass does not undo the decorators, it is blocked by them.~~ *(checked for the count and the five types; the decorator pre-fill has no visible effect — see *Pass 8, session M* — pass 8, session M)*
 
-**`worldgen/creating-a-world`** — the stage list cut to a citation and the
+~~**`worldgen/creating-a-world`** — the stage list cut to a citation and the
 *consequence* kept; `FlatLayerInfo` and `FixedBiomeSource` named;
 `WorldOpenFlows.openWorld` given its own section, with `ChunkGenerator.validate`
 identified as one of its eight links; *Optimize World* pointed at
-`chunk-storage` rather than left with the declined half.
+`chunk-storage` rather than left with the declined half.~~ *(checked in part: `FlatLayerInfo` stands, `FixedBiomeSource`'s sentence and the eight-method chain were wrong, the *Optimize World* pointer is gone — see *Pass 8, session M* — pass 8, session M)*
 
-**`worldgen/README`** — the size sentence is the include, with two boundary
+~~**`worldgen/README`** — the size sentence is the include, with two boundary
 corrections (`PatrolSpawner`/`PhantomSpawner`, the Xoroshiro sources); the
 order argument made once instead of three times; the closer rewritten as an
 instruction; a *Where the part stops* section with the coverage answer — a
 quarter of the part's lines are one shape, an algorithm that writes blocks and
 adds no mechanism, and the head of each family is named; the verified line
-rewritten off lecture one's hook; the pass-number sentence cut.
+rewritten off lecture one's hook; the pass-number sentence cut.~~ *(checked (the include, `PatrolSpawner`/`PhantomSpawner` in `levelgen`, the closer as an instruction, no pass numbers) — pass 8, session M)*
 
 ### For pass 9's attention, found and not fixed
 
-- `worldgen/blending`:162 says `BlendingData.pack` "omits the heights entirely
+- ~~`worldgen/blending`:162 says `BlendingData.pack` "omits the heights entirely
   if none of them was ever measured", thirty lines after saying the codec
   "validates the saved height array against" sixteen slots. Consistent only if
-  the field is optional; neither sentence says so.
-- `worldgen/jigsaw-and-templates` states 188 shipped pool files; the other two
+  the field is optional; neither sentence says so.~~ *(checked (`world/level/levelgen/blending/BlendingData.java`:79-94, :395-401) — pass 8, session M)*
+- ~~`worldgen/jigsaw-and-templates` states 188 shipped pool files; the other two
   data censuses on the part's structure pages (34 structure files, 40 processor
-  lists) were re-derived this session and this one was not.
-- `worldgen/creating-a-world`:280 hand-counts nineteen classes in
-  `client/gui/screens/worldselection`, which nothing regenerates.
-- `worldgen/biomes`:32's attribute counts ("twenty gameplay attributes … the
+  lists) were re-derived this session and this one was not.~~ *(wrong in 26.3: 245 pool files (`data/minecraft/worldgen/template_pool`), each still of two fields — see *Pass 8, session M* — pass 8, session M)*
+- ~~`worldgen/creating-a-world`:280 hand-counts nineteen classes in
+  `client/gui/screens/worldselection`, which nothing regenerates.~~ *(checked (nineteen top-level classes); the size is off the page now (V10) — see *Pass 8, session M* — pass 8, session M)*
+- ~~`worldgen/biomes`:32's attribute counts ("twenty gameplay attributes … the
   sixty-six vanilla biome files touch three … fifty-one touch none") against
   `world/environment-attributes-and-timelines`:80 ("eleven attributes across
   sixty-six biome files, with *visual/sky_color* in fifty-six of them"). The
   two are reconcilable only under a silent *gameplay* scoping that neither
-  states. Both are data-pack censuses; pass 9 re-derives.
-- `worldgen/creating-a-world`:285 reaches a `LevelSummary` through
+  states. Both are data-pack censuses; pass 9 re-derives.~~ *(checked (23 gameplay attributes; 67 biome files, 5 gameplay ids touched, 50 spawns-only; `environment-attributes-and-timelines` says 13 across 67, 57 with the sky colour) — pass 8, session M)*
+- ~~`worldgen/creating-a-world`:285 reaches a `LevelSummary` through
   `LevelStorageSource.readLightweightData`, `reference/level-data-and-rules`:92
   through `LevelStorageSource.readLevelSummary`, and
   `server/starting-a-server`:156 through
   `LevelStorageSource.LevelStorageAccess.fixAndGetSummaryFromTag`. Probably one
-  chain; the book does not say.
+  chain; the book does not say.~~ *(answered: two chains meet at `LevelStorageSource.makeLevelSummary` (`world/level/storage/LevelStorageSource.java`:280-327, :573-583) — pass 8, session M)*
 
 ## Pass 5, session K — Part XI · Rendering *(2026-09-06)*
 

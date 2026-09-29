@@ -5,9 +5,7 @@
 You dig into a cave and it is flooded. The water is not a fluid that flowed
 in and settled; nothing flowed anywhere. Before the cave existed, while the
 chunk was still solid stone, something decided that a point at that depth in
-that column belongs to water rather than to air — and when the hole the
-carver marked out came to be filled, that answer was
-still on file. **A carver does not choose the block it carves.** It chooses
+that column belongs to water rather than to air — and when the hole the carver marked out came to be filled, the aquifer gave the same answer. **A carver does not choose the block it carves.** It chooses
 the *shape*; the `Aquifer` chooses the material, and it chose it for the
 stone as well.
 
@@ -28,17 +26,17 @@ steer the surface pass are [biomes](biomes.md#deciding-a-chunks-biomes-cell-by-c
 | class | what it decides | when |
 |---|---|---|
 | `ChunkGenerator` | the API the status calls — `ChunkGenerator.buildTerrain`, one call for all three steps. `ChunkGenerators.bootstrap` registers exactly three implementations | worldgen executor |
-| `NoiseGeneratorSettings` | the whole per-dimension recipe: the `NoiseSettings` floor and height, the default block and fluid, the `NoiseRouter`, the material rule, the sea level, and the aquifer's own functions where there is one | data, loaded with the world |
-| `NoiseChunk` | the per-chunk workspace — the chunk's `DensityVolume`, the samplers that carry its caches, the `Aquifer` | built when the terrain task starts, closed when it ends |
+| `NoiseGeneratorSettings` | the per-dimension recipe: the `NoiseSettings` floor and height, the default block and fluid, the `NoiseRouter`, the material rule, the sea level, and the aquifer's own functions where there is one | data, loaded with the world |
+| `NoiseChunk` | the per-chunk workspace — the chunk's `DensityVolume`, the samplers that carry its caches, the `Aquifer` | built when the terrain task starts, closed when it ends; a height query builds a one-column one of its own |
 | `InterpolatedFunction` | the cell: its input sampled at the corners, every block between them interpolated | whenever the graph is sampled |
 | `Aquifer` | what liquid, if any, belongs at a point — and therefore what a carved hole is filled with | fill *and* carving |
-| `OreVeinRule` | copper or iron, from the sign of one function | the surface step, before any surface rule |
-| `MaterialSystem` | the column re-skin: grass over dirt over stone, sand, the badlands bands, the ore veins | the surface step, one instance per level |
+| `OreVeinRule` | copper or iron, from the sign of one function | the surface step: in the overworld's tree, after the bedrock floor and before any surface rule |
+| `MaterialSystem` | the column re-skin: grass over dirt over stone, sand, the badlands bands, the ore veins | the surface step and the carvers' re-skin, one instance per level |
 | `WorldCarver` | the shape of caves and canyons, and nothing about their contents | the carver step |
 
 Everything here starts on the worldgen executor, and for this generator the
 whole status fans out from it: `NoiseBasedChunkGenerator.buildTerrain` hands
-the fill, the surface pass and the carvers to a background worker as one task
+the fill, the surface pass and the carvers to the [worker pool](../../reference/threads.md#the-threads-a-lecture-leans-on) as one task
 ([which steps fork, and why the parallelism is smaller than the thread
 names](../world/chunk-generation-pipeline.md#dispatch-and-why-the-parallelism-is-smaller-than-the-thread-names)).
 What is worth carrying from that into this page is one object.
@@ -85,8 +83,7 @@ is built with the workspace, a structure has bent the density field before the
 field is ever sampled — the flat shelf under a village is a number added to a
 scalar field, not a block edit made afterwards. What that term's shape is —
 `Beardifier.Rigid` boxes, junctions at half weight, and the five
-`TerrainAdjustment` modes — is
-[structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)'s.
+`TerrainAdjustment` modes — belongs to [structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists).
 A structure asking how high the ground is gets the answer from *before* it bent
 anything: `NoiseBasedChunkGenerator.iterateNoiseColumn`, behind
 `ChunkGenerator.getBaseHeight` and `ChunkGenerator.getBaseColumn`, builds a
@@ -101,16 +98,11 @@ this task, which `NoiseChunk` puts in the sampling context beside the
 beardifier; the one the biome step builds bends only the biome resolver
 ([blending at the old-chunk border](blending.md#following-one-chunk-through)).
 `BelowZeroRetrogen`, the world-deepening path, rides the same hooks: it wraps
-the biome resolver, patches bedrock after the terrain step, and gates the spawn
-step ([the other passenger](blending.md#the-other-passenger)).
+the biome resolver, patches bedrock after the terrain step, and gates the spawn step ([blending's other passenger](blending.md#the-other-passenger)).
 
-That one instance then serves all three steps, which is exactly what
-makes the aquifer's answers agree between filling and carving: the water
-tables the aquifer works out on its grid during the fill, and the surface
-levels it caches, are still there when the carved holes are filled. The surface pass
+That one workspace then serves all three steps, so the carving step reuses what the aquifer has already worked out: the water tables it computes on its grid, and the surface levels it caches, are still there when the carved holes are filled — and since each is fixed by the seed, the position and, beside an old chunk, the blender, they would come out the same if they were not. The surface pass
 samples the preliminary surface and the ore veins through the same samplers
-and their caches
-([the caches, and which of them a single point may use](density-functions.md#the-one-cache-and-what-a-single-point-may-use)),
+and their caches ([the one cache, and what a single point may use](density-functions.md#the-one-cache-and-what-a-single-point-may-use)),
 and nothing is pinned to a thread: the three steps run back to back inside
 one task on one worker, so program order is all that serialises them.
 
@@ -126,8 +118,7 @@ final density, and the overworld's asks for four blocks across and eight up.
 So the unit of overworld terrain is a cell **four blocks wide, four deep and
 eight tall**, and a chunk is four by four by forty-eight of them.
 
-**768** — cells in one overworld chunk, each holding 128 blocks
-(`InterpolatedFunction`).
+**768 cells** make one overworld chunk, each holding 128 blocks (`InterpolatedFunction`).
 
 An *interpolated* node samples its input at cell **corners** only. Everything
 inside a cell is three linear interpolations away from the eight corners
@@ -164,29 +155,22 @@ volume call made before the first loop, and nothing below it evaluates the
 graph again: each cell reads four new corners and inherits four, and every
 block inside it is arithmetic on eight numbers. The counts go up by one in
 each direction when you move from cells to their corners: four by four by
-forty-eight cells have five by five by forty-nine corners between them, so one
-*interpolated* term is sampled
+forty-eight cells have five by five by forty-nine corners between them:
 
-**1,225** — corner samples per interpolated density term, per chunk
-(`InterpolatedFunction`, one volume of five by forty-nine by five).
+**1,225 corner samples** per chunk for each four-by-eight *interpolated* term the fill reads (`InterpolatedFunction`, one volume of five by forty-nine by five).
 
-**Six** — *interpolated* terms in the overworld router, resolved through
-every reference: one round the bulk of the final density, four inside the
+**Six interpolated terms** sit in the overworld router, resolved through every reference: one round the bulk of the final density, four inside the
 noodle-cave graph, and one in *chunk_surface_level*, whose cell is a whole
 chunk wide and one block tall. The fill reads the first five; the sixth is the
 surface pass's, and the ore veins bring three more of their own. Neither the
 veins' gap nor the aquifer's barrier is interpolated: the vein rule and the
 `Aquifer` sample each block by block, and only where they need it. Everything
 else is sampled at the resolution of the volume it is asked for, less any axis
-it does not depend on — a term that ignores *Y* is sampled once per column
-([the caches, and which of them a single point may
-use](density-functions.md#the-one-cache-and-what-a-single-point-may-use)).
+it does not depend on — a term that ignores *Y* is sampled once per column ([the one cache, and what a single point may use](density-functions.md#the-one-cache-and-what-a-single-point-may-use)).
 
 Then `NoiseBasedChunkGenerator.doFill` walks the finished buffer block by
 block — Z, then X, then Y **downward** — and hands each number to the aquifer.
-The Y direction matters because the two worldgen heightmaps are updated as
-blocks are written and the first non-air block seen from the top is the
-answer.
+The two worldgen heightmaps are updated as those blocks are written, so walking down, a column's height for each map is settled by the first block that counts for it.
 
 The write at the bottom of that walk skips air entirely — a chunk starts empty,
 so only non-air is ever written — and updates
@@ -214,18 +198,13 @@ comes back, and the aquifer is the only thing the number meets.
 decides, from four noises of its own — a barrier it samples block by block,
 and floodedness, spread and lava, which it samples on coarse grids — whether
 this point is stone, air, or a fluid. None of them is read from the router:
-the noise settings carry an `Aquifer.Config` of six functions, those four, an
-*exclusion* that forbids a local water table wherever it is positive, and
-*preliminary_surface_level*, which it samples once per four-by-four column to
+the noise settings carry an `Aquifer.Config` of six functions, those four, an *exclusion* that forbids a local water table in any aquifer cell where it is positive, and *surface_level* — which the overworld points at its *preliminary_surface_level* function — which it samples once per four-by-four column to
 know roughly where the ground is before any ground exists.
-`Aquifer.FluidPicker`
-and `Aquifer.FluidStatus` are the global fallback underneath its local water
-tables — the sea, and the lava. `Aquifer.NoiseBasedAquifer` is the real
+`Aquifer.FluidPicker` is the global fallback underneath its local water tables — the sea, and the lava — and `Aquifer.FluidStatus` is the record of any one table, local or global. `Aquifer.NoiseBasedAquifer` is the real
 implementation; a dimension with aquifers switched off gets a trivial one.
 
 **The ore veins** are not decided here at all. `OreVeinRule` is a material
-rule, and the overworld's rule tree tries its two veins, copper then iron,
-ahead of every surface rule, so the surface pass writes them into the stone
+rule, and the overworld's rule tree tries its two veins, copper then iron, after its bedrock floor and ahead of every surface rule, so the surface pass writes them into the stone
 the fill left. That is why copper and iron veins are *terrain rather than
 decoration*: they exist before the carvers, and no feature places them. Every
 other ore in the game is an `AbstractOreFeature` placed at
@@ -246,17 +225,14 @@ tree per dimension, which then branches on biome inside itself, then walks each 
 from the worldgen surface heightmap, tracking depth below stone and water
 height in a `MaterialRuleContext` that carries its own caches. Every block
 that is neither air nor fluid is offered to the tree, and the first rule that
-answers is written: fluid is measured, never offered, and the overworld's tree
-tries the ore veins before any surface rule, which is what makes aquifer water
+answers is written: fluid is measured, never offered, and the overworld's tree tries the ore veins, after its bedrock floor, before any surface rule, which is what makes aquifer water
 and ore veins immune to being turned into grass.
 
 That rule tree is itself two registries of data-driven types, with files of
 their own that the noise settings name by id — `MaterialRule` for what to
 write and `MaterialCondition` for when, each dispatched on a type id like any
 other ([the data-driven type
-pattern](../foundations/data-driven-types.md#the-idea-stated-once)) — so a
-pack composes a surface out of the shipped conditions and cannot write a new
-kind of condition. The biome the tree branches on is the *jittered* read,
+pattern](../foundations/data-driven-types.md#the-idea-stated-once)) — so a pack composes a surface out of the shipped condition types and cannot write a new kind of condition. The biome the tree branches on is the *jittered* read,
 `BiomeManager.getBiome`, not the palette's exact one
 ([the two borders](biomes.md#the-two-borders)), which is why a surface rule
 can change block for block along the same ragged line the grass colour does.
@@ -266,17 +242,15 @@ layers at the terrain status and `DebugLevelSource` writes nothing there —
 neither has a surface pass or carvers, both make spawning a no-op, and
 `DebugLevelSource` writes its state grid at the decoration step instead —
 so of the three `ChunkGenerators.bootstrap` registers, two skip
-most of this page. Development builds can switch off much more:
-`SharedConstants` carries flags that disable the surface pass, the carvers,
-the ore veins and fluid generation outright.
+most of this page. Debug flags can switch off much more: `SharedConstants` carries flags, set from JVM system properties in any build, that disable the surface pass, the carvers,
+the ore veins and every aquifer's water and lava outright.
 
 Two things sit outside the rule tree entirely, and neither asks it.
 `MaterialSystem.erodedBadlandsExtension` runs *before* the column walk
 and fills air with the default block to raise the terracotta pillars.
 `MaterialSystem.frozenOceanExtension` runs *after* it and writes snow and
 packed ice over air **and over water**. Both are selected by biome
-rather than by rule, and `MaterialSystem` owns the noises they need along
-with the ones for the badlands bands and the icebergs.
+rather than by rule, and `MaterialSystem` holds the noises they need along with the one that offsets the badlands bands and the two behind the surface depth the conditions read; a noise-threshold condition asks `RandomState` for its own.
 
 ## Carving, and who chooses the block
 
@@ -302,15 +276,14 @@ block. A carver is handed a `WorldGenerationContext` for its heights and a
 that lives for one terrain task and is never saved.
 
 And then the hook. When every source chunk has had its say,
-`NoiseBasedChunkGenerator.applyCarvingMask` walks the mask one column at a
-time, top down, and asks `Aquifer.computeSubstance` with a density of
+`NoiseBasedChunkGenerator.applyCarvingMask` walks the mask's carved runs, each top down, and asks `Aquifer.computeSubstance` with a density of
 **zero** what belongs at each marked block. `Aquifer.FluidStatus.at`
 answers plain air above the local water table and the fluid below it — never
 null; the null is `Aquifer.computeSubstance`'s own, and it means *do not carve
 here at all*. So the water in a flooded cave
 was decided by the same object that decided the water in the stone around
 it, and a dry cave is air written one block at a time because the aquifer
-said so. What a cave may not eat through is decided by one tag, *uncarvable*
+said so. What kind of block a cave may not eat through is decided by one tag, *uncarvable*
 (`BlockTags.UNCARVABLE`), which ships holding bedrock alone, so a cave cuts
 through the ore veins and the surface skin alike. If a grass or mycelium
 block was passed on the way down, the dirt below is re-skinned through
@@ -333,20 +306,14 @@ random in one other way: it re-seeds `BlendedNoise`.
 
 **Why is there always lava at the same depth, in every world?** Because the
 two levels are anchored to different things. The sea level is a field of the
-noise settings and moves with them; the lava is not in the settings at all.
+noise settings and moves with them; the lava floor is not in the settings at all.
 `NoiseBasedChunkGenerator.createFluidPicker` builds the global fluid picker
 every aquifer falls back to, and it answers lava below Y −54 — or below the
 sea, where the sea is lower still — and the sea above. So the lava floor under
 every overworld cave, carved or not, is one fixed height rather than a depth
-below the sea, and a data pack moves it only by sinking the sea beneath it.
+below the sea, and a data pack moves it only through the sea: by sinking the sea beneath it, or by making the settings' default fluid lava.
 
-**Why is the water in a cave already settled when I break into it?** Because
-it was decided before the cave was, and marked for the chunk's first live
-tick rather than flowed. `Aquifer` flags the fluid it places that could flow,
-and the fill and the carving step record those positions for post-processing,
-so the water table you can see in a cross-section becomes
-real fluid ticks the moment the chunk is promoted
-([scheduled ticks](../world/scheduled-ticks.md#appointments-that-survive-a-restart)).
+**Why is the water in a cave already settled when I break into it?** Because it was decided before the cave was, and placed as still water. `Aquifer` flags only the fluid it places near the border between two aquifer cells, and there only where it could flow — where the cells' tables differ, in height or fluid or because one is dry, or where water sits directly on the lava floor — and the fill and the carving step record those positions for post-processing, so those few flow for real when the chunk starts ticking ([what the chunk goes on holding](../world/chunk-anatomy.md#what-step-11-leaves-behind-and-what-the-chunk-goes-on-holding)).
 "Nothing flowed in" is a true statement about worldgen and not about the
 chunk's first tick as part of a live world.
 

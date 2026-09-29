@@ -111,7 +111,7 @@ graph, which the rewrites copy rather than change, re-serialises.
 | *blend_density* | a sampler that asks the context for this chunk's [`Blender`](../systems/worldgen/blending.md#what-the-blender-actually-answers) and blends only when there is a non-empty one | not cached |
 
 A context has cache cells only when it was built with
-`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk,
+`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk and for each height query,
 and `SamplerContext.EMPTY_UNCACHED` passes every cached read straight through.
 
 Three of the registered nodes above are the constants of one enum,
@@ -141,7 +141,7 @@ this table is which node departs from its child, and how.
 
 | id | its range | |
 |---|---|---|
-| *add*, *sub*, *mul*, *div*, *min*, *max* | interval arithmetic on the two children's ranges | *mul* takes the least and greatest of the four products of the operands' ends, a zero end giving zero even against infinity; *div* multiplies by the reciprocal's range; *min* and *max* take the element-wise minimum and maximum. A *min* or *max* whose two ranges cannot overlap logs a warning when it is compiled, and only the side that always wins is sampled |
+| *add*, *sub*, *mul*, *div*, *min*, *max* | interval arithmetic on the two children's ranges | *mul* takes the least and greatest of the four products of the operands' ends, a zero end giving zero even against infinity; *div* multiplies by the reciprocal's range; *min* and *max* take the element-wise minimum and maximum. A *min* or *max* whose two ranges cannot overlap logs a warning when it is compiled, and only the side that wins whenever the inputs stay inside their declared ranges is sampled |
 | *abs*, *square* | the child's ends mapped, with zero as the minimum when the child's range contains zero | `Interval.abs` and `Interval.square` map both ends |
 | *reciprocal* | **±infinity** whenever the child's range straddles zero | the reciprocal has no finite bound across zero |
 | *clamp* | the child's range, clamped into *min* and *max* | a child already inside them keeps its own, narrower range |

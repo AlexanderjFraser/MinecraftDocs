@@ -315,7 +315,7 @@ owns the system this part only consumes.
 ## XII · World generation
 
 The three structure lectures run *first* in the game and are watched *last*
-here: a structure is decided at `ChunkStatus.STRUCTURE_STARTS`, two statuses
+here, bar lecture ten: a structure is decided at `ChunkStatus.STRUCTURE_STARTS`, two statuses
 before the biomes it will stand in exist, and writes no block until
 `ChunkStatus.FEATURES`, one status after the noise fill. Keeping them
 together at the end costs two of the earlier pages a forward topic and buys
@@ -332,8 +332,8 @@ a whole arc in one place.
 9. [Hand-built structures](systems/worldgen/hand-built-structures.md)
 10. [Creating a world](systems/worldgen/creating-a-world.md)
 
-One to six are the chunk being made, in the order it is made, and each needs
-the one before it. Seven, eight and nine are one arc, and eight and nine are
+One to six are the chunk being made, in the order it is made, and each from
+two on leans on one before it. Seven, eight and nine are one arc, and eight and nine are
 alternatives to each other rather than a sequence. Ten is the object the other
 nine read, told last because it is a tree of everything they explain — but it
 is the one lecture that moves, and a viewer who wants the origin before the
@@ -346,7 +346,7 @@ and eight of the ten lectures here name one. It also assumes Part IV's
 [chunk anatomy](systems/world/chunk-anatomy.md) for what is being written
 into and Part IV's [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md) for lecture
-two, where `Biome` has been hollowed out into one layer of a modifier stack;
+two, where the biome is one layer of a modifier stack;
 and three Part II lectures — codecs, registries and [the data-driven type
 pattern](systems/foundations/data-driven-types.md), whose fifty-six instances
 this part owns twenty-six of — because worldgen is the most thoroughly
