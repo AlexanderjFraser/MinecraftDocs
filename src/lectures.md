@@ -241,8 +241,8 @@ same wire watched from the receiving end.
 
 ## X · The client
 
-Nothing here hands off to anything except lecture seven, which draws what
-lecture six opens; every other page after the first answers "when in the
+Nothing here hands off to anything except inside the GUI stack, six to nine,
+and between two and three, which share a ledger; every other page after the first answers "when in the
 client's one loop does *this* happen" and needs only the hub. Watch the hub
 first and then take the rest in any order that suits, except the three groups
 noted below.
@@ -276,8 +276,8 @@ six assumes Part VII's [containers and
 menus](systems/items/containers-and-menus.md), which is the thing behind the
 screen it opens on, and lecture eight assumes Part II's [text
 components](systems/foundations/text-components.md). Lecture one is a
-prerequisite of Part XI, which begins where it ends, at the acquired
-surface.
+prerequisite of Part XI, whose frame is one span inside the loop's turn,
+opening at the acquired surface.
 
 ## XI · Rendering
 

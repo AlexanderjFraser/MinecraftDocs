@@ -1,10 +1,10 @@
 # The HUD
 
-> Verified against **Minecraft 26.3** · Part X · press F1 and the interface goes away — except for the thing that can black out your whole screen.
+> Verified against **Minecraft 26.3** · Part X · press F1 and the interface goes away — but not the thing that can black out your whole screen.
 
 Press F1 and the hearts go, the hotbar goes, the crosshair, chat and the tab
 list go. Get into bed with the interface hidden and the screen still fades to
-black. That one exception is not a special case in the code: it is a
+black. That exception is not a special case in the code: it is a
 consequence of where a single element sits. `Hud.extractRenderState` is one
 ordered method wrapped in **two** blocks gated on the hidden flag, and the
 sleep fade is recorded in the gap between them.
@@ -31,9 +31,9 @@ flowchart TD
     H2{"hidden?"}
     B["demo text, scoreboard sidebar, action bar, title, chat, tab list, subtitles"]
     B2["the subtitles only, and only with an in-game-UI screen up"]
-    GUI["Gui continues: saving indicator, toasts, debug overlay, the deferred subtitles"]
+    GUI["Gui continues: the screen if any, then saving indicator, toasts, debug overlay, the deferred subtitles"]
     PUB --> LLS
-    LLS -- "yes" --> STOP
+    LLS -- "yes" --> STOP --> GUI
     LLS -- "no" --> H1
     H1 -- "no" --> A --> SLEEP
     H1 -- "yes" --> SLEEP
@@ -42,19 +42,10 @@ flowchart TD
     H2 -- "yes" --> B2 --> GUI
 ```
 
-*Two identical `hidden?` gates with the sleep fade between them, which is the
-whole shape: the fade is the only thing `Hud` records whatever you press. Both
-branches reach the subtitles, on different conditions — the visible one needs
-no screen **or** an in-game-UI screen, the hidden one needs an in-game-UI
-screen to exist — and either way what they record is the deferred call at the
-foot.*
+*Two identical `hidden?` gates with the sleep fade between them, which is the whole shape: the fade is the only thing `Hud.extractRenderState` records whatever you press. Both branches reach the subtitles: the visible one always, deferring them when there is no screen **or** an in-game-UI one, and the hidden one only with an in-game-UI screen up.*
 
 Above all of that sit gates that are not `Hud`'s at all, and a page about
-conditions has to name them: `GameRenderer.extract` computes whether resources
-are loaded, whether this frame advances game time and whether there is a level,
-and `Gui.extractRenderState` applies them, calling into `Hud` only when they
-hold. That is why a HUD-less frame is the normal state of a loading screen
-rather than a special case of one.
+conditions has to name them: `GameRenderer.extract` combines whether resources are loaded, whether this frame advances game time (which it is handed) and whether there is a level, and `Gui.extractRenderState` applies them, calling `Hud.extractRenderState` only when they hold. That is why a HUD-less frame is the normal state of a loading screen shown before a level exists; the level-loading screen, which is up while one does, is the one `Hud` tests for by name.
 
 Four more elements are recorded by `Gui` itself, *after* the screen rather than
 with the rest of the HUD, and they are gated at three different depths — which
@@ -65,8 +56,8 @@ on a title screen, on a loading screen and under F1.
 |---|---|---|
 | the saving indicator | only on a frame that renders a level | **drawn** — the one element that ignores the flag |
 | the toasts | whenever resources are loaded, level or not | hidden |
-| the debug overlay | always, unless the debug-options screen is the one open | hidden, *unless* some screen is open |
-| the deferred subtitles | always | whatever the screen's own block decided |
+| the debug overlay | whenever resources are loaded, unless the debug-options screen is the one open | hidden, *unless* some screen is open |
+| the deferred subtitles | always | whatever `Hud`'s second block decided |
 
 Two structural facts follow from the shape. The hidden flag is published
 *before* the loading-screen short-circuit, so the renderer's copy is correct
@@ -86,11 +77,11 @@ game is not paused.
 |---|---|---|
 | `Hud` | the order, the two hidden-gated blocks, and the health animation state | Render thread |
 | `Gui` | the four elements recorded *after* the screen, and their three different gates | Render thread |
-| `ContextualBar` | which of four things occupies the one slot above the hotbar | Render thread |
-| `BossHealthOverlay` | the bars, and three questions the world renderer asks it | Render thread |
+| `ContextualBar` | what can occupy the one slot above the hotbar — `Hud` picks which | Render thread |
+| `BossHealthOverlay` | the bars, and three questions the world's side asks it | Render thread |
 | `ChatComponent` | the message list, its wrapped lines, and what is faded out | Render thread |
-| `DebugScreenEntries` | the F3 registry: what an entry is, and whether it is on | Render thread |
-| `DebugScreenEntryList` | the per-entry status, its presets, and its own save file | Render thread |
+| `DebugScreenEntries` | the F3 registry: what an entry is, and the presets | Render thread |
+| `DebugScreenEntryList` | the per-entry status, the preset applied, and its own save file | Render thread |
 | `GuiGraphicsExtractor` | everything the HUD records into | Render thread |
 
 ## The toast shelf
@@ -102,8 +93,7 @@ waiting deque; a toast declares how many consecutive slots it wants through
 that many free slots sit next to each other, so a wide toast can wait behind
 narrow ones that arrived after it. `Toast.Visibility` is the two-state
 animation, each state carrying its own sound, and a toast is asked its wanted
-visibility every frame rather than given a lifetime. `Toast.getToken` is what
-lets a second advancement replace the first instead of stacking on it. The
+visibility every frame rather than given a lifetime. `Toast.getToken` is what lets `SystemToast.addOrUpdate` reset a system toast with the same id instead of stacking a second, and `ToastManager.getToast`, which matches class and token, is how a newly unlocked recipe joins the recipe toast already up; advancement toasts always stack. The
 implementations are `AdvancementToast`, `RecipeToast`, `TutorialToast`,
 `SystemToast`, `FriendToast` and `NowPlayingToast` — the last of which is not
 on the shelf at all: it is a field of its own, drawn after the five and
@@ -119,17 +109,12 @@ says. So a 2D flag does change how the *world* is drawn, in three narrow
 ways. But `Hud.isHidden` itself is read directly by six other places across
 the client, including two entity renderers that suppress name tags.
 
-It is not the only field on the tree the world reads back: a clear-colour
+It is not the only field on the tree the frame reads back: a clear-colour
 override lives there too, and every site that reads either of them is
 `GameRenderer`'s rather than `LevelRenderer`'s — the 2D side never reaches
 into the world renderer, only into the thing that drives it.
 
-The traffic goes the other way as well, and this page's own boss bar is the
-loudest example. `BossHealthOverlay` reads world fog, the lightmap and the
-level render state — five places between the frame, the fog environment and the
-lightmap — to answer three questions: should the screen darken, should world
-fog be created, should the End music play. So a dragon changes the sky because
-a HUD element asked the world to, not the other way round. The bar itself
+This page's own boss bar is the loudest case of the same traffic. Five places on the world's side — the game renderer's tick and its level pass, the lightmap, the fog environment and the music picker on `Minecraft` — ask `BossHealthOverlay` three questions: should the screen darken, should world fog be created, should the End music play. So the dragon's fog and the Wither's darkening come from the world asking a HUD element, which holds the flags the boss-bar packets set. The bar itself
 interpolates against wall-clock time inside `LerpingBossEvent`, which is what
 turns the discrete progress the server sends into a smooth bar; what is on the
 other end of those packets — the saved model, its members, and the `execute
@@ -161,7 +146,7 @@ sequenceDiagram
     participant Hud as Hud
     participant GGE as GuiGraphicsExtractor
 
-    CPL->>LP: hurtTo — sets hurtTime and damageCooldownTime
+    CPL->>LP: hurtTo — the health, on a change the cooldown, on damage hurtTime
     Note over CPL,GGE: the next frame
     Hud->>Hud: extractPlayerHealth, gated on the game mode
     Hud->>Hud: healthBlinkTime — 20 ticks, or 10 for a heal
@@ -171,25 +156,13 @@ sequenceDiagram
     Hud->>GGE: blitSprite a heart, chosen by Hud.HeartType.getSprite
 ```
 
-*One packet, one frame later, and seven steps that all belong to `Hud`: the
-packet's own handler is `ClientPacketListener.handleSetHealth`, and everything
-it does to the hearts it does by calling `LocalPlayer.hurtTo`. Nothing in the
-band below is a reaction to the packet — it is what the HUD does every frame,
-reading numbers the packet left behind.*
+*One packet, one frame later: the packet's handler, `ClientPacketListener.handleSetHealth`, does everything it does to the hearts by calling `LocalPlayer.hurtTo`, and the six steps after the note belong to `Hud`. None of them reacts to the packet — it is what the HUD does every frame, reading numbers the packet left behind.*
 
-The figure's steps are `Hud.extractPlayerHealth`, which sets
-`Hud.healthBlinkTime` from `Hud.tickCount` when the health fell;
+The figure's steps are `Hud.extractPlayerHealth`, which sets `Hud.healthBlinkTime` from `Hud.tickCount` when the health fell or rose while `LivingEntity.damageCooldownTime` runs;
 `Hud.displayHealth`, which lags; `Hud.random`, reseeded from that same tick
-counter; `Hud.extractHearts`, the one descending pass; and one
-`GuiGraphicsExtractor.blitSprite` per heart, the sprite chosen by
-`Hud.HeartType.getSprite`. `LocalPlayer.hurtTo` is what the packet touched:
-it sets `LivingEntity.hurtTime` and `LivingEntity.damageCooldownTime` and
-nothing on `Hud` at all.
+counter; `Hud.extractHearts`, the one descending pass; and one `GuiGraphicsExtractor.blitSprite` per layer of each heart, the sprite chosen by `Hud.HeartType.getSprite`. `LocalPlayer.hurtTo` is what the packet touched: it sets the health, `LivingEntity.damageCooldownTime` when the health changed, `LivingEntity.hurtTime` too when it fell, and nothing on `Hud` at all.
 
-**The shake is seeded from the tick counter**, so it jitters at 20 Hz and is
-identical across two frames of the same tick — and the same seeded stream
-drives the hunger jitter and the air-bubble wobble, which is why they shake
-together. **The blink is a square wave** with a three-tick half-period, running
+**The shake is seeded from the tick counter**, so it jitters once per client tick and is identical across every frame of one tick — and the same seeded stream drives the hunger jitter and the air-bubble wobble, which is why each of them holds still within a tick. **The blink is a square wave** with a three-tick half-period, running
 for twenty ticks after damage and ten after a heal.
 
 Three numbers and four layers is the arithmetic of a heart row, and they are
@@ -206,9 +179,7 @@ of the three numbers.
 
 One gate silences four elements at once: armour, hearts, food and air are all
 recorded inside `Hud.extractPlayerHealth`, which is gated on the game mode
-being able to hurt you — which is why creative has no armour bar either. Food
-and mount health share a slot, and the air bubbles shift up when either is
-drawn. And the air bubbles make a **sound**:
+being able to hurt you — which is why creative has no armour bar either. Food and mount health share a slot, and the air bubbles sit a row above it, rising further for each extra row of mount hearts. And the air bubbles make a **sound**:
 `Hud.playAirBubblePoppedSound` ramps volume and pitch with how many bubbles are
 *gone*, and hands it to [the sound
 engine](sound-engine.md#volume-looping-and-the-attenuation-everyone-explains-wrongly)
@@ -230,19 +201,14 @@ and the recent-input history are the other two. A fifth, the delay-option
 queue, lives on `ChatListener`, and is the reason a chat-delay setting can hold
 a message that has already arrived.
 
-What those lists hold is a `GuiMessage` — the time it arrived in HUD ticks,
+What the message list holds is a `GuiMessage` — the time it arrived in HUD ticks,
 the `Component`, the signature if it had one, a `GuiMessageSource` saying
 whether a player, the server or this client produced it, and a nullable
 `GuiMessageTag`. **The tag is the client's own verdict, drawn as a two-pixel
 bar to the *left* of the line**, outside the text entirely, with the reason as
 a tooltip when you hover it: system, system-in-singleplayer, not-secure,
 modified, error. Only *modified* also carries an icon, and that one goes after
-the text rather than beside the bar; each tag additionally carries a short
-`GuiMessageTag.logTag` string, which is the only part of it that reaches
-`ChatLog` — a separate ring of `LoggedChatEvent`s kept for the reporting
-screens rather than for display. Which verdict a message earned is [chat and
-signing](../networking/chat-and-signing.md#three-ways-to-say-no-and-one-way-not-to-ask)';
-this page owns the bar.
+the text rather than beside the bar; each tag additionally carries a short `GuiMessageTag.logTag` string, which goes to the game's log beside the message. No `GuiMessageTag` reaches `ChatLog`, the separate ring of `LoggedChatEvent`s kept for the reporting screens; what it keeps of the verdict is a player message's `ChatTrustLevel`, which the modified and not-secure tags are made from. Which verdict a message earned belongs to [chat and signing](../networking/chat-and-signing.md#three-ways-to-say-no-and-one-way-not-to-ask); this page owns the bar.
 
 ## What a debug line is, and who turns one on
 
@@ -250,21 +216,15 @@ The F3 overlay is a registry rather than a method, and it is the second of the
 two debug systems this book describes. `DebugScreenEntries` holds every entry
 by `Identifier`, each a `DebugScreenEntry` writing lines through a
 `DebugScreenDisplayer`. `DebugScreenEntryList`, reachable as
-`Minecraft.debugEntries`, stores a `DebugScreenEntryStatus` per entry, ships
-`DebugScreenProfile` presets and persists to its own file with its own
+`Minecraft.debugEntries`, stores a `DebugScreenEntryStatus` per entry, applies the `DebugScreenProfile` presets `DebugScreenEntries` defines and persists to its own file with its own
 data-fixer type — so an entry set to always-on renders with F3 never pressed,
-and the game remembers that you set it. The screen that edits it is suppressed
-by `Gui` rather than by the overlay, which is the one place a screen decides
-whether the debug overlay records at all.
+and the game remembers that you set it. The screen that edits it is suppressed by `Gui` rather than by the overlay, and the overlay's own test asks about screens too: under F1 it still records whenever a screen is open.
 
 The charts hanging off it are `FpsDebugChart`, `TpsDebugChart`,
 `PingDebugChart` and `BandwidthDebugChart` over `AbstractDebugChart`, plus
 `ProfilerPieChart`, which is not one of them.
 
-Two seams run out of here. Several of the rebindable debug mappings toggle
-entries that print no line at all and exist only to carry a flag the world
-renderer reads — which family a given shortcut belongs to is [input and
-keybinds](input-and-keybinds.md#the-two-debug-key-families-and-which-one-is-bindable)'.
+Two seams run out of here. Two of the rebindable debug mappings toggle entries that print no line at all and exist only to carry a flag the world renderer reads — [input and keybinds](input-and-keybinds.md#the-two-debug-key-families-and-which-one-is-bindable) says which family a given shortcut belongs to.
 And the *other* debug system, the one that asks the server for a villager's
 brain, is [debugging the running
 game](debugging-the-running-game.md#the-idea): the two meet because an F3 entry
@@ -273,11 +233,7 @@ the FPS charts are what turn its tick-time subscription on.
 
 ## Questions players ask
 
-**Why do subtitles appear under an open chest?** They are deferred past the
-screen, along with the tooltip and the pre-edit overlay the extractor holds.
-The deferral fires when there is no screen at all *or* the screen declares
-itself in-game UI — the common case, not the rare one — and the deferred call
-is made from a screen's background pass.
+**Why do subtitles appear under an open chest?** They are deferred to the screen's background pass, beneath its widgets, whereas the tooltip and the pre-edit overlay the extractor holds are deferred past the widgets. The deferral happens when there is no screen at all *or* the screen declares itself in-game UI — the common case, not the rare one — and with no screen `Gui` makes the deferred call itself.
 
 **Is the pumpkin blur hardcoded?** No. The camera overlay list is
 data-driven: every equipment slot is asked whether its item declares a camera
@@ -300,7 +256,7 @@ better definition of "HUD state" than any list of fields.
 
 `Hud.extractRenderState` — the whole HUD is one ordered method, and the two
 hidden-gated blocks are visible at a glance. Then `Hud.extractPlayerHealth`
-for the most-loved fifty-seven lines in the client,
+for the most-loved method in the client,
 `Hud.nextContextualInfoState` for the bar arbitration, `Gui.extractRenderState`
 for the four recorded after the screen, `DebugScreenEntries` for the F3
 registry, and `ChatComponent` for the message list.

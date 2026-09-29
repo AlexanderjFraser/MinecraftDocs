@@ -3,10 +3,8 @@
 > Verified against **Minecraft 26.3** · Part X · One thread, one loop, and everything else in the part answering the same question about itself: when in that loop does this happen?
 
 A player already knows this part by its symptoms: the stutter where the world
-moves on without you, the block that appears and then disappears, the sound
-that arrives a beat after the packet. Every one of them is the same
-arrangement seen from a different angle. Everything in this part that touches
-the game happens on **one thread**, and nothing in the client's simulation is
+moves on without you, the block that appears and then disappears, the inventory that waits for the next tick to open. Every one of them is the same
+arrangement seen from a different angle. Everything in this part that changes the client's world happens on **one thread**, and nothing in the client's simulation is
 driven by a scheduler or a timer callback; despite the name printed in every
 stack trace there is no separate render thread, and the thread called *Render
 thread* is the same one that ticks the world, applies packets, handles your
@@ -36,7 +34,7 @@ flowchart LR
     SND["10-11 · Sound"]
     DBG["12 · Debugging the running game"]
     LOOP -- "per tick, light per frame" --> LEVEL
-    LOOP -- "per action, one window" --> PRED
+    LOOP -- "per action, a window per try" --> PRED
     LOOP -- "per SDL event" --> INPUT
     LOOP -- "per save" --> OPT
     LOOP -- "per frame" --> GUI
@@ -69,8 +67,7 @@ is what it took to get there.
 
 [Part I's anatomy](../anatomy/anatomy.md) for the two-loops figure, which is
 the premise of the whole part: the server's tick loop and the client's frame
-loop are different clocks, and almost every surprise in Part X is a
-consequence of one of them waiting on the other.
+loop are different clocks, and two of the pages here, the client level and prediction, open on one of them waiting on the other.
 
 [Authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
 from Part VI, because "what the client is allowed to decide" is the question
@@ -105,8 +102,7 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
    is not a verdict. Watch it straight after two: the ledger it turns on lives
    on `ClientLevel` and is reached through four of that class's methods.
 4. [Input and keybinds](input-and-keybinds.md) — everything between the
-   operating system and a key being *down*, and the five places a press can
-   be swallowed on the way.
+   operating system and a key being *down*, the four places a press can be swallowed on the way, and a fifth before a click counts.
 5. [Options](options.md) — one flat file and nine fields the server ever
    hears about. A policy page: what saving does, and who is told.
 6. [GUI and screens](gui-and-screens.md) — what a screen *is*: the manager,
@@ -123,7 +119,7 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
    and under exactly which conditions.
 10. [Sound: the engine](sound-engine.md) — the page in the part with the
     most threads in it: five take part, a block placed near you crosses four
-    of them on its way to an OpenAL source, and one hop it cannot skip.
+    of them on its way to an OpenAL source, and one hop to the sound thread it cannot skip.
 11. [What makes a sound happen](what-makes-a-sound.md) — the content model:
     three doors a sound comes through, only one of which names it.
 12. [Debugging the running game](debugging-the-running-game.md) — the
@@ -138,25 +134,15 @@ the easier way round.
 ## Where the part stops
 
 At one end, the profiler's *frame* zone: [the
-frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of)
-begins exactly where [the client loop](the-client-loop.md#one-turn-of-the-loop)
-ends, and everything inside that zone is Part XI's — though a few of this
+frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of) is one span inside a turn of [the client loop](the-client-loop.md#one-turn-of-the-loop), which picks up again after it to settle the pause, and everything inside that zone is Part XI's — though a few of this
 part's own cadences run inside it and stay here for what they decide, the
 per-frame light pass and the GUI record pass among them. What the *server*
 chose to send is Part IX's.
 
 At the other end, and much the larger boundary: **this part explains what a
-screen, a widget and a glyph *are*, not the two hundred-odd screens the game
-ships.** {{#include ../../generated/coverage-client.md}}, and nine tenths of
-that is one more `Screen` or one more widget — the world creation flow, the
-pack picker, the recipe book, a class per container. [GUI and
+screen, a widget and a glyph *are*, not the hundred and thirty-odd screens the game ships.** {{#include ../../generated/coverage-client.md}}, and about four fifths of that is one more `Screen` or one more widget — the friends and social screens, the pack picker, the recipe book, a class per container. [GUI and
 screens](gui-and-screens.md#who-opens-a-screen) covers them as one pattern with
-four routes into it, on purpose. Two more things in the part's packages belong
-to other parts (the model tree under `client/resources` to Part XI,
-`client/player` to [Part VIII](../player/README.md) as well as here) and one to
-nobody: player reporting, which [this book
-skips](../anatomy/what-this-book-skips.md#player-reporting) and the atlas
-therefore counts in no part at all.
+four routes into it, on purpose. Some of the part's packages hold other parts' subjects too: the model tree under `client/resources` is Part XI's, and `client/player`, `client/multiplayer` and the dialog screens are shared with [Part VIII](../player/README.md), [Part IX](../networking/README.md) and [Part XIII](../commands/README.md). One subject belongs to nobody: player reporting, which [this book skips](../anatomy/what-this-book-skips.md#player-reporting); the atlas counts its chat-report package in no part, and its report screens here.
 
 ## Reference this part uses
 
@@ -169,8 +155,7 @@ HUD](hud.md) is built on, in record order.
 and [the glossary](../../reference/glossary.md) for *partial tick*,
 *prediction ledger* and *extract*. [Naming
 drift](../../reference/naming-drift.md) is the one to keep open beside this
-part in particular: nine of these twelve pages carry a *for a 1.21-era reader*
-box.
+part in particular: eight of these twelve pages carry a *for a 1.21-era reader* box.
 
 ---
 

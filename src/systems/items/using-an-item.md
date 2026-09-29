@@ -349,9 +349,9 @@ chorus fruit's teleport is never predicted while the hunger bar's jump is
 experience](../player/hunger-and-experience.md#eating-is-a-component-walk)).
 
 One meal, two exactly-once sound strategies. The chew sound goes through
-`Player.playSound`, which names the eater as the entity to *exclude*, so the
-server broadcasts it to everyone else and the eater's client plays it
-locally. The `FoodProperties` eat and burp sounds pass no exclusion at all —
+`Player.playSound`, which on the server names the eater as the entity to *exclude*, so the
+server broadcasts it to everyone else; on the eater's client `LocalPlayer.playSound` plays it
+locally without the test. The `FoodProperties` eat and burp sounds pass no exclusion at all —
 and `ClientLevel.playSeededSound` plays a sound only when the excluded
 entity *is* the local player — so those reach the eater as the server's
 broadcast alone.

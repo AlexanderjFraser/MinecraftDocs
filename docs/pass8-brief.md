@@ -857,7 +857,7 @@ V2, or B into A, if either runs short.
 | **G** | VII · Items and inventories | 74+2 | 2·4·0·21 | 53·56·14·1 | 29.8k | done 2026-09-28 | **255 corrections on nine pages** (31 inside a figure or a caption; two 26.3 changes the version pass did not reach; six false headings, four of them on `enchantments`), every one re-derived in the tree; the 77 ledger entries struck, 4 wrong or wrong in part; the part's queue settled; the record audited by one agent per page, which found **71 of them, 45 in sentences the session had just written**; every caption's doubled *Figure:* gone; one probable upstream bug written as mechanism (a thrown click leaves remote updates suppressed); four pages outside the part corrected with it; items handed to H, I, J, N, O and P |
 | **H** | VIII · The player | 84+12 | 5·1·0·21 | 29·27·9·8 | 20.1k | done 2026-09-28 | **241 corrections on eight pages** (19 inside a figure or a caption; five 26.3 changes the version pass did not reach — phase one's `Entity.commonTick`, the hurt cooldown on the two-phase tick, `ServerGamePacketListenerImpl.handlePlayerPositionChange`, the teleport acknowledgement's position, the per-client-tick position kick), every one re-derived in the tree; the 96 ledger entries struck, 8 wrong in whole or in part; the part's queue settled (34 struck, seven shared units noted); one false heading (the food bar's *pile of literals*, V6); the record audited by one agent per page, which found **50 of them, 44 in sentences the session had just written**; four pages outside the part corrected with it; items handed to I, J, L, N, O and P |
 | **I** | IX · Networking | 73+30 | 6·1·0·16 | 30·43·12·13 | 21.7k | done 2026-09-28 | **220 corrections on six pages** (15 inside a figure or a caption; `the-connection`'s lead figure redrawn, the swing's answer going to the players watching and never back to the swinger; its false heading on `Connection.tick` corrected twice with its two links), every one re-derived in the tree; the 103 ledger entries struck, 39 wrong in whole or in part or beside a wrong sentence; the part's queue settled; the record audited by one agent per page, which found **71 of them, 52 in sentences the session had just written** — about one in three; two queue-router bugs fixed; three pages outside the part corrected with it; items handed to N, O and P |
-| **J** | X · The client — the largest ledger; may split at the GUI stack (pages 1–5, 6–12) | 118+17 | 6·3·4·27 | 59·71·10·9 | 29.6k | — | |
+| **J** | X · The client — the largest ledger; may split at the GUI stack (pages 1–5, 6–12) | 118+17 | 6·3·4·27 | 59·71·10·9 | 29.6k | done 2026-09-28 | **314 corrections on thirteen pages**, in one session (36 inside a figure or a caption; `what-makes-a-sound`'s figure redrawn, your own break a level event your client runs locally rather than a place's sound; four false headings, two with their links), every one re-derived in the tree; the 135 ledger entries struck, 65 wrong in whole or in part or beside a wrong sentence; the part's 54 queue units settled; the record audited by one agent per page, which found **131 of them, 74 in sentences the session had just written** — about two in five, the pass's highest; `options`' 1.21 box and three `naming-drift` rows cut, their names never Mojang's; sixteen pages outside the part corrected with it; items handed to L, M, O and P |
 | **K** | XI · Rendering, **the figures** — pass 7's session K: its runbook, its viewer brief, its gate; the part's 20 figures rendered and read against their sections; the 19 captions written; the three eight-lane traces split or folded; the 17 figure-kind queue units; recorded in [pass7-brief.md](pass7-brief.md) Part 4 as well as here | — | ·   ·17·   | — | — | — | |
 | **L** | XI · Rendering — the check and the polish, after K | 82+8 | 1·5·0·25 | 82·72·21·21 | 35.7k | — | |
 | **M** | XII · World generation — the part V2 rewrote most; its agents read V2's ledger entries first | 77 | 6·1·0·18 | 69·61·19·2 | 30.7k | — | |
@@ -1363,3 +1363,33 @@ noted), so `pass5_queue.py --summary` has no Part IX row. Corrected where a corr
 `world/environment-attributes-and-timelines`. Left for N, O and P: the items in the ledger's *For later sessions*, among them a
 probable chat-window drift the audit found in the code and nobody has run (a client without a sender's session strips the signature,
 records nothing, and can fail its next checksum). For P: the V1 and V2 entries on these pages, and this session's diff.
+
+**Session J — Part X · The client (2026-09-28).** Thirteen pages in one session, not split at the GUI stack, each checked under
+Part 2 by its own agent while the session read the part whole; the prompts carried the pages' pass 5–7 ledger entries, every pass 8
+entry on these pages (V1's, V2's, A's and the part sessions B–I's) and the part's queue units. **314 corrections**, every one
+re-derived in `reference/26.3` before it was made; 36 are inside a figure or a caption. Ledger entries checked: the 135 on these pages
+(65 checked, 45 checked with a part or the sentence beside it wrong, 20 wrong in whole or in part, 3 overtaken, 2 no claim). The
+three worst corrections: `what-makes-a-sound`'s figure and caption sent your own break into `ClientLevel.playSeededSound` through the
+shared `Level.playSound`, like a place, where a break is a level event that `ClientLevel.levelEvent` hands to `LevelEventHandler` with
+no test and `ServerLevel.levelEvent` sends to everyone but the breaker — the third door is now two boxes, and the explode packet,
+whose handler plays its sound locally, has left door one; `prediction-and-acks` had the ack flushed by *the next tick* and the
+resends made *unconditionally*, where the listener's tick flushes it later in the same server tick, the resends follow only a click
+that passes the early gates, and the rule for an accepted change rests on levels ticking before connections (both figures and their
+captions corrected); and `the-client-loop`'s heading *Pausing, which is two things and neither is the menu*, over a sentence that
+had `Minecraft.pauseIfInactive` pause the game, where it opens a `PauseScreen` and that screen's vote is the pause, which a
+multiplayer game never takes. **The record's audit was again the session's finding**: thirteen agents re-derived every changed
+sentence and found **131 of the 314, 74 in sentences this session had just written** — about two in five, the highest rate of the
+pass — among them a new clause making a crack someone abandoned linger (the server's -1 clears it at once, as `block-breaking`
+says), a new window of *as many steps as the type's update interval* for every interpolating entity (only a living entity's reads
+it), the rewritten account of what a key press sends still leaving out what a screen sends and the hotbar key's next-tick packet,
+and a blockquote clause naming *Options.keyBindings*, a name the 1.21.11 tree does not have. The polish: six possessives on a link,
+two em-dash chains, five *actually*, five sizes (V10), four thread names and the sound's hop (V7), two captions cut to two sentences
+(V12), and the reload pool's new name made the book's *worker pool*. Also: the part's queue settled (48 struck, five share notes,
+one routing note), so `pass5_queue.py --summary` shows no Part X unit but the Part XII one at pass5.md:7044, which the router files
+here and a note routes to M. Corrected where a correction here made them disagree: sixteen pages outside the part —
+`rendering/the-frame`, `rendering/the-window`, `rendering/models-and-atlases`, `rendering/blaze3d`, the glossary,
+`reference/hud-elements`, `reference/naming-drift`, `reference/threads`, `lectures.md` (two), `blocks/block-interaction`,
+`blocks/block-breaking`, `player/input-to-movement`, `networking/what-the-client-is-told`, `items/using-an-item`,
+`commands/game-tests` and `server/server-level-tick`. Left for L, M, O and P: the items in the ledger's *For later sessions*, among
+them `introduction`:14–15 for the owner's judgement and a possible stale subscriber set in the debug synchronizers that nobody has
+run. For P: the V1 and V2 entries on these pages, and this session's diff.

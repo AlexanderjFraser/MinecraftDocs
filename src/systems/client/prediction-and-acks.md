@@ -7,13 +7,10 @@ it places it locally and tells the server afterwards. Everybody who has
 described this system has described it as a rollback: the client guesses, the
 server judges, the ack says yes or no. That is not what happens.
 `ClientboundBlockChangedAckPacket` carries no verdict at all — it is a receipt
-for a number, sent (once the client has finished loading in) for actions the
-server refused exactly as it is sent for actions it allowed, and sent carrying
-zero for an aborted dig. Nothing in the
+for a number, sent (once the server considers the client loaded) for actions the server refused exactly as it is sent for actions it allowed, and sent carrying zero for an aborted dig or a changed dig direction. Nothing in the
 protocol ever says *no*. **What makes the system correct instead is an
 ordering rule: any correction the server intends travels earlier in the stream
-than the receipt for it, because the correction leaves from inside the handler
-while the receipt is only a number the connection flushes on its next tick.**
+than the receipt for it, because the correction leaves from inside the handler or with the level's own tick, while the receipt is only a number the connection flushes after both.**
 
 This page is the machinery under that rule: one ledger per level, one counter
 per connection, six windows in which a prediction can be opened, and four
@@ -57,15 +54,12 @@ stateDiagram-v2
         [*] --> Idle
         Idle --> Raised : ServerGamePacketListenerImpl.<br/>ackBlockChangesUpTo
         Raised --> Raised : another acked action, same tick
-        Raised --> Idle : flushed, head of the next tick
+        Raised --> Idle : flushed, head of the listener's tick
     }
 ```
 
 *Two machines that never read each other, on different clocks: the client's
-runs once per position, the server's once per connection. The only state that
-means a lie is on screen is Retained, and both its exits are the same call —
-what differs is whether `ClientLevel.syncBlockState` then writes the old state
-back or the absorbed one, which on screen is a no-op.*
+runs once per position, the server's once per connection. Both exits to the end are the same call, which writes the entry's state wherever it differs from the screen: the state from before the prediction if no update arrived, the server's if one was absorbed.*
 
 Read the two columns as running at different rates. The client's machine
 advances several times per tick, once per position touched. The server's
@@ -104,8 +98,7 @@ and the world is not touched, so the prediction stays on screen. If it is
 — it writes the world immediately. The absorption is per position, not per
 packet.
 
-**`ClientLevel.handleBlockChangedAck`** — the trigger. The ledger's only
-entry point from the network: it hands the receipt's number straight to
+**`ClientLevel.handleBlockChangedAck`** — the trigger. The receipt's way into the ledger: it hands the receipt's number straight to
 `BlockStatePredictionHandler.endPredictionsUpTo`, which removes every entry at
 or below it and passes each one's recorded state to the settle.
 
@@ -114,8 +107,7 @@ only if it differs from what is there, with flags `Block.UPDATE_NEIGHBORS`
 plus `Block.UPDATE_CLIENTS` plus `Block.UPDATE_KNOWN_SHAPE` (the whole set is
 in [block update flags](../../reference/block-update-flags.md)). That third flag
 suppresses the shape pass, and neighbour updates are inert on the client
-anyway — so the restore is a bare state write plus a remesh. A prediction
-usually touches more than the block you clicked: placing one half of a door
+anyway — so the restore is a bare state write plus a remesh. A prediction can touch more than the block you clicked: placing one half of a door
 writes the other, and a shape update can walk outwards from the block that
 changed. Call that spread the *cascade*. **The cascade does not re-run on the
 way back.** Reconciliation is correct only because every position the cascade
@@ -124,7 +116,7 @@ touched got its own ledger entry on the way out.
 ## A placement the server refuses
 
 The state diagram says what the states are; this says what order the packets
-arrive in, which is the part correctness actually rests on.
+arrive in, which is the part correctness rests on.
 
 ```mermaid
 sequenceDiagram
@@ -143,23 +135,17 @@ sequenceDiagram
     SGPL->>SPGM: useItemOn — the place fails canPlace, so nothing changes
     SGPL->>CL: two ClientboundBlockUpdatePackets, whatever the outcome
     CL->>BSPH: updateKnownServerState — the entry is overwritten, the world is not
-    Note over SGPL,SPGM: the next tick, whose first statement flushes it
+    Note over SGPL,SPGM: later in the same server tick, the listener's tick opens by flushing it
     SGPL->>CL: Clientbound<br/>BlockChangedAckPacket, carrying n
-    CL->>BSPH: endPredictionsUpTo(n), then syncBlockState — air goes back
+    CL->>BSPH: endPredictionsUpTo(n)
+    BSPH->>CL: syncBlockState — air goes back
     CL->>CL: Entity.absSnapTo — only if the restored block now intersects you
 ```
 
-*The two `ClientboundBlockUpdatePacket`s leave from inside the handler; the
-ack is only a field the next tick flushes. That is the whole of the ordering
-rule, and it is visible here as the gap between the fourth arrow from the
-bottom and the note.*
+*The two `ClientboundBlockUpdatePacket`s leave from inside the handler; the ack is only a field the listener's tick flushes, later in the same server tick. That is the ordering rule for a refusal, visible here as the distance between the block-update arrow and the note.*
 
 The ack is recorded **before** the action is attempted, so by the time the
-refusal happens the receipt is already promised. The correction is not the
-ordinary chunk broadcast but a targeted pair of resends the handler makes
-unconditionally, which is what actually puts it ahead of the receipt: the
-resends go out inside the handler, while the ack is only a field assignment
-that `ServerGamePacketListenerImpl.tick` flushes later. The settle is what
+refusal happens the receipt is already promised. The correction is not the ordinary chunk broadcast but a targeted pair of resends the handler makes for every click that passes the build-height test, whether or not the action was then attempted. It skips them only when an earlier gate turns the packet away — an item a feature flag disables, a target out of reach, a hit point more than a block from the target's centre, a target past the build limit — and then the ledger's own record undoes the prediction. Whenever a correction is sent it is ahead of the receipt: the resends go out inside the handler, an accepted change's broadcast with the level's tick, and the ack is only a field assignment that `ServerGamePacketListenerImpl.tick` flushes after both. The settle is what
 finally moves the world, and it is a no-op when the absorbed state is already
 what is on screen. And the snap only happens when the restored block turns
 out to be inside the player.
@@ -172,16 +158,10 @@ break action, and in both cases the correction still reaches the client first.
 
 ## The six windows
 
-A window is a few microseconds long and entirely synchronous: on the client
-thread, inside one call from `Minecraft.tick`. The counter is raised, the
-local effect runs, the packet is built with the new sequence and sent, and the
-window closes — in that order, so the packet is constructed while the ledger
-is still recording. `MultiPlayerGameMode.startPrediction` is the private method all six go
+A window is a few microseconds long and entirely synchronous: on the Render thread, inside one call from `Minecraft.tick`. The counter is raised, the local effect runs, the packet is built with the new sequence and sent, and the window closes — in that order in five of the six, `MultiPlayerGameMode.useItem` building its packet before its effect — so the packet is always constructed while the ledger is still recording. `MultiPlayerGameMode.startPrediction` is the private method all six go
 through, and it is not the same thing as
 `BlockStatePredictionHandler.startPredicting`, which is what it calls: the
-first is the window, the second is the pre-increment of
-`BlockStatePredictionHandler.currentSequenceNr` that gives the window its
-number. `ClientLevel.getBlockStatePredictionHandler` is package-private, so
+first is the window, the second is the pre-increment of `BlockStatePredictionHandler.currentSequenceNr` that gives the window its number, and the switch that sets `ClientLevel.setBlock` recording. `ClientLevel.getBlockStatePredictionHandler` is package-private, so
 nothing outside `client/multiplayer` can reach the ledger at all.
 
 | where | what it predicts locally | what it sends |
@@ -195,8 +175,7 @@ nothing outside `client/multiplayer` can reach the ledger at all.
 
 So the ledger covers rather more than "blocks the player placed or broke": it
 covers **every** `ClientLevel.setBlock` performed inside one of those windows.
-That includes the second half of a door, every position a shape cascade
-revisits, and — the only case of its own — `RedStoneOreBlock.attack`, whose
+That includes the second half of a door, every position a shape cascade revisits, a door a right-click opens or shuts, and — the one attack hook that does it — `RedStoneOreBlock.attack`, whose
 lighting change is not side-gated and therefore files a ledger entry when you
 merely left-click redstone ore.
 
@@ -227,8 +206,7 @@ at all.
   id-matched teleport handshake with no sequence and no ledger, described in
   [input to movement](../player/input-to-movement.md). The two systems touch
   at one point in each direction — `ClientPacketListener.handleMovePlayer`
-  calls `BlockStatePredictionHandler.onTeleport`, so a teleport disarms the
-  ledger's position snap, and the settle calls `Entity.absSnapTo` on the
+  calls `BlockStatePredictionHandler.onTeleport`, so a teleport disarms the ledger's position snap until a receipt passes the teleport's number, and the settle calls `Entity.absSnapTo` on the
   `LocalPlayer` when
   the restored block is inside you.
 
@@ -240,27 +218,22 @@ nothing, because the recorded state is already on screen (the correct
 prediction); write the state; or write the state and snap the player. A single
 ack can produce all three across the map in one pass — which is what the
 player-position recorded in each entry is for, and the only thing that reads
-it. `BlockStatePredictionHandler.lastTeleportSequence` is the exception that
-makes the snap coarse: it is compared against the *acknowledged* sequence
-rather than each entry's, and is never reset, so one teleport suppresses a
-whole batch of snaps rather than one.
+it. `BlockStatePredictionHandler.lastTeleportSequence` is the exception that makes the snap coarse: it is compared against the *acknowledged* sequence rather than each entry's, and is never reset. While the receipt is at or below the teleport's number every snap in the batch is suppressed; once a receipt passes it, every snap is allowed, those of entries filed before the teleport included.
 
 **Zero is not a sequence.** `BlockStatePredictionHandler.startPredicting`
 pre-increments, so the first real sequence is one and no genuine prediction is
 ever numbered zero. The three-argument `ServerboundPlayerActionPacket`
-constructor defaults the sequence to zero and aborting a dig uses it, so the
+constructor defaults the sequence to zero and aborting a dig and changing its direction use it, so the
 server dutifully sends a `ClientboundBlockChangedAckPacket` carrying zero — and
 it settles nothing.
 
 **Nothing expires.** There is no timeout and no cap on the ledger: nothing
 clears it except a settle, and while the server considers the client not yet
-loaded, sequenced packets are dropped *before* the ack is recorded. So a wrong
-guess can stand on screen indefinitely, predictions accumulating behind it. The
+loaded, sequenced packets are dropped *before* the ack is recorded. So a wrong guess made then stands on screen until a later receipt settles it with everything below it. The
 only reset is a new `ClientLevel`.
 
 And the two directions do not use the same flags. The predicted removal in
-`MultiPlayerGameMode.destroyBlock` — the write inside the first two rows of the
-window table — goes out with `Block.UPDATE_IMMEDIATE` in the mix; the restore
+`MultiPlayerGameMode.destroyBlock` — the write inside the four breaking rows of the window table — goes out with `Block.UPDATE_IMMEDIATE` in the mix; the restore
 comes back with `Block.UPDATE_KNOWN_SHAPE`. One cascades, the other
 deliberately does not, which is the four writes' asymmetry stated in flags.
 
@@ -286,8 +259,7 @@ early, before the window opens, while `MultiPlayerGameMode.useItemOn` returns
 ## Where to look
 
 `MultiPlayerGameMode.startPrediction` — the whole client side is that one
-private method and its six call sites. `BlockStatePredictionHandler` end to
-end; it is under a hundred lines and every one of them matters, including
+private method and its six call sites. `BlockStatePredictionHandler` end to end; it is short and every line of it matters, including
 `BlockStatePredictionHandler.currentSequence`,
 `BlockStatePredictionHandler.isPredicting` and
 `BlockStatePredictionHandler.close`. `ClientLevel.setBlock`,

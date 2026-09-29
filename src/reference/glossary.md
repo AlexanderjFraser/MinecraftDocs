@@ -119,7 +119,7 @@ post-processing, so a leaf or a fluid there is re-evaluated when the chunk
 goes live. → [blending at the old-chunk border](../systems/worldgen/blending.md)
 
 **Boss bar** — a named server-side `BossEvent` holding a name, a progress
-float and three screen effects, broadcast to the players attached to it; the
+float and three client effects (darkened screen, boss music, world fog), broadcast to the players attached to it; the
 `/bossbar` kind adds an integer value and maximum, persists its membership as
 UUIDs, and is `execute store`'s third sink. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again)
 
@@ -223,8 +223,7 @@ the server's data-driven content; the server half of the resource system. → [t
 in, owned by the light engine and never by the section. → [lighting](../systems/world/lighting.md)
 
 **Debug subscription** — a registered kind of debug value a client can ask
-the server for; most kinds the server polls, diffs and sends only when they
-change, and the rest it pushes as they happen. → [debugging the running game](../systems/client/debugging-the-running-game.md#the-idea)
+the server for; half the kinds the server polls, diffs and sends only when they change, and the rest it pushes as they happen. → [debugging the running game](../systems/client/debugging-the-running-game.md#the-idea)
 
 **DeltaTracker** — the client's clock: how much of a tick has elapsed, and
 the source of every partial tick in the frame but the lightmap's, which is a
@@ -299,8 +298,8 @@ instance per liquid, with `FlowingFluid` holding the spread algorithm and
 `LiquidBlock` the block form. → [fluids](../systems/world/fluids.md)
 
 **Font** — a resource-pack-defined glyph source plus the measuring and
-wrapping API on top of it; a glyph is baked into a texture the first time it
-is asked for. → [text and fonts](../systems/client/text-and-fonts.md)
+wrapping API on top of it; a glyph is baked into a texture the first time its
+font set is asked for it, and again after a reload or a font-option toggle. → [text and fonts](../systems/client/text-and-fonts.md)
 
 **Frame** — two different things the corpus keeps apart. In Part XI it is one
 pass of the client's render loop, the unit *partial tick*, *extract* and the

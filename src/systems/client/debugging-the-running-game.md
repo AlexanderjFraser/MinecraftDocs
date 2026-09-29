@@ -11,9 +11,7 @@ besides. The idle cost is small but it is not nothing: the producers check for
 a subscriber before they work, and the server sweeps every online player's
 permissions once a tick whether or not anyone has asked for anything.
 
-That is the pattern the page is about: a registry of subscription kinds, a
-per-level engine that sleeps until somebody asks, a poll-and-diff sender, and
-the twenty-five renderers that turn the results into floating text and boxes.
+That is the pattern the page is about: a registry of subscription kinds, a per-level engine that sleeps until somebody asks, a poll-and-diff sender, and the renderers — thirteen of the twenty-five — that turn the results into floating text and boxes.
 It is only half a client system — the machinery ships on the dedicated server
 — but the client is the only thing that ever asks and the only thing that
 draws, and the trace ends in a renderer.
@@ -26,7 +24,7 @@ draws, and the trace ends in a renderer.
 | `DebugSubscriptions` | the sixteen kinds | both sides |
 | `DebugValueSource` | which objects can answer which subscriptions | Server thread |
 | `ServerDebugSubscribers` | who is subscribed, rebuilt every tick, and the permission rule | Server thread |
-| `LevelDebugSynchronizers` | one synchronizer per subscription per level, and the sleep flag | Server thread |
+| `LevelDebugSynchronizers` | per level, a source synchronizer for each of the fifteen subscriptions with a value codec, the event-driven point-of-interest and village-section synchronizers, and the sleep flag | Server thread |
 | `TrackingDebugSynchronizer` | the engine: registration, the diff, and the tracking filter | Server thread |
 | `ClientDebugSubscriber` | what to ask for, and the maps holding what came back | Render thread |
 | `DebugRenderer` | the renderer list, rebuilt when the enabled entries change | Render thread |
@@ -70,22 +68,18 @@ see. The shapes are small records — `CuboidGizmo`, `LineGizmo`, `ArrowGizmo`,
 stroke and a fill, and the `GizmoProperties` handle a call returns can pin the
 shape on top, keep it for a number of milliseconds, or fade it.
 
-Five places in the game install a collector; four of them keep what they are
-given, and those four are the table. The fifth is `GameTestServer`, which
-installs `GizmoCollector.NOOP` so that a headless test run pays nothing for
-code that draws. The fourth row is the one worth knowing.
+Five places in the game install a collector; four of them keep what they are given, and those four are the table. The fifth is `GameTestServer`, which installs `GizmoCollector.NOOP`, so code that draws does not throw in a headless test run. The fourth row is the one worth knowing, though nothing the game ships draws into it.
 
 | collector | installed by | what it collects |
 |---|---|---|
 | per tick | `Minecraft.collectPerTickGizmos` | anything the client tick draws, cleared each tick |
-| per frame, main thread | `LevelExtractor.collectPerFrameMainThreadGizmos` | the debug renderers of this page, inside the extract pass |
-| per frame, render thread | `LevelRenderer.collectPerFrameRenderThreadGizmos` | what the world renderer itself wants outlined |
+| per frame, during extraction | `LevelExtractor.collectPerFrameMainThreadGizmos` | the debug renderers of this page, inside the extract pass |
+| per frame, during rendering | `LevelRenderer.collectPerFrameRenderThreadGizmos` | what the world renderer itself wants outlined |
 | **the integrated server** | `IntegratedServer`, around its whole packet-and-tick step | server tick code drawing into a singleplayer world, published for the client to drain |
 
 So **server-side game logic can draw**, and only in singleplayer: a dedicated
 server installs no collector at all, so the identical call there would throw.
-That asymmetry is why the two renderers below that want *server* state reach
-for the singleplayer server directly rather than asking for it over the wire.
+The two renderers below that want *server* state are singleplayer-only as well: they reach for the singleplayer server directly rather than asking over the wire, and no subscription carries what they draw.
 
 ## The sixteen instances
 
@@ -95,7 +89,7 @@ Fourteen rows, sixteen subscriptions: two of the rows carry a matched pair.
 |---|---|---|
 | `DebugSubscriptions.BRAINS` | `DebugBrainDump` | `Mob.registerDebugValues` |
 | `DebugSubscriptions.GOAL_SELECTORS` | `DebugGoalInfo` | `Mob.registerDebugValues` |
-| `DebugSubscriptions.ENTITY_PATHS` | `DebugPathInfo` | the navigator's current `Path` |
+| `DebugSubscriptions.ENTITY_PATHS` | `DebugPathInfo` | `Mob.registerDebugValues`, from the navigator's current `Path` |
 | `DebugSubscriptions.BEES` / `DebugSubscriptions.BEE_HIVES` | `DebugBeeInfo` / `DebugHiveInfo` | `Bee` and `BeehiveBlockEntity` |
 | `DebugSubscriptions.BREEZES` | `DebugBreezeInfo` | `Breeze` |
 | `DebugSubscriptions.POIS` | `DebugPoiInfo` | `TrackingDebugSynchronizer.PoiSynchronizer`, event-driven |
@@ -134,47 +128,39 @@ sequenceDiagram
     CDS->>CDS: requestedSubscriptions — the JVM has the brain flag
     CDS->>SGPL: ServerboundDebugSubscriptionRequestPacket, BRAINS
     SGPL->>SGPL: handleDebug<br/>SubscriptionRequest — stored, unhonoured
-    Note over SGPL,TDSS: the end of the next server tick
+    Note over SGPL,TDSS: the end of the same server tick
     SDS->>SDS: tick — op, or the owner of an IDE world?
-    Note over SGPL,TDSS: the tick after that
+    Note over SGPL,TDSS: the next server tick
     LDS->>LDS: tick — subscribers exist, so wake up
     LDS->>TDSS: registerChunk and registerEntity for everything already tracked
     TDSS->>TDSS: the Mob offers a DebugValueSource.<br/>ValueGetter
     loop each server tick
-        TDSS->>TDSS: pollUpdate — takeBrainDump, compare with the last value sent
+        TDSS->>TDSS: pollAndSendUpdates — takeBrainDump, compare with the last sent
         TDSS->>CDS: ClientboundDebugEntityValuePacket — only if it differs
     end
     CDS->>CDS: updateEntity — stored under the villager's UUID
     Note over CDS,BDR: the next client frame
     BDR->>BDR: emitGizmos — reads through DebugValueAccess
-    BDR->>BDR: Gizmos.<br/>billboardTextOverMob, later in the frame
+    BDR->>BDR: Gizmos.<br/>billboardTextOverMob — appended now, drawn later
 ```
 
-*Two machines and two ticks of lag before anything is sent: the request is
-stored on the tick it arrives, the subscriber set is read at the end of the
-next one, and the synchronizers wake on the one after that. The packet in the
+*Two sides and, from a sleeping level, one tick of lag before anything is sent: the request is stored at the head of a server tick and the subscriber set read at its end, and the synchronizers wake, and first send, in the next. The packet in the
 loop reaches `ClientDebugSubscriber` through `ClientPacketListener` like any
 other, which is why no listener lane is drawn.*
 
 The figure's own names, in its order:
 `ClientDebugSubscriber.requestedSubscriptions` is what the JVM flag filled;
 `ServerGamePacketListenerImpl.handleDebugSubscriptionRequest` stores the set
-on the `ServerPlayer`; `LevelDebugSynchronizers` calls
-`TrackingDebugSynchronizer.registerChunk` and
-`TrackingDebugSynchronizer.registerEntity` for everything already tracked;
-`TrackingDebugSynchronizer.SourceSynchronizer.pollUpdate` is the per-tick
-compare, and for a villager the value it asks for is a brain dump;
+on the `ServerPlayer`; `LevelDebugSynchronizers` calls `TrackingDebugSynchronizer.SourceSynchronizer.registerChunk` and `TrackingDebugSynchronizer.SourceSynchronizer.registerEntity` for everything already tracked; `TrackingDebugSynchronizer.SourceSynchronizer.pollAndSendUpdates` is the per-tick compare, and for a villager the value it asks for is a brain dump;
 `ClientDebugSubscriber.updateEntity` files the answer under the entity's
 uuid; and `BrainDebugRenderer` reads it back next frame.
 
-The engine is the middle three steps, and it has three properties worth
-naming. **Nothing exists until somebody asks**: the level's synchronizers
+The engine is the synchronizers' part of that, and it has three properties worth naming. **Nothing exists until somebody asks**: the level's synchronizers
 start asleep, and the first non-empty subscriber set wakes them and
 retroactively registers every ready chunk and every tracked entity.
-**Nothing is sent twice**: each value source keeps the last value it sent and
-compares. And **nothing reaches a player who cannot see it**: sending is
+**A polled value is sent again only when it changes**: each value source keeps the last value it sent and compares, and a player who starts tracking is sent that stored value once. The point-of-interest synchronizers and the pushed kinds send on each event instead. And **nothing reaches a player who cannot see it**: sending is
 filtered by subscription *and* by whether that player is tracking the chunk
-or entity. When the last subscriber goes away the whole thing is cleared.
+or entity. When the last subscriber goes away the value sources are cleared and the level goes back to sleep.
 
 The three cadences: `ClientDebugSubscriber.tick` runs from
 `ClientPacketListener.tick`, once per client tick, and sends only when the
@@ -183,8 +169,7 @@ wanted set differs from the last one sent.
 *after* the levels have ticked, while each `LevelDebugSynchronizers.tick`
 runs *inside* its level's tick — so **every level acts on the previous tick's
 subscriber snapshot**, a built-in one-tick lag. And `DebugRenderer.emitGizmos`
-runs inside `LevelExtractor.extract` — [the frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of)'s
-own snapshot step — after entities, block entities, particles, sky and clouds,
+runs inside `LevelExtractor.extract` — the snapshot step of [the frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of) — after entities, block entities, particles, sky and clouds,
 fetching one `DebugValueAccess` for the whole pass.
 
 ## The exceptions
@@ -192,10 +177,9 @@ fetching one `DebugValueAccess` for the whole pass.
 Every pattern page's real content.
 
 **Two gates, and the second is not a flag.** Fifteen of the sixteen kinds are
-behind `SharedConstants.DEBUG_ENABLED` *and* an individual constant beside it —
+behind `SharedConstants.DEBUG_ENABLED` *and* one of a set of constants beside it —
 `SharedConstants.DEBUG_BRAIN`, `SharedConstants.DEBUG_POI`,
-`SharedConstants.DEBUG_BEES` and their siblings, one per kind, all read from
-JVM system properties at startup, so turning one on means launching the game
+`SharedConstants.DEBUG_BEES` and their siblings, thirteen for the fifteen kinds, all read from JVM system properties at startup, so turning one on means launching the game
 differently rather than pressing anything. The only subscription an F3 key can
 reach is the dedicated server's tick time, through the FPS charts. And
 the server still has to agree: `ServerPlayer.debugSubscriptions` returns
@@ -216,12 +200,9 @@ snapshot from the previous tick. The change detection, by contrast, is
 brain dump is rebuilt every tick per villager and compared with the last one
 sent — so the saving is in bandwidth, not in server time.
 
-**About half the renderers do not use this system at all.** The chunk debug
+**The other twelve renderers do not use this system at all.** The chunk debug
 renderer reaches directly into `Minecraft.getSingleplayerServer` and shows
-nothing in multiplayer; the entity hitbox renderer reaches for it too, but
-only for its optional *server* hitbox — what it draws for an ordinary visible
-entity is [entity rendering](../rendering/entity-rendering.md)'s, and comes
-from an F3 entry rather than a flag. And a
+nothing in multiplayer; the entity hitbox renderer reaches for it too, but only to check the server has the entity, for its flag-gated *server* hitbox; the ordinary hitbox it draws itself, switched by an F3 entry rather than a flag, as [entity rendering](../rendering/entity-rendering.md) says. And a
 whole family of them — chunk borders, light, collision boxes, height maps,
 the section octree — are purely client-side views that need no server.
 
@@ -255,11 +236,9 @@ by overwriting it, and a reply whose id does not match is dropped on the
 floor. Including the NBT at all needs the gamemaster permission, and the whole
 key is dead while the server has reduced debug info on.
 
-## The sample path, which shares nothing but the idea
+## The sample path, which shares only a subscription
 
-The performance charts are a separate and much simpler system, and the only
-thing they have in common with everything above is that one of the sixteen
-subscriptions gates the remote half of them. There is no shared engine, no
+The performance charts are a separate and much simpler system, and what they have in common with everything above is the subscriber side: one of the sixteen subscriptions gates the remote half of them, asked for in the same request and granted by the same permission rule. There is no shared engine, no
 diff and no tracking filter. A `SampleLogger` takes a vector of longs; a tick
 logs its parts as it goes and a final call flushes the whole vector. There are two implementations
 and the difference is the whole story: `LocalSampleLogger` **is** the storage
@@ -297,8 +276,7 @@ among them, and are not part of this machinery at all.
 ## Where to look
 
 `DebugSubscriptions` for the catalogue and `DebugSubscription` for how little
-a subscription is. `TrackingDebugSynchronizer` for the engine — the tracking
-diff, the back-fill and the equality check are all in that one class.
+a subscription is. `TrackingDebugSynchronizer` for the engine — the tracking diff and the equality check are in that one class, and the wake-up's back-fill is `LevelDebugSynchronizers`'.
 `LevelDebugSynchronizers.tick` for the sleep flag, `ClientDebugSubscriber`
 for both ends of the client's half, and `DebugRenderer.refreshRendererList`
 for which renderers exist and why.

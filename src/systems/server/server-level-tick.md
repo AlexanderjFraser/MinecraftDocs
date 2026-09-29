@@ -490,8 +490,7 @@ world here — and then processes
 `ServerLevel.EntityCallbacks.onTickingEnd`) are exactly what add and remove
 entries in the tick list the previous step walked.
 
-Then `LevelDebugSynchronizers.tick` pushes this tick's brains, paths, POIs
-and raids to any client subscribed through `DebugSubscriptions` — and, just
+Then `LevelDebugSynchronizers.tick` pushes this tick's changed brains, paths and raids to any client subscribed through `DebugSubscriptions` — and, just
 before it, arms or clears the neighbour listener on `CollectingNeighborUpdater`,
 which sends each neighbour update the moment it happens, depending on whether
 anyone is subscribed to `DebugSubscriptions.NEIGHBOR_UPDATES` at all. It is the

@@ -53,7 +53,7 @@ the game-rule registry moved more names than the renderer did.
 you ask rather than a float you are handed. And `Gui` no longer means the
 HUD: the HUD is `Hud`, held as `Gui.hud`, while `Gui` is the screen and
 overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
-1.21-era `Minecraft.setScreen` call site is now on `Gui`. Both `Gui` and
+1.21-era *Minecraft.setScreen* call site is now on `Gui`. Both `Gui` and
 `Hud` exist, which is the single most confusing pair of names in the tree.
 
 ## The tables
@@ -294,15 +294,15 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Minecraft.screen* / *Minecraft.setScreen* | `Gui.screen` / `Gui.setScreen` |
 | *GuiGraphics* | `GuiGraphicsExtractor` (records states; does not draw) |
 | *Screen.render* / every *render** on *Gui* | `Screen.extractRenderState` / every *extract\** on `Hud` |
-| *LayeredDraw* | call order plus `GuiRenderState.nextStratum` |
+| *LayeredDraw* | bounding-box inference and call order, plus `GuiRenderState.nextStratum` |
 | *Options.hideGui* | `Hud.isHidden`, published as `GuiRenderState.isHudHidden` |
 | *Minecraft.getPartialTick*, *Timer* | `DeltaTracker.Timer` and its three questions |
 | *Minecraft.destroy* | gone — `Minecraft.stop`, then `Minecraft.exitWorldAndClose` and `Minecraft.close` |
-| *Options.keyBindings* | `Options.keyMappings`; `KeyMapping.Category` is a registrable record, not a string |
-| *Options.mouseSensitivity* | the field is `Options.sensitivity` with an accessor of that name; *mouseSensitivity* survives only as the key in *options.txt* |
+| key-mapping categories as strings | `KeyMapping.Category` is a registrable record, not a string |
+
 | *MouseHandler.lastMouseEventTime* | gone |
 | raw *(key, scancode, modifiers, action)* on every `Screen` method | the `client/input` records: `KeyEvent`, `MouseButtonEvent`, `CharacterEvent`, `PreeditEvent` |
-| *ClientChunkCache.ChunkArray* | `ClientChunkCache.Storage` |
+
 | *Font.drawInBatch* and every *drawString* variant | `Font.prepareText` → `Font.PreparedText`; the drawing verbs are on `GuiGraphicsExtractor` |
 | *Font.StringRenderOutput* | `Font.PreparedText` plus `Font.GlyphVisitor` |
 | *BakedGlyph* (a class) | an interface; the sheet implementation is `BakedSheetGlyph`, effects are `EffectGlyph` |

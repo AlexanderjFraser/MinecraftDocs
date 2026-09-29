@@ -240,7 +240,7 @@ template machinery they call). `GameTestServer` is the third
 `GameTestServer.waitUntilNextTick`: it drains tasks instead of sleeping, so a
 headless test run goes flat out rather than at twenty ticks a second. It also
 installs a no-op gizmo collector ([debugging the running
-game](../client/debugging-the-running-game.md#the-exceptions)).
+game](../client/debugging-the-running-game.md#a-renderer-does-not-draw-a-gizmo-it-appends-one)).
 
 ## Where to look
 

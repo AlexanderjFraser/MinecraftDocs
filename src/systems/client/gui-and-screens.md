@@ -4,7 +4,7 @@
 
 Press E in survival and no packet is sent, no packet is received, and nothing
 on the server changes. `Player.inventoryMenu` has existed since the player
-object was constructed, it has **no `MenuType` at all**, and `MenuScreens`
+object was constructed, it has [**no `MenuType` at all**](../items/containers-and-menus.md#three-smaller-facts-that-will-otherwise-trip-you), and `MenuScreens`
 could therefore never build an `InventoryScreen` from a packet even if one
 arrived. The *opening* is entirely a client-side event. Press E again and the
 symmetry breaks: `LocalPlayer.closeContainer` sends
@@ -32,8 +32,8 @@ GUI render tree](the-gui-render-tree.md); how a `Component` becomes glyphs is
 | `AbstractWidget` | the final outer shape of a widget, and one inner hook per subclass | Render thread |
 | `Layout` over `LayoutElement` | where widgets end up, re-arranged on most screens whenever the window changes | Render thread |
 | `AbstractContainerScreen` | a screen mirroring a server-side menu, and the slot geometry | Render thread |
-| `MenuScreens` | `MenuType` to screen class — the registry the menu packets look a screen up in | Render thread |
-| `Overlay` | suppresses the screen's record pass, its mouse and its typing — but not its key presses | Render thread |
+| `MenuScreens` | `MenuType` to screen class — the registry `ClientboundOpenScreenPacket` looks a screen up in | Render thread |
+| `Overlay` | takes the screen's place in the record pass, and suppresses its mouse and its typing — but not its key presses | Render thread |
 | `ScreenNarrationCollector` | what has already been said, so it is not said twice | Render thread |
 
 ## The objects, and what contains what
@@ -58,7 +58,7 @@ classDiagram
         AbstractContainerMenu menu
     }
     class Layout {
-        arranges, then forgets
+        arranges; most screens re-arrange it on resize
     }
     Gui *-- Screen
     Gui *-- Overlay
@@ -71,8 +71,7 @@ classDiagram
 
 *A diamond is containment and a hollow arrowhead is inheritance, which the
 flowchart this replaced could not tell apart: `AbstractContainerScreen` **is
-a** `Screen`, and everything else here **holds** what it points at. `Layout`
-is the dashed one because it touches a widget once and then forgets it.*
+a** `Screen`, and everything else here **holds** what it points at. `Layout` is the dashed one because it arranges widgets the screen owns.*
 
 The three lists on `Screen` are the shape worth remembering: a widget added
 with `Screen.addRenderableWidget` joins all three, and the sibling add methods
@@ -88,7 +87,7 @@ rest. A `Tooltip` is in none of them — it is held by a `WidgetTooltipHolder`
 **three** cadences, not two: `Gui.tick` once per client tick, `Gui.update`
 once per frame — which advances toasts and fires delayed narration — and
 `Gui.extractRenderState` once per frame in the record pass. The rest of its
-surface is `Gui.isPausing`, `Gui.handleKeybinds`, `Gui.openChatScreen`,
+surface is `Gui.isPausing`, `Gui.handleKeybinds` (the share of the drain `Minecraft.handleKeybinds` hands it), `Gui.openChatScreen`,
 `Gui.canInterruptScreen`, `Gui.buildInitialScreens` and
 `Gui.setClientLevelTeardownInProgress`.
 
@@ -102,14 +101,12 @@ rather than return you to a world that is being dismantled.
 
 **`Gui.isPausing` is the screen's vote on whether the game stops**, and it is
 one of three conjuncts: [the client
-loop](the-client-loop.md#pausing-which-is-two-things-and-neither-is-the-menu)
-owns the pause itself and the other two, and the vote is cast by
-`Screen.isPauseScreen`, which defaults to **true**. An overlay pauses by
+loop](the-client-loop.md#pausing-which-is-a-field-the-screen-votes-on)
+owns the pause itself and the other two, and the vote is cast by `Screen.isPauseScreen`, which defaults to **true** and which `AbstractContainerScreen.isPauseScreen` answers false. An overlay pauses by
 default too, which the loop page does not say, and is why a resource reload
 stops a singleplayer world as surely as the options screen does.
 
-**An overlay does not stack on a screen: in the record pass it *replaces*
-it.** Nothing draws both, and the input rules are split — an overlay
+**An overlay does not stack on a screen: in `Gui`'s record pass it *replaces* it.** Only `LoadingOverlay` itself records the screen beneath it, while it fades in and out, and the input rules are split — an overlay
 suppresses the screen's mouse and its typing, but not its key presses.
 `LoadingOverlay` is the only implementation of `Overlay` in the game.
 
@@ -117,8 +114,7 @@ suppresses the screen's mouse and its typing, but not its key presses.
 
 There are two methods called `Screen.init` and the difference between them is
 the lifecycle. The one that takes a width and a height is **final** — the
-framework's entry point, which nothing overrides — and the no-argument one is
-the hook every screen implements to build its widgets. Wherever this page says
+framework's entry point, which nothing overrides — and the no-argument one is the hook a screen implements to build its widgets. Wherever this page says
 *the `Screen.init` hook* it means the second.
 
 A resize goes through `Screen.resize` to `Screen.repositionElements`. The
@@ -150,7 +146,7 @@ Layout is `Layout` over `LayoutElement`: `LinearLayout`, `GridLayout`,
 `SpacerElement`, configured by `LayoutSettings` and resolved by
 `Layout.arrangeElements` and `Layout.visitWidgets`. Input arrives as the
 `client/input` records — `KeyEvent`, `MouseButtonEvent` and their siblings,
-which are [input and keybinds](input-and-keybinds.md)' — through
+which [input and keybinds](input-and-keybinds.md) owns — through
 `GuiEventListener` and `ContainerEventHandler`; focus is a `ComponentPath` moved by a
 `FocusNavigationEvent`, ordered by `TabOrderedElement.getTabOrderGroup`; and
 geometry is `ScreenRectangle`, `ScreenPosition`, `ScreenAxis` and
@@ -172,12 +168,12 @@ sequenceDiagram
     participant MPGM as MultiPlayer<br/>GameMode
 
     rect rgba(0, 0, 0, 0.04)
-    Note over KH,MPGM: the tick the key is spent in
+    Note over KH,MPGM: the key press, then the tick that spends it
     KH->>KH: keyPress — no screen open, so the mapping records a click
     MC->>MC: handleKeybinds, with no screen and no overlay
     MC->>MPGM: isServerControlledInventory — false on foot
     MC->>Gui: setScreen — a new InventoryScreen, and the input housekeeping
-    Gui->>InvS: removed on the old one, then added, then init
+    Gui->>InvS: added, then init
     InvS->>InvS: init — creative? replace myself with<br/>CreativeModeInventoryScreen
     end
     rect rgba(0, 0, 0, 0.04)
@@ -188,10 +184,7 @@ sequenceDiagram
     end
 ```
 
-*Two bands, one tick apart: everything that makes the screen exist happens in
-the tick that spends the key, and nothing is drawn until the frame after it.
-`Gui.setScreen`'s housekeeping — the mouse ungrabbed, every mapping released —
-runs before `Screen.init`, which is why sneak does not survive an inventory.*
+*Two bands: everything that makes the screen exist happens in the tick that spends the key, and nothing is recorded until the frame that follows it. `Gui.setScreen`'s housekeeping — the mouse ungrabbed, every mapping released, sneak with them, held or toggled — runs before `Screen.init`.*
 
 The busiest screen in the game is `AbstractContainerScreen`, and its record
 pass is worth following once: `AbstractContainerScreen.extractContents` draws
@@ -216,7 +209,7 @@ is dead or removed. The *client* notices first.
 
 | route | examples |
 |---|---|
-| entirely client-side | `TitleScreen`, `PauseScreen`, `OptionsScreen`, `ChatScreen`, advancements, social interactions, the survival and creative inventories |
+| entirely client-side | `TitleScreen`, `PauseScreen`, `OptionsScreen`, `ChatScreen`, social interactions, the survival and [creative](../items/containers-and-menus.md#creative-mode-is-a-parallel-protocol-not-a-variation) inventories |
 | `ClientboundOpenScreenPacket` | every menu with a `MenuType` — chests, furnaces, anvils, and a chest boat |
 | `ClientboundMountScreenOpenPacket` | a horse's or a nautilus's own inventory |
 | other packets | `BookViewScreen`, `AbstractSignEditScreen`, `DeathScreen`, `WinScreen`, the demo popup, `LevelLoadingScreen`, dialogs |
@@ -243,8 +236,7 @@ The screens you see *first* are a chain rather than a screen.
 `Gui.buildInitialScreens` composes accessibility onboarding, ban notices, a
 forced name change and a banned-skin notice ahead of the title screen or a
 quick-play launch. And `Minecraft.setScreenAndShow` sets a screen and then
-renders one frame on the spot — synchronously — which is how progress appears
-during blocking main-thread work such as a world load, a data fix or a save.
+renders one frame on the spot — synchronously — which is how progress appears during blocking main-thread work such as a world load; a backup or a file fix shows its screen the same way and then runs on the worker pool.
 
 Narration, finally, is mostly timed rather than immediate — mostly, because
 `Screen.init` narrates the new screen at once before arming anything. What
@@ -254,20 +246,18 @@ tempers: the *queued* methods, which yield to whatever is already being said,
 and `GameNarrator.saySystemNow`, which interrupts.
 Thereafter `Screen.handleDelayedNarration` fires from `Gui.update` once **two**
 clocks have both run out: a *next narration* time, armed longer after a mouse
-move than after a keyboard action, and a *suppression* time, set two seconds
-ahead whenever a screen is built. Three intervals, two clocks. When both have
+move than after a keyboard action, and a *suppression* time, armed by the two-argument `Screen.init` on every `Gui.setScreen` — two seconds ahead, or, when one screen replaces another after Tab or arrow-key navigation, until the next key press or click. Three intervals, two clocks. When both have
 passed it picks a *single* widget to narrate, by tab-order group and
 priority.
 
-> **For a 1.21-era reader.** `Minecraft.screen` is gone: the current screen
+> **For a 1.21-era reader.** *Minecraft.screen* is gone: the current screen
 > belongs to `Gui`, which is now the screen-and-overlay manager rather than
 > the HUD — the HUD is `Hud`, reached as `Gui.hud`. Gone with it:
-> *Screen.render*, *renderBackground* and *renderDirtBackground*;
-> *AbstractContainerScreen.renderBg* / *renderLabels* / *renderSlot*;
-> *AbstractWidget.renderWidget*; *ClickType* (now `ContainerInput`);
+> *Minecraft.setScreen*, *Screen.render* and *renderBackground*,
+> *AbstractContainerScreen.renderBg* / *renderLabels* / *renderSlot*,
+> *AbstractWidget.renderWidget*, *ClickType* (now `ContainerInput`) and
 > *MultiPlayerGameMode.handleInventoryMouseClick* (now
-> `MultiPlayerGameMode.handleContainerInput`); and *Minecraft.setScreen*.
-> A screen no longer draws — it *records*.
+> `MultiPlayerGameMode.handleContainerInput`). A screen no longer draws — it *records*.
 
 ## Where to look
 
@@ -278,8 +268,7 @@ explains. `Screen.init` and `Screen.resize` for the lifecycle,
 `Screen.extractRenderStateWithTooltipAndSubtitles` for the record pass, and
 `Gui.extractRenderState` for the frame's contributor order.
 `AbstractContainerScreen.extractContents` for the busiest screen in the game,
-and `MenuScreens` for the screen registry the menu types use — `DialogScreens`
-is the second one.
+and `MenuScreens` for the screen registry the menu types use — `DialogScreens` is another.
 
 ---
 

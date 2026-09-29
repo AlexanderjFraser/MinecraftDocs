@@ -353,8 +353,8 @@ animations do not advance once per tick. `TextureManager.tick` sits outside
 the client's catch-up tick loop, so a laggy client advances every animation
 by one frame however many ticks it just owed. Pausing does not touch it —
 `DeltaTracker` keeps handing out ticks with the menu open — and the one thing
-that does stop the water is `/tick freeze`, because the guard on that call is
-`Minecraft.isLevelRunningNormally` and nothing else.
+that does stop the water is `/tick freeze`, because the guard on that call, beside a tick being owed, is
+`Minecraft.isLevelRunningNormally`.
 
 **Can I look at the atlas?** Yes, and it is the fastest way to understand
 this page. `Options.keyDebugDumpDynamicTextures` runs

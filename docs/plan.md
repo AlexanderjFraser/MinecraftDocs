@@ -50,14 +50,15 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, and G, H and I on 2026-09-28** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, and G, H, I and J on 2026-09-28** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
 and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III, and the audit of its own
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
 audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit; H found 241 on
-Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit — and J onward have not. After it, nothing more is done here except a
+Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit; J found 314 on Part X, 131 of them by that
+audit — and K onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -557,3 +558,16 @@ understood; recording is after the release.
   heading's own part; `--summary`'s set-order routing); the lane key's `SConn` row retired. Five pages outside the part corrected with
   it (`server/server-tick`, `lectures.md`, `entities/movement-and-collision`, `entities/damage-and-death`,
   `world/environment-attributes-and-timelines`); items handed to N, O and P. Deployed.
+
+- **2026-09-28, pass 8, session J — Part X · The client (Opus).** Thirteen pages in one session, not split at the GUI stack,
+  checked under Part 2, one agent per page, and the part read whole: **314 corrections**, every one re-derived in the tree (36
+  inside a figure or a caption). `what-makes-a-sound`'s figure sent your own break through `Level.playSound` like a place, where a
+  break is a level event your client runs locally and the server sends to everyone else; the door split in two. `prediction-and-acks`
+  had the ack flushed by the next server tick, where the listener's tick flushes it later in the same one, and the ordering rule
+  for an accepted change also rests on levels ticking before connections. `the-client-loop` had losing focus pause the game, where it opens the pause menu, whose
+  vote pauses it. Four false headings corrected, two with their one inbound link; `options`' 1.21 box cut, and three
+  `naming-drift` rows removed, their names never Mojang's. The 135 ledger entries struck (20 wrong in whole or in part, 45 beside a
+  wrong part or sentence); the part's 54 queue units settled. The record audited by one agent per page, which found **131 of the
+  314, 74 in sentences the session had just written** — about two in five, the highest of the pass. Sixteen pages outside the part
+  corrected with it (four in Part XI, three Reference pages beside the glossary, `lectures.md` twice); items handed to L, M, O and P.
+  Deployed.

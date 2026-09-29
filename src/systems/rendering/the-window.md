@@ -221,8 +221,8 @@ click the X rather than quitting from the menu — the close request is one of
 the nineteen events, and `Window` answers it by setting `Window.shouldClose`
 and running the callback. It is registered late because what it does is not
 the window's business at all — it is one of the two places
-`ClientShutdownWatchdog` is armed, and it is the one that catches a client
-hanging on the close button rather than on the way out. That is why the game
+`ClientShutdownWatchdog` is armed, and it is the one live through the teardown that follows a close from the
+window, which the other arming, after `Minecraft.exitWorldAndClose` returns, never sees. That is why the game
 sometimes leaves a crash report behind after you close it. [The two armings
 and what each may
 do](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping) are

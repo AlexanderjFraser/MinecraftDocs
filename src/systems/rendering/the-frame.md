@@ -133,8 +133,8 @@ comes from somewhere else entirely.
 of idleness and the menu, and answers with a limit of ten — so *frameLimiter*
 parks the thread for most of every hundred milliseconds and the client draws
 its unseen frames about ten times a second instead of at the player's
-setting. On top of that, losing focus for half a second pauses a
-singleplayer world outright through `Minecraft.pauseIfInactive`, and every
+setting. On top of that, losing focus for half a second, with no screen up and *pause on lost focus*
+on, opens the pause menu through `Minecraft.pauseIfInactive`, and that menu's vote stops a singleplayer world, so every
 frame after that draws a world that has stopped.
 
 ## Update and extract: six clocks in one frame
@@ -186,7 +186,7 @@ tick at all.
 | the camera and the held item | `Camera.getCameraEntityPartialTicks` | freezing, unless the *camera entity itself* is frozen, which a player never is |
 | the lightmap | a literal one | everything — it is extracted fully advanced |
 | screens and overlays | `DeltaTracker.getGameTimeDeltaTicks` | the fraction — this is the whole delta since the last frame, not a position inside a tick |
-| the autosave indicator and the title-screen panorama | `DeltaTracker.getRealtimeDeltaTicks` | the game clock, and anything past seven ticks, where it clamps to a half |
+| the autosave indicator and the menus' panorama | `DeltaTracker.getRealtimeDeltaTicks` | the game clock, and anything past seven ticks, where it clamps to a half |
 | each entity, separately | its own frozen-honouring value, asked for by `LevelExtractor` | the world's single answer |
 
 The last row is the one you can see. Under `/tick freeze` a mob pins at the

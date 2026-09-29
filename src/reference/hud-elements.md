@@ -15,7 +15,7 @@ things appear in front of each other, since [the GUI render
 tree](../systems/client/the-gui-render-tree.md) infers layering from call
 order and bounding boxes.
 
-Three gates sit above everything below and none of them belongs to `Hud` —
+Three gates sit above everything in the first table and none of them belongs to `Hud` —
 resources loaded, the frame advancing game time, a level existing; [the
 HUD](../systems/client/hud.md#the-order-and-the-two-blocks) is where they are
 explained. Below them `Hud.extractRenderState` short-circuits entirely while a
@@ -69,10 +69,10 @@ The row with no number is the overlay-or-screen slot rather than an element:
 
 | # | element | its own condition | hidden by F1? |
 |---:|---|---|---|
-| — | *the overlay, or else the screen* | `Gui.overlay` if there is one — the loading overlay is the one you will have seen; otherwise, and only once resources are loaded, `Gui.screen` through `Screen.extractRenderStateWithTooltipAndSubtitles`. Never both, and this is the whole of what a screen contributes to the record | — |
+| — | *the overlay, or else the screen* | `Gui.overlay` if there is one — the loading overlay is the one you will have seen; otherwise, and only once resources are loaded, `Gui.screen` through `Screen.extractRenderStateWithTooltipAndSubtitles`. `Gui` never records both, though `LoadingOverlay` itself records the screen beneath its fill while it fades in and out; this is the whole of what a screen contributes to the record | — |
 | 28 | saving indicator | `Options.showAutosaveIndicator` is on, the frame is drawing a level, and a save is still animating | **no** |
 | 29 | toasts | resources are loaded | checks the flag itself |
-| 30 | debug overlay | the current screen is not `DebugOptionsScreen` | checks the flag itself |
+| 30 | debug overlay | resources are loaded, and the current screen is not `DebugOptionsScreen` | checks the flag itself |
 | 31 | deferred subtitles | row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, and this call then finds nothing left | — |
 
 ---

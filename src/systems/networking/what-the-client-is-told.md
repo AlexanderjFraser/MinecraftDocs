@@ -410,8 +410,7 @@ events](../blocks/pistons-and-block-events.md#the-queue-and-which-tick-it-drains
 `ClientboundChunksBiomesPacket` when biomes are re-sent, and
 `ClientboundBlockChangedAckPacket`, sent at most once per connection per tick
 and on any tick where a loaded client sent a block action, a use-on or a use —
-**including an unsequenced abort, which produces an ack of zero and settles
-nothing**. The rules that receipt obeys — and the ordering rule that makes a receipt
+**including an unsequenced abort or change of dig direction, which produces an ack of zero and settles nothing**. The rules that receipt obeys — and the ordering rule that makes a receipt
 without a verdict sufficient — belong to [prediction and
 acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other).
 

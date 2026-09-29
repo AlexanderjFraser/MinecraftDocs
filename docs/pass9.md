@@ -74,6 +74,455 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session J — Part X · The client *(2026-09-28)*
+
+Thirteen pages in one session, not split at the GUI stack, each checked under Part 2 by its own agent while the session read the
+part whole: the landing page, `the-client-loop`, `the-client-level`, `prediction-and-acks`, `input-and-keybinds`, `options`,
+`gui-and-screens`, `the-gui-render-tree`, `text-and-fonts`, `hud`, `sound-engine`, `what-makes-a-sound` and
+`debugging-the-running-game`. The prompts carried each page's pass 5–7 ledger entries, the entries V1, V2, A and B–I wrote about it,
+and the part's queue units. The session re-derived every finding it acted on in `reference/26.3` before making it. The record was
+then audited by thirteen agents, one per page, each told to re-derive every changed sentence against the tree, read its neighbours
+and grep the rest of the book: **the audit found 131 more errors, 74 of them in sentences this session had just written** (184–314).
+Page lines in 1–183 are the pages before this session's edits, and in 184–314 the pages as the session left them. Paths are under
+`reference/26.3/net/minecraft/`.
+
+**314 corrections**, 36 of them inside a figure or a caption (an item that corrects several clauses of one sentence counts once).
+Four false headings corrected: `the-client-loop`'s *Pausing, which is two things and neither is the menu* (now *Pausing, which is a
+field the screen votes on*, its one link, from `gui-and-screens`, repointed), `input-and-keybinds`' *Almost nothing here sends a
+packet* (now *What a key press sends, and from where*), `debugging-the-running-game`'s sample-path heading (now *The sample path,
+which shares only a subscription*) and, at the audit, `options`' *The guard that silences every setting at startup* (now *… settings
+loaded at startup*, its link from `the-client-loop` repointed); the first three have no other inbound link. The 1.21 blockquotes
+read against the 1.21.11 tree: `options`' box cut whole, since every name it called renamed already had its 26.3 name in 1.21.11 (the
+landing page now counts eight boxes), and three other pages' boxes and three `naming-drift` rows lost names that were never Mojang's
+(*Options.keyBindings*, *Options.mouseSensitivity*, *ClientChunkCache.ChunkArray*). Every correction that overturns an earlier
+session's listed claim says whose.
+
+### Corrections
+
+#### `client/README`
+
+1. `client/README`:5–9 (the argument) — the symptoms include *the sound that arrives a beat after the packet*; *Everything in this part that touches the game happens on one thread* — the sound's beat is the hop to a second thread (`sound-engine`'s hook), so a symptom of the one loop replaces it (a key-bound screen waits for the next tick); the sound engine's thread, the reload workers, the section compilers and the debug machinery's server half are the part's too, so the claim is scoped to what changes the client's world — `client/sounds/SoundEngine.java`:473, :503–507; `client/sounds/SoundEngineExecutor.java`:18; `client/Minecraft.java`:2034–2037 *(page against its pages)*
+2. `client/README`:39 (figure) — prediction's cadence *per action, one window* — one right-click tries each hand with `useItemOn` then `useItem`, each call opening its own window, so up to four — `client/Minecraft.java`:1916–2003; `client/multiplayer/MultiPlayerGameMode.java`:358, :435
+3. `client/README`:72–73 — *almost every surprise in Part X is a consequence of one of them waiting on the other* — the claim session B overturned on `anatomy/README`; of the part's twelve hooks, the client level and prediction open on one loop waiting on the other, and the rest sit inside one half — `anatomy/README`:13–14 *(page against the book)*
+4. `client/README`:140–143 — the frame *begins exactly where the client loop ends* — `Minecraft.runTick` goes on after the frame zone to recompute the pause and hand it to the Timer (the hub page's own figure) — `client/Minecraft.java`:1320–1342
+5. `client/README`:148–152 — *the two hundred-odd screens*; *nine tenths* of the unnamed lines are one more screen or widget; the world creation flow among them — about 130 classes descend from `Screen` in `net/minecraft` (two hundred-odd is the file count of the screens packages); the screens and components packages hold 83% of the part's unnamed lines (90% is all of `client/gui`); most of the world-creation flow is named on `worldgen/creating-a-world` — `tools/pass5_coverage.py --part client` (294 classes, 25,272 lines unnamed; 20,914 under `client/gui/screens` and `client/gui/components`)
+6. `client/README`:154–159 — *Two more things* belong to other parts; the atlas counts player reporting *in no part at all* — the atlas's mapping also shares `client/multiplayer` with Part IX and `client/gui/screens/dialog` with Part XIII; it skips only `client/multiplayer/chat/report`, and the eight report screens count in Part X's unnamed share — `tools/map_source.py`:60, :74, :112–128
+7. `client/README`:172 — *nine of these twelve* pages carry the box — eight: `options`' box described nothing that moved in the 1.21 era and was cut this session — *(page-internal against its pages)*
+
+#### `client/the-client-loop`
+
+8. `client/the-client-loop`:22–24 — *Everything on this page happens on one thread*; the anatomy page *does not say who does the naming* — the loop runs on one thread (the page itself sends work to Netty, the worker pool, two timer threads and the watchdog's); the anatomy page's thread table does say `client/main/Main` renames it — `anatomy/anatomy`:249 *(page-internal)*; `client/main/Main.java`:263
+9. `client/the-client-loop`:40 (cast) — `TickRateManager` is *the millisecond target the Timer divides by*, *carrying numbers only the server sets* — the target is the larger of fifty milliseconds and its milliseconds per tick while it runs normally, and fifty otherwise; the client's own `TickRateManager.tick` computes whether game elements run and counts down frozen steps, so only the rate and the freeze are the server's — `client/Minecraft.java`:3278–3285; `world/TickRateManager.java`:67–72
+10. `client/the-client-loop`:60, :63–64 (figure) — the *Render* breadcrumb heads the frame node; `TextureManager.tick` runs *once* — `Window.setErrorSection` sets *Render* before the sound and mouse pair, so it heads that node; the texture tick runs only when a tick is owed and the level runs normally — `client/Minecraft.java`:1259, :1295, :1300
+11. `client/the-client-loop`:77 (caption) — *ten run either way* — on *no* the owed count runs, zero to ten; *at most ten* — `client/Minecraft.java`:1265
+12. `client/the-client-loop`:86 — *Four of the figure's nodes are the only place this page names their methods* — two nodes hold four methods, and the next sentences name them — *(page-internal)*
+13. `client/the-client-loop`:90–94 — `SoundManager.updateSource` *moves the OpenAL listener*; *a mouse movement you make during a tick is applied to the frame that tick belongs to* — the listener move is posted to the sound thread; motion is gathered only in the poll, so what the order decides is that the iteration's ticks use the old rotation and its frame the new — `client/sounds/SoundEngine.java`:578–585; `client/MouseHandler.java`:243, :257–270
+14. `client/the-client-loop`:116–120 (V6) — the clamp *is written as a literal and no reader of the constant survives*; *the number the loop obeys is the literal* — the constant is a compile-time `static final int`, which javac inlines, so the decompile cannot show how the source wrote the clamp; the number is ten — `client/Minecraft.java`:277, :1265
+15. `client/the-client-loop`:124–127 — `/tick rate` changes the client's frame-loop arithmetic (unqualified) — `Minecraft.getTickTargetMillis` returns the larger of fifty milliseconds and the level's rate, so only a rate below twenty moves it — `client/Minecraft.java`:3278–3285
+16. `client/the-client-loop`:137–139 — the real-time delta *is what a menu animates against* — its readers are the menus' panorama and the HUD's autosave indicator — `client/renderer/Panorama.java`:29; `client/gui/Hud.java`:1395
+17. `client/the-client-loop`:148 — *almost everything in it is inside a gate* — seven of the thirteen rows, the table beside it: *most of it* — *(page-internal)*
+18. `client/the-client-loop`:167–170 — a client with no world *picks at whatever is in front of the camera and tells the tutorial what it found* — `Minecraft.pick` does nothing without a camera entity, a level and a player, and `Tutorial.onLookAt` nothing without a level; the six rows are ungated at the call only — `client/Minecraft.java`:3317–3321; `client/tutorial/Tutorial.java`:40–43
+19. `client/the-client-loop`:196–199 — the inline path is refused *while a queued task is already running* — while any task runs, inline or queued: the inline path goes through `doRunTask` too — `util/thread/BlockableEventLoop.java`:105; `util/thread/ReentrantBlockableEventLoop.java`:11–28
+20. `client/the-client-loop`:207–208 — the timers hop back *before touching anything* — `RemoteFriendListUpdateHandler` reads the level and an option on its own thread first, and both classes write their own state there before the hop — `client/gui/screens/social/RemoteFriendListUpdateHandler.java`:115, :119, :205, :249–252; `client/PeriodicNotificationManager.java`:157
+21. `client/the-client-loop`:215–217 — the re-entry paragraph, rendered as part of the GPU-work bullet (no blank line); `managedBlock` pumps *while waiting for the integrated server* — a paragraph of its own; it is also used while a world's resources load — `client/gui/screens/worldselection/WorldOpenFlows.java`:201; `client/gui/screens/worldselection/CreateWorldScreen.java`:163
+22. `client/the-client-loop`:221–224 — `constructProfiler` *picks between* four profilers and `finishProfilers` *closes it* — it layers them (the pie-chart filler or the inactive one, combined with the recorder's, decorated by the single-tick profiler); `finishProfilers` ends the single-tick profiler and posts the results — `client/Minecraft.java`:1521–1547, :1550–1562
+23. `client/the-client-loop`:227–231 — the reply is deferred *so that dragging the window does not look to the server like a network stall* — deferring the reply is what makes the freeze look like latency to the server, which also disconnects a reply pending fifteen seconds; the purpose clause is replaced by the mechanism — `client/multiplayer/ClientCommonPacketListenerImpl.java`:151–155; `com/mojang/blaze3d/systems/RenderSystem.java`:162–163; `server/network/ServerCommonPacketListenerImpl.java`:85–89, :123–137
+24. `client/the-client-loop`:233–237 (heading and first sentence) — *Pausing, which is two things and neither is the menu*; `Minecraft.pauseIfInactive` *pauses the game* — `pauseIfInactive` calls `Minecraft.pauseGame`, which opens a `PauseScreen` if no screen is up; the pause follows only through the screen's vote (and not at all in multiplayer). The false heading is corrected and its one link, from `gui-and-screens`, repointed — `client/Minecraft.java`:1510–1518, :1800–1808; `client/gui/Gui.java`:357–366
+25. `client/the-client-loop`:245–247 — the pause state is handed to the Timer *on the rising edge* — every iteration; only the sound pause is on the edge — `client/Minecraft.java`:1337–1341
+26. `client/the-client-loop`:268–275 — *The numbers on the F3 screen are three*; the graph includes the sleep *and the other two do not* — `Minecraft.frameTimeNs` is on no line of the overlay (the page's own sentence); `Minecraft.fps` counts frames per wall-clock second, which the limiter's park sets, so it includes the sleep too — *(page-internal)*; `client/Minecraft.java`:1490, :1500–1503
+27. `client/the-client-loop`:290–296 — the close-callback arming *catches a client that hangs on the close button rather than one that hangs on the way out*; the watchdog fires *if the shutdown has not claimed the counter* — the post-main arming comes only after `Minecraft.exitWorldAndClose` returns, so the close-callback watchdog is the one live through the teardown; nothing in the shutdown touches the counter, and a watchdog fires unless a later arming has incremented it — `client/main/Main.java`:283, :291; `client/Minecraft.java`:576; `com/mojang/blaze3d/platform/ClientShutdownWatchdog.java`:24, :34
+
+#### `client/the-client-level`
+
+28. `client/the-client-level`:14–15, :90 — *every block entity ticks regardless of distance*; *every local block change is relit locally* — only block entities whose block hands the client a ticker (a hopper's and a furnace's do not); a change relights only when `LightEngine.hasDifferentLightProperties` says so, as the page's own :290–292 has it — `world/level/block/HopperBlock.java`:90–91; `world/level/block/AbstractFurnaceBlock.java`:81–84; `world/level/chunk/LevelChunk.java`:313
+29. `client/the-client-level`:19–22 — the page needs *the one [predicate] that says who may decide a block's state* — all five are entity predicates; none decides a block's state — `entities/authority`:77–100 *(page-internal against its owner)*
+30. `client/the-client-level`:42–44 — *Seven of the nine rows* hollow something out and *the eighth* alone runs the other way — `Level.setBlocksDirty` is empty on the server and real on the client, so six hollow, two run the other way, and the last is storage — `world/level/Level.java`:296; `client/multiplayer/ClientLevel.java`:843–846
+31. `client/the-client-level`:61–63 — the handler plays *all of it* — the sound only when the packet's new `playSound` flag is set — `network/protocol/game/ClientboundExplodePacket.java`:17; `client/multiplayer/ClientPacketListener.java`:1433
+32. `client/the-client-level`:101, :108–109 (D's handoff) — the budget is *a cliff rather than a slope*; *a chunk-load burst therefore produces one long frame* — below the threshold each frame takes a tenth of the queue (at least ten), so an ordinary burst — the server sends at most 64 chunks a tick — is spread over frames; only a queue of a thousand or more is taken whole — `client/multiplayer/ClientLevel.java`:288–301; `server/network/PlayerChunkSender.java`:31, :136
+33. `client/the-client-level`:113–116, :142–144 (caption), :146–152 — the light at the foot *is not a later frame's work*, *not a wait*; *Three things about the shape* (four follow); *above twenty frames a second* no tick is owed; `ClientPacketListener.queueLightUpdate` — the lambda runs this frame only if the queue ahead of it fits the frame's share; four bold points follow; a frame owes a tick with frequency 20/F, so *usually none* holds above forty; the method is `ClientLevel`'s — `client/multiplayer/ClientLevel.java`:284, :288–301; `client/DeltaTracker.java`:59–66 *(page-internal for the count)*
+34. `client/the-client-level`:158–161 — *three* of `ClientPacketListener`'s handlers reach `LevelExtractor` — four: 26.3's `handleAddTransientBlockPacket` queues a transient block through it — `client/multiplayer/ClientPacketListener.java`:553, :949, :1242–1246, :2724
+35. `client/the-client-level`:166–168 — a light removal *is queued for a later frame* — it goes on the same queue, applied in this frame's share unless a backlog is ahead of it; `ClientLevel.unload` also switches the chunk's light off at once — `client/multiplayer/ClientPacketListener.java`:975–1000; `client/multiplayer/ClientLevel.java`:527–530
+36. `client/the-client-level`:172–174 — the array's side *is the view diameter* — a few rings wider, as the page's own :185 says — `client/multiplayer/ClientChunkCache.java`:163–165, :236–237
+37. `client/the-client-level`:205–215 (text and table) — interpolation *is opted into by exactly seven overrides*, `Shulker` among them; *AbstractArrow and the other projectiles* snap — `Shulker.createInterpolationHandler` returns `InterpolationHandler.NO_OP`, so six opt in and a shulker snaps (the same in 26.2); `FishingHook`, a projectile, interpolates — `world/entity/monster/Shulker.java`:444–446; `world/entity/projectile/FishingHook.java`:55, :115
+38. `client/the-client-level`:219 (F's handoff) — *its three-tick window* — the step count is the type's update interval: three by default, two for players, allays and mannequins — `world/entity/SteppedInterpolationHandler.java`:16; `world/entity/EntityTypes.java`:157, :263, :354
+39. `client/the-client-level`:222–225 (V1's movement-sync note) — `Entity.isInterpolating` is the question both packets ask — in 26.3 both call `Entity.getClientPositionAndRotation`, which takes the handler's target or the current position — `world/entity/Entity.java`:4334–4336; `network/protocol/game/ServerboundMoveVehiclePacket.java`:16; `world/entity/PositionMoveRotation.java`:17
+40. `client/the-client-level`:233–238 — `ClientLevel.tickTime` increments the time *unconditionally every tick*; `ClientLevel.setTimeFromServer` *is the only correction* — it runs only when the tick rate manager runs normally (the page's :83–85); the same handler also corrects the clocks through `ClientClockManager.handleUpdates` — `client/multiplayer/ClientLevel.java`:310–312; `client/multiplayer/ClientPacketListener.java`:1185–1189
+41. `client/the-client-level`:251–254 — the twentieth-tick sweep *is why a crack overlay on someone else's block lags behind their mining* — the sweep only drops entries stale for more than 400 ticks; progress is written when its packet arrives — `client/multiplayer/ClientLevel.java`:413–429, :856–883
+42. `client/the-client-level`:260–265 — your footsteps are local because `ClientLevel.playSeededSound` plays only for the local player; *what you do is never on the wire* — your steps go `Entity.playStepSound` → `LocalPlayer.playSound` → `ClientLevel.playLocalSound` and never reach `playSeededSound`, the server excluding you through `Player.playSound`; some of your actions' sounds do come back (the bow, the ender pearl play with no exclusion) — `world/entity/Entity.java`:1574–1577; `client/player/LocalPlayer.java`:592–594; `world/entity/player/Player.java`:401–402; `world/item/BowItem.java`:51
+43. `client/the-client-level`:269–271 — `ClientLevel.EntityCallbacks` is *the four hooks* invoked as a chunk starts and stops ticking — it implements `LevelCallback`'s seven hooks; the ticking pair feeds the list, the tracking pair the players and dragon parts, three are empty — `world/level/entity/LevelCallback.java`; `client/multiplayer/ClientLevel.java`:1199–1262
+44. `client/the-client-level`:288 — *two sections above* — the chunk-arrival section is several headings up — *(page-internal)*
+45. `client/the-client-level`:295–298 — *Its collision world is one entity wide* — `getPushableEntities` is the list `LivingEntity.pushEntities` pushes; entity collisions come from `EntityGetter.getEntityCollisions` over every entity — `world/entity/LivingEntity.java`:3429; `world/level/EntityGetter.java`:60–75
+46. `client/the-client-level`:306–311 (the blockquote) — *ClientChunkCache.ChunkArray* among the names gone — the 1.21.11 tree's inner class is `ClientChunkCache.Storage`, as in 26.3, and no *ChunkArray* is in it — `client/multiplayer/ClientChunkCache.java`:195 *(1.21.11, the sibling tree)*
+
+#### `client/prediction-and-acks`
+
+47. `client/prediction-and-acks`:9–16 (hook) — the receipt is sent *once the client has finished loading in*; zero only *for an aborted dig*; the correction is ahead *because it leaves from inside the handler* — `hasClientLoaded` is the server's belief (false again after death until respawn, true after a 60-tick timeout); a direction change is also sent through the three-argument constructor and acked; an accepted change the handler does not resend goes out in the level's chunk broadcast, which also precedes the connection's flush — `server/network/ServerGamePacketListenerImpl.java`:240, :1510–1514, :2544–2566; `client/multiplayer/MultiPlayerGameMode.java`:287; `server/MinecraftServer.java`:1221, :1234
+48. `client/prediction-and-acks`:60 (figure 1), :64–68 (caption) — *The only state that means a lie is on screen is Retained, and both its exits are the same call*; writing the absorbed state *on screen is a no-op*; flushed at *the head of the next tick* — a refused placement sits in Corrected with the prediction still on screen until the settle; Retained's two exits are different calls and the two exits to the end share one; the settle writes any recorded state that differs; the listener's tick runs later in the same server tick — `client/multiplayer/ClientLevel.java`:214–215, :221–225; `client/multiplayer/prediction/BlockStatePredictionHandler.java`:38–49
+49. `client/prediction-and-acks`:107–108 — `handleBlockChangedAck` is *the ledger's only entry point from the network* — block and section updates reach it through `ClientLevel.setServerVerifiedBlockState`, and a teleport through `BlockStatePredictionHandler.onTeleport` (the page's own :100, :229) — `client/multiplayer/ClientPacketListener.java`:851, :898, :1007 *(page-internal)*
+50. `client/prediction-and-acks`:146–148 (figure 2), :152–155 (caption) — the ack flushes on *the next tick*; `syncBlockState` drawn on an arrow arriving at the handler; *the whole of the ordering rule*, *the fourth arrow from the bottom* — the listener's tick runs after the packet drain in the same server tick; `ClientLevel.syncBlockState` is the level's, called back by the handler (a new arrow); the rule for accepted changes also needs levels to tick before connections; the block-update arrow was fifth, and the caption now names it — `server/MinecraftServer.java`:1101, :1221, :1234; `client/multiplayer/prediction/BlockStatePredictionHandler.java`:49
+51. `client/prediction-and-acks`:157–162 — the handler makes the resends *unconditionally, which is what actually puts it ahead of the receipt* — they follow every outcome of `useItemOn` but not the early refusals (a feature-disabled item, reach, the hit location, the build height), where the ledger restores the block; and the chunk broadcast would also be ahead, levels ticking before connections — `server/network/ServerGamePacketListenerImpl.java`:1563–1581, :1622–1623; `server/MinecraftServer.java`:1221, :1234
+52. `client/prediction-and-acks`:176–184 — effect, then packet, *in that order*; `startPredicting` *is the pre-increment* — `useItem` builds its packet before its effect; `startPredicting` also sets `isPredicting`, which is what makes `ClientLevel.setBlock` record — `client/multiplayer/MultiPlayerGameMode.java`:436, :443; `client/multiplayer/prediction/BlockStatePredictionHandler.java`:55–58; `client/multiplayer/ClientLevel.java`:241
+53. `client/prediction-and-acks`:199 — `RedStoneOreBlock.attack` is *the only case of its own* — a block's use hook writes inside the use window too: a door's right-click toggle is not side-gated; the redstone ore is the one attack hook — `world/level/block/DoorBlock.java`:170–175
+54. `client/prediction-and-acks`:243–246 — the batch comparison means *one teleport suppresses a whole batch of snaps rather than one* — when the ack is at or below the teleport's sequence a per-entry test would suppress the same snaps; when it is above, the coarse test allows the snaps of pre-teleport entries a per-entry test would stop, so it under-suppresses — `client/multiplayer/prediction/BlockStatePredictionHandler.java`:49, :69–70
+55. `client/prediction-and-acks`:256–258 — a wrong guess *can stand on screen indefinitely* — the first receipt after loading settles every entry at or below it — `client/multiplayer/prediction/BlockStatePredictionHandler.java`:45
+56. `client/prediction-and-acks`:262 — *the first two rows* — `destroyBlock` runs inside all four breaking rows — `client/multiplayer/MultiPlayerGameMode.java`:176, :203, :258, :278
+57. `client/prediction-and-acks`:290 — *under a hundred lines* — a size (V10; queue pass5.md:6097) — *(size)*
+
+#### `client/input-and-keybinds`
+
+58. `client/input-and-keybinds`:3 (verified line), :73–75 — holding sneak has *five chances to be swallowed* — sneak is read through `KeyMapping.isDown` and never drained, so the fifth gate (the drain's) is not on its path: four for sneak, five for a press that is drained — `client/player/KeyboardInput.java`:21; `client/Minecraft.java`:2034
+59. `client/input-and-keybinds`:10 — *None of that involves the tick* — the flip and the eaten release do not; opening the inventory by its key does, since the drain runs in the tick — `client/Minecraft.java`:2034–2036, :2160–2166
+60. `client/input-and-keybinds`:58–59 (figure) — *set, and a click*, then `ToggleKeyMapping.setDown` *flips, and eats the release*, all in one SDL event — `setDown` runs inside `KeyMapping.set`, before `KeyMapping.click`; the release it ignores is a later event, the key-up — `client/KeyboardHandler.java`:615–616, :649–650; `client/KeyMapping.java`:39–43
+61. `client/input-and-keybinds`:68–71 (caption) — the fifth gate is *inside `Minecraft.handleKeybinds`*; *the two bands are a tick apart* — the test is in `Minecraft.tick`, around the call; the next client tick may run in the same turn of the loop, so *the next client tick* — `client/Minecraft.java`:934–935, :2034
+62. `client/input-and-keybinds`:115–116 — `KeyMapping.resetMapping` *is the binding screen's own reset* — it clears `KeyMapping.MAP` and re-registers every mapping; its two callers are the binding list and `Options.load` — `client/KeyMapping.java`:113–123; `client/Options.java`:1729
+63. `client/input-and-keybinds`:128 — a swallowed release *leaves the mapping down with nothing to clear it* — it would, but `KeyMapping.releaseAll` has already released it when the screen opened — `client/gui/Gui.java`:308
+64. `client/input-and-keybinds`:137–138 — *on the same input device* — the look is the mouse and the step the keyboard's mappings — `client/MouseHandler.java`:303–304; `client/player/KeyboardInput.java`:21
+65. `client/input-and-keybinds`:141–142 — the delta goes to the screen's *move and drag handlers* — `Screen.mouseMoved` gets the scaled position; only `mouseDragged` gets the delta — `client/MouseHandler.java`:272–276, :286–290
+66. `client/input-and-keybinds`:180–181 and `client/hud`:264–266 — *Several* of the bindable debug mappings *print no debug line of their own* — two, `keyDebugShowHitboxes` and `keyDebugShowChunkBorders`, toggle `DebugEntryNoop` entries; the mappings themselves print chat feedback, the entries print no F3 line — `client/KeyboardHandler.java`:221–223, :232–234; `client/gui/components/debug/DebugScreenEntries.java`:40–41
+67. `client/input-and-keybinds`:192–200 (heading and section) — *Almost nothing here sends a packet*: *Two key presses reach the server directly*, and everything else *later and by an entirely different route* — the drain's verbs send inside the drain: `Minecraft.startAttack` sends `ServerboundPunchPacket`, `MultiPlayerGameMode.dropItem` its action packet, and the use, pick and mount-inventory packets leave in the same call; `KeyboardHandler` also sends the copy-recreate query. The false heading is corrected (no link lands on it) — `client/Minecraft.java`:1909, :1830, :2162, :2177, :2183; `client/multiplayer/MultiPlayerGameMode.java`:627; `client/KeyboardHandler.java`:385, :407
+68. `client/input-and-keybinds`:202–203 — `ScrollWheelHandler` *belongs to neither* handler — `MouseHandler` holds, builds and drives one (and `BundleMouseActions` another) — `client/MouseHandler.java`:56, :62, :180
+69. `client/input-and-keybinds`:232 — *the whole gauntlet is one method* — gates one to four are in `keyPress`; the fifth is in `Minecraft.tick` — `client/KeyboardHandler.java`:516, :555, :623, :645; `client/Minecraft.java`:2034
+
+#### `client/options`
+
+70. `client/options`:3 (verified line) — the render-distance value reaches the server *only when a screen closes* — when the options are next saved, usually as the screen closes: any save after the value lands sends it (a cycle button on the same screen, F11, the debug and narrator hotkeys) — `client/Options.java`:1838, :1856; `client/OptionInstance.java`:603; `client/Minecraft.java`:1593
+71. `client/options`:11–12 — *nothing is sent until the screen closes* — until the next save, usually the screen closing — as :3
+72. `client/options`:48 (f1, edge) — an immediate slider sets its value *on release* — on every change as it moves: `AbstractSliderButton` calls `applyValue` from the click, the drag and the arrow keys, and the immediate branch goes straight to `OptionInstance.set`; the release only snaps the handle — `client/gui/components/AbstractSliderButton.java`:85–88, :131–146; `client/OptionInstance.java`:462–479, :503–508
+73. `client/options`:93–94 — a slider's value reaches the field *on release or 600 ms later* — as it moves, or — for the three that defer, re-armed on every change — 600 ms after it stops — `client/OptionInstance.java`:462–469
+74. `client/options`:135 — *every other slider applies on release* — as it moves — as :48
+75. `client/options`:98–101 — *nothing else on the client does it* (compare with the last record sent); a save that changes nothing sends *no packet at all* — `LocalPlayer.sendChanges` keeps the last input it sent the same way; and each `ClientPacketListener` starts with no record, so its first save always sends (the configuration-phase packet is not recorded there) — `client/player/LocalPlayer.java`:267–270; `client/multiplayer/ClientPacketListener.java`:430, :2953–2957
+76. `client/options`:113–119 — `Options.smoothCamera` listed among the fields `Options.processOptions` reads and writes, *and a dozen others*, beside *not persisted anywhere* — `processOptions` never names it (the list's own last clause is right); the plain fields it does read and write are seventeen, so ten beside the seven named — `client/Options.java`:298, :1455–1583 (*(page-internal)* for the contradiction)
+77. `client/options`:150–152 — *a preset writes a batch of settings at once, and every one of the sixteen undoes the preset's name on the way past* — the batch runs with `isApplyingGraphicsPreset` set, and `setGraphicsPresetToCustom` does nothing while it is; *Custom* comes from changing one of them by hand (the same in 26.2) — `client/Options.java`:385–389, :761–762
+78. `client/options`:167 — the guard silences any set *before the loop starts* — before `Minecraft.running` is set, inside the `Minecraft` constructor; sets later in the constructor (fullscreen, the graphics backend, the preset) run their listeners — `client/Minecraft.java`:457, :473, :490, :584
+79. `client/options`:193–197 — what the packet provokes goes *outward, to other people, never back to you*; the two synched fields travel *to everyone tracking you* — both reach the sender too: `PlayerList.broadcastAll` includes you, and dirty entity data goes to the tracking players *and self*; nothing reports what your request became — `server/network/ServerGamePacketListenerImpl.java`:2408–2416; `server/players/PlayerList.java`:513–521; `server/level/ServerEntity.java`:416
+80. `client/options`:201–203 — `Options.serverRenderDistance` is re-sent *when an operator changes* the view distance — whenever it changes: a dedicated server's through the management API, an integrated server's from the host's own slider every unpaused tick — `server/dedicated/DedicatedServer.java`:376–381; `client/server/IntegratedServer.java`:157–162; `server/players/PlayerList.java`:888–890
+81. `client/options`:215–217 — simulation distance never travels *because that is the one number the client has no say in* — because the record has no field for it; in singleplayer the client's slider is the server's simulation distance — `server/level/ClientInformation.java`:8; `client/server/IntegratedServer.java`:164–170
+82. `client/options`:236–238 — *Two* settings need a restart: the graphics backend and exclusive fullscreen, each against a startup snapshot — one: only the backend has a snapshot; exclusive fullscreen's listener re-applies the window mode at once (a 26.3 change) — `client/Options.java`:109, :381–383, :1177–1181; `com/mojang/blaze3d/platform/Window.java`:732–740
+83. `client/options`:248–251 — a bad value for an `OptionInstance` is *dropped back to the initial value*; the failure list stops at three — a value its codec rejects is logged and the option keeps what it had; only a decoded value out of range is reset to the initial one; a plain boolean field that is not *true* reads false silently; a malformed resource-pack list throws out of `processOptions` and the options after it are never read (as, the audit found, does an option value that is not well-formed JSON) — `client/Options.java`:1600–1608, :1654–1664, :1688, :1484–1494, :1730; `client/OptionInstance.java`:127–130
+84. `client/options`:255–261 (the 1.21 blockquote) — *Options.mouseSensitivity* and the bare public fields gone, mouse sensitivity renamed, *Options.keyBindings* renamed to `Options.keyMappings` — nothing it names moved in the 1.21 era: 1.21.11 already has `sensitivity` as a private `OptionInstance` with an accessor, a public `keyMappings` and `graphicsPreset`; *mouseSensitivity* and *keyBindings* are other mappings' names. The blockquote is cut; the page has none, and the landing page's count of pages with one is eight — `client/Options.java`:99, :107, :273 *(1.21.11, the sibling tree)*
+
+#### `client/gui-and-screens`
+
+85. `client/gui-and-screens`:219 (route table) — the advancements screen among the *entirely client-side* routes — opening it sends `ServerboundSeenAdvancementsPacket` for the open tab, and closing it another; the example is cut from the row — `client/gui/screens/advancements/AdvancementsScreen.java`:78–80, :105–110; `client/multiplayer/ClientAdvancements.java`:104–109
+86. `client/gui-and-screens`:35 (cast) — *the menu packets* look a screen up in `MenuScreens` — only `ClientboundOpenScreenPacket` does; the mount packet builds its screen directly — `client/multiplayer/ClientPacketListener.java`:1447–1471
+87. `client/gui-and-screens`:36 (cast), :111–112 — *Nothing draws both*; the overlay *suppresses the screen's record pass* — `Gui` records one or the other, but `LoadingOverlay` records the current screen under its own fill during its fade-in and fade-out — `client/gui/Gui.java`:181–216; `client/gui/screens/LoadingOverlay.java`:79–93
+88. `client/gui-and-screens`:61 (figure), :74–75 (caption) — `Layout` *arranges, then forgets*; it is dashed *because it touches a widget once and then forgets it* — layouts hold their children and re-arrange them on every resize (the page's own :33, :127–129); the dashed line is right for a layout that positions what the screen owns — `client/gui/layouts/GridLayout.java`:14, :136; `client/gui/screens/options/OptionsSubScreen.java`:64–65
+89. `client/gui-and-screens`:120–121 — the no-argument `Screen.init` is *the hook every screen implements* — `LevelLoadingScreen` and `ProgressScreen` implement none — `client/gui/screens/LevelLoadingScreen.java`:28; `client/gui/screens/ProgressScreen.java`:9
+90. `client/gui-and-screens`:180 (figure), :191–194 (caption) — *removed on the old one, then added, then init*; the bands are *one tick apart*; the housekeeping before `Screen.init` *is why sneak does not survive an inventory* — with no screen open there is no old one to remove; the frame follows the tick in the same turn of the loop; sneak is released while the screen is open and comes back on close, a toggled one restored and a held one re-read off macOS — `client/gui/Gui.java`:272–278, :307–317; `client/KeyMapping.java`:85–97; `client/MouseHandler.java`:429–431
+91. `client/gui-and-screens`:245–247 — `setScreenAndShow` shows progress during *a world load, a data fix or a save* — a world load; a data fix shows its screen that way and then runs on the worker pool, and the save on leaving a world draws its own frames — `world/level/storage/WorldOpenFlows.java`:99, :345–348; `client/gui/screens/worldselection/EditWorldScreen.java`:183; `client/Minecraft.java`:2408–2416
+92. `client/gui-and-screens`:257–258 — the suppression time is *set two seconds ahead whenever a screen is built* — after Tab or arrow navigation in a screen it is set to never and cleared by the next action; otherwise two seconds; and it is armed on every `Gui.setScreen`, a re-shown screen included — `client/gui/screens/Screen.java`:466–472, :594–596
+93. `client/gui-and-screens`:281–282 — `DialogScreens` is *the second* screen registry — `PresetEditor.EDITORS` maps world presets to screens too — `client/gui/screens/worldselection/PresetEditor.java`:28
+94. `client/gui-and-screens`:262–270 (the blockquote) — *renderDirtBackground* among the names gone for a 1.21 reader; `Minecraft.screen` set as a live name — the 1.21.11 tree already has no `renderDirtBackground`, so a 1.21 reader never met it; *Minecraft.screen* is a gone name and takes the italic (the box now runs eight lines) — `client/gui/screens/Screen.java` *(1.21.11, the sibling tree)*
+
+#### `client/the-gui-render-tree`
+
+95. `client/the-gui-render-tree`:19–21 — *each distinct item model* is rendered into the atlas once — each still one; an animated model is redrawn every frame (the page's own :205–206) — *(page-internal)*; `client/gui/render/GuiItemAtlas.java`:73
+96. `client/the-gui-render-tree`:36 (cast) — `GuiElementRenderState` is *one recorded thing, and the bounds the layering algorithm reads* — items, text and pictures-in-pictures are not element states; the layering reads `ScreenArea.bounds`, which all of them implement; element states are the meshable blits, rectangles and glyphs — `client/renderer/state/gui/GuiRenderState.java`:107; `client/gui/render/state/GuiItemRenderState.java`:10
+97. `client/the-gui-render-tree`:105, :113, :119–126 — `PanoramaRenderState` is *the one state with no verb*; the whole pip family arrives through `addPicturesInPictureState`; *Those six and the item atlas* are where 3D drawing happens, among them *the skin in a social list* — `OversizedItemRenderState` has no verb either (the resolve pass builds it); five of the six are recorded; the panorama's `CubeMap` is a perspective 3D draw too; the 3D skin is the skin-report screen's (the social list draws a flat face), and the inventory's entity follows the mouse — `client/gui/render/GuiRenderer.java`:116–117, :295–309; `client/gui/GuiGraphicsExtractor.java`:615–631; `client/renderer/CubeMap.java`:49–79; `client/gui/screens/reporting/SkinReportScreen.java`:45; `client/gui/screens/social/PlayerEntry.java`:181
+98. `client/the-gui-render-tree`:171–172 — *the three the figure names in order* — the figure (redrawn in pass 7) names no comparator — *(page-internal)*
+99. `client/the-gui-render-tree`:177, :244 — `GuiRenderer.draw` *only replays*; *Where to look* sends the reader to `draw` *for the batching rule* — the sort and the coalescing are in `prepare` (the page's :176); `draw` also clears depth and runs the blur between its two ranges — `client/gui/render/GuiRenderer.java`:163–166, :201–206 *(page-internal)*
+100. `client/the-gui-render-tree`:198–199 — the tint is sharp *because it is recorded after the boundary* — the boundary is set at the current stratum's start, so everything in that stratum, recorded before the call or after, is drawn after the blur — `client/renderer/state/gui/GuiRenderState.java`:48; `client/renderer/Panorama.java`:36
+101. `client/the-gui-render-tree`:38 (cast), :207–211 — the atlas's slots *age out*, *the aging that evicts a slot happens in `GuiRenderer.endFrame`*; an atlas *cannot grow because `DynamicAtlasAllocator` has run out of room* — a slot holds no age: `endFrame` frees the animated (discard-after-frame) slots only, and a resident slot is reclaimed in `prepare` when the frame's set does not fit; growing replaces the atlas wholesale; *cannot grow* means the new size equals the current, the device's maximum — `client/gui/render/DynamicAtlasAllocator.java`:38–62, :121–125; `client/gui/render/GuiItemAtlas.java`:68–73; `client/gui/render/GuiRenderer.java`:106–111, :336–349
+102. `client/the-gui-render-tree`:214–218 — the extractor's *side effects are two* (the scissor stack, the cursor); holding the pre-edit overlay *is why an input method's in-progress text survives something otherwise stateless* — the pose stack is state as much as the scissor stack, and only the cursor leaves the extractor; the extractor is built new every frame, the in-progress text lives on the widget, and what the holding does is defer the overlay and the tooltip to strata on top — `client/gui/GuiGraphicsExtractor.java`:90–101, :126, :764–784; `client/gui/Gui.java`:170; `client/gui/components/EditBox.java`:58, :383–394
+103. `client/the-gui-render-tree`:222–223 — two fields recorded here *change the world* — `GuiRenderState.isHudHidden` does; `clearColorOverride` sets only the colour the frame is cleared to — `client/renderer/GameRenderer.java`:516; `client/gui/screens/LoadingOverlay.java`:102
+104. `client/the-gui-render-tree`:226–227 — one debug switch *promotes every element into its own layer and outlines it* — it calls `up()` once and adds a translucent full-screen rectangle scissored to the element: a tint, and elements that do not overlap can still share a node — `client/renderer/state/gui/GuiRenderState.java`:89–105
+105. `client/the-gui-render-tree`:232–236 (the blockquote) — ordering is *the literal call order plus explicit barriers*; a real `PoseStack` lives *inside the item atlas* — the page's own layering rule (boxes, then the call order); every picture-in-picture renderer holds one too — *(page-internal)*; `client/gui/render/pip/PictureInPictureRenderer.java`:53
+106. `client/the-gui-render-tree`:240–241 — *the layering rule is thirty lines* — 34 to 47 decompiled lines by the grouping, a size that is the decompiler's (V10); *short* — `client/renderer/state/gui/GuiRenderState.java`:107–166
+107. `client/the-gui-render-tree`:66–70 (caption) — a `nextStratum` call closes stratum 0 *for good*; *The five element lists each node holds are the table below* — closed to recorders only: the resolve pass appends to earlier strata's nodes; the table below lists verbs, not the lists (the sentence is cut with the caption's third) — `client/renderer/state/gui/GuiRenderState.java`:213, :237, :251 *(page-internal)*
+
+#### `client/text-and-fonts`
+
+108. `client/text-and-fonts`:15 — the pipeline ends *emitting the vertices* — stage six emits `TextRenderable`s; vertices are written at draw — `client/renderer/state/gui/GlyphRenderState.java`:17–19
+109. `client/text-and-fonts`:31 (cast) — `GlyphStitcher` decides *where a bitmap lands in a `FontTexture`, and the upload* — it picks or makes the sheet; `FontTexture.add` places the bitmap and uploads it — `client/gui/font/GlyphStitcher.java`:40–66; `client/gui/font/FontTexture.java`:43–46
+110. `client/text-and-fonts`:40, :54, :59 (figure 1), :62–65 (caption) — the world's `SubmitNodeCollection.submitText` drawn after stage six; the top box *runs when the text changes*; *only what happens after stage six waits for the draw pass* — `submitText` records a `FormattedCharSequence`, and `TextFeatureRenderer` runs `Font.prepareText` at draw, so world text reaches stages four to six there; some callers (a plain string drawn by a screen runs stages one and three, a word-wrapped one and the chat tag's tooltip all three) run them every frame, so *when the text changes* is the chat line's case — `client/renderer/SubmitNodeCollection.java`:167–168; `client/renderer/feature/TextFeatureRenderer.java`:21, :59–67; `client/gui/GuiGraphicsExtractor.java`:238–241
+111. `client/text-and-fonts`:67–68 — *Stages one to three run whenever the text changes* — for the chat line; a string a screen draws is reordered on every call — `client/gui/GuiGraphicsExtractor.java`:238–241; `client/gui/components/ChatComponent.java`:287–289, :647
+112. `client/text-and-fonts`:83–86 — the prepare phase *pre-warms every provider by asking it for every codepoint it claims*, *so that the first frame after a reload does not pay for the whole alphabet* — it takes the union of claimed codepoints and asks the chain for each until one provider answers, so later providers are never asked; what it saves is the provider-side load TrueType does lazily, and baking and upload wait for first use — `client/gui/font/FontManager.java`:184–208; `com/mojang/blaze3d/font/TrueTypeGlyphProvider.java`:93–115
+113. `client/text-and-fonts`:97 — `ComponentCollector` reassembles pieces *into a component* — into a `FormattedText` — `client/ComponentCollector.java`:18–26
+114. `client/text-and-fonts`:113–114 — anything that will *re-measure* must use the unreordered split — `Font.width` takes the reordered sequence too; only re-wrapping needs `FormattedText` — `client/gui/Font.java`:131; `client/StringSplitter.java`:206
+115. `client/text-and-fonts`:124–125 — `Font.bidirectionalShaping` *shapes* a bare string — it also reorders it (ICU `Bidi.writeReordered`) — `client/gui/Font.java`:52–57
+116. `client/text-and-fonts`:141–143 — `FontManager` *keeps a `FontSet` behind* a sprite source *as the fallback* — only an unknown atlas id falls back to the missing-font set; an unknown sprite in a known atlas draws the atlas's missing sprite, and a player sprite has no font-set fallback — `client/gui/font/FontManager.java`:320–324, :375–378; `client/gui/font/AtlasGlyphProvider.java`:33–39
+117. `client/text-and-fonts`:191 (figure 2), :197 (caption) — `splitLines` is where *translation happens, first visit*; stages one to three leave *no glyph yet* — `ChatComponent.addMessage` logs the message one statement before it queues it, and `wrapComponents` visits it before splitting, so the runs arrive translated; the split's width function bakes each codepoint (the page's hook) — `client/gui/components/ChatComponent.java`:268–276; `client/gui/components/ComponentRenderUtils.java`:30–36; `client/gui/Font.java`:43–44
+118. `client/text-and-fonts`:201 — *A frame later*, *a different four objects* — the packet is handled in the same turn of the loop as the frame that records it; figure 3 has five lanes, four of them new — `client/Minecraft.java`:1240, :1321 *(page-internal for the count)*
+119. `client/text-and-fonts`:229 (caption) — *a glyph is baked once, ever* — once per font set; `FontSet.reload` clears the cache and the sheets on every resource reload and every toggle of the two font options — `client/gui/font/FontSet.java`:92–104
+120. `client/text-and-fonts`:231–234 — the first visit is *usually a measure, sometimes a log line* — for a chat line the log line always comes first, and the listener's trust check or sender guess has usually visited it before that — `client/gui/components/ChatComponent.java`:268–276; `client/multiplayer/chat/ChatListener.java`:226, :252
+121. `client/text-and-fonts`:234–236 (and queue pass5.md:1256) — the continuation indent is *the one place in the pipeline where a character is invented* — `ComponentRenderUtils.clipText` and `MultiLineLabel` append an ellipsis, and an object component emits U+FFFC (the page's own :254–256) — `client/gui/components/ComponentRenderUtils.java`:44–47; `client/gui/components/MultiLineLabel.java`:94–95; `network/chat/contents/ObjectContents.java`:20, :49
+122. `client/text-and-fonts`:250–252 — obfuscated text *never shifts a layout*; the animation *costs nothing extra* — the table is keyed on the rounded-up advance while the pen moves by the substitute's own, which differs in fractional or mixed-bold chains; each swap resolves through the non-fishy supplier and bakes a new codepoint on first sight — `client/gui/font/FontSet.java`:132, :197–201, :250–256; `client/gui/Font.java`:271, :292
+123. `client/text-and-fonts`:289–291 — *The one place that leaks* is the sign's cache — `Display.TextDisplay`'s client cache of split lines and widths, on a server-shipped class, is cleared only by a synced-data change — `world/entity/Display.java`:544, :696, :714–723
+124. `client/gui-and-screens`:107 (a citation's promise) — `the-client-loop` sends the reader here for *the overrides that cast* the vote, and this page named none — the one the loop page's chest example depends on is named — `client/gui/screens/inventory/AbstractContainerScreen.java`:606–608
+
+#### `client/hud`
+
+125. `client/hud`:7, :46 (caption) — *That one exception*; the fade is *the only thing `Hud` records whatever you press* — `Hud.extractSavingIndicator`, which `Gui` calls after the screen, also ignores F1 (the page's own table says so); the fade is the one exception inside `Hud.extractRenderState` — `client/gui/Hud.java`:234, :1393–1412; `client/gui/Gui.java`:219
+126. `client/hud`:27, :35–42 (figure), :47–50 (caption) — the loading-screen short-circuit ends the frame's recording (a terminal node); both branches record the subtitles *on different conditions*, *either way the deferred call* — `Hud` returns early, and `Gui` still records the screen and its four elements; the visible branch always records the subtitles and only defers them when there is no screen or an in-game-UI one, recording them at once under any other screen — `client/gui/Hud.java`:224, :242–244, :258–267; `client/gui/Gui.java`:181–248
+127. `client/hud`:53–57 — `GameRenderer.extract` *computes* whether the frame advances game time; `Gui` calls *into `Hud`* only when the gates hold; a HUD-less loading screen is *not a special case* — the flag is passed in; `Gui` calls `Hud.extractDebugOverlay` and `Hud.extractDeferredSubtitles` ungated; `Hud.extractRenderState` tests for a `LevelLoadingScreen` by name — `client/renderer/GameRenderer.java`:472–476; `client/gui/Gui.java`:245, :248; `client/gui/Hud.java`:224
+128. `client/hud`:68–69 (table) — the debug overlay records *always*; the subtitles follow *the screen's own block* — the overlay also needs the game loaded (the toasts' depth); the subtitles' fate is decided by `Hud`'s second hidden-gated block — `client/gui/components/DebugScreenOverlay.java`:97; `client/gui/Hud.java`:235–245
+129. `client/hud`:89, :92–93 (cast), :252–254 — `ContextualBar` *decides* which occupies the slot; `DebugScreenEntries` decides *whether it is on*; `DebugScreenEntryList` *ships* the presets — `Hud.nextContextualInfoState` decides and `ContextualBar` is the occupants' interface; the status lives on `DebugScreenEntryList`, which applies the presets `DebugScreenEntries` holds — `client/gui/Hud.java`:1422–1428; `client/gui/contextualbar/ContextualBar.java`:12–50; `client/gui/components/debug/DebugScreenEntryList.java`:33, :80–83, :160–176; `client/gui/components/debug/DebugScreenEntries.java`:57, :80–82
+130. `client/hud`:105–106 — `Toast.getToken` *lets a second advancement replace the first* — only `SystemToast` overrides the token, and only `SystemToast.addOrUpdate` resets by it (`SystemToast.add` stacks); `RecipeToast` is found by class with the default token; every advancement adds a new toast — `client/gui/components/toasts/Toast.java`:28–30; `client/gui/components/toasts/SystemToast.java`:123–144; `client/gui/components/toasts/RecipeToast.java`:71–84; `client/multiplayer/ClientAdvancements.java`:82
+131. `client/hud`:127–132 — `BossHealthOverlay` *reads world fog, the lightmap and the level render state*; *a HUD element asked the world to, not the other way round* — the overlay reads nothing from the world: five call sites on the world's side poll its three flags, one of them the music picker on `Minecraft` (the cast row had it right) — `client/renderer/GameRenderer.java`:305, :744; `client/renderer/LightmapRenderStateExtractor.java`:65; `client/renderer/fog/environment/AtmosphericFogEnvironment.java`:91; `client/Minecraft.java`:2990
+132. `client/hud`:164 (figure), :174–178 (caption) — *seven steps that all belong to `Hud`*; `hurtTo` *sets hurtTime and damageCooldownTime* — six of the seven messages are `Hud`'s; `hurtTo` sets the health and the cooldown (20 on damage, 10 on a heal) and `hurtTime` only on damage — `client/player/LocalPlayer.java`:375–395 *(page-internal for the count)*
+133. `client/hud`:180–187 — the blink is set *when the health fell*; *one `blitSprite` per heart*; `hurtTo` sets `hurtTime` and the cooldown — it is set on a fall (twenty ticks) or a rise (ten), only while the hurt cooldown runs, as the figure and :193 say (F's handoff); each layer of a heart is its own blit; `hurtTime` only on damage — `client/gui/Hud.java`:865–870, :961–991; `client/player/LocalPlayer.java`:380–392
+134. `client/hud`:189–191 — the shake jitters *at 20 Hz*, identical across *two frames*; the three *shake together* — once per client tick, whose rate follows the level's; every frame of a tick is identical; each of the three fires on its own condition, and what they share is the frozen offsets — `client/gui/Hud.java`:881, :953, :1019, :1074; `client/Minecraft.java`:3278–3285
+135. `client/hud`:209–211 — the air bubbles *shift up when either is drawn* — one of the two is always drawn and the bubbles sit a row above that slot; they move up only per extra row of mount hearts — `client/gui/Hud.java`:889, :903–910, :1028–1033
+136. `client/hud`:233 — *those lists* hold a `GuiMessage` — only `allMessages`; the wrapped lines are `GuiMessage.Line`, the history strings, the queue deletions — `client/gui/components/ChatComponent.java`:64–71
+137. `client/hud`:240–243 — `GuiMessageTag.logTag` *is the only part of it that reaches `ChatLog`* — it is written to the game log by `ChatComponent.LOGGER`; `ChatLog` stores the player's profile, message and trust level, or a system message and its time, and no tag (the same in 26.2) — `client/gui/components/ChatComponent.java`:275–284; `client/multiplayer/chat/LoggedChatMessage.java`:37, :90
+138. `client/hud`:256–258 — suppressing the editing screen *is the one place a screen decides whether the debug overlay records at all* — the overlay's own test lets it record under F1 while any screen is open (the page's table) — `client/gui/components/DebugScreenOverlay.java`:97, :419
+139. `client/hud`:276–280 — the subtitles are *deferred past the screen, along with the tooltip and the pre-edit overlay*; the deferred call is made *from a screen's background pass* — the screen's background pass records them before its widgets, and the tooltip and pre-edit overlay after them (the page's own :75–77); with no screen the call is `Gui.extractRenderState`'s — `client/gui/screens/Screen.java`:119–125, :521; `client/gui/GuiGraphicsExtractor.java`:764–784; `client/gui/Gui.java`:248
+140. `client/hud`:303 — *the most-loved fifty-seven lines* — a decompiled line count, a size (V10; queue pass5.md:4853 and :6097) — *(size)*
+
+#### `client/sound-engine`
+
+141. `client/sound-engine`:22 — *everything outside calls `SoundManager.play` and forgets* — `MusicManager` reads the result (the page's own :184 says so) — `client/sounds/MusicManager.java`:78–85
+142. `client/sound-engine`:34 (cast) — `SoundBufferLibrary` on the Download pool — its cache runs on the caller's thread; only the decode runs on `Util.nonCriticalIoPool` — `client/sounds/SoundBufferLibrary.java`:27–29, :73
+143. `client/sound-engine`:35 (cast) — `AbstractDeviceTracker` notices the default device changing, on IO-Worker and OpenAL's callback — it notices any change to the device list; `tick` and a forced refresh run on the Render thread and only the query goes to IO-Worker; the callback is `CallbackDeviceTracker`'s — `com/mojang/blaze3d/audio/AbstractDeviceTracker.java`:27, :35; `com/mojang/blaze3d/audio/CallbackDeviceTracker.java`:55, :75
+144. `client/sound-engine`:45 (thread table) — the Render thread does *everything OpenAL that is not per-source*, including *deleting buffers* — the listener transform, static buffer creation and streamed-buffer deletion run on the sound thread; the Render thread keeps the device, the context, the listener reset and the cached static buffers' deletion — `client/sounds/SoundEngine.java`:582; `com/mojang/blaze3d/audio/SoundBuffer.java`:32–37; `com/mojang/blaze3d/audio/Channel.java`:179
+145. `client/sound-engine`:46 — the two bulk teardowns *run after this thread is gone* — `ChannelAccess.clear` runs after the join; `Library.cleanup` runs after `SoundEngine.stopAll` has started a fresh, idle sound thread, or, in an emergency shutdown, with no join at all — `client/sounds/SoundEngine.java`:159–172, :194–203
+146. `client/sound-engine`:71 — *four objects on the Render thread* — three (the figure's box holds `ClientLevel`, `SoundEngine`, `ChannelAccess`), and two on the sound thread — *(page-internal)*
+147. `client/sound-engine`:90 (figure, arrow 8) — resolve, weigh, *calculateVolume, tell the listeners* — the listeners are told before the volume is computed (26.3's order) — `client/sounds/SoundEngine.java`:424, :453–455, :458
+148. `client/sound-engine`:106–108 (caption) — the arrows into *the right-hand box* are queued tasks; *the one arrow coming back* is the join — the right-hand box is the Download pool, whose one arrow is a direct call; the queued tasks cross into the sound thread's box; two arrows come back, and only the join waits — *(page-internal)*; `client/sounds/SoundBufferLibrary.java`:27–28
+149. `client/sound-engine`:111–113 — *The Render thread reaches the sound thread three times for one sound* — on a cache miss the continuation that posts attach-and-play runs on the Download thread that completed the future — `client/sounds/SoundBufferLibrary.java`:29, :73; `client/sounds/SoundEngine.java`:503–507
+150. `client/sound-engine`:121–123 — *the volume is computed; every registered `SoundEventListener` is told* — the listeners are told first, then the volume (26.3; 26.2 had the page's order) — `client/sounds/SoundEngine.java`:453–455, :458, :461
+151. `client/sound-engine`:134–136 — the acquire's wait is *much the shorter*; teardown is *two sections below* — teardown is four sections below; which wait is shorter the decompile cannot say (the shutdown drops its queue before joining, the acquire waits behind the queue), so the comparison is cut — *(page-internal)*; `client/sounds/SoundEngineExecutor.java`:67, :71
+152. `client/sound-engine`:143 — *That second post* is the hop — the third post (the figure's three), so *that post* — *(page-internal)*
+153. `client/sound-engine`:170–172 — the bookkeeping entry is held twenty ticks *long after the source it named has been deleted* — the twenty ticks count from the play, so it outlives the source only for a sound under a second — `client/sounds/SoundEngine.java`:323–326, :484
+154. `client/sound-engine`:176–178 — *Two things* put a sound in `SoundEngine.queuedSounds` — three: the End flash also queues its sound thirty ticks ahead — `client/multiplayer/ClientLevel.java`:324; `client/sounds/SoundEngine.java`:574–575
+155. `client/sound-engine`:198–199 — the music exemption *is how a track fades in from nothing* — the fade never writes a gain of zero (it stops a track at 1e-4); the exemption keeps a track playing under a zero slider, reported as started silently, which withholds the toast — `client/sounds/MusicManager.java`:78–85, :134–139; `client/sounds/SoundEngine.java`:461–465
+156. `client/sound-engine`:219–222 — `EntityBoundSoundInstance` set apart from the tickable subclasses — it extends `AbstractTickableSoundInstance` and follows its entity by ticking — `client/resources/sounds/EntityBoundSoundInstance.java`:8
+157. `client/sound-engine`:244–248 — the thread exists *only* to serialise AL calls; both teardowns are safe *because by then the sound thread has already been joined* — it also decodes streamed audio (`Channel.pumpBuffers`); `Library.cleanup` runs after `stopAll` has restarted the thread, so what makes it safe is that every channel was already released and the new thread's queue is empty — `com/mojang/blaze3d/audio/Channel.java`:136, :147; `client/sounds/SoundEngine.java`:159–165, :194–203
+158. `client/sound-engine`:250–255 — *deleting buffers all happen on the Render thread*; the join is *the longer* wait, the acquisition *the shorter* — streamed buffers are deleted on the sound thread; the comparison of the two waits is cut (see :134) — `com/mojang/blaze3d/audio/Channel.java`:179
+159. `client/sound-engine`:263–264 — *ALC_EXT_disconnect* *is what makes hot-plugging work on some machines and not others* — a changed device list, a changed default or a returning preferred device reloads the engine without it; the extension adds only the lost-device check — `client/sounds/SoundEngine.java`:216–249; `com/mojang/blaze3d/audio/Library.java`:284–286
+
+#### `client/what-makes-a-sound`
+
+160. `client/what-makes-a-sound`:7 — a player's break fires its level event from `Block.spawnDestroyParticles` — from `Block.playerWillDestroy` through `Block.spawnDestroyByEntityParticles`, which names the player as the source; `spawnDestroyParticles` passes no entity, and under it the breaker would be sent the packet — `world/level/block/Block.java`:496–505; `server/level/ServerLevel.java`:1173–1183
+161. `client/what-makes-a-sound`:38, :42, :46 (figure) and :52–55 (caption) — your own place *and break* reach `ClientLevel.playSeededSound` through `Level.playSound`; the explode packet is a door-one packet into it — a place does; a break runs `Level.levelEvent`, which `ClientLevel.levelEvent` hands to `LevelEventHandler` with no test, while `ServerLevel.levelEvent` leaves out the breaking player; the explode packet's handler calls `ClientLevel.playLocalSound` and never reaches `playSeededSound` — `client/multiplayer/MultiPlayerGameMode.java`:142; `client/multiplayer/ClientLevel.java`:891–893; `client/multiplayer/ClientPacketListener.java`:1434
+162. `client/what-makes-a-sound`:64 (table) — doors two and three *cannot* name a sound in no registry — level event 1010 plays a jukebox song's sound, and a song is a data-pack registry entry whose sound event may be inline; the ambience and music attributes decode `SoundEvent.CODEC`, inline allowed, and are synced — `client/renderer/LevelEventHandler.java`:128–131, :602–609; `world/item/JukeboxSong.java`; `world/level/biome/Biome.java`:56
+163. `client/what-makes-a-sound`:87–88 (cast) — `SoundEventRegistration` and `WeighedSoundEvents` on the Render thread — both are built in `SoundManager.prepare` on the reload's background executor; only the finished map is installed and read on the Render thread — `client/sounds/SoundManager.java`:109–117, :318–396
+164. `client/what-makes-a-sound`:109–111 — *the one place* the top-pack-wins rule is overridden by the data itself — tags carry their own replace flag and append by default, and languages and atlas sources merge too, as `foundations/resource-system` says, and fonts as well — `tags/TagFile.java`:7, :10; `tags/TagLoader.java`:75
+165. `client/what-makes-a-sound`:125–128 — *Two development constants* make the two silences visible; `SoundEngine.MISSING_SOUND` *makes a failed resolve audible* — `MISSING_SOUND` is the subtitle key of the stand-in event `DEBUG_SUBTITLES` builds for an unknown name, and nothing makes a failed resolve audible; both silences return before the listeners are told, so neither shows even under the flag — `client/sounds/SoundEngine.java`:427–448, :453
+166. `client/what-makes-a-sound`:162–165 — the one method's rule *is the whole of the third door, and it is why your own place and break are silent on the wire* — the ambience is the third door's other inhabitant (the page's opening), and a break is silent on the wire through the level event's own exclusion, not this method's — `client/multiplayer/ClientLevel.java`:891–893; `server/level/ServerLevel.java`:1173–1183
+167. `client/what-makes-a-sound`:171 — your client's copy draws its seed from `Level.soundSeedGenerator` — for a place; a break's local sound goes through `ClientLevel.playLocalSound`, which takes the level's random — `world/level/Level.java`:380–381; `client/multiplayer/ClientLevel.java`:743
+168. `client/what-makes-a-sound`:193–201 — *the biggest change in the system and the one a 1.21-era reader will get wrong*; *BiomeSpecialEffects no longer carries* …; `FIREFLY_BUSH_SOUNDS` counted among music, loops, additions and mood — a ranking between releases no tree shows, and drift the body does not carry (rule 3): the sentence states what is; `FIREFLY_BUSH_SOUNDS` is a boolean gate read by `FireflyBushBlock.animateTick` — `world/level/biome/BiomeSpecialEffects.java`; `world/level/block/FireflyBushBlock.java`:30
+169. `client/what-makes-a-sound`:228–232 — `PlaySoundCommand` is *neither the world nor the wire*; the preview plays *a representative sound per category* — `/playsound` sends `ClientboundSoundPacket` itself (door one, as the table says); the preview has a sound for eight of the eleven categories — `server/commands/PlaySoundCommand.java`:107; `client/sounds/SoundPreviewHandler.java`:50–55
+170. `client/what-makes-a-sound`:236 — *the whole second door is one switch* — two: the wither's spawn and the dragon's death are cases of `globalLevelEvent`'s own switch — `client/renderer/LevelEventHandler.java`:66–70, :89–108
+171. `client/what-makes-a-sound`:134–136 — `RECORDS` is *the jukebox slider*, `WEATHER` *the rain one* — `RECORDS` also carries note blocks and goat horns, `WEATHER` thunder and the End flash — `world/level/block/NoteBlock.java`:153; `world/entity/LightningBolt.java`:89–90
+172. `client/what-makes-a-sound`:219–220 — `MusicFrequency` *scales* the gap — it caps a track's delay (twenty or ten minutes, or a constant hundred ticks) — `client/sounds/MusicManager.java` (`MusicFrequency.getNextSongDelay`)
+
+#### `client/debugging-the-running-game`
+
+173. `client/debugging-the-running-game`:14–16, :219 — *the twenty-five renderers that turn the results into floating text*, beside *about half the renderers do not use this system* — thirteen of the twenty-five read a subscription; the eleven F3-gated ones and `ChunkCullingDebugRenderer` read none — `client/renderer/debug/DebugRenderer.java`:31–132 (per-file grep for `DebugSubscriptions`)
+174. `client/debugging-the-running-game`:29 (cast) — *one synchronizer per subscription per level* — fifteen source synchronizers (the tick-time kind has no codec) plus the POI and village-section ones, seventeen a level — `util/debug/LevelDebugSynchronizers.java`:38–50
+175. `client/debugging-the-running-game`:73–88 — the test server's NOOP *pays nothing* for code that draws; the *main thread* and *render thread* rows; the collector asymmetry *is why* two renderers reach the singleplayer server — the façade still builds each shape and the NOOP only keeps it from throwing, and no server-side class the game ships calls `Gizmos`; both per-frame collectors are installed on the one Render thread, around extraction and rendering (Mojang's method names say *main* and *render*); the two renderers read state no subscription carries, and the code gives no other reason — `gizmos/Gizmos.java`:23–38; `client/Minecraft.java`:1348, :1423; `client/renderer/debug/ChunkDebugRenderer.java`:45; `client/renderer/debug/EntityHitboxDebugRenderer.java`:62–73
+176. `client/debugging-the-running-game`:98 (table) — `ENTITY_PATHS` *fed by the navigator's current `Path`* — registered in `Mob.registerDebugValues` with the two rows above it, reading the navigator's path — `world/entity/Mob.java`:1581–1584
+177. `client/debugging-the-running-game`:137–150 (figure), :153–155 (caption) — *two ticks of lag*: the subscriber set read *at the end of the next* tick; `pollUpdate` on the source synchronizer's lane; the gizmo appended *later in the frame* — the packet drain runs at the head of the server tick and `ServerDebugSubscribers.tick` at its end, so the set is read the tick the request arrives and the synchronizers wake and send in the next (the page's own :184 says one tick); the lane's method is `pollAndSendUpdates` (`pollUpdate` is the private value source's); the gizmo is appended inside `emitGizmos` during extraction and drawn later — `server/MinecraftServer.java`:1101, :1238; `server/level/ServerLevel.java`:454; `util/debug/TrackingDebugSynchronizer.java`:228, :258; `client/renderer/debug/BrainDebugRenderer.java`:79
+178. `client/debugging-the-running-game`:162–165 (names) — `TrackingDebugSynchronizer.registerChunk`, `.registerEntity` and `TrackingDebugSynchronizer.SourceSynchronizer.pollUpdate` — the registrations are `TrackingDebugSynchronizer.SourceSynchronizer`'s; `pollUpdate` is the private `ValueSource`'s, and the source synchronizer's own is `pollAndSendUpdates` — `util/debug/TrackingDebugSynchronizer.java`:228, :258, :301, :309
+179. `client/debugging-the-running-game`:170–177 — *the middle three steps* (six were named); *Nothing is sent twice*; *the whole thing is cleared* — the poll path sends only changes, but a new tracker gets the stored value and the POI synchronizer sends on every change without comparing; sleep clears the source synchronizers' maps and not the subscribed-player sets — `util/debug/TrackingDebugSynchronizer.java`:117, :206–216, :250–255, :337–369; `util/debug/LevelDebugSynchronizers.java`:61–67
+180. `client/debugging-the-running-game`:194–197 — the flags are *one per kind* — thirteen flags for fifteen kinds: the bee flag also asks for goal selectors and one flag covers both game-event kinds — `client/multiplayer/ClientDebugSubscriber.java`:51–65
+181. `client/debugging-the-running-game`:222–224 — what the hitbox renderer draws for an ordinary entity *is entity rendering's* — `EntityHitboxDebugRenderer` draws the ordinary hitbox itself through `Gizmos`, which is what `rendering/entity-rendering` says — `client/renderer/debug/EntityHitboxDebugRenderer.java`:44, :77
+182. `client/debugging-the-running-game`:258–262 (heading and lead) — the sample path *shares nothing but the idea* (the heading) against *one of the sixteen subscriptions gates the remote half* (the body) — it shares the subscription, its request packet, the permission gate and the subscriber map (`RemoteSampleLogger` asks `ServerDebugSubscribers`); the false heading is corrected (no link lands on it) — `util/debugchart/RemoteSampleLogger.java`:23–24; `client/multiplayer/ClientDebugSubscriber.java`:49
+183. `client/debugging-the-running-game`:300–301 — *the back-fill* is in `TrackingDebugSynchronizer` — the retroactive registration on waking is `LevelDebugSynchronizers.wakeUp`'s — `util/debug/LevelDebugSynchronizers.java`:84–98
+
+#### Found by the record's audit — 184–314
+
+Each item names the sentence as the session left it, at its line after the session's edits; *(own)* marks a sentence the session had just written.
+
+184. `client/README`:6 *(own)* — *the screen that opens a frame after the key* — a key-bound screen waits for the next tick the loop owes, up to fifty milliseconds; the pause screen opens inside the key's own event — `client/Minecraft.java`:2034–2037, :2160–2165; `client/KeyboardHandler.java`:620–621
+185. `client/README`:7 *(own)* — everything that *touches* the client's world happens on one thread — the section-compile workers read it from a background thread (the-client-level's torus section); every write is the Render thread's — `client/renderer/chunk/RenderSectionRegion.java`:34, :67–68; `the-client-level`:154–160
+186. `client/README`:70 *(own)* — *three of the pages here open on one of them waiting on the other* — two: the client level (a scheduled tick answered no until the server speaks) and prediction (the lie lasts until the receipt); what makes a sound opens on which side names a sound — `client/multiplayer/ClientLevel.java`:811, :816; `server/network/ServerGamePacketListenerImpl.java`:309–311
+187. `client/README`:144 *(own)* — *the hundred-odd screens* — 133 classes descend from `Screen` under `net/minecraft` (Realms, out of scope, adds 28) — `client/gui/screens/Screen.java` and its subclasses
+188. `lectures`:244–245 — *Nothing here hands off to anything except lecture seven, which draws what lecture six opens* — the landing page and this page's own :263–265 name two groups: the GUI stack, six to nine, and the client level with prediction, which share a ledger — `client/multiplayer/ClientLevel.java`:182, :235
+189. `lectures`:278–280 — Part XI *begins where [lecture one] ends* — the frame zone is one span inside `Minecraft.runTick`, which goes on after it to recompute the pause (the claim this session corrected on the landing page) — `client/Minecraft.java`:1320–1342
+190. `client/the-client-loop`:91 — *this page stops where the profiler's frame zone opens* — the page's figure and :79–80 go on past the frame to the pause and the Timer — `client/Minecraft.java`:1333–1342
+191. `client/the-client-loop`:57 (figure) *(own)* — the texture tick runs *once if a tick is owed* — and only while the level runs normally; a frozen world owes ticks and skips it — `client/Minecraft.java`:1259
+192. `client/the-client-loop`:82 *(own)* — *Two of the figure's nodes hold two calls each* — four do; the two the paragraph unpacks are the ones that need it — `client/Minecraft.java`:1214–1226, :1340–1342
+193. `client/the-client-loop`:107 *(own)* — *javac* writes *a `static final int`* in at every use site — only one whose initializer is a literal; one set by a call is read at run time — `SharedConstants.java`:82; `util/profiling/SingleTickProfiler.java`:54; `client/Minecraft.java`:277
+194. `client/the-client-loop`:113–114 — `/tick freeze` is *the same lever pulled the other way*, beside the new qualifier that `/tick rate` slows the world — under a freeze `runsNormally` is false and the target returns to fifty milliseconds, twenty ticks a second — `client/Minecraft.java`:3277–3287; `world/TickRateManager.java`:40–42, :67–72
+195. `client/the-client-loop`:125 *(own)* — *the title screen's panorama* animates *while the world is stopped* — the panorama is drawn behind every screen with no level, when there is no world at all — `client/gui/screens/Screen.java`:512–514; `client/renderer/Panorama.java`:29
+196. `client/the-client-loop`:151 *(own)* — a client with no world *reads the keyboard* in the tick — `KeyboardHandler.tick` runs only the F3+C crash countdown; keys are read by the poll (the table's own row) — `client/KeyboardHandler.java`:725–750
+197. `client/the-client-loop`:185–186 *(own)* — each hops back *before changing anything* — both write their own state first: the notification task advances its counter, and the friends-list handler swaps in its fetched data, which the Render thread reads through `PlayerSocialManager`; only toasts and listener calls hop — `client/PeriodicNotificationManager.java`:157, :169; `client/gui/screens/social/RemoteFriendListUpdateHandler.java`:115, :119, :205, :249
+198. `client/the-client-loop`:199 *(own)* — `constructProfiler` *builds one per iteration, layering* four — the recorder's layer only while it records, the single-tick one only when a debug flag made one; with neither and no pie chart it returns the shared inactive instance — `client/Minecraft.java`:926, :1521–1526, :1543; `util/profiling/SingleTickProfiler.java`:54
+199. `client/the-client-loop`:204 *(own)* — the held reply is sent *once the poll returns*; *a window held still by a drag* — it leaves from the listener's next tick, and is dropped after a minute; the drag holds the thread in the poll — `client/multiplayer/ClientCommonPacketListenerImpl.java`:154, :377–389; `client/multiplayer/ClientPacketListener.java`:2972
+200. `client/the-client-loop`:258 *(own)* — *a close from the window's own button*; armed *after the corridor* — the callback runs on every close request the window gets, the OS quit included; *the corridor* is defined six lines later — `com/mojang/blaze3d/platform/Window.java`:194–199, :252–254, :269–273
+201. `client/the-client-loop`:259–262 *(own)* — a later arming *has claimed the counter*; the post-main arming *goes on to take the process down* — a later arming increments it and a firing watchdog claims it; after the close-callback watchdog fires, the post-main arming starts no thread — `com/mojang/blaze3d/platform/ClientShutdownWatchdog.java`:24, :26, :34, :47
+202. `client/the-client-loop`:27 — the Render thread *is the thread that does everything*, beside the corrected :22 — the page sends work to Netty, the worker pool, two timer threads, the sound thread and the watchdog — `client/sounds/SoundEngine.java`:582
+203. `rendering/the-window`:224–226 — the close-callback arming *catches a client hanging on the close button rather than on the way out* — it is the one live through the teardown after a close from the window (the owner page, corrected this session) — `client/main/Main.java`:283, :291; `client/Minecraft.java`:576
+204. `rendering/the-frame`:136–138 — losing focus *pauses a singleplayer world outright through `Minecraft.pauseIfInactive`* — it only opens a `PauseScreen`, when no screen is up and the option is on; the world stops by that screen's vote when the pause is recomputed — `client/Minecraft.java`:1336, :1510–1518, :1800–1808; `client/gui/Gui.java`:357–366
+205. `rendering/the-frame`:189 — *the title-screen panorama* — every screen drawn with no level shows it — `client/gui/screens/Screen.java`:512–514
+206. `rendering/models-and-atlases`:355–356 — the guard is `Minecraft.isLevelRunningNormally` *and nothing else* — a tick must also be owed (the-client-loop's figure, corrected this session) — `client/Minecraft.java`:1259
+207. `reference/threads`:117 — the keep-alive answer *never waits for a frame* — a deferred reply waits for the Render thread's next tick — `client/multiplayer/ClientCommonPacketListenerImpl.java`:377–389, :437–442; `client/multiplayer/ClientPacketListener.java`:2972
+208. `client/the-client-level`:223 *(own)* — the sweep *is why a crack someone abandoned lingers* — an abandoned dig is cleared at once: the abort makes the server broadcast progress -1, which the client removes; the sweep catches cracks whose -1 never arrives, as `block-breaking` says — `server/level/ServerPlayerGameMode.java`:269–285; `server/level/ServerLevel.java`:1097–1113; `client/multiplayer/ClientLevel.java`:876–881
+209. `client/the-client-level`:195 *(own)* — the window is *as many steps as the type's update interval (three by default, two for a player)* — only `SteppedInterpolationHandler`, which only `LivingEntity` supplies, reads the interval; the linear handlers are a fixed three, a display's is its teleport duration; allays and mannequins are two too — `world/entity/SteppedInterpolationHandler.java`:15–16; `world/entity/LinearInterpolationHandler.java`:16–22; `world/entity/Display.java`:112–118, :184–185; `world/entity/EntityTypes.java`:157, :221, :263, :354, :355
+210. `client/the-client-level`:19 *(own)* — *this page needs none of them* — its snap-or-smooth section turns on the root predicate: `ClientPacketListener` interpolates only an entity that fails it (and three pages say this one needs authority behind it) — `client/multiplayer/ClientPacketListener.java`:684–692, :772–790; `lectures`:430–433
+211. `client/the-client-level`:39 *(own)* — *Six of the nine rows* hollow something out, and *the last is the storage* — the storage row (*the same lookup, none of the bookkeeping*) is a hollowing too: seven — the page's own table, :41–52
+212. `client/the-client-level`:208 *(own)* — it calls `ClientLevel.setTimeFromServer`, *its only caller* — the appositive ran backwards: the handler is the method's only caller — `client/multiplayer/ClientPacketListener.java`:1183–1190
+213. `client/the-client-level`:234 *(own)* — the ticking pair fires *as a chunk starts and stops ticking* — also when an entity is added to a ticking section or is always-ticking, crosses a section boundary, or is removed — `world/level/entity/TransientEntitySectionManager.java`:85–87, :145–150, :163–166
+214. `client/the-client-level`:135 *(own)* — *In a burst the frame takes only its share* — a queue of a thousand or more is taken whole (the page's :100); *short* is ten or fewer — `client/multiplayer/ClientLevel.java`:284–301
+215. `client/the-client-level`:100 *(own)* — spread over frames *a tenth at a time*, only *a larger one* taken whole — under a hundred the floor of ten applies, and a queue of exactly a thousand is taken whole — `client/multiplayer/ClientLevel.java`:290
+216. `client/the-client-level`:186 (table) *(own)* — *most other projectiles* snap — every `Projectile` but `FishingHook` — `world/entity/projectile/FishingHook.java`:55, :115
+217. `client/the-client-level`:182 *(own)* — *six opt in* — `AbstractMinecart` returns `InterpolationHandler.NO_OP` under the minecart-improvements experiment — `world/entity/vehicle/minecart/AbstractMinecart.java`:336–337
+218. `client/the-client-level`:26 (cast) — an array *indexed modulo the view diameter* — the side is the diameter plus a margin (the page's corrected :151) — `client/multiplayer/ClientChunkCache.java`:163–165, :236–237, :248–249
+219. `client/the-client-level`:44 (table) — *both lists are `BlackholeTickAccess`* — they are the empty list that class hands out (the wording corrected at :7) — `client/multiplayer/ClientLevel.java`:810–817; `world/ticks/BlackholeTickAccess.java`:21–48
+220. `client/the-client-level`:252–253 — *every client-side `Level.setBlock` relights*, under the test — only one that passes it (the narrowing at :13) — `world/level/chunk/LevelChunk.java`:313–319; `world/level/lighting/LightEngine.java`:42–43
+221. `client/prediction-and-acks`:138 (figure note) *(own)* — the listener's tick *flushes it first* — the flush is the tick's first statement, not the first thing sent; reworded so it cannot read as the ack going first — `server/network/ServerGamePacketListenerImpl.java`:308–311
+222. `client/prediction-and-acks`:148 *(own)* — the resends follow *every outcome of the attempt*; they are skipped only *when it turns the packet away first* (three gates named); *Either way the correction is ahead* — they follow every click past the build-height test, spawn protection and the teleport and `mayInteract` refusals included, which never attempt the action; a fourth early gate, the hit point's distance, also skips them; in the skip branch no correction is sent, so the ordering sentence is scoped to when one is — `server/network/ServerGamePacketListenerImpl.java`:1563–1581, :1586–1588, :1618–1626
+223. `client/prediction-and-acks`:178 *(own)* — *a door a right-click opens* — the toggle writes both ways — `world/level/block/DoorBlock.java`:170–174
+224. `client/prediction-and-acks`:209–210 — a teleport *disarms the ledger's position snap* (unqualified), beside the corrected :222 — only while the receipt is at or below `lastTeleportSequence` — `client/multiplayer/prediction/BlockStatePredictionHandler.java`:49, :69–70
+225. `blocks/block-interaction`:15 and `blocks/block-breaking`:23 (the contract) — the receipt is sent *once the client has finished loading in* — `hasClientLoaded` is the server's belief: false again after death until respawn, true after a 60-tick timeout (the owner page's wording, corrected this session) — `server/network/ServerGamePacketListenerImpl.java`:240, :2544–2566; `server/level/ServerPlayer.java`:1053
+226. `blocks/block-interaction`:326 (gate table) — the teleport and `mayInteract` row has no block updates — the branch falls through to both resends, as spawn protection's does — `server/network/ServerGamePacketListenerImpl.java`:1618–1623
+227. `player/input-to-movement`:385–389 — when the predictions are settled *the ledger skips the position snap* — only for a receipt at or below the teleport's number; a later one allows every snap in its batch — `client/multiplayer/prediction/BlockStatePredictionHandler.java`:49, :69–70
+228. `networking/what-the-client-is-told`:413 — *an unsequenced abort* acks zero — a change of dig direction is sent unsequenced and acked too — `client/multiplayer/MultiPlayerGameMode.java`:287; `server/network/ServerGamePacketListenerImpl.java`:1509–1514
+229. `client/input-and-keybinds`:10 *(own)* — *None of the toggling involves the tick*, right after the inventory's release — opening the inventory by its key runs in the tick's drain; the flip and the eaten release do not — `client/Minecraft.java`:2035–2037, :2160–2166; `client/gui/Gui.java`:308
+230. `client/input-and-keybinds`:33 (cast) — `KeyboardHandler` owns *the gauntlet a press runs* — four of its five gates; the fifth is `Minecraft.tick`'s (the page's corrected caption) — `client/Minecraft.java`:2035
+231. `client/input-and-keybinds`:59 (figure), :68 (caption) *(own)* — the added click is *one more for the drain*; the caption counts *five gates* over a figure of holding sneak — nothing drains sneak's count (it is read only through `isDown`), and the verified line now counts four for sneak; the caption says which press meets the fifth — `client/player/KeyboardInput.java`:21; `client/gui/Gui.java`:371–397
+232. `client/input-and-keybinds`:121 *(own)* — *which the first row prevents* (unqualified) — the debug modifier can be set down while a screen is open, and a screen that consumes its release leaves it down — `client/KeyboardHandler.java`:546–551, :652–653; `client/gui/screens/debug/GameModeSwitcherScreen.java`:134–138
+233. `client/input-and-keybinds`:183 *(own)* — *Everything else leaves from the drain*; the movement keys reach the server *as the tick's movement packets*; *two packets* — a screen's own keys send from the screen (chat's Enter, a slot's Q), and a hotbar key's packet leaves on the next tick; the movement keys also send the input packet, the sprint command and the abilities packet; the copy-recreate key sends one of two query packets — `client/gui/screens/ChatScreen.java`:131, :354; `client/gui/screens/inventory/AbstractContainerScreen.java`:560–572; `client/multiplayer/MultiPlayerGameMode.java`:326, :346; `client/player/LocalPlayer.java`:268, :353, :400, :925
+234. `client/input-and-keybinds`:209 (blockquote) — *Options.keyBindings* (now the key-mappings array) among the names gone — 1.21.11 already names the array `Options.keyMappings`; *keyBindings* is another mapping's name — `client/Options.java`:273 *(1.21.11, the sibling tree)*
+235. `player/input-to-movement`:134–137 — *a consumed release is how a mapping is left stuck down* — `KeyMapping.releaseAll` has already released it when the screen opened (the owner page, corrected this session) — `client/gui/Gui.java`:306–308
+236. `client/README`:104–106 — *the five places a press can be swallowed on the way* [to down] — the fifth guards the drain, not the down state — `client/Minecraft.java`:2035–2037; `client/KeyboardHandler.java`:649
+237. `reference/naming-drift`:56, :301–302, :305 — *Options.keyBindings*, *Options.mouseSensitivity* and *ClientChunkCache.ChunkArray* as 1.21 names; `Minecraft.setScreen` set as a live name — 1.21.11 already has `Options.keyMappings`, a private `sensitivity` with its accessor, and `ClientChunkCache.Storage`, so the three are other mappings' names (the rows go, the category change stays); the gone name takes the italic — `client/Options.java`:99, :273; `client/multiplayer/ClientChunkCache.java`:195 *(1.21.11)*
+238. `client/options`:82 (caption), :90 *(own)* — a slider *waits for the screen to come down*; its value *sits there until the screen comes down* — any save sends it: a cycle button on the same screen, F11, the debug hotkeys, the narrator's Ctrl+B (the absolute this session corrected at :3 and :11) — `client/OptionInstance.java`:603; `client/Minecraft.java`:1593; `client/KeyboardHandler.java`:241, :295, :364, :531
+239. `client/options`:94 *(own)* — *a connection's first save* — every entry into play, at login and after each reconfiguration, makes a new `ClientPacketListener` with nothing sent — `client/multiplayer/ClientPacketListener.java`:430, :1018, :2954; `client/multiplayer/ClientConfigurationPacketListenerImpl.java`:185
+240. `client/options`:227 *(own)* — *one out of range is reset*; *a boolean that is not true reads as false*; the resource-pack list *is the one bad value that ends the load* — most out-of-range numbers fail the codec and are ignored, and only a decoded value outside the set is reset; an `OptionInstance` boolean decodes through `Codec.BOOL`, so *yes* is ignored; malformed JSON in an option value throws past the `DataResult` and ends the load too — `client/Options.java`:1658–1664, :1685–1689, :1730; `client/OptionInstance.java`:38, :127–130, :342; `util/LenientJsonParser.java`:17
+241. `client/options`:218 *(own)* — *One, and it says so* — the file-only `Options.overrideWidth`, `Options.overrideHeight` and `Options.glDebugVerbosity` are read once in the `Minecraft` constructor — `client/Minecraft.java`:463–464, :517
+242. `client/options`:3 (the verified line) *(own)* — the value *reaches the server only when the options are next saved* — the integrated server reads the slider every unpaused tick (the page's :194–197), so a LAN world gets it with no save; the packet is what waits for the save — `client/server/IntegratedServer.java`:157–162
+243. `client/options`:213–214 — it silences any set *performed before the loop starts* — the flag is raised inside the constructor, long before the loop (the wording corrected at :155) — `client/Minecraft.java`:457, :925
+244. `client/options`:150 (heading) — *The guard that silences every setting at startup* — sets later in the constructor run their listeners: fullscreen, the graphics backend, the preset; the link from the-client-loop is repointed — `client/Minecraft.java`:473, :490, :494, :584
+245. `client/gui-and-screens`:239 *(own)* — *a world backup* among the blocking main-thread work — the backup shows its screen through `setScreenAndShow` and runs on `Util.backgroundExecutor`, as the file fix does — `client/gui/screens/worldselection/EditWorldScreen.java`:183–190; `client/gui/screens/worldselection/WorldOpenFlows.java`:194–205, :345–349
+246. `client/gui-and-screens`:249 *(own)* — set *whenever a screen is initialised*; *after keyboard input until the next action* — armed on every `Gui.setScreen`, a re-shown screen included; the never-expiring branch needs Tab or arrow navigation in a screen, and a screen opened from gameplay always takes the two seconds — `client/KeyboardHandler.java`:492–502; `client/InputType.java`:13–15; `client/gui/Gui.java`:276–278, :309; `client/gui/screens/Screen.java`:456–472
+247. `client/gui-and-screens`:61 (figure) *(own)* — `Layout` *arranges, and re-arranges on resize* — only on screens that override `Screen.repositionElements`; a plain screen rebuilds its widgets and layout (the page's :33, :120–126) — `client/gui/screens/PauseScreen.java`:94, :108, :176; `client/gui/screens/Screen.java`:567–569
+248. `client/gui-and-screens`:187 (caption) *(own)* — *a held sneak* released with every mapping — a toggled sneak too: `ToggleKeyMapping.release` resets it — `client/ToggleKeyMapping.java`:40–56
+249. `client/gui-and-screens`:171 (figure note) — the band is *the tick the key is spent in*, over the key press itself — the press is handled in the poll just before the tick — `client/Minecraft.java`:934–935; `com/mojang/blaze3d/systems/RenderSystem.java`:155–160
+250. `reference/hud-elements`:72 — overlay or screen, *never both* — `LoadingOverlay` records the screen under its fill during its fades (gui-and-screens, corrected this session) — `client/gui/screens/LoadingOverlay.java`:79–93
+251. `player/input-to-movement`:48–49 — a sneak toggle *survives opening the inventory when a held sneak does not* — both are released when the screen opens; the toggle is restored on close, and a held sneak is read again from the keyboard except on macOS — `client/gui/Gui.java`:307–317; `client/MouseHandler.java`:426–431; `client/input/InputQuirks.java`:17; `client/ToggleKeyMapping.java`:40–56
+252. `client/the-client-loop`:215–216 — gui-and-screens owns *the overrides that cast* the vote — it names one, `AbstractContainerScreen.isPauseScreen`, of thirteen — `client/gui/screens/inventory/AbstractContainerScreen.java`:606–608
+253. `client/the-gui-render-tree`:19 *(own)* — *each distinct still item model* — an oversized model never enters the atlas either (it gets a picture-in-picture texture, the page's :113) — `client/gui/render/GuiRenderer.java`:284–286, :295–308
+254. `client/the-gui-render-tree`:160–162 — a new `Draw` starts *only* on a disagreement of the three keys, beside the new *splitting it at the blur* — the mesh state resets before each range, so the blur boundary starts one too — `client/gui/render/GuiRenderer.java`:164–166, :178–181
+255. `client/the-gui-render-tree`:189 *(own)* — growing the atlas *redraws every resident model*; a resident model gives up its slot *only* when a later frame's do not fit — the grown atlas starts empty and only the frame's models are rendered into it; *only* ignored the wholesale throwaways the sentence before names — `client/gui/render/GuiRenderer.java`:283–291, :336–349, :355–380
+256. `client/the-gui-render-tree`:192 *(own)* — the extractor holds the two *until the end of the pass*; *makes one side effect* — they are released at the end of the screen's own recording, each after a `nextStratum`, and the saving indicator, toasts and debug overlay record after them; recording text also bakes glyphs, the font's side effect — `client/gui/screens/Screen.java`:124; `client/gui/GuiGraphicsExtractor.java`:764–784; `client/gui/Gui.java`:218–247
+257. `client/the-gui-render-tree`:198 *(own)* — one switch *lifts every element a layer* — the element stays in its node; the tint rectangle goes in the node above, scissored to its box — `client/renderer/state/gui/GuiRenderState.java`:82–102
+258. `reference/naming-drift`:297 — *LayeredDraw* is now *call order plus* `nextStratum` — layering is inferred from the boxes before call order (the blockquote this session corrected) — `client/renderer/state/gui/GuiRenderState.java`:107–149
+259. `rendering/blaze3d`:282 — *a spinning entity in an inventory screen* — no GUI entity spins; the inventory's follows the mouse (the page it links, corrected this session) — `client/gui/screens/inventory/InventoryScreen.java`:93–123
+260. `rendering/blaze3d`:150–152 — the audio wrapper *runs on the sound engine's own thread* — its per-source calls do; the device's life runs on the Render thread (the corrected `sound-engine` thread table) — `client/sounds/SoundEngine.java`:128–129, :163; `com/mojang/blaze3d/audio/AbstractDeviceTracker.java`:27, :35
+261. `client/hud`:112 — a clear-colour override is a field *the world reads back* — it sets only the colour the frame is cleared to (`the-gui-render-tree`'s correction this session) — `client/renderer/GameRenderer.java`:516
+262. `client/text-and-fonts`:52, :54, :60 (figure 1) *(own)* — the world path's box names only `SubmitNodeCollection.submitText`, and the bottom box's one exit is `GuiRenderer`, so a reader following the world ends in the GUI — `TextFeatureRenderer` prepares world text at draw (the dotted edge now names it) and walks it with its own glyph visitor (the bottom box's second exit) — `client/renderer/feature/TextFeatureRenderer.java`:59–72, :91–96
+263. `client/text-and-fonts`:40 (figure 1, the cluster), :63 (caption) *(own)* — the top box *when the text changes*, and for a chat line it *runs when the text changes* — a chat line's text never changes, so the cluster is *when the text is laid out*; stages one to three run when it arrives and whenever the chat re-wraps every stored line (a width, scale or opacity option, a deleted message, a restored state) — `client/gui/components/ChatComponent.java`:355, :366–383, :515; `client/Options.java`:984, :991, :1017, :1022
+264. `client/text-and-fonts`:78 *(own)* — the pre-warm loads a TrueType font's glyphs *before the first frame asks*; *Baking still waits for first use* — what it spares is the apply phase's `FontSet.selectProviders`, which asks the chain for every claimed codepoint again on the Render thread; it skips the space; every reload bakes the missing box and the white glyph at once — `client/gui/font/FontManager.java`:80–85, :196, :236–237; `client/gui/font/FontSet.java`:92–96, :102–103, :106–139; `com/mojang/blaze3d/font/TrueTypeGlyphProvider.java`:93–115
+265. `client/text-and-fonts`:111 — `FormattedBidiReorder` *runs ICU's bidi algorithm*, beside the new sentence that `Font.bidirectionalShaping` *shapes and reorders* — it shapes Arabic and mirrors too — `client/resources/language/FormattedBidiReorder.java`:18, :34–36
+266. `client/text-and-fonts`:164–166 — in the world, the two submit methods *feed* `TextFeatureRenderer` downstream of stage six — they hand it an unprepared sequence and it runs stages four to six at draw (the figure, corrected this session) — `client/renderer/SubmitNodeCollection.java`:167–168; `client/renderer/feature/TextFeatureRenderer.java`:59–67
+267. `client/text-and-fonts`:185 (caption, figure 2) *(own)* — the measuring *has already baked its glyphs* — it bakes the logical codepoints it measures; the reordered sequence carries shaped and mirrored forms, first baked at stage five — `client/resources/language/FormattedBidiReorder.java`:18, :34–36; `client/StringSplitter.java`:339
+268. `client/text-and-fonts`:215–216 (caption, figure 3) — figure 3 stitches the line's glyphs in the record band, beside figure 2's new caption that the measuring baked them — only what the measuring did not see is stitched then — `client/gui/font/FontSet.java`:92–104
+269. `client/text-and-fonts`:219 *(own)* — the first visit is *the log line*, *if the chat listener has not already looked at it* — the listener visits a system message always and a signed message in its trust check; only unsigned or disguised chat reaches the log line first — `client/multiplayer/chat/ChatListener.java`:226, :252; `network/chat/ChatTrustLevel.java`:25, :29; `client/gui/components/ChatComponent.java`:268, :276
+270. `client/text-and-fonts`:234 *(own)* — the table is *built once per font set*; obfuscation does not shift a layout *in fonts of whole-pixel advances* — every `FontSet.reload` rebuilds it; bold adds a bold offset of one, or a half for a unihex glyph, so a bold swap in a mixed chain shifts too — `client/gui/font/FontSet.java`:92–101, :132; `com/mojang/blaze3d/font/GlyphInfo.java`:7–13; `client/gui/font/providers/UnihexProvider.java`:394–406
+271. `reference/glossary`:301–303 — a glyph is baked *the first time it is asked for* — per font set, and again after a reload or a font-option toggle — `client/gui/font/FontSet.java`:92–104
+272. `client/hud`:117 *(own)* — *a dragon's fog and darkening* — the dragon's event sets fog and music; darkening is the Wither's — `world/level/dimension/end/EnderDragonFight.java`:153; `world/entity/boss/wither/WitherBoss.java`:88
+273. `client/hud`:211 *(own)* — *No part of the tag reaches `ChatLog`* — the verdict does: a player message is logged with its `ChatTrustLevel`, from which those tags are made — `client/multiplayer/chat/ChatListener.java`:193, :213–216; `client/multiplayer/chat/LoggedChatMessage.java`:37; `client/multiplayer/chat/ChatTrustLevel.java`:52–60
+274. `client/hud`:96 *(own)* — `Toast.getToken` lets *a second system toast with the same id reset the one showing* and a recipe join the recipe toast — only `SystemToast.addOrUpdate` resets (`SystemToast.add` stacks); the recipe toast keeps `Toast.NO_TOKEN` and is found by class, in the waiting queue too — `client/gui/components/toasts/SystemToast.java`:128–141, :152–165; `client/gui/components/toasts/RecipeToast.java`:71–72; `client/gui/components/toasts/ToastManager.java`:134–160
+275. `client/hud`:48 *(own)* — a HUD-less frame is the normal state *of most loading screens* — of every loading screen but the level-loading one, which is shown while a level exists — `client/Minecraft.java`:2404–2413; `client/multiplayer/ClientPacketListener.java`:1699–1711; `client/gui/Hud.java`:224
+276. `client/hud`:149 (figure), :163 *(own)* — `hurtTo` sets *the health and `LivingEntity.damageCooldownTime`* — the cooldown only when the health changed (twenty on a fall, ten on a rise); on the first packet only the health — `client/player/LocalPlayer.java`:375–395
+277. `client/hud`:236 *(own)* — *where* the tooltip and pre-edit overlay are deferred past the widgets — they are recorded after the widgets, in `GuiGraphicsExtractor.extractDeferredElements`, not in the background pass — `client/gui/GuiGraphicsExtractor.java`:764–784; `client/gui/screens/Screen.java`:118–124
+278. `client/hud`:221 *(own)* — the overlay asks about screens *once* itself — twice: in its record test and in `DebugScreenOverlay.showDebugScreen`, which `Gui.tick` uses — `client/gui/components/DebugScreenOverlay.java`:97, :419; `client/gui/Gui.java`:138
+279. `client/hud`:3 (the verified line) — F1 hides the interface *except for* the one thing, beside the corrected *That exception* — the saving indicator is drawn under F1 too — `client/gui/Gui.java`:218–220; `client/gui/Hud.java`:1393–1412
+280. `client/hud`:34 (figure) — on the short-circuit path `Gui` continues with *saving indicator, toasts, debug overlay* — the first thing it records there is the screen, the level-loading screen itself — `client/gui/Gui.java`:196–200
+281. `client/hud`:81 (cast) — *three questions the world renderer asks it* — five askers, none of them `LevelRenderer` (the corrected :117) — `client/renderer/GameRenderer.java`:305, :744; `client/Minecraft.java`:2990
+282. `reference/hud-elements`:75 — the debug overlay's only gate is the screen — it also needs the game loaded (the corrected hud :59) — `client/gui/components/DebugScreenOverlay.java`:97
+283. `reference/hud-elements`:18–19 — three gates sit *above everything below* — `Gui` applies them only to `Hud.extractRenderState` and the saving indicator; the toasts need only resources loaded, and the overlay and subtitles are called ungated — `client/gui/Gui.java`:172, :218, :222, :244–248
+284. `reference/glossary`:121–122 — *three screen effects* — one of the three is the boss music — `world/BossEvent.java`; `client/Minecraft.java`:2990
+285. `client/sound-engine`:5 — `SoundEngine.play` *then posts* attach-and-play — it posts it only if the buffer is already decoded; otherwise the continuation posts it after `play` has returned (the page's :104) — `client/sounds/SoundEngine.java`:503–507
+286. `client/sound-engine`:45, :47–49 — the *periodic poll* of the device list; the callback notices *that the default device changed* — the query is periodic only for the polling tracker; the callback subscribes to added, removed and default-changed events (beside the cast row the session corrected) — `com/mojang/blaze3d/audio/PollingDeviceTracker.java`:15–17; `com/mojang/blaze3d/audio/CallbackDeviceTracker.java`:15, :64–76
+287. `client/sound-engine`:68 *(own)* — *one on a download thread* — `getCompleteBuffer` runs on the caller's thread and only its decode on the download pool (the cast row the session corrected) — `client/sounds/SoundBufferLibrary.java`:28–29, :73
+288. `client/sound-engine`:94 (figure), :102 (caption) — `thenAccept` drawn inside the Render box; `ChannelAccess` *never* touches OpenAL — on a miss the continuation runs on the download thread; `ChannelAccess.clear` does reach OpenAL on the Render thread at teardown (the page's :218) — `client/sounds/SoundEngine.java`:503–507; `client/sounds/ChannelAccess.java`:70–72, :101
+289. `client/sound-engine`:104 *(own)* — *only when the buffer was already cached* — the cache holds the future from the first request, before the decode runs; *already decoded* — `client/sounds/SoundBufferLibrary.java`:28–29
+290. `client/sound-engine`:155 *(own)* — *a sound shorter than a second is remembered after its source has gone*, implying a longer one is not — every entry outlives its source by at least a tick; a short one for the rest of its first second — `client/sounds/ChannelAccess.java`:61–63, :100; `client/sounds/SoundEngine.java`:266, :323
+291. `client/sound-engine`:178 *(own)* — *under a music slider at zero* the toast is withheld — the final volume is music times master, so either at zero starts a track silently, and the toast is shown once either is raised — `client/Options.java`:668–669, :685–686
+292. `client/sound-engine`:218, :220 *(own)* — `Library.cleanup` runs *after `stopAll`*; teardown releases the channels *only after* the join — true of `SoundEngine.destroy`; `SoundEngine.emergencyShutdown`, on a crash, calls `Library.cleanup` with no `stopAll` and no join — `client/sounds/SoundEngine.java`:159–172; `client/Minecraft.java`:1046–1050
+293. `client/sound-engine`:227 *(own)* — *a change in the device list reloads the engine either way* — only three changes do: the current device gone from the list, the default moved while the option is on default, the chosen device back — `client/sounds/SoundEngine.java`:226–249
+294. `client/sound-engine`:236–237 — `SoundEngine.tick` reloads *when the device tracker reports the default device changed* — on a lost device, and on the three list changes above — `client/sounds/SoundEngine.java`:216–249
+295. `reference/threads`:83 — *buffer deletion* stays on the Render thread — streamed buffers are deleted on the sound thread; only the cached static buffers on the Render thread — `com/mojang/blaze3d/audio/Channel.java`:171–179; `client/sounds/ChannelAccess.java`:60
+296. `client/what-makes-a-sound`:62 (table) *(own)* — door three names an unregistered sound *only through the synced ambience and music attributes* — your own goat horn (`Instrument.sound_event`, a synced registry) and your own chew sound (`Consumable.sound`) carry inline-capable sounds through it too — `world/item/InstrumentItem.java`:85; `world/item/Instrument.java`:19; `world/item/component/Consumable.java`:38, :118; `client/player/LocalPlayer.java`:592–593
+297. `client/what-makes-a-sound`:126–127 *(own)* — `SoundSource.RECORDS` *is the jukebox and note-block slider*, `SoundSource.WEATHER` *the rain and thunder one*, under *read wrongly from the options screen* — the screen's own labels say that much; what it does not say is that the goat horn plays under RECORDS and the End flash under WEATHER — `world/item/InstrumentItem.java`:85; `client/multiplayer/ClientLevel.java`:324; `assets/minecraft/lang/en_us.json`:7132, :7135
+298. `client/what-makes-a-sound`:153 *(own)* — *your own place's half of the third door. Your break is the other half* — the door also carries the ambience, a door's own sound and a goat horn, and `LocalPlayer.playSound` is a third own-sound route (the page's :173–175) — `world/level/block/DoorBlock.java`; `world/item/InstrumentItem.java`:85; `client/player/LocalPlayer.java`:592–593
+299. `client/what-makes-a-sound`:159 *(own)* — your client drew its own seed *rather than reading one off a packet*, for a place and a break alike — a break's level event carries no seed, so no client reads one; each rolls from its own `ClientLevel.random`; a door takes the place's route — `client/renderer/LevelEventHandler.java`:287; `client/multiplayer/ClientLevel.java`:742–743; `world/level/Level.java`:364, :380–381
+300. `client/what-makes-a-sound`:179 *(own)* — loops, additions and mood *are each an `EnvironmentAttribute`* — they are the three fields of one attribute's value, `AmbientSounds` behind `EnvironmentAttributes.AMBIENT_SOUNDS` (the page's own :190–193) — `world/attribute/AmbientSounds.java`:11; `world/attribute/EnvironmentAttributes.java`:44–46
+301. `client/what-makes-a-sound`:205 *(own)* — the callers *neither the world nor the wire* are the ambient handlers and `SoundPreviewHandler` — button clicks and toast chimes go straight to `SoundManager.play` too — `client/gui/components/AbstractWidget.java`:167–168; `client/gui/components/toasts/ToastManager.java`:73
+302. `client/what-makes-a-sound`:106 *(own)* — packs merge *unless told otherwise, as tags, languages and atlas sources do* — only tags carry a replace flag among the three — `tags/TagFile.java`:7, :10
+303. `client/what-makes-a-sound`:120 — the flag *shows every sound that plays as a subtitle* — it gives each `WeighedSoundEvents` a subtitle, its path; the overlay still shows it only while the subtitles option is on — `client/sounds/WeighedSoundEvents.java`:21–29; `client/gui/components/SubtitleOverlay.java`:39–45
+304. `client/what-makes-a-sound`:85–86 (cast), `client/text-and-fonts`:29 (cast), :78 *(term)* — *reload workers* — the book's name for the pool is *the worker pool* (`reference/threads`' *Worker-Main-n*) — `reference/threads`:81; `glossary`:625
+305. `items/using-an-item`:351–354 — the eater's client plays the chew sound locally through `Player.playSound`'s exclusion — on the eater's client the override `LocalPlayer.playSound` plays it straight through `ClientLevel.playLocalSound`, with no exclusion test — `client/player/LocalPlayer.java`:592–593; `world/entity/player/Player.java`:401–402
+306. `client/debugging-the-running-game`:27 (cast) *(own)* — *one synchronizer for each subscription that carries a value and two for points of interest* — fifteen source synchronizers, one per subscription with a value codec (village sections' presence value included), and the POI and village-section synchronizers beside them — `util/debug/LevelDebugSynchronizers.java`:38–50
+307. `client/debugging-the-running-game`:82 *(own)* — the renderers reach the server *because no subscription carries what they draw* — a motive the code cannot show; stated as two facts — `client/renderer/debug/ChunkDebugRenderer.java`:45; `EntityHitboxDebugRenderer.java`:62–73
+308. `client/debugging-the-running-game`:147 (caption) *(own)* — *one tick of lag* (unqualified) — from a sleeping level; once the levels are awake the synchronizers read the player's live set inside the same tick's level tick — `util/debug/TrackingDebugSynchronizer.java`:45; `server/level/ServerLevel.java`:454; `server/MinecraftServer.java`:1101
+309. `client/debugging-the-running-game`:161 *(own)* — *Nothing unchanged is sent again*; a new tracker is sent *the current value* — only the polled path compares: the village-section synchronizer resends all 27 sections on each POI change and the pushed kinds send every event; a new tracker gets the stored value, when there is one — `util/debug/TrackingDebugSynchronizer.java`:157–185, :340, :365; `world/entity/Entity.java`:1503
+310. `client/debugging-the-running-game`:180 — *an individual constant beside it*, beside the corrected *thirteen for the fifteen kinds* — the goal selectors answer to either of two flags and two pairs share one — `client/multiplayer/ClientDebugSubscriber.java`:51–59
+311. `client/debugging-the-running-game`:205–206 — the hitbox renderer reaches the server *for its optional server hitbox* — it looks the server entity up only to check it exists, then draws the client entity's box in the server colour, behind `SharedConstants.DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES` — `client/renderer/debug/EntityHitboxDebugRenderer.java`:45–50, :80–82
+312. `server/server-level-tick`:493 — the debug tick *pushes this tick's … POIs* — the POI synchronizer sends on POI events, not from the tick (its poll is empty) — `util/debug/TrackingDebugSynchronizer.java`:119, :206–216
+313. `reference/glossary`:225–227 — *most kinds* the server polls and diffs — eight of the sixteen: brains, goal selectors, paths, bees, hives, breezes, structures and raids — `world/entity/Mob.java`:1581–1596; `world/level/chunk/LevelChunk.java`:737, :760
+314. `commands/game-tests`:242–243 — the no-op collector cited to *The exceptions* — it is in *A renderer does not draw a gizmo; it appends one* — *(page-internal to the book)*
+
+### Figures changed
+
+- `client/README` f1 — the edge into prediction relabelled *per action, a window per try* (a right-click tries each hand, and each try opens its own window). No arrow reordered.
+- `client/the-client-loop` f1 — node TEX *once if a tick is owed and the world is not frozen*; the *Render* error section moved from the frame's node to the one before it, which it heads (`SoundManager.updateSource`, then the accumulated mouse movement), so *Pre render*, *Render* and *Post render* each name the node they open. No arrow changed.
+- `client/the-client-level` f1 — the handler's self-message *on the Render thread* (V7). No arrow changed.
+- `client/prediction-and-acks` f1 — Raised → Idle relabelled *flushed, head of the listener's tick*. f2 — the note *later in the same server tick, the listener's tick opens by flushing it*; `CL` → `BSPH` *endPredictionsUpTo(n)*, then a new `BSPH` → `CL` *syncBlockState — air goes back*: the ledger settles, then calls back into the level.
+- `client/input-and-keybinds` f1 — `KH` → `KM` *set — only with no screen open*; `KM` self *ToggleKeyMapping.setDown — flips, and will ignore the release* (inside the set); then a new `KH` → `KM` *click — counted, though nothing drains sneak's*. The order asserted: set, the flip inside it, the click.
+- `client/options` f1 — IMMED → SET relabelled *yes, as it moves*. No arrow reordered.
+- `client/gui-and-screens` f1 — `Layout` *arranges; most screens re-arrange it on resize*. f2 — the note *the key press, then the tick that spends it*; `Gui` → `InvS` *added, then init* (with no screen open there is no old one to remove).
+- `client/text-and-fonts` f1 — the top cluster *when the text is laid out*; the world path leaves stage three (`BIDI` → `WORLD`, where it had left stage six), a new dotted `WORLD` → stage four *TextFeatureRenderer runs four to six at draw*, and the bottom box names `TextFeatureRenderer` as the world's exit beside `GuiRenderer`. f2 — `CRU` → `SSpl` *splitLines — over runs already translated*.
+- `client/hud` f1 — the level-loading short-circuit continues to `Gui` (`STOP` → `GUI`, where it had ended the frame), and `GUI` *the screen if any, then saving indicator, toasts, debug overlay, the deferred subtitles*. f2 — `CPL` → `LP` *hurtTo — the health, on a change the cooldown, on damage hurtTime*.
+- `client/sound-engine` f1 — `SndE` self reordered to *resolve, weigh, tell the listeners, calculateVolume* (the listeners before the volume); `SBL` → `SndE` *thenAccept — run by the thread that completes it*.
+- `client/what-makes-a-sound` f1 — the packet node loses the explode packet (its handler plays locally); the third door split in two: *your own place, through the shared Level.playSound* into `ClientLevel.playSeededSound`, and a new *your own break, a level event run locally* into `LevelEventHandler`, door two's handler; the ambience edge drawn first so no edge crosses a door.
+- `client/debugging-the-running-game` f1 — the notes *the end of the same server tick* and *the next server tick* (one tick of lag, not two); `TDSS` self *pollAndSendUpdates — takeBrainDump, compare with the last sent*; `BDR` self *billboardTextOverMob — appended now, drawn later*.
+- `client/the-gui-render-tree` — both figures unchanged; f1's caption changed.
+- Rendered (`render_figures.js --pages systems/client`): 20 figures, the smallest type 12.2px, no overlap or clipping.
+
+### Captions changed
+
+Seventeen rewritten, word for word:
+
+- `client/the-client-loop` f1: *One iteration, with the boundary drawn: only `RenderSystem.pollEvents` is outside `Minecraft.runTick`, which is why a key press lands in no profiler zone. Both answers to the clamp reach the same node, which is the point: at most ten run either way, and what differs is what became of the rest.*
+- `client/the-client-level` f1: *One packet, one `Minecraft.runTick`, and the light arriving at the bottom of it while the light queue is short: the band is the whole span, so the gap between the blocks and the light is not a wait. Note that the last arrow leaves the chunk cache, not the level.*
+- `client/prediction-and-acks` f1: *Two machines that never read each other, on different clocks: the client's runs once per position, the server's once per connection. Both exits to the end are the same call, which writes the entry's state wherever it differs from the screen: the state from before the prediction if no update arrived, the server's if one was absorbed.*
+- `client/prediction-and-acks` f2: *The two `ClientboundBlockUpdatePacket`s leave from inside the handler; the ack is only a field the listener's tick flushes, later in the same server tick. That is the ordering rule for a refusal, visible here as the distance between the block-update arrow and the note.*
+- `client/input-and-keybinds` f1: *Four gates, all in the top band; a drained press meets a fifth, the no-screen-no-overlay test `Minecraft.tick` makes before it drains the clicks, which sneak, read as held, never reaches. Everything in that band is one SDL event, the lower band is the next client tick, and nothing between them asked for the key.*
+- `client/options` f2: *Two entrances, one exit: a cycle saves on the click, so the packet is built before you have stopped looking at the button, and a slider waits for the next save, usually the screen coming down. The gate at the bottom is `ClientPacketListener.broadcastClientInformation`, which compares the new record with the last one sent and does nothing if they match.*
+- `client/gui-and-screens` f1: *A diamond is containment and a hollow arrowhead is inheritance, which the flowchart this replaced could not tell apart: `AbstractContainerScreen` **is a** `Screen`, and everything else here **holds** what it points at. `Layout` is the dashed one because it arranges widgets the screen owns.*
+- `client/gui-and-screens` f2: *Two bands: everything that makes the screen exist happens in the tick that spends the key, and nothing is recorded until the frame that follows it. `Gui.setScreen`'s housekeeping — the mouse ungrabbed, every mapping released, sneak with them, held or toggled — runs before `Screen.init`.*
+- `client/the-gui-render-tree` f1: *`GuiRenderState` is a list of strata and each stratum a chain of nodes. Both answers land in the tree, and neither can land below the barrier: a `GuiRenderState.nextStratum` call closes stratum 0 to every later recording, so the worst the search can do is reach the bottom node of the current one.*
+- `client/text-and-fonts` f1: *The numbers are the order the stages matter in, not one walk: for a chat line the top box runs when the line arrives and whenever the chat re-wraps, the bottom box on every record pass for the GUI and at draw time for text in the world, and the first dotted edge is why measuring a string you never draw still uploads its glyphs. In the GUI only what happens after stage six waits for the draw pass.*
+- `client/text-and-fonts` f2: *Stages one to three, when the message arrives: four objects, and the measuring has already baked the glyphs it measured (an Arabic line's shaped forms wait for stage five). `ComponentRenderUtils` reaches `FormattedBidiReorder` through `Language.getVisualOrder`, which `ClientLanguage` implements.*
+- `client/text-and-fonts` f3: *Stages four to six, then what happens to their result: the two bands are the record pass and the draw pass of one frame, and `GlyphStitcher` appears in the first only for a glyph the measuring did not bake, such as a shaped form, because a glyph is baked once per font set, until a reload or a font option starts it again.*
+- `client/hud` f1: *Two identical `hidden?` gates with the sleep fade between them, which is the whole shape: the fade is the only thing `Hud.extractRenderState` records whatever you press. Both branches reach the subtitles: the visible one always, deferring them when there is no screen **or** an in-game-UI one, and the hidden one only with an in-game-UI screen up.*
+- `client/hud` f2: *One packet, one frame later: the packet's handler, `ClientPacketListener.handleSetHealth`, does everything it does to the hearts by calling `LocalPlayer.hurtTo`, and the six steps after the note belong to `Hud`. None of them reacts to the packet — it is what the HUD does every frame, reading numbers the packet left behind.*
+- `client/sound-engine` f1: *Every arrow that crosses into the sound thread's box is a task queued, not a call made: in this trace `ChannelAccess` never touches OpenAL itself. Of the two arrows coming back, only the join on `ChannelAccess.createHandle`'s future waits — the only place in this trace the Render thread does.*
+- `client/what-makes-a-sound` f1: *Doors one and three meet, which is the point of the picture: a packet and your own placing hand both arrive at `ClientLevel.playSeededSound`, and both pass its one test because the excluded entity is you. Your own break runs door two's handler locally instead, and door two never names a sound on the wire at all.*
+- `client/debugging-the-running-game` f1: *Two sides and, from a sleeping level, one tick of lag before anything is sent: the request is stored at the head of a server tick and the subscriber set read at its end, and the synchronizers wake, and first send, in the next. The packet in the loop reaches `ClientDebugSubscriber` through `ClientPacketListener` like any other, which is why no listener lane is drawn.*
+
+The other three are unchanged; `python tools/pass7/captions.py src/systems/client` lists them. All twenty are at most two sentences.
+
+### Polished
+
+Sentences whose meaning could have moved, each re-read against the tree:
+
+- Thread names (V7): `input-and-keybinds` and `the-client-loop` *the game thread*, `the-client-level` *the main thread* and f1's *client thread*, each now *the Render thread*
+- *The hop* (V7): `sound-engine`'s bold claim and the landing page's entry for it now say *one hop to the sound thread*; the verified line stays (V16) (pass5.md:4835)
+- `gui-and-screens` — `Gui.handleKeybinds` named as the share of the drain `Minecraft.handleKeybinds` hands it (pass5.md:7004)
+- Captions to two sentences (V12): `options` f2; `the-gui-render-tree` f1, whose third sentence pointed at the table below
+- `reload workers`, a new phrase in three cast cells and one sentence (`what-makes-a-sound`, `text-and-fonts`), made the book's *worker pool* at the audit
+- The 1.21 blockquotes (V13): `text-and-fonts`' last sentence, a list of names that survive, cut as not drift
+
+By kind: possessive on a link 6 (`hud` 2, `the-gui-render-tree` 2, `debugging-the-running-game` 1, `gui-and-screens` 1), em-dash chain 2 (both in the session's own corrections), *actually* cut 5, size 5 (`hud`'s *fifty-seven lines*, `input-and-keybinds`' *under sixty lines*, `prediction-and-acks`' *under a hundred lines*, `the-gui-render-tree`'s *thirty lines*, `what-makes-a-sound`'s *2,000-line* registry), thread name 4.
+
+### The queue
+
+The 135 pass 5–7 ledger entries on these pages are all struck by this session (65 checked, 45 checked with a part or the sentence beside it wrong, 20 wrong in whole or in part, 3 overtaken, 2 no claim); `pass8_queue.py --part X` lists none open. Part X's 54 units in [pass5.md](pass5.md) settled: 48 struck (ruled 17, record 15, done 11, overtaken 4, second edition 1), a share note on the five units other parts still hold (114, 3299, 3400, 4312, 6115), and one routing note. `pass5_queue.py --summary` still shows one Part X voice unit: pass5.md:7044, Part XII's, which the router files here because the Part XII lead-in above it is a bold paragraph rather than a heading; it carries a note routing it to M.
+
+### For later sessions
+
+- **L** — the frame cap, `ClientShutdownWatchdog` and the fenced-task queue, reported by pass 5 session J as duplicates with Part XI pages; `the-client-loop`'s halves are checked, the Part XI halves are L's. The corrections this session made to `rendering/the-frame`, `rendering/the-window`, `rendering/models-and-atlases` and `rendering/blaze3d` are in the list above.
+- **M** — pass5.md:7044, Part XII's unit filed under Part X (above).
+- **O** — the glossary's *extract* (pass5.md:6111) and *Menu* (pass5.md:4312) entries; `introduction`:14–15, *Almost everything a player experiences is a consequence of that split*, the sweeping shape session B and this session cut elsewhere (most of Part X does not come from the split: the dropped ticks, the GUI tree, text), a judgement for the owner, no fix proposed; the landing page's coverage phrase reads 27% (pass5.md:6361). Pass 5–7's `naming-drift` rows were read only where this part's pages lean on them; three were wrong (above), so the table's other 1.21 rows are worth reading against the 1.21.11 tree.
+- **O or the second edition** — a possible stale state the fact-check found in the code and nobody has run: `LevelDebugSynchronizers` clears the source synchronizers' maps when a level sleeps but not their subscribed-player sets, so whether a subscriber is sent the values again when the level wakes is worth a look in game (`util/debug/LevelDebugSynchronizers.java`:61–67; `util/debug/TrackingDebugSynchronizer.java`:117). The page says only what the code does (R10).
+- **P** — the V1 and V2 entries on these pages (checked as claims in the prompts, not struck here), and this session's diff.
+
 ## Pass 8, session I — Part IX · Networking *(2026-09-28)*
 
 Six pages, each checked under Part 2 by its own agent while the session read the part whole: the landing page,
@@ -5180,8 +5629,8 @@ The gaps pass 9 has to work around:
 - ~~`entities/README`: the closer's watch line no longer says it assumes nothing
   above it — `entities/damage-and-death` links `entity-anatomy`, `authority`
   and `attributes`. Caption now names the ladder and the watch order.~~ *(checked (`damage-and-death` links `entity-anatomy`, `authority` and `attributes`); the blurb beside it said *a dozen owners*, which was wrong — see *Pass 8, session F*, correction 13 — pass 8, session F)*
-- `client/README`: *two exceptions*, not one (the page names both); caption
-  explains the ranges and the sideways hub.
+- ~~`client/README`: *two exceptions*, not one (the page names both); caption
+  explains the ranges and the sideways hub.~~ *(checked (`client/README`:21, :52–61) — pass 8, session J)*
 - ~~`blocks/README`: `UPDATE_ALL` and `UPDATE_CLIENTS` for the two bare flag
   numbers (`world/level/block/Block.java`:93, :103); the caption's *the two that
   reach the piston page are why it is watched late* is now *every one of them
@@ -5821,7 +6270,7 @@ forty-one.
 
 ### Figures redrawn, and the orderings they assert
 
-- **`sound-engine` figure 1** — eight lanes at 0.59 rebuilt as six in three
+- ~~**`sound-engine` figure 1** — eight lanes at 0.59 rebuilt as six in three
   `box`es (Render thread · Sound engine thread · Download pool). Asserts:
   `SoundEngine.play` calls `ChannelAccess.createHandle`, which posts to
   `SoundEngineExecutor` and returns a future the Render thread **joins**; the
@@ -5831,150 +6280,150 @@ forty-one.
   `SoundBufferLibrary.getCompleteBuffer` belongs to **`SoundEngine`**, not to
   the buffer library. The server half (`ServerLevel`, `PlayerList`) is a
   **logged cut**: the page hands that story to `what-makes-a-sound` in its own
-  second paragraph.
-- **`the-client-level` figure 1** — the two one-lane notes became one `rect`
+  second paragraph.~~ *(checked (`client/sounds/ChannelAccess.java`:26–43; `SoundEngine.java`:473–507); on a cache miss the continuation runs on the download thread, and the caption's box and returning-arrow count were wrong (`sound-engine`:106–113) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`the-client-level` figure 1** — the two one-lane notes became one `rect`
   band over all five lanes, asserting that the whole trace is inside one
-  `Minecraft.runTick`. Three arrows re-derived; see *Corrections*.
-- **`the-client-loop` figure 1** — a `Minecraft.runTick` subgraph now contains
+  `Minecraft.runTick`. Three arrows re-derived; see *Corrections*.~~ *(checked (`client/Minecraft.java`:1238, :1397); one `runTick` only while the light queue is short (`the-client-level`:113–151) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`the-client-loop` figure 1** — a `Minecraft.runTick` subgraph now contains
   everything but `RenderSystem.pollEvents`. Asserts the boundary the page
   already argues twice in prose (each iteration is `pollEvents` then `runTick`;
   input lands in no profiler zone). The `DROP` node is folded into the clamp's
   yes-edge: it was a consequence drawn as a step, with an inbound and an
-  outbound arrow, i.e. as something that runs.
-- **`gui-and-screens` figure 1** — a flowchart of containment became a
+  outbound arrow, i.e. as something that runs.~~ *(checked (`client/Minecraft.java`:934–935, :1213–1343); the caption's *ten run either way* was not (`the-client-loop`:77) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`gui-and-screens` figure 1** — a flowchart of containment became a
   **`classDiagram`**, the book's eighth. Asserts `Gui` *holds* `Screen`,
   `Overlay` and `Hud`; `Screen` holds `AbstractWidget` and three typed lists;
   `AbstractContainerScreen` **extends** `Screen` and holds an
   `AbstractContainerMenu`; `Layout` only *positions* a widget (dashed). The old
   figure drew all four relations with one arrowhead. `ToastManager`,
   `ChatListener` and `SplashManager` are a **logged cut** — three names in one
-  node that the page's prose says nowhere.
-- **`gui-and-screens` figure 2** — two `rect` bands, asserting that everything
+  node that the page's prose says nowhere.~~ *(checked (`client/gui/Gui.java`:77–81; `client/gui/screens/Screen.java`:65–71); *Layout arranges, then forgets* was false — layouts hold their children and re-arrange them on resize (`gui-and-screens`:61, :74–75) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`gui-and-screens` figure 2** — two `rect` bands, asserting that everything
   that makes the screen exist happens in the tick that spends the key and
   nothing is drawn until the frame after. `Tutorial.onOpenInventory`, a
   `Tutorial` call drawn as a `Minecraft` self-message, is cut (a second object
   on that lane, and a name the prose never says); the `Gui` self-call is folded
-  into the `setScreen` arrow it was already inside.
-- **`the-gui-render-tree` figure 1** — the tree and the placement decision,
+  into the `setScreen` arrow it was already inside.~~ *(checked (`client/Minecraft.java`:2037, :2165); with no screen open there is no old one to remove, and the frame follows the tick in the same turn of the loop (`gui-and-screens`:180, :191) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`the-gui-render-tree` figure 1** — the tree and the placement decision,
   drawn side by side with two dead-end boxes, are one picture. Asserts both
   outcomes land on a node **of the current stratum**: the fast path goes up one
   node with no intersection test, and the walk stops just above the highest box
-  it touches and may not cross the barrier `GuiRenderState.nextStratum` set.
-- **`the-gui-render-tree` figure 2** — a flat twelve-box chain became nested
+  it touches and may not cross the barrier `GuiRenderState.nextStratum` set.~~ *(checked (`client/renderer/state/gui/GuiRenderState.java`:113–149) — pass 8, session J)*
+- ~~**`the-gui-render-tree` figure 2** — a flat twelve-box chain became nested
   subgraphs. Asserts that pictures-in-picture, items, text,
   `GuiRenderState.sortElements` and `GuiRenderer.addElementToMesh` all run
   **inside `GuiRenderer.prepare`**, that `GuiRenderer.draw` is `prepare`'s
   sibling and not its successor, that the vertex-buffer upload sits between
   them, and that only `Gui.extractRenderState` and `GuiRenderer.endFrame` are
-  outside `GuiRenderer.render`.
-- **`text-and-fonts` figure 1** — the six stages, drawn as one unbroken chain,
+  outside `GuiRenderer.render`.~~ *(checked (`client/gui/render/GuiRenderer.java`:113–140, :159–166) — pass 8, session J)*
+- ~~**`text-and-fonts` figure 1** — the six stages, drawn as one unbroken chain,
   became two boxes. Asserts stages 1–3 run when the text changes and 4–6 inside
-  `Font.prepareText`; the dotted edge from stage 2 to stage 4 stays.
-- **`text-and-fonts` figures 2 and 3** — one eight-lane sequence split at the
+  `Font.prepareText`; the dotted edge from stage 2 to stage 4 stays.~~ *(checked (`client/gui/Font.java`:116–119); the world's text reaches stages four to six at draw, and the top box runs when a chat line changes (`text-and-fonts`:37–65) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`text-and-fonts` figures 2 and 3** — one eight-lane sequence split at the
   frame boundary its own notes named: four lanes before the frame, five in it,
-  with two bands for record and draw.
-- **`options` figures 1 and 2** — one fourteen-node, 2,081px flowchart split at
+  with two bands for record and draw.~~ *(checked (four lanes and five, two bands) — pass 8, session J)*
+- ~~**`options` figures 1 and 2** — one fourteen-node, 2,081px flowchart split at
   the joint the page names. Figure 2 asserts that a **cycle saves on the
-  click** and a slider at `OptionsSubScreen.removed`; see *Corrections*.
-- **`prediction-and-acks` figure 1** — every edge label cut to the condition and
-  qualified `Class.member`. Asserts both exits from *Retained* are the same call.
-- **`input-and-keybinds` figure 1** — seven lanes to five, two bands. The
+  click** and a slider at `OptionsSubScreen.removed`; see *Corrections*.~~ *(checked (`client/OptionInstance.java`:601–605; `OptionsSubScreen.java`:73–75); figure 1's *on release* was not (`options`:48) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`prediction-and-acks` figure 1** — every edge label cut to the condition and
+  qualified `Class.member`. Asserts both exits from *Retained* are the same call.~~ *(wrong: the labels stand; Retained's two exits are different calls, and the two exits to the end share one (`prediction-and-acks`:64–68) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`input-and-keybinds` figure 1** — seven lanes to five, two bands. The
   screen's `keyPressed` now lands on a `Screen` lane rather than on `Gui`; the
   two-ends-of-a-screen's-life housekeeping is a **logged cut** from this figure
-  (it has its own section, *The bulk operations, and their single callers*).
-- **`debugging-the-running-game` figure 1** — a `box` per machine and full-width
+  (it has its own section, *The bulk operations, and their single callers*).~~ *(checked (five lanes, two bands) — pass 8, session J)*
+- ~~**`debugging-the-running-game` figure 1** — a `box` per machine and full-width
   bands. Asserts the two-tick lag: the request is stored on the tick it arrives,
   the subscriber set read at the end of the next, the synchronizers woken on the
   one after. `ClientPacketListener` is a **logged cut** (a lane carrying two
   messages and deciding nothing); the packet reaches `ClientDebugSubscriber`
-  through it as any packet does, which the caption says.
-- **`what-makes-a-sound` figure 1** — door 3 now runs through
-  `ClientLevel.playSeededSound` instead of past it; see *Corrections*.
-- **`client/README` figure 1** — `TD` to `LR`, and the seven spokes numbered to
-  the watch order (F13).
+  through it as any packet does, which the caption says.~~ *(wrong: the lag is one tick: the drain runs at the head of the server tick and `ServerDebugSubscribers.tick` at its end (`debugging-the-running-game`:137–155) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`what-makes-a-sound` figure 1** — door 3 now runs through
+  `ClientLevel.playSeededSound` instead of past it; see *Corrections*.~~ *(wrong: true of your own place; your own break is a level event that `ClientLevel.levelEvent` plays without that test (`what-makes-a-sound`:38–55) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**`client/README` figure 1** — `TD` to `LR`, and the seven spokes numbered to
+  the watch order (F13).~~ *(checked (`client/README`:29 is `flowchart LR`; the nodes match the watch list) — pass 8, session J)*
 
 ### Corrections — re-derived against the decompile before the fix
 
-1. **`the-client-level`, figure 1**: `CPL->>LLE: applyLightData, then
+1. ~~**`the-client-level`, figure 1**: `CPL->>LLE: applyLightData, then
    enableChunkLight, whose last act is setSectionRangeDirty over a 3x3 of
    columns`. Both `applyLightData` and `enableChunkLight` are
    **`ClientPacketListener`'s own private methods** — the caller's methods drawn
    arriving at the callee — and `enableChunkLight`'s last act is
    `this.level.setSectionRangeDirty(...)`, a call on **`ClientLevel`**, not on
    the light engine. Now two arrows: the light engine gets `setLightEnabled` and
-   `updateSectionStatus`, `ClientLevel` gets `setSectionRangeDirty`.
-2. **`the-client-level`, figure 1**: `CCC->>LX: onLightUpdate, then
+   `updateSectionStatus`, `ClientLevel` gets `setSectionRangeDirty`.~~ *(checked (`client/multiplayer/ClientPacketListener.java`:2586, :957–971) — pass 8, session J)*
+2. ~~**`the-client-level`, figure 1**: `CCC->>LX: onLightUpdate, then
    setSectionDirty`. `onLightUpdate` is **`ClientChunkCache`'s** own method;
-   what it calls on the extractor is `setSectionDirty`. Head corrected.
-3. **`the-client-level`, prose**: the page never said whether the light was one
+   what it calls on the extractor is `setSectionDirty`. Head corrected.~~ *(checked (`client/multiplayer/ClientChunkCache.java`:180–182) — pass 8, session J)*
+3. ~~**`the-client-level`, prose**: the page never said whether the light was one
    arrival or two. It is **one**:
    `ClientPacketListener.handleLevelChunkWithLight` queues a single lambda that
    runs `applyLightData` and then, if the chunk is there, `enableChunkLight`.
-   Said now.
-4. **`options`, figure 1**: the cycle path ran through
+   Said now.~~ *(checked (`client/multiplayer/ClientPacketListener.java`:911–918); the lambda's method is `ClientLevel.queueLightUpdate` (`the-client-level`:152) — see *Pass 8, session J* — pass 8, session J)*
+4. ~~**`options`, figure 1**: the cycle path ran through
    `Screen.removed — Options.save`. A cycle button calls `Options.save` **in its
    own click handler**, before the value-changed listener
    (`OptionInstance.CycleableValueSet.createButton`); `Screen.removed` is where
-   a *slider* saves. Redrawn as two entrances to one exit.
-5. **`options`, figure 1**: `Screen.onClose` and `Screen.removed`.
+   a *slider* saves. Redrawn as two entrances to one exit.~~ *(checked (`client/OptionInstance.java`:601–605) — pass 8, session J)*
+5. ~~**`options`, figure 1**: `Screen.onClose` and `Screen.removed`.
    `Screen.removed` is an empty base method; the one that saves is
    **`OptionsSubScreen.removed`**, and `OptionsSubScreen.onClose` is what
-   applies an armed timer. The page's prose already had it right. Corrected.
-6. **`what-makes-a-sound`, figure 1**: door 3 (your own place and break) went
+   applies an armed timer. The page's prose already had it right. Corrected.~~ *(checked (`client/gui/screens/options/OptionsSubScreen.java`:73–84) — pass 8, session J)*
+6. ~~**`what-makes-a-sound`, figure 1**: door 3 (your own place and break) went
    straight to `SoundManager.play`, bypassing `ClientLevel.playSeededSound` —
    while its own box said *the same shared call*. It does **not** bypass it:
    `ClientLevel.playSeededSound` plays only when the excluded entity *is* the
    local player, which is exactly why one method serves the packet and the local
-   call. Rewired to converge with door 1, which is the page's argument.
-7. **`sound-engine`, figure 1**: `SBL-->>ChanA: thenAccept, then
+   call. Rewired to converge with door 1, which is the page's argument.~~ *(wrong: the convergence holds for your own place only (`what-makes-a-sound`:38–55, :162–165) — see *Pass 8, session J* — pass 8, session J)*
+7. ~~**`sound-engine`, figure 1**: `SBL-->>ChanA: thenAccept, then
    ChannelHandle.execute — attachStaticBuffer, play`. The continuation is
    `SoundEngine`'s own lambda, inside `SoundEngine.play`; `SoundBufferLibrary`
-   calls nothing on `ChannelAccess`. Split into two arrows.
-8. **`sound-engine`, figure 1**: `CPL->>CL: handleSoundEvent, then
+   calls nothing on `ChannelAccess`. Split into two arrows.~~ *(checked (`client/sounds/SoundEngine.java`:503–507) — pass 8, session J)*
+8. ~~**`sound-engine`, figure 1**: `CPL->>CL: handleSoundEvent, then
    playSeededSound`. `handleSoundEvent` is the **listener's** method; the
-   callee's is `playSeededSound`. Dropped with the lane.
-9. **`sound-engine`, figure 1**: `SL->>SL: BlockItem.place` — `BlockItem` as a
+   callee's is `playSeededSound`. Dropped with the lane.~~ *(checked (no such arrow remains) — pass 8, session J)*
+9. ~~**`sound-engine`, figure 1**: `SL->>SL: BlockItem.place` — `BlockItem` as a
    second object on the `ServerLevel` lane; and `PL-->>CPL:
    ClientboundSoundPacket` drawn as mermaid's **dashed reply arrow** for a packet
-   crossing between two machines. Both cut with the server half.
-10. **`hud`, figure 2**: `CPL->>LP: handleSetHealth — hurtTo`.
+   crossing between two machines. Both cut with the server half.~~ *(checked (both cut) — pass 8, session J)*
+10. ~~**`hud`, figure 2**: `CPL->>LP: handleSetHealth — hurtTo`.
     `handleSetHealth` is `ClientPacketListener`'s; the callee's method is
     `LocalPlayer.hurtTo`. Head corrected; the caller's method is named in the
-    caption, where it belongs.
-11. **`prediction-and-acks`, figure 2**: `MPGM->>CL: performUseItemOn, then
+    caption, where it belongs.~~ *(checked (`client/multiplayer/ClientPacketListener.java`:1315–1317); the message's tail and the caption's *seven steps* were not (`hud`:164, :174) — see *Pass 8, session J* — pass 8, session J)*
+11. ~~**`prediction-and-acks`, figure 2**: `MPGM->>CL: performUseItemOn, then
     ItemStack.useOn, then setBlock`. `performUseItemOn` is **`MultiPlayerGameMode`'s
     own private method**; the chain's only `ClientLevel` call is `setBlock`.
-    Reordered so the head is the callee's.
-12. **`input-and-keybinds`, figure 1**: `keyDebugModifier` drawn as a
+    Reordered so the head is the callee's.~~ *(checked (`client/multiplayer/MultiPlayerGameMode.java`:366; the settle is now drawn as the handler's call back to the level) — pass 8, session J)*
+12. ~~**`input-and-keybinds`, figure 1**: `keyDebugModifier` drawn as a
     `KeyboardHandler` member. It is **`Options.keyDebugModifier`** —
-    `KeyboardHandler.keyPress` reads `options.keyDebugModifier`. Qualified.
-13. **`input-and-keybinds`, figure 1**: `screen keyPressed` drawn arriving at the
+    `KeyboardHandler.keyPress` reads `options.keyDebugModifier`. Qualified.~~ *(checked (`client/Options.java`:270) — pass 8, session J)*
+13. ~~**`input-and-keybinds`, figure 1**: `screen keyPressed` drawn arriving at the
     **`Gui`** lane. `keyPressed` is a `Screen` method; `Gui` is only where the
     screen is reached from. The figure gained a `Screen` lane and lost two
     others. (`Minecraft.handleGlobalKeyPress`, which a viewer suspected of being
     invented, is **real and correctly placed** — `KeyboardHandler.keyPress`
-    calls `this.minecraft.handleGlobalKeyPress(...)`.)
-14. **`text-and-fonts`, prose**: "why stage six alone is left for the draw
+    calls `this.minecraft.handleGlobalKeyPress(...)`.)~~ *(checked (`client/KeyboardHandler.java`:516) — pass 8, session J)*
+14. ~~**`text-and-fonts`, prose**: "why stage six alone is left for the draw
     pass". Stage six — the emit into a `Font.PreparedText` — runs **inside
     `Font.prepareText`**, at record time. What waits for the draw pass is the
     *expansion* of that finished object into one `GlyphRenderState` a glyph,
-    which is after stage six, not stage six. Reworded.
-15. **`text-and-fonts`, figure 2**: `CRU->>FBR: Language.getVisualOrder(line)` —
+    which is after stage six, not stage six. Reworded.~~ *(checked (for the GUI (`client/gui/render/GuiRenderer.java`:257–273)) — pass 8, session J)*
+15. ~~**`text-and-fonts`, figure 2**: `CRU->>FBR: Language.getVisualOrder(line)` —
     `getVisualOrder` is `Language`'s, and `FormattedBidiReorder`'s own method is
-    the static `reorder`. Head corrected, the route kept in the label.
-16. **`debugging-the-running-game`, figure 1**: three self-messages naming a
+    the static `reorder`. Head corrected, the route kept in the label.~~ *(checked (`client/resources/language/FormattedBidiReorder.java`:17) — pass 8, session J)*
+16. ~~**`debugging-the-running-game`, figure 1**: three self-messages naming a
     third class's method on a lane that owns neither —
     `ServerPlayer.requestDebugSubscriptions` on the `SGPL` lane (the handler is
     `ServerGamePacketListenerImpl.handleDebugSubscriptionRequest`),
     `Mob.registerDebugValues` on the synchronizer's, and a `Gizmos` call on the
     renderer's. The first two corrected; the third kept, `Gizmos` being a static
-    façade the renderer calls, and named as such.
-17. **`the-gui-render-tree`, figure 2**: the flat chain asserted that
+    façade the renderer calls, and named as such.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:2492–2495); `pollUpdate` was the private value source's head on the source synchronizer's lane (`debugging-the-running-game`:144, :165) — see *Pass 8, session J* — pass 8, session J)*
+17. ~~**`the-gui-render-tree`, figure 2**: the flat chain asserted that
     pictures-in-picture, items, text, the sort and the mesh happen *after*
     `GuiRenderer.prepare`, and that `GuiRenderer.draw` happens after them. All
     five are inside `prepare`; `draw` is its sibling. Also missing: the
-    vertex-buffer upload between the two. Redrawn as nesting.
-18. **`sound-engine`, prose**: a stray `'` after a link, which rendered.
+    vertex-buffer upload between the two. Redrawn as nesting.~~ *(checked (as above) — pass 8, session J)*
+18. ~~**`sound-engine`, prose**: a stray `'` after a link, which rendered.~~ *(checked (gone) — pass 8, session J)*
 
 ### Claims introduced
 
@@ -8596,13 +9045,13 @@ every one was found by a reader who counted because a sentence told them to.
 
 ### Corrections — every one re-derived against the decompile before the fix
 
-1. `the-client-loop`:159 — *"Four queues and one re-entry that is not a
+1. ~~`the-client-loop`:159 — *"Four queues and one re-entry that is not a
    queue"*, over six bullets of which five are ways off the thread. Counted
    against the section: packets, tasks, section meshing, timers and fenced GPU
    work are five, and `BlockableEventLoop.managedBlock` is the re-entry.
    Rewritten as *five ways off this thread*, and the re-entry given its own
-   paragraph so it is not a sixth bullet.
-2. `the-client-loop`:123–139 — *What a tick is, in order* was seventeen ordered
+   paragraph so it is not a sixth bullet.~~ *(checked (five bullets and a re-entry); the re-entry paragraph rendered inside the fifth bullet until this session gave it a blank line (`the-client-loop`:215) — see *Pass 8, session J* — pass 8, session J)*
+2. ~~`the-client-loop`:123–139 — *What a tick is, in order* was seventeen ordered
    steps in one semicolon chain, and its gates did not survive the sentence.
    Rebuilt as a thirteen-row table with a *what gates it* column, read off
    `Minecraft.tick` (`net/minecraft/client/Minecraft.java`). Writing the column
@@ -8610,99 +9059,99 @@ every one was found by a reader who counted because a sentence told them to.
    `Minecraft.pick`, `Tutorial.onLookAt` and the GUI block are **not** gated on
    a level, and the keybind drain is gated on no screen and no overlay and on
    nothing about a level. Five of the thirteen rows are ungated, which is now
-   the section's point.
-3. `the-client-loop`:26 — *"There is no render thread, and there never was one
+   the section's point.~~ *(wrong: the gate column stands, but *five ungated* was V2's six, and the pick and the tutorial's look return at once without a level (`the-client-loop`:167–170) — see *Pass 8, session J* — pass 8, session J)*
+3. ~~`the-client-loop`:26 — *"There is no render thread, and there never was one
    in this version"*, three lines after saying the thread is named
    `"Render thread"`. The claim is about a *separate* thread and the sentence
    withheld the word; said now, and tied to every *Render thread* cell in the
-   part's cast tables.
-4. `the-client-loop`:250–252 — *"which is why every `OptionInstance.set`
+   part's cast tables.~~ *(checked (`client/main/Main.java`:263–264) — pass 8, session J)*
+4. ~~`the-client-loop`:250–252 — *"which is why every `OptionInstance.set`
    performed while loading silently skips its listener"* rested on a premise
    the page never states, that a listener fires only while `Minecraft.running`
    is true (`OptionInstance.set`, `net/minecraft/client/OptionInstance.java`).
    Premise supplied, and the citation repointed at the new section on
-   `options`.
-5. `the-client-loop`:237–242 — *"three different measurements"*, of which the
+   `options`.~~ *(checked (`client/OptionInstance.java`:132–139) — pass 8, session J)*
+5. ~~`the-client-loop`:237–242 — *"three different measurements"*, of which the
    third was "the graph" and was never named or placed. Said which of the three
-   appears on which line of the overlay.
-6. `the-client-level`:37–39 — the comparison table's lead-in said every row but
+   appears on which line of the overlay.~~ *(checked (the placement stands); the frame count includes the sleep too, and `Minecraft.frameTimeNs` is on no line (`the-client-loop`:268–275) — see *Pass 8, session J* — pass 8, session J)*
+6. ~~`the-client-level`:37–39 — the comparison table's lead-in said every row but
    the last is a method *one side has hollowed out*; `Level.shouldTickDeath` is
    the row where the **client** is stricter, which is the opposite. Lead-in now
    counts: seven hollowings, one the other way, and a last row that is storage
-   rather than a method.
-7. `the-client-level`:49 vs :277 — the table said `Level.setBlocksDirty` on the
+   rather than a method.~~ *(wrong: six rows hollow; `Level.setBlocksDirty`, empty on the server, runs the other way with `Level.shouldTickDeath` (`the-client-level`:42–44) — see *Pass 8, session J* — pass 8, session J)*
+7. ~~`the-client-level`:49 vs :277 — the table said `Level.setBlocksDirty` on the
    client is *"the renderer notification"* while the page's last section says
    `ClientLevel` never notifies `LevelRenderer`. Both true; the row now names
-   `LevelExtractor`.
-8. `the-client-level`:62–69 — *"two things read the server's announced
+   `LevelExtractor`.~~ *(checked (`client/multiplayer/ClientLevel.java`:843–846) — pass 8, session J)*
+8. ~~`the-client-level`:62–69 — *"two things read the server's announced
    simulation distance **off `ClientLevel`**"*, against a paragraph saying the
    value lives on `ClientPacketListener`. The level does hold its own copy,
    `ClientLevel.serverSimulationDistance`, seeded at construction and updated
    by `ClientLevel.setServerSimulationDistance`
-   (`net/minecraft/client/multiplayer/ClientLevel.java`:179, 1137). Said.
-9. `prediction-and-acks`:67 — *"the three destroy actions of
+   (`net/minecraft/client/multiplayer/ClientLevel.java`:179, 1137). Said.~~ *(checked (`client/multiplayer/ClientLevel.java`:181, :266, :1161–1163) — pass 8, session J)*
+9. ~~`prediction-and-acks`:67 — *"the three destroy actions of
    `ServerboundPlayerActionPacket` but not its other five"*, with none of the
    three, the five or the two use packets named.
    `ServerboundPlayerActionPacket.Action` has eight values
    (`net/minecraft/network/protocol/game/ServerboundPlayerActionPacket.java`:70),
    so the arithmetic was right; all of them are now named, and the three
-   `ackBlockChangesUpTo` call sites with them.
-10. `prediction-and-acks`:162 vs :125 — `MultiPlayerGameMode.startPrediction`
+   `ackBlockChangesUpTo` call sites with them.~~ *(overtaken: V1's nine actions, four of which ack — pass 8, session J)*
+10. ~~`prediction-and-acks`:162 vs :125 — `MultiPlayerGameMode.startPrediction`
     and `BlockStatePredictionHandler.startPredicting` were used
     interchangeably. They are two methods on two classes: the first is the
     window (private, six call sites), the second the pre-increment of
-    `BlockStatePredictionHandler.currentSequenceNr`. Distinguished.
-11. `gui-and-screens`:110 vs :113 — *"`Screen.init` is **final**"* against
+    `BlockStatePredictionHandler.currentSequenceNr`. Distinguished.~~ *(checked (`client/multiplayer/MultiPlayerGameMode.java`:299); `startPredicting` also switches recording on (`prediction-and-acks`:181–184) — see *Pass 8, session J* — pass 8, session J)*
+11. ~~`gui-and-screens`:110 vs :113 — *"`Screen.init` is **final**"* against
     *"the overridable `Screen.init` hook"*. There are two methods of that name:
     `Screen.init(int,int)` is final at `Screen.java`:451 and `Screen.init()` is
-    the hook at :496. Said, once, before either is used.
-12. `gui-and-screens`:206 — *"Those **seven** names are examples"* over a table
+    the hook at :496. Said, once, before either is used.~~ *(checked (`client/gui/screens/Screen.java`:456, :501); *the hook every screen implements* was not: `LevelLoadingScreen` and `ProgressScreen` implement none (`gui-and-screens`:120–121) — see *Pass 8, session J* — pass 8, session J)*
+12. ~~`gui-and-screens`:206 — *"Those **seven** names are examples"* over a table
     carrying nine backticked class names and four unbackticked ones. The number
     taught nothing, so it is gone rather than corrected — the lesson of this
-    session applied to itself.
-13. `gui-and-screens`:211 — *"the widget and layout families **below**"*,
-    pointing down at families that are eighty lines above.
-14. `gui-and-screens`:88 — *"**Two** of its behaviours"* introducing three
-    claims in the same form.
-15. `gui-and-screens`:231–234 — *"once **two clocks** have passed"* followed by
+    session applied to itself.~~ *(checked (the number is gone (`gui-and-screens`:229)) — pass 8, session J)*
+13. ~~`gui-and-screens`:211 — *"the widget and layout families **below**"*,
+    pointing down at families that are eighty lines above.~~ *(checked (`gui-and-screens`:234, *above*) — pass 8, session J)*
+14. ~~`gui-and-screens`:88 — *"**Two** of its behaviours"* introducing three
+    claims in the same form.~~ *(checked (three bold paragraphs follow) — pass 8, session J)*
+15. ~~`gui-and-screens`:231–234 — *"once **two clocks** have passed"* followed by
     three intervals. `Screen.handleDelayedNarration` tests two clocks
     (`Screen.java`:630) and three constants arm them
     (`NARRATE_DELAY_MOUSE_MOVE` 750, `NARRATE_DELAY_KEYBOARD_ACTION` 200,
     `NARRATE_SUPPRESS_AFTER_INIT_TIME` two seconds). Both numbers stated, and
-    which is which.
-16. `gui-and-screens`:203 — *"Three entities implement
+    which is which.~~ *(checked (`client/gui/screens/Screen.java`:73–77, :632); the suppression is two seconds only after a mouse or no input, and until the next action after keyboard input (`gui-and-screens`:257–258) — see *Pass 8, session J* — pass 8, session J)*
+16. ~~`gui-and-screens`:203 — *"Three entities implement
     `HasCustomInventoryScreen` … two use the mount packet and one falls back"*,
     naming none of the three. They are `AbstractHorse`, `AbstractNautilus` and
     `AbstractChestBoat`; named, and `AbstractChestBoat` opens an ordinary menu
-    through `Player.openMenu` rather than a distinct packet.
-17. `the-gui-render-tree`:31 — the cast said a `GuiRenderState.Node` is *"a
+    through `Player.openMenu` rather than a distinct packet.~~ *(checked (three implementers; `world/entity/vehicle/boat/AbstractChestBoat.java`:110–111) — pass 8, session J)*
+17. ~~`the-gui-render-tree`:31 — the cast said a `GuiRenderState.Node` is *"a
     list of elements and a separate list of glyphs"*; it holds **five** lists
     (`net/minecraft/client/renderer/state/gui/GuiRenderState.java`:303–307),
-    which the page's own figure already said.
-18. `the-gui-render-tree`:93–98 — `GuiRenderState.addBlitToCurrentLayer` and
+    which the page's own figure already said.~~ *(checked (`client/renderer/state/gui/GuiRenderState.java`:318–322) — pass 8, session J)*
+18. ~~`the-gui-render-tree`:93–98 — `GuiRenderState.addBlitToCurrentLayer` and
     `GuiRenderState.addGlyphToCurrentLayer` were listed among *"the recording
     verbs"* twenty lines after the page said the draw pass calls the glyph one.
     Neither has a caller in a recorder: the only call sites are `GuiRenderer`
     and `PictureInPictureRenderer`. The prose became a table with a *who calls
-    it* column.
-19. `the-gui-render-tree`:140–142 — *"The three sort comparators"*. There is
+    it* column.~~ *(checked (`client/gui/render/GuiRenderer.java`:269, :332; `PictureInPictureRenderer.java`:107) — pass 8, session J)*
+19. ~~`the-gui-render-tree`:140–142 — *"The three sort comparators"*. There is
     **one**: `GuiRenderer.ELEMENT_SORT_COMPARATOR`, composed of
     `SCISSOR_COMPARATOR`, the pipeline's own sort key and `TEXTURE_COMPARATOR`
     (`GuiRenderer.java`:69–71) — which is why the figure's three sort *keys* and
-    the prose's three *comparators* would not line up.
-20. `the-gui-render-tree`:155 — *"three conditions gate it"* for
+    the prose's three *comparators* would not line up.~~ *(checked (`client/gui/render/GuiRenderer.java`:69–71); the prose still said the figure names the three, which it no longer does (`the-gui-render-tree`:171–172) — see *Pass 8, session J* — pass 8, session J)*
+20. ~~`the-gui-render-tree`:155 — *"three conditions gate it"* for
     `Screen.extractBlurredBackground`, which contains exactly one
-    (`Screen.java`:522). The other two are facts about reaching it; separated.
-21. `the-gui-render-tree`:107 — *"they are the one place 3D drawing happens
+    (`Screen.java`:522). The other two are facts about reaching it; separated.~~ *(checked (`client/gui/screens/Screen.java`:527) — pass 8, session J)*
+21. ~~`the-gui-render-tree`:107 — *"they are the one place 3D drawing happens
     inside a 2D pass"* of the picture-in-picture family, against the item atlas
-    two paragraphs above and the 1.21 box below. Both are; said so.
-22. `the-gui-render-tree`:101 — `PanoramaRenderState` was listed among the node
+    two paragraphs above and the 1.21 box below. Both are; said so.~~ *(checked (both are); the panorama's cube is a third (`the-gui-render-tree`:123–126) — see *Pass 8, session J* — pass 8, session J)*
+22. ~~`the-gui-render-tree`:101 — `PanoramaRenderState` was listed among the node
     states. It is a nullable **field** on `GuiRenderState`
     (`GuiRenderState.java`:28), assigned by `Panorama` and drawn by
-    `GuiRenderer.render` before the tree is resolved.
-23. `options`:29 — the cast said `IntegratedServer` reads the sliders *"every
-    tick"*; the body says every **unpaused** server tick, and the body is right.
-24. `options`:35–61 — the figure had no screen-close edge, so every route
+    `GuiRenderer.render` before the tree is resolved.~~ *(checked (`client/renderer/state/gui/GuiRenderState.java`:30); *the one state with no verb* was not: `OversizedItemRenderState` has none either (`the-gui-render-tree`:113) — see *Pass 8, session J* — pass 8, session J)*
+23. ~~`options`:29 — the cast said `IntegratedServer` reads the sliders *"every
+    tick"*; the body says every **unpaused** server tick, and the body is right.~~ *(checked (`client/server/IntegratedServer.java`:149–171) — pass 8, session J)*
+24. ~~`options`:35–61 — the figure had no screen-close edge, so every route
     through it saved and broadcast immediately, which the paragraph under it
     contradicted. Redrawn against `OptionsSubScreen.onClose` and
     `OptionsSubScreen.removed`
@@ -8710,14 +9159,14 @@ every one was found by a reader who counted because a sentence told them to.
     `OptionInstance.OptionInstanceSliderButton`
     (`OptionInstance.java`:462–498): a cycle button saves on click, a slider's
     value lands on release or 600 ms later, and `Options.save` happens once,
-    when the screen is removed.
-25. `options`:110–111 — *"Seven of the other quality options … Nine are not"*
+    when the screen is removed.~~ *(wrong: a cycle saves on its click and the save happens at `OptionsSubScreen.removed`, but a slider's value lands as it moves, not on release (`options`:48, :93–94) — see *Pass 8, session J* — pass 8, session J)*
+25. ~~`options`:110–111 — *"Seven of the other quality options … Nine are not"*
     with no population. Counted in `Options.java`: sixteen listeners touch the
     graphics preset, seven of them also call `operateOnLevelExtractor` (cloud
     range, cutout leaves, improved transparency, ambient occlusion, anisotropic
     filtering, texture filtering, biome blend radius) and nine do nothing else.
-    Population named and the seven listed.
-26. `hud`:67–68 — *"the difference between the two `Gui`-recorded elements that
+    Population named and the seven listed.~~ *(checked (`client/Options.java`: sixteen listeners, seven `operateOnLevelExtractor` calls); a preset's own batch does not undo its name (`options`:150–152) — see *Pass 8, session J* — pass 8, session J)*
+26. ~~`hud`:67–68 — *"the difference between the two `Gui`-recorded elements that
     survive a level and the two that do not"*, which the page never resolved
     and which is not two and two. Read off `Gui.extractRenderState`
     (`net/minecraft/client/gui/Gui.java`:165–250): the saving indicator needs a
@@ -8725,148 +9174,148 @@ every one was found by a reader who counted because a sentence told them to.
     subtitles are ungated. Four elements, three depths; now a table, with what
     each does under F1 beside it — where the debug overlay turned out to have a
     fourth behaviour the page lacked, being hidden by F1 *unless a screen is
-    open* (`DebugScreenOverlay.java`:96).
-27. `hud`:153–154 vs :145 — *"three health numbers"* against a figure drawing a
+    open* (`DebugScreenOverlay.java`:96).~~ *(checked (`client/gui/Gui.java`:218–248); the debug overlay also needs the game loaded, the toasts' depth (`hud`:68) — see *Pass 8, session J* — pass 8, session J)*
+27. ~~`hud`:153–154 vs :145 — *"three health numbers"* against a figure drawing a
     four-item descending pass. Both are right and they are different lists:
     `Hud.lastHealth`, `Hud.displayHealth` and the truth are the numbers
     (`Hud.java`:169–172); container, absorption, ghost and truth are the
-    layers. Said, and the ghost identified as `Hud.displayHealth`.
-28. `hud`:165 — *"the HUD makes a sound of its own, which is the only element
+    layers. Said, and the ghost identified as `Hud.displayHealth`.~~ *(checked (`client/gui/Hud.java`:170–171, :961–984) — pass 8, session J)*
+28. ~~`hud`:165 — *"the HUD makes a sound of its own, which is the only element
     in it that does"*, against `Toast.Visibility` carrying a sound per state
     eighty lines above. Scoped to `Hud.extractRenderState`, with the toasts'
-    sounds excluded by name.
-29. `sound-engine`:46 vs :226 — the thread table said the sound thread takes
+    sounds excluded by name.~~ *(checked (`client/gui/Hud.java`:1048) — pass 8, session J)*
+29. ~~`sound-engine`:46 vs :226 — the thread table said the sound thread takes
     *"every per-source AL call"* and the closer named two exceptions. Scoped to
     *while the game is running*, which is what makes the teardown exceptions
-    safe.
-30. `sound-engine`:84 — the figure's *"then drop a silent one"* against the
-    body's *unless it is music*. Qualified in the figure.
-31. `sound-engine`:245 — *"Three things"* followed by two extensions, an ALC
+    safe.~~ *(wrong: the exception's reason: `Library.cleanup` runs after the thread is restarted, or unjoined (`sound-engine`:46, :244–248) — see *Pass 8, session J* — pass 8, session J)*
+30. ~~`sound-engine`:84 — the figure's *"then drop a silent one"* against the
+    body's *unless it is music*. Qualified in the figure.~~ *(overtaken: pass 7 rebuilt the figure; no arrow drops a sound — pass 8, session J)*
+31. ~~`sound-engine`:245 — *"Three things"* followed by two extensions, an ALC
     version and HRTF. `Library.init` throws for exactly three
     (`com/mojang/blaze3d/audio/Library.java`:76, 113, 118) and HRTF is
     conditional, not required; separated, and *ALC_EXT_disconnect* added as the
-    other optional one.
-32. `what-makes-a-sound`:16 vs :44 — **the page named its three doors two
+    other optional one.~~ *(checked (`com/mojang/blaze3d/audio/Library.java`:76–77, :114–119); *ALC_EXT_disconnect* is not what hot-plugging turns on (`sound-engine`:263–264) — see *Pass 8, session J* — pass 8, session J)*
+32. ~~`what-makes-a-sound`:16 vs :44 — **the page named its three doors two
     different ways.** The opening's third door was the prediction path; the
     figure's and the table's third column was client-side ambience. Both are
     the same door — *nothing crosses the wire* — with two inhabitants. The
     opening, the figure and the table now agree, and the figure gained the
-    local-prediction branch it lacked.
-33. `what-makes-a-sound`:52 — the figure routed the named-packet path through a
+    local-prediction branch it lacked.~~ *(checked (the opening, the figure and the table agree on the two inhabitants); your own break is a level event and is now drawn as one (`what-makes-a-sound`:38–55) — see *Pass 8, session J* — pass 8, session J)*
+33. ~~`what-makes-a-sound`:52 — the figure routed the named-packet path through a
     node labelled *"plays only when the excluded entity is the local player"*,
     which reads as a bystander hearing nothing.
     `ClientPacketListener.handleSoundEvent` passes `minecraft.player` as that
     argument (`ClientPacketListener.java`:2225), so the test always passes on
     the packet path. The inversion is now stated in the prose and the figure
-    label says who supplies the argument.
-34. `what-makes-a-sound`:103 — *"two kinds of silence"* followed by four named
+    label says who supplies the argument.~~ *(checked (`client/multiplayer/ClientPacketListener.java`:2245) — pass 8, session J)*
+34. ~~`what-makes-a-sound`:103 — *"two kinds of silence"* followed by four named
     things, two of which make sound audible or visible rather than silent.
-    Split into the two kinds and the two development constants.
-35. `debugging-the-running-game`:86 — *"half the renderers below reach for the
+    Split into the two kinds and the two development constants.~~ *(checked (the two silences stand); the two development constants were wrong: `MISSING_SOUND` makes nothing audible and neither silence reaches a subtitle (`what-makes-a-sound`:125–128) — see *Pass 8, session J* — pass 8, session J)*
+35. ~~`debugging-the-running-game`:86 — *"half the renderers below reach for the
     singleplayer server directly"*. Exactly **two** do
     (`ChunkDebugRenderer`, `EntityHitboxDebugRenderer`; grep over
-    `client/renderer/debug`). Corrected to two.
-36. `debugging-the-running-game`:72 vs :84 — *"Four collectors are installed
+    `client/renderer/debug`). Corrected to two.~~ *(checked (`client/renderer/debug/ChunkDebugRenderer.java`:45; `EntityHitboxDebugRenderer.java`:63); the *why* the page gave them was not the code's (`debugging-the-running-game`:85–88) — see *Pass 8, session J* — pass 8, session J)*
+36. ~~`debugging-the-running-game`:72 vs :84 — *"Four collectors are installed
     anywhere in the game"* and then a fifth install site in the next paragraph.
-    Five places install one; four of them collect. Said.
-37. `debugging-the-running-game`:16 vs :260 — *"about two dozen renderers"*
+    Five places install one; four of them collect. Said.~~ *(checked (five `Gizmos.withCollector` sites, one of them the no-op) — pass 8, session J)*
+37. ~~`debugging-the-running-game`:16 vs :260 — *"about two dozen renderers"*
     against *"eleven of the twenty-five"*. `DebugRenderer.refreshRendererList`
     adds twenty-five, eleven of them gated on a debug-screen entry; the vague
-    one now says twenty-five.
-38. `debugging-the-running-game`:88 — a heading reading *The sixteen instances*
-    over a fourteen-row table, with the two double rows unremarked.
-39. `debugging-the-running-game`:107 — *"those four expiring rows"* sorted into
+    one now says twenty-five.~~ *(checked (`client/renderer/debug/DebugRenderer.java`:35–127, eleven gates) — pass 8, session J)*
+38. ~~`debugging-the-running-game`:88 — a heading reading *The sixteen instances*
+    over a fourteen-row table, with the two double rows unremarked.~~ *(checked (`client/debugging-the-running-game`:92, fourteen rows and sixteen subscriptions) — pass 8, session J)*
+39. ~~`debugging-the-running-game`:107 — *"those four expiring rows"* sorted into
     two event kinds and two pushed-value kinds without saying which is which;
     `REDSTONE_WIRE_ORIENTATIONS` was assignable only by elimination. All four
-    named into their buckets.
-40. `debugging-the-running-game`:229 — the heading *The sample path, which
+    named into their buckets.~~ *(checked (`util/debug/DebugSubscriptions.java`:22, :25, :30, :31) — pass 8, session J)*
+40. ~~`debugging-the-running-game`:229 — the heading *The sample path, which
     shares only the subscriber map* promised a shared thing the section never
     delivers. Renamed to what it does share, which is the idea and one
-    subscription.
-41. `debugging-the-running-game`:249 — *"Six packets carry all of this"*, where
+    subscription.~~ *(wrong: the heading the correction wrote, *shares nothing but the idea*, contradicted the body; the sample path shares the subscription, its request, the permission rule and the subscriber map (`debugging-the-running-game`:258–262) — see *Pass 8, session J* — pass 8, session J)*
+41. ~~`debugging-the-running-game`:249 — *"Six packets carry all of this"*, where
     *this* had by then included two tag-query packets that are not among the
-    six. Scoped, and the exclusion said.
-42. `input-and-keybinds`:100 vs :181 — *"nineteen times over"* against *"Twenty
+    six. Scoped, and the exclusion said.~~ *(checked (`network/protocol/game/GamePacketTypes.java`:35–39, :154) — pass 8, session J)*
+42. ~~`input-and-keybinds`:100 vs :181 — *"nineteen times over"* against *"Twenty
     debug shortcuts"*. `Options.debugKeys` holds twenty
     (`Options.java`:1263) and `KeyboardHandler.handleDebugKeys` makes
     twenty-two `KeyMapping.matches` calls, the extra two being the overlay and
-    modifier keys. Both numbers corrected and the two populations separated.
-43. `input-and-keybinds`:121 — the `KeyMapping.setAll` row said when it happens
+    modifier keys. Both numbers corrected and the two populations separated.~~ *(overtaken: V2's twenty-one mappings and twenty tests, the crash, modifier and overlay keys tested in `keyPress` — pass 8, session J)*
+43. ~~`input-and-keybinds`:121 — the `KeyMapping.setAll` row said when it happens
     and never what it does. It asks the window which keys are physically down
-    and sets each willing mapping to match (`KeyMapping.java`:60–70).
-44. `README`:139 — *"ten of these twelve pages carry a *for a 1.21-era reader*
-    box"*. Nine do.
-45. `README`:50 — *"Everything else in the part is independent of everything
+    and sets each willing mapping to match (`KeyMapping.java`:60–70).~~ *(checked (`client/KeyMapping.java`:60–72, asking SDL since V2) — pass 8, session J)*
+44. ~~`README`:139 — *"ten of these twelve pages carry a *for a 1.21-era reader*
+    box"*. Nine do.~~ *(wrong: nine was right then; `options`' box was cut this session, so eight carry one (`client/README`:172) — see *Pass 8, session J* — pass 8, session J)*
+45. ~~`README`:50 — *"Everything else in the part is independent of everything
     else in the part"*, four lines above the page naming a dependency between
-    two of those pages. Rewritten to say what the exceptions are.
+    two of those pages. Rewritten to say what the exceptions are.~~ *(checked (`client/README`:52–61 names the GUI stack and the level-and-prediction pair) — pass 8, session J)*
 
 ### Claims introduced
 
-- **The client loop.** The tick table's thirteen rows and their gate column;
+- ~~**The client loop.** The tick table's thirteen rows and their gate column;
   *five of the thirteen rows are gated on nothing*; the five ungated rows being
   what a client with no world still does; that `Minecraft.pick`'s tick call is
   row four and the frame's is elsewhere; that the frame-time graph is the only
-  one of the three measurements fed after the limiter.
-- **The client level.** *The clock and the weather run themselves, and neither
+  one of the three measurements fed after the limiter.~~ *(wrong: *five of thirteen* was V2's six; and a worldless client's pick and tutorial look return at once without a level, so four of the six ungated rows are what it still does (`the-client-loop`:167–170); `Minecraft.fps` includes the sleep too (`the-client-loop`:268–275); the pick placement stands — see *Pass 8, session J* — pass 8, session J)*
+- ~~**The client level.** *The clock and the weather run themselves, and neither
   interpolates* as a section, assembled from three dissolved closer answers;
   that the breaking sweep and `ClientLevel.animateTick` are coarse *in the same
   way*; *The four tint caches, and the soft biome edge* as a heading, with the
   claim that nothing on the server knows the edge is soft and that a chunk
-  arriving is what invalidates all four.
-- **Prediction and acknowledgement.** The opening re-argued so the ordering
+  arriving is what invalidates all four.~~ *(checked (`client/multiplayer/ClientLevel.java`:1003–1026, :533–536); the breaking sweep's consequence was wrong — it drops abandoned cracks, it does not delay live ones (`the-client-level`:251–254) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**Prediction and acknowledgement.** The opening re-argued so the ordering
   rule is the hook and the receipt claim leads into it (the queue asked which
   of the two openings was the hook; this is the answer); the word *cascade*
   defined at first use; *What one ack does, and the numbers that are not
   sequences* as a section, with the claim that the recorded player position is
-  read by the snap and by nothing else.
-- **Input and keybinds.** *The two debug-key families, and which one is
+  read by the snap and by nothing else.~~ *(checked (`client/multiplayer/prediction/BlockStatePredictionHandler.java`:49); the hook's reason gained the level's broadcast (`prediction-and-acks`:13–16) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**Input and keybinds.** *The two debug-key families, and which one is
   bindable* and *Almost nothing here sends a packet* as sections; the claim
   that the twenty-two tests over twenty shortcuts are explained by the overlay
-  and modifier keys being tested in the same method.
-- **Options.** *The guard that silences every setting at startup* as a section
+  and modifier keys being tested in the same method.~~ *(wrong: the counts were V2's (twenty tests of twenty-one, the modifier and overlay in `keyPress`), and *Almost nothing here sends a packet* was false and is corrected with its section (`input-and-keybinds`:192–200) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**Options.** *The guard that silences every setting at startup* as a section
   — the queue's standing entry, acted on; the claim that a setting whose only
   effect is in its listener does nothing until you change it in the interface;
-  the figure's three-way split of when a value is applied.
-- **GUI and screens.** That the two `Screen.init` methods are the framework's
-  style in miniature, stated before the finals list.
-- **The GUI render tree.** The opening's claim that the inference buys the
+  the figure's three-way split of when a value is applied.~~ *(checked (`client/OptionInstance.java`:126–140); a slider applies as it moves, not on release, and the guard's boundary is `Minecraft.running`, not the loop (`options`:48, :167) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**GUI and screens.** That the two `Screen.init` methods are the framework's
+  style in miniature, stated before the finals list.~~ *(checked (`client/gui/screens/Screen.java`:456, :501) — pass 8, session J)*
+- ~~**The GUI render tree.** The opening's claim that the inference buys the
   chest twice over — one layer, one atlas entry; the verb table's *who calls
   it* column; that the two current-layer verbs are why a resolved thing never
-  jumps in front of what recorded it.
-- **The HUD.** The figure moved above the cast, and the opening re-entered
+  jumps in front of what recorded it.~~ *(checked (`client/gui/render/GuiRenderer.java`:269, :332; `client/gui/render/pip/PictureInPictureRenderer.java`:107; the chest's one render now scoped to still models) — pass 8, session J)*
+- ~~**The HUD.** The figure moved above the cast, and the opening re-entered
   through the scenario (A7); the four-element gate table; the boss bar promoted
   into *The hidden flag travels two ways* with the claim that a dragon changes
   the sky because a HUD element asked the world to; *What a debug line is, and
-  who turns one on* as a section.
-- **Sound: the engine.** *The sound thread is not the mixer, and the device is
+  who turns one on* as a section.~~ *(wrong: the four-element table stands (its debug-overlay row corrected); the boss bar is polled by the world, not the other way round (`hud`:127–132) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**Sound: the engine.** *The sound thread is not the mixer, and the device is
   not its* as a section (A7's variation for this page, and A2's promotion of
   two closer answers); the claim that the two teardown exceptions are safe
-  because the thread is already joined.
-- **What makes a sound happen.** The third door redefined as *nothing crosses
+  because the thread is already joined.~~ *(wrong: `Library.cleanup` runs after `SoundEngine.stopAll` has started a fresh thread, or with no join in an emergency (`sound-engine`:244–248) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**What makes a sound happen.** The third door redefined as *nothing crosses
   the wire* with two inhabitants; the cast moved below the figure and the table
   (A7); the claim that one client method serves both the packet path and the
   local path because the handler supplies the local player as the excluded
-  entity.
-- **Debugging the running game.** That five places install a collector and four
+  entity.~~ *(checked (`client/multiplayer/ClientPacketListener.java`:2245, :2254); true of your own place; your own break is a level event that never reaches `ClientLevel.playSeededSound` (`what-makes-a-sound`:162–165) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**Debugging the running game.** That five places install a collector and four
   collect; that the sample path shares nothing but the idea and one
-  subscription.
-- **The landing page.** The argument reversed off the symptom list onto the
+  subscription.~~ *(wrong: five install and four collect stands; the heading said *nothing but the idea*, against its own body, and now says a subscription (`debugging-the-running-game`:258) — see *Pass 8, session J* — pass 8, session J)*
+- ~~**The landing page.** The argument reversed off the symptom list onto the
   claim that *everything that looks like the client falling behind is one
   thread deciding what to spend a frame on*; the figure's seven spokes
   explained against twelve pages; *Where the part stops* as a heading in A6's
-  place with the generated coverage include.
+  place with the generated coverage include.~~ *(checked (the argument, the spokes and the heading stand); the boundary sentence (*begins exactly where the loop ends*) was not (`client/README`:140–143) — see *Pass 8, session J* — pass 8, session J)*
 
 ### For pass 9's attention, found and not fixed
 
-- `hud`'s *"six other places across the client"* read `Hud.isHidden` — counted
-  by an earlier pass, not re-counted here.
-- `gui-and-screens`'s *"Forty-one screens override
+- ~~`hud`'s *"six other places across the client"* read `Hud.isHidden` — counted
+  by an earlier pass, not re-counted here.~~ *(checked (re-counted: six call sites, `DebugScreenOverlay`:97 and :419, `ToastManager`:89, `ItemFrameRenderer`:114, `LivingEntityRenderer`:264, `GameRenderer`:677) — pass 8, session J)*
+- ~~`gui-and-screens`'s *"Forty-one screens override
   `Screen.repositionElements`"* and *"two hundred-odd classes in
   `client/gui/screens` and its eighteen sub-packages"* — one exact and one
-  round on the same page, neither re-counted.
-- `the-client-loop`'s *"the overload threshold plus twenty ticks"* names no
+  round on the same page, neither re-counted.~~ *(checked (re-counted: 41 overrides in `net/minecraft`; 203 classes) — pass 8, session J)*
+- ~~`the-client-loop`'s *"the overload threshold plus twenty ticks"* names no
   value, so the contrast with the client's ten cannot be felt; the value is
-  `server-tick`'s to supply.
+  `server-tick`'s to supply.~~ *(no claim: the value is `server-tick`'s (one second), and the sentence links it — pass 8, session J)*
 
 ## Pass 6, session I — Part IX · Networking *(2026-09-14)*
 
@@ -12079,7 +12528,7 @@ claims the session introduced, which pass 9 checks before anything else.*
 
 ### Corrections — what the page said, what the decompile says
 
-1. **`client/the-client-level`:129** said the renderer is reached directly by
+1. ~~**`client/the-client-level`:129** said the renderer is reached directly by
    "the chunk cache and **one** packet handler". `ClientPacketListener` has
    five references to `Minecraft.levelExtractor`
    (`ClientPacketListener.java`:538, 550, 940, 1329, 2677): two hand it to a
@@ -12088,16 +12537,16 @@ claims the session introduced, which pass 9 checks before anything else.*
    refreshing the debug renderer list (:550) and `handleGameTestHighlightPos`
    (:2677). Session N had flagged the count as right only for the
    dirty-marking path (pass5.md:770); it is. The sentence now says three and
-   names what each does.
-2. **`client/sound-engine`'s verified line** said the trace crosses "five
+   names what each does.~~ *(wrong: 26.3 added a fourth handler, `ClientPacketListener.handleAddTransientBlockPacket` (`the-client-level`:158) — see *Pass 8, session J* — pass 8, session J)*
+2. ~~**`client/sound-engine`'s verified line** said the trace crosses "five
    threads". The page's own table lists five threads that *take part in the
    system*, but `Util.ioPool` appears in no step of the trace — it polls the
    ALC device list beside it (`AbstractDeviceTracker.tick`). A block placed
    near you crosses four: Server, Render, the sound engine's, and
    `Util.nonCriticalIoPool`. The landing page had it right and the page did
    not. Corrected to "four of the system's five threads", with a sentence
-   saying which one is the odd one.
-3. **`client/options`:354** said "the one thing a client-information packet
+   saying which one is the odd one.~~ *(checked (`client/sounds/SoundBufferLibrary.java`:29, :73 — four on a cache miss, three on a hit) — pass 8, session J)*
+3. ~~**`client/options`:354** said "the one thing a client-information packet
    can provoke is a hat-visibility broadcast".
    `ServerGamePacketListenerImpl.handleClientInformation` does broadcast the
    hat, but `ServerPlayer.updateOptions` also writes two of the nine fields
@@ -12105,19 +12554,19 @@ claims the session introduced, which pass 9 checks before anything else.*
    `ServerPlayer.DATA_PLAYER_MAIN_HAND` — which reach every tracker.
    `entities/synched-entity-data`:303-305 already said so, so this was a page
    contradicting another page. Rewritten as two outward effects and still no
-   reply, with the link.
-4. **`client/gui-and-screens`:35** called `MenuScreens` "the only registry of
+   reply, with the link.~~ *(wrong: the two effects stand, but both reach the sender too (`options`:192–197) — see *Pass 8, session J* — pass 8, session J)*
+4. ~~**`client/gui-and-screens`:35** called `MenuScreens` "the only registry of
    screens in the game" and :232 on the same page called `DialogScreens` "the
    second one". A page contradicting itself. The cast row now says what
-   `MenuScreens` is *for* — the registry the menu packets look a screen up in.
-5. **`client/gui-and-screens`:96** said "`Gui.isPausing` **is** what stops the
+   `MenuScreens` is *for* — the registry the menu packets look a screen up in.~~ *(checked (`client/gui/screens/MenuScreens.java`:39, :84–108); only `ClientboundOpenScreenPacket` looks a screen up there, and `DialogScreens` is not the only other registry (`gui-and-screens`:35, :281–282) — see *Pass 8, session J* — pass 8, session J)*
+5. ~~**`client/gui-and-screens`:96** said "`Gui.isPausing` **is** what stops the
    integrated server". `Minecraft.runTick` (`Minecraft.java`:1321) recomputes
    `Minecraft.pause` as a conjunction of three: a singleplayer server, the
    GUI saying it is pausing, and the world not being published. Against
    `the-client-loop`, which had it right. Rewritten as the screen's *vote*,
    with the loop cited for the other two — and the overlay fact, which the
-   loop page lacks, kept here.
-6. **`client/README`:135-139** put the Part X/XI boundary at
+   loop page lacks, kept here.~~ *(checked (`client/Minecraft.java`:1336; `client/gui/screens/Overlay.java`:9–11) — pass 8, session J)*
+6. ~~**`client/README`:135-139** put the Part X/XI boundary at
    `Minecraft.renderFrame`'s *extract* zone, with "the handful of statements
    before that zone" still Part X's. The *frame* zone is pushed in
    `Minecraft.runTick` (`Minecraft.java`:1308) around the whole of
@@ -12126,21 +12575,21 @@ claims the session introduced, which pass 9 checks before anything else.*
    `rendering/the-frame` and `rendering/README` all say the *frame* zone, so
    the landing page was the outlier. Rewritten to the *frame* zone, keeping
    the real point: a few Part X cadences run inside it and stay Part X's for
-   what they decide, not where they sit.
-7. **`client/the-client-loop`:29** called `TickRateManager` "a *server*
+   what they decide, not where they sit.~~ *(checked (`client/Minecraft.java`:1320–1321); *exactly where the loop ends* was not, `runTick` settling the pause after the frame (`client/README`:140–143) — see *Pass 8, session J* — pass 8, session J)*
+7. ~~**`client/the-client-loop`:29** called `TickRateManager` "a *server*
    object". It is `net.minecraft.world.TickRateManager` — shared; the server
    subclass is `ServerTickRateManager`, and `ClientLevel` holds a plain one
    fed by packets. The cast row now says a shared class carrying numbers only
-   the server sets.
-8. **`client/the-client-loop`:140** said `ServerboundClientTickEndPacket`
+   the server sets.~~ *(checked (`world/TickRateManager.java`:7); the client's own tick computes whether game elements run, so only the rate and the freeze are the server's (`the-client-loop`:40) — see *Pass 8, session J* — pass 8, session J)*
+8. ~~**`client/the-client-loop`:140** said `ServerboundClientTickEndPacket`
    goes out "once per unpaused client tick that has a connection". The send
    (`Minecraft.java`:2064) is inside `Minecraft.tick`'s level block, so it
-   also needs a level — a client still in configuration sends none. Corrected.
-9. **`client/the-client-loop`:234** presented `Main.main`'s arming of
+   also needs a level — a client still in configuration sends none. Corrected.~~ *(checked (`client/Minecraft.java`:2102–2106) — pass 8, session J)*
+9. ~~**`client/the-client-loop`:234** presented `Main.main`'s arming of
    `ClientShutdownWatchdog.startShutdownWatchdog` as the only one. There are
    two: `Main.java`:291 (post-main) and `Minecraft.java`:545, the window-close
    callback, armed against the game thread while the game is still running.
-   Corrected, with what the second one catches.
+   Corrected, with what the second one catches.~~ *(checked (`client/main/Main.java`:291; `client/Minecraft.java`:576); what the close-callback arming covers was not (`the-client-loop`:290–294) — see *Pass 8, session J* — pass 8, session J)*
 10. ~~**`player/input-to-movement`:296-298** said the client calls
     `BlockStatePredictionHandler.onTeleport` "to drop its outstanding block
     predictions". `BlockStatePredictionHandler.java`:70 assigns
@@ -12187,69 +12636,69 @@ claims the session introduced, which pass 9 checks before anything else.*
 
 ### Suspicions re-derived and found sound (no change)
 
-- `what-makes-a-sound`:124 "the seed … so that every client picks the same
+- ~~`what-makes-a-sound`:124 "the seed … so that every client picks the same
   variant **and the same pitch**" against `block-interaction`:306-308 "each
   side draws its own pitch from its own `Level.getRandom`". Both true and
   about different paths: `ClientboundSoundPacket` carries an explicit pitch
   field *and* `AbstractSoundInstance.getPitch` multiplies it by
   `Sound.getPitch().sample(this.random)` off the seeded random, so recipients
   agree; the *predicting* client generates its own seed and does not.
-  Session J made the wording say which is which rather than changing either.
-- `debugging-the-running-game`:71 `DebugSubscriptions.RAIDS` fed by
-  `LevelChunk.registerDebugValues` — confirmed at `LevelChunk.java`:758.
-- `debugging-the-running-game`:69-70 against `points-of-interest`:330-332 on
+  Session J made the wording say which is which rather than changing either.~~ *(checked (`network/protocol/game/ClientboundSoundPacket.java`:22; `client/resources/sounds/AbstractSoundInstance.java`:57, :95); the predicting client's seed comes from the level's own random for a break (`what-makes-a-sound`:171) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`debugging-the-running-game`:71 `DebugSubscriptions.RAIDS` fed by
+  `LevelChunk.registerDebugValues` — confirmed at `LevelChunk.java`:758.~~ *(checked (`world/level/chunk/LevelChunk.java`:760) — pass 8, session J)*
+- ~~`debugging-the-running-game`:69-70 against `points-of-interest`:330-332 on
   the `POIS` feeder: both right, at two levels of the same call —
   `LevelDebugSynchronizers.registerPoi` delegates to
-  `TrackingDebugSynchronizer.PoiSynchronizer`.
-- `the-client-loop`:241-244 on the out-of-memory path: confirmed at
+  `TrackingDebugSynchronizer.PoiSynchronizer`.~~ *(checked (`util/debug/LevelDebugSynchronizers.java`:215–233) — pass 8, session J)*
+- ~~`the-client-loop`:241-244 on the out-of-memory path: confirmed at
   `Minecraft.java`:908-949 — `oomRecovery` makes every later iteration call
-  `runTick(false)`, and a second `OutOfMemoryError` rethrows.
-- `client/options`:357-360 "the only thing that ever sets
+  `runTick(false)`, and a second `OutOfMemoryError` rethrows.~~ *(checked (`client/Minecraft.java`:955–965) — pass 8, session J)*
+- ~~`client/options`:357-360 "the only thing that ever sets
   `Options.serverRenderDistance`": confirmed, two call sites, both the server
-  announcing its own radius (`ClientPacketListener.java`:564 and :2560).
-- `input-and-keybinds`:34 "the four mappings that can behave as toggles" and
+  announcing its own radius (`ClientPacketListener.java`:564 and :2560).~~ *(checked (`client/multiplayer/ClientPacketListener.java`:567, :2607); *when an operator changes it* was narrower than *whenever that distance changes* (`options`:201–203) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`input-and-keybinds`:34 "the four mappings that can behave as toggles" and
   :73-75 "with default bindings, sneak and sprint": both right.
   `Options.java` constructs four `ToggleKeyMapping`s, and
   `ToggleKeyMapping.shouldRestoreStateOnScreenClosed` additionally requires
   the current binding to be a `KEYSYM`, which attack and use are not by
-  default.
-- `input-and-keybinds`:132-138 against `input-to-movement`:139-142 on whether
+  default.~~ *(checked (`client/Options.java`:1212–1230; `client/ToggleKeyMapping.java`:49 (a keyboard binding, the type now called `KEYBOARD`)) — pass 8, session J)*
+- ~~`input-and-keybinds`:132-138 against `input-to-movement`:139-142 on whether
   `MouseHandler.handleAccumulatedMovement` is gated on the mouse being
   grabbed: the screen half and the turn half are tested separately
   (`MouseHandler.java`), and the reset runs outside both. Both pages right
-  about their own half.
-- `the-client-level`:55-57 on `ClientboundExplodePacket` carrying the sound,
+  about their own half.~~ *(checked (`client/MouseHandler.java`:270, :303, :308–309) — pass 8, session J)*
+- ~~`the-client-level`:55-57 on `ClientboundExplodePacket` carrying the sound,
   the particle and the knockback — confirmed against the record's seven
-  components.
-- `debugging-the-running-game`'s renderer count: 25 `renderers.add(new …)`
+  components.~~ *(checked (`network/protocol/game/ClientboundExplodePacket.java`:17); the record has eight components now and the sound plays only when its flag asks (`the-client-level`:61–63) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`debugging-the-running-game`'s renderer count: 25 `renderers.add(new …)`
   calls in `DebugRenderer.refreshRendererList`. The page said "about two
   dozen" in one place and "twenty-five" in another; the hedge is now the
-  count.
+  count.~~ *(checked (`client/renderer/debug/DebugRenderer.java`:31–132, 25 adds) — pass 8, session J)*
 
 ### Claims this session introduced
 
 **Written from the decompile, and therefore pass 9's first targets.**
 
-- `client/hud` — the toast shelf: five slots (`ToastManager.SLOT_COUNT`), a
+- ~~`client/hud` — the toast shelf: five slots (`ToastManager.SLOT_COUNT`), a
   waiting deque, `Toast.occcupiedSlotCount` requiring *consecutive* free
   slots via `ToastManager.findFreeSlotsIndex`, `Toast.Visibility` as a
   two-state animation each carrying a sound, `Toast.getToken` for
   replacement, and `NowPlayingToast` as a separate field suppressed by
-  `PauseScreen` and `MusicToastDisplayState`. Six implementations named.
-- `client/hud` — the chat-GUI family: `GuiMessage`'s five fields including
+  `PauseScreen` and `MusicToastDisplayState`. Six implementations named.~~ *(checked (`client/gui/components/toasts/ToastManager.java`:27, :111–128); the token lets a system toast or a recipe toast be reused; advancements always stack (`hud`:105–106) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/hud` — the chat-GUI family: `GuiMessage`'s five fields including
   the signature; `GuiMessageTag`'s five instances (system,
   system-singleplayer, not-secure, modified, error), the two-pixel indicator
   bar drawn at x −4..−2 (`ChatComponent.handleTag`) — to the *left* of the
   line, outside the text — the hover tooltip, the icon on *modified* only and
   placed after the text (`GuiMessage.Line.getTagIconLeft`), and `logTag` as
-  the only part reaching `ChatLog`.
-- `client/hud` — the three gates above the whole HUD, moved here from
+  the only part reaching `ChatLog`.~~ *(wrong: the fields, the bar and the icon stand; `GuiMessageTag.logTag` goes to the game log and no part of the tag reaches `ChatLog` (`hud`:240–243) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/hud` — the three gates above the whole HUD, moved here from
   `reference/hud-elements` and restated: `GameRenderer.extract` computes
-  them, `Gui.extractRenderState` applies them.
-- `client/hud` — the clear-colour override beside `GuiRenderState.isHudHidden`
+  them, `Gui.extractRenderState` applies them.~~ *(checked (`client/gui/Gui.java`:172–176); `GameRenderer.extract` is handed the advance-game-time flag, and `Gui` calls two `Hud` methods ungated (`hud`:53–57) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/hud` — the clear-colour override beside `GuiRenderState.isHudHidden`
   and the claim that every reading site of either is `GameRenderer`'s rather
-  than `LevelRenderer`'s, moved here from `the-gui-render-tree`.
-- `client/debugging-the-running-game` — the whole *Nothing in the game draws
+  than `LevelRenderer`'s, moved here from `the-gui-render-tree`.~~ *(checked (`client/renderer/GameRenderer.java`:385, :516, :763, :809) — pass 8, session J)*
+- ~~`client/debugging-the-running-game` — the whole *Nothing in the game draws
   a gizmo* section, moved from `anatomy/what-this-book-skips` and extended:
   the thread-local collector, `Gizmos.addGizmo` throwing with none installed,
   the seven shape records, and the four collectors table
@@ -12257,79 +12706,79 @@ claims the session introduced, which pass 9 checks before anything else.*
   `LevelExtractor.collectPerFrameMainThreadGizmos`,
   `LevelRenderer.collectPerFrameRenderThreadGizmos`, and `IntegratedServer`'s
   around its packet-and-tick step) with `GameTestServer` installing
-  `GizmoCollector.NOOP` and a dedicated server installing none.
-- `client/debugging-the-running-game` — the whole *The other query* section:
+  `GizmoCollector.NOOP` and a dedicated server installing none.~~ *(checked (`gizmos/Gizmos.java`:12, :23–31; five `Gizmos.withCollector` sites); nothing the game ships draws into the integrated server's collector, and the test server's no-op still builds each shape (`debugging-the-running-game`:73–76) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/debugging-the-running-game` — the whole *The other query* section:
   `Options.keyDebugCopyRecreateCommand`, the shift modifier choosing the
   client's own NBT over the server's, `DebugQueryHandler`'s single
   transaction id and single callback, the two query packets, the gamemaster
-  permission gate on including NBT, and the reduced-debug-info gate.
-- `client/gui-and-screens` — `GameNarrator` as a wrapper over *text2speech*
+  permission gate on including NBT, and the reduced-debug-info gate.~~ *(checked (`client/KeyboardHandler.java`:245–247; `client/DebugQueryHandler.java`:14–34) — pass 8, session J)*
+- ~~`client/gui-and-screens` — `GameNarrator` as a wrapper over *text2speech*
   with `NarratorStatus` in front of it and two tempers (queued against
-  `GameNarrator.saySystemNow`).
-- `client/gui-and-screens` — the coverage claim: two hundred-odd classes in
+  `GameNarrator.saySystemNow`).~~ *(checked (`client/GameNarrator.java`:20, :47–69; `client/NarratorStatus.java`:10) — pass 8, session J)*
+- ~~`client/gui-and-screens` — the coverage claim: two hundred-odd classes in
   `client/gui/screens` and its eighteen sub-packages (measured: 224 files, 18
   directories), covered as one pattern with four routes; seven previously
-  English-only examples given their class names.
-- `client/text-and-fonts` — the five provider kinds named as classes
+  English-only examples given their class names.~~ *(checked (203 classes without `package-info.java`, 18 sub-packages; four routes) — pass 8, session J)*
+- ~~`client/text-and-fonts` — the five provider kinds named as classes
   (`BitmapProvider`, `TrueTypeGlyphProviderDefinition` with `FreeTypeUtil`,
   `UnihexProvider`, `SpaceProvider`, `ProviderReferenceDefinition`) and
   `SpecialGlyphs` as the not-from-a-file case; and the other two of the four
   ICU sites named (`CreateBuffetWorldScreen`, `LocalTime` — measured by
-  grepping `com.ibm.icu`, which hits exactly four files).
-- `client/the-gui-render-tree` — the definition of *stratum*; the note that
+  grepping `com.ibm.icu`, which hits exactly four files).~~ *(checked (`client/gui/font/providers/GlyphProviderType.java`:10; four files import `com.ibm.icu`) — pass 8, session J)*
+- ~~`client/the-gui-render-tree` — the definition of *stratum*; the note that
   `GuiGraphicsExtractor.nextStratum` and `GuiRenderState.nextStratum` are the
   same barrier under two names; the blur section's three gates
   (`Screen.extractBlurredBackground` as the only caller, the throw on a second
   request, the option, the in-game-UI opt-out) and the claim that the
   darkening tint is sharp because it is recorded after the boundary;
   `DynamicAtlasAllocator` as what runs out of room; `IMEPreeditOverlay` named;
-  and the `PictureInPictureRenderer` half of the pip family.
-- `client/what-makes-a-sound` — the reorganised *Who hears it*: both
+  and the `PictureInPictureRenderer` half of the pip family.~~ *(checked (`client/gui/GuiGraphicsExtractor.java`:141–147; `client/gui/screens/Screen.java`:510–528); the tint is sharp because the boundary falls before its stratum, and *cannot grow* means the device's maximum (`the-gui-render-tree`:198–210) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/what-makes-a-sound` — the reorganised *Who hears it*: both
   `ClientLevel.playSeededSound` overloads carrying the excluded-player rule,
   the two qualifications (`Player.playServerSideSound` excluding nobody; the
   predicting client drawing its own seed from `Level.soundSeedGenerator`), and
   `SoundType` described as the five-sound group on
   `BlockBehaviour.Properties`. Also `SoundEventRegistrationSerializer` named
-  as what parses a `sounds.json` entry.
-- `client/the-client-loop` — the two timers as a fifth bullet in the
+  as what parses a `sounds.json` entry.~~ *(checked (`client/multiplayer/ClientLevel.java`:713–726; `world/entity/player/Player.java`:982–983); `Level.soundSeedGenerator` is a place's seed, not a break's (`what-makes-a-sound`:171) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/the-client-loop` — the two timers as a fifth bullet in the
   queues-and-re-entries list (`PeriodicNotificationManager` and
   `RemoteFriendListUpdateHandler`, each hopping back with
   `BlockableEventLoop.execute`), moved from the Part X landing page, which
-  was the book's only explanation of either.
-- `client/the-client-level` — `ClientLevel.EntityCallbacks` as the four hooks
+  was the book's only explanation of either.~~ *(checked (`client/PeriodicNotificationManager.java`:98, :169); *before touching anything* was not: the friends handler reads the level off-thread (`the-client-loop`:207–208) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/the-client-level` — `ClientLevel.EntityCallbacks` as the four hooks
   and `TransientEntitySectionManager` as the comparison table's last row made
-  concrete.
-- `client/README` — the part's coverage answer: nine tenths of what no page
+  concrete.~~ *(wrong: `ClientLevel.EntityCallbacks` implements seven hooks, two of which feed the ticking list (`the-client-level`:269–271) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`client/README` — the part's coverage answer: nine tenths of what no page
   names is one more screen or widget (measured from `pass5_coverage.py`'s
   sub-package table — 27,146 of 29,360 unmentioned lines are under
   `client/gui`, 23,731 of them screens and widgets), plus the two declared
-  exceptions (the model tree, player reporting).
-- `src/figures/parts-dependency.md` — a new solid arrow **VII → X**, because
+  exceptions (the model tree, player reporting).~~ *(wrong: about four fifths: 20,914 of 25,272 unnamed lines are under the screens and components packages; nine tenths is all of `client/gui` (`client/README`:150) — see *Pass 8, session J* — pass 8, session J)*
+- ~~`src/figures/parts-dependency.md` — a new solid arrow **VII → X**, because
   the landing page now lists `containers-and-menus` under *before you start*
   for lecture six. `check_deps.py` caught the missing arrow and refused the
-  first version of the page, which is the gate doing its job.
+  first version of the page, which is the gate doing its job.~~ *(checked (`client/README`:82–85 lists `containers-and-menus` for lecture six; `check_deps.py` clean) — pass 8, session J)*
 
 ### Ownership decisions, for the record
 
-- The excluded-player sound rule: `what-makes-a-sound#who-hears-it` owns it;
+- ~~The excluded-player sound rule: `what-makes-a-sound#who-hears-it` owns it;
   `the-client-level` cut to one sentence; `block-interaction` and
-  `using-an-item` keep copies that add something.
-- The distance delay ("sound has a speed"): `what-makes-a-sound` owns it;
-  `the-client-level`'s Q&A cut.
-- The music fade against the music slider: `sound-engine` owns it;
-  `what-makes-a-sound` cut to a clause and a link.
-- The pause predicate: `the-client-loop` owns it; `gui-and-screens` keeps the
-  screen's vote and the overlay default.
-- The un-rebindable F3 shortcut: `input-and-keybinds` owns it; `hud` cut to a
-  citation plus its own half.
-- The blur split: `the-gui-render-tree` owns the *barrier*,
+  `using-an-item` keep copies that add something.~~ *(checked (`client/what-makes-a-sound`#who-hears-it owns the rule); `the-client-level`'s one sentence cited it for your own footsteps, which take `LocalPlayer.playSound` instead (`the-client-level`:260–265) — see *Pass 8, session J* — pass 8, session J)*
+- ~~The distance delay ("sound has a speed"): `what-makes-a-sound` owns it;
+  `the-client-level`'s Q&A cut.~~ *(checked (`client/multiplayer/ClientLevel.java`:742–757; `the-client-level` cites the owner) — pass 8, session J)*
+- ~~The music fade against the music slider: `sound-engine` owns it;
+  `what-makes-a-sound` cut to a clause and a link.~~ *(checked (`client/sounds/SoundEngine.java`:547); the music exemption does not fade a track in from nothing (`sound-engine`:198–199) — see *Pass 8, session J* — pass 8, session J)*
+- ~~The pause predicate: `the-client-loop` owns it; `gui-and-screens` keeps the
+  screen's vote and the overlay default.~~ *(checked (`client/Minecraft.java`:1336); the loop page's heading *neither is the menu* was false and is corrected with its link (`the-client-loop`:233) — see *Pass 8, session J* — pass 8, session J)*
+- ~~The un-rebindable F3 shortcut: `input-and-keybinds` owns it; `hud` cut to a
+  citation plus its own half.~~ *(checked (`client/hud`:229 links the anchor) — pass 8, session J)*
+- ~~The blur split: `the-gui-render-tree` owns the *barrier*,
   `post-processing` owns the *chain that runs in the gap*; both rewritten,
-  both linked.
-- `Gizmos`: moved to `debugging-the-running-game`; `what-this-book-skips`
-  keeps the address, which is that page's job.
-- The frame cap, `ClientShutdownWatchdog` and the fenced-task queue were
+  both linked.~~ *(checked (`rendering/post-processing`:175–181 links the anchor) — pass 8, session J)*
+- ~~`Gizmos`: moved to `debugging-the-running-game`; `what-this-book-skips`
+  keeps the address, which is that page's job.~~ *(checked (`anatomy/what-this-book-skips`:278–288 links the anchor) — pass 8, session J)*
+- ~~The frame cap, `ClientShutdownWatchdog` and the fenced-task queue were
   reported as duplicates with Part XI pages and **left for session K**, which
-  owns the other half of each.
+  owns the other half of each.~~ *(no claim: an ownership note for Part XI, whose check is session L's — pass 8, session J)*
 
 ## Pass 5, session I — Part IX · Networking *(2026-09-06)*
 

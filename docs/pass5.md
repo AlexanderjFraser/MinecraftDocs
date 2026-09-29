@@ -111,7 +111,7 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   client falling behind is one thread deciding what to spend a frame on — which
   is the fourth time the reversal has produced the part's argument in one
   sentence. The remaining three are their own sessions' and session O's.
-  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone.
+  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone. **X checked, pass 8 session J** — `client/README`'s symptoms open the argument and the paragraph ends on its claim.
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -1230,8 +1230,8 @@ drop the number.
   things listed are static *methods*, of which there are 34. And "the
   particles" is `Block.spawnDestroyParticles`, a `protected` **instance**
   method.~~ *Done: the cast and the class box now say *its static helpers*, with no count, and the particle methods, which are instance methods, are not among them — pass 8, session E.*
-- `client/hud.md` — the heading is now *Four states*, and three of the four [kind=voice]
-  draw. If pass 5 wants "bars" back, the number is three.
+- ~~`client/hud.md` — the heading is now *Four states*, and three of the four [kind=voice]
+  draw. If pass 5 wants "bars" back, the number is three.~~ *Ruled, pass 8 session J: the heading counts the four states, and the page names the three bars that draw.*
 - ~~`world/scheduled-ticks.md:81` — "**Two** type parameters" is right for the
   two type *arguments* in play (`Block`, `Fluid`); every class involved
   declares exactly one.~~ **Done, session D (pass 5)**, as a correction.
@@ -1253,10 +1253,10 @@ drop the number.
   delegates unconditionally too, which `chunk-anatomy:102` says itself.~~
   **Done, session D (pass 5)** — a correction, and the two pages had also given
   incompatible *reasons* for the same false. Both now say the same thing.
-- `client/text-and-fonts.md:184` — "the one place in the pipeline where a
+- ~~`client/text-and-fonts.md:184` — "the one place in the pipeline where a
   character is invented" is true of the wrap path;
   `ComponentRenderUtils.clipText` in the same class appends
-  `CommonComponents.ELLIPSIS`. [kind=fact]
+  `CommonComponents.ELLIPSIS`. [kind=fact]~~ *Done, pass 8 session J: the sentence now calls the indent one of the places a character is invented, beside a clipped line's ellipsis and an object component's replacement character.*
 - ~~`world/points-of-interest.md:124` — "**a dozen** shapes" of read-only query
   is 13 method names / 14 methods. The hedge covers it; *thirteen* reads better.~~ *Ruled: *a dozen* is the walks, thirteen of them, and the sentence names the ones it means; `exists` and `getType` are point lookups beside them — pass 8, session D.*
 - ~~`entities/ai-goals-and-brains.md:381,390` — "everything it will ever do" /
@@ -1279,9 +1279,9 @@ drop the number.
   wait on a disk": a fourth blocking join at `ServerChunkCache.java:126`/`149`
   can end at the disk, though it drives the main-thread queue rather than
   raw-joining the IO lane.~~ *Done: *Three places besides a synchronous chunk load* — pass 8, session D.*
-- `client/the-client-level.md:129` — "the chunk cache and **one** packet [kind=voice]
+- ~~`client/the-client-level.md:129` — "the chunk cache and **one** packet [kind=voice]
   handler call `LevelExtractor` directly" is right for the dirty-marking path;
-  three `ClientPacketListener` sites touch `levelExtractor` in all.
+  three `ClientPacketListener` sites touch `levelExtractor` in all.~~ *Done, pass 8 session J: four handlers in 26.3, the transient-block handler the fourth, and the page names them.*
 - ~~`foundations/identifiers-and-registries.md:75` — "keyed **three** ways"
   names three maps; `MappedRegistry.byValue` is a fourth index.~~ **Done,
   session B** [kind=book] — not an ambiguous count but a wrong one, so it was
@@ -1395,7 +1395,7 @@ says "more than twenty ticks have passed" and
 for the same test, `Brain.java:389` (`gameTime - lastScheduleUpdate > 20L`).
 Both are true; one wording should win. **IV's share done, pass 8 session D** — `points-of-interest` and `environment-attributes-and-timelines` both say *more than twenty* ticks; the dead-constant half is V6. **VI's share done, pass 8 session F**: `ai-goals-and-brains` now says *more than twenty*.
 
-**A claim a decompile cannot settle, corpus-wide.** `javac` inlines primitive
+~~**A claim a decompile cannot settle, corpus-wide.** `javac` inlines primitive
 `static final` constants at their use sites, so **"declared and never read" is
 unverifiable of any primitive constant** — `Channel.attachBufferStream` writes
 bare `1` and `4` where the source wrote its two named constants. Session D's
@@ -1407,9 +1407,9 @@ ruling (a dead constant is kept and *said to be dead*) needs the weaker wording
 `SharedConstants.TICKS_PER_SECOND` / `SharedConstants.MILLIS_PER_TICK`, which
 `anatomy.md:266`'s *Is twenty ticks a second a constant?* answers "no, it is a
 server field" without mentioning that both are declared at
-`SharedConstants.java:149-150` and that nothing in the tree reads either.
+`SharedConstants.java:149-150` and that nothing in the tree reads either.~~ *Ruled by V6 (pass 8 session A): the book never calls a compile-time constant unread; `the-client-loop` gives the number with the name (pass 8 session J), and the other instances make no such claim.*
 
-**Hedges that came back a little short.** `client/options.md:80` "a dozen
+~~**Hedges that came back a little short.** `client/options.md:80` "a dozen
 others" is ten under the enumeration available;
 `client/the-gui-render-tree.md:179` "the layering rule is thirty lines" is 27
 or 52 depending on the grouping, and decompiled formatting is not the source's;
@@ -1431,7 +1431,7 @@ which the same page states at :388;
 `blocks/block-interaction.md:182` "three outcomes" is three distinct returned
 states and four branches;
 `blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
-is four *named* steps over five statements. [kind=voice] **IV's share overtaken, pass 8 session D** — `chunk-generation-pipeline`'s *seven of the twelve* is V2's five of ten. **V's share done, pass 8 session E**: `block-interaction`'s *three outcomes* now says *besides leaving the state as it is*, and `block-entities` now lists all five of `LevelChunk.removeBlockEntity`'s steps. **VI's share done, pass 8 session F**: `entity-lifecycle` names three distances and a fourth apart from `NaturalSpawner.MAGIC_NUMBER`; `entity-anatomy` says nine overrides, seven handing the default back. **VIII's share done, pass 8 session H**: `the-spear`'s *the only item* is one definition across seven spears; `hunger-and-experience`'s cast counts the seed among the four fields; `player-anatomy`'s *five deep* and `status-effects`' *about four* were overtaken.
+is four *named* steps over five statements. [kind=voice] **IV's share overtaken, pass 8 session D** — `chunk-generation-pipeline`'s *seven of the twelve* is V2's five of ten. **V's share done, pass 8 session E**: `block-interaction`'s *three outcomes* now says *besides leaving the state as it is*, and `block-entities` now lists all five of `LevelChunk.removeBlockEntity`'s steps. **VI's share done, pass 8 session F**: `entity-lifecycle` names three distances and a fourth apart from `NaturalSpawner.MAGIC_NUMBER`; `entity-anatomy` says nine overrides, seven handing the default back. **VIII's share done, pass 8 session H**: `the-spear`'s *the only item* is one definition across seven spears; `hunger-and-experience`'s cast counts the seed among the four fields; `player-anatomy`'s *five deep* and `status-effects`' *about four* were overtaken. **X's share done, pass 8 session J**: `options` says ten others, and `the-gui-render-tree` calls the layering rule short.~~ *Done: every part's share is settled — pass 8 session J.*
 
 **Two rules for the word *classes*, corpus-wide.** A package's class count is
 one number under two rules — `package-info.java` counted, or not — and the
@@ -1653,30 +1653,30 @@ duplicate a Reference page that has been checked row by row.
 
 ### Wording to re-read (a fact fix rewrote the sentence around it)
 
-- **`the-client-loop`'s opening paragraph.** "The server never does this. It
+- ~~**`the-client-loop`'s opening paragraph.** "The server never does this. It
   runs late; the client runs *short*" was a clean two-clause contrast and it
   was false. The replacement — the server drops ticks too, but only past the
   overload threshold and never quietly — is three clauses longer and buries
   the punchline ("and says nothing") at the end. The *fact* is now right; the
   sentence is the flabbiest thing on the shortest-feeling page in the part.
-  Worth a second look for a shorter true contrast.
-- **`input-and-keybinds`' opening paragraph.** "None of that involves the
+  Worth a second look for a shorter true contrast.~~ *Ruled, pass 8 session J: the contrast is true and one idea; a shorter one would restructure the opening (R9).*
+- ~~**`input-and-keybinds`' opening paragraph.** "None of that involves the
   tick. All of it has already happened before the tick that observes it runs"
   became a qualified version that has to concede the inventory case mid-hook.
   The concession is the more interesting fact — the drain is inside the tick —
   and pass 5 might be better off building the hook *on* it rather than
-  apologising for it.
-- **`gui-and-screens`' hook and verified line.** Both now carry "until you
+  apologising for it.~~ *Done, pass 8 session J: the hook now says only that the toggling happens outside the tick, which is true, and concedes nothing mid-hook.*
+- ~~**`gui-and-screens`' hook and verified line.** Both now carry "until you
   close it". The page's title promise (a screen the server is never told
   about) survives only for the opening, and the new last sentence — "the
   screen the server is never told about is one the server is told about
   exactly once, at the end" — is a good line that arrives after two
-  qualifications. Consider leading with the asymmetry.
-- **`what-makes-a-sound`'s third door.** The old paragraph was one mechanism
+  qualifications. Consider leading with the asymmetry.~~ *Ruled, pass 8 session J: leading with the asymmetry would restructure the opening paragraph (R9); its last sentence stands.*
+- ~~**`what-makes-a-sound`'s third door.** The old paragraph was one mechanism
   stated confidently and wrongly; the new one states the mechanism *and* its
   exception (attack sounds do round trip) in the same breath, which makes the
   "three doors" framing land more slowly. The verified line still promises
-  three doors and only one naming the sound, which is still true. [kind=voice]
+  three doors and only one naming the sound, which is still true. [kind=voice]~~ *Ruled, pass 8 session J: the paragraph states the mechanism and its exception, and a faster landing is a restructuring (R9); your own break is now told apart as a level event.*
 - ~~**`prediction-and-acks`' state-diagram labels.** Both client exits were
   relabelled and are now long enough to crowd the figure — "endPredictionsUpTo(n),
   syncBlockState writes the absorbed state, which is a no-op if it is already
@@ -1687,16 +1687,16 @@ duplicate a Reference page that has been checked row by row.
   F12(b), and the two exits say what they are: *the same call*. What differs
   between them went into the caption, which is where the sentence belonged. The
   hook is pass 8's.
-- **`the-client-level`'s two weather Q&As.** "Why does thunder arrive late?"
+- ~~**`the-client-level`'s two weather Q&As.** "Why does thunder arrive late?"
   and "Why does rain stop and start so abruptly?" were both questions whose
   premises the code denies, so both became questions with different subjects
   ("Does the client model the speed of sound?", "Who decides how hard it is
   raining?"). Neither is a question a player actually asks, which is what the
   section is for — pass 5 should either find the player-facing version or move
-  the material into the body. [kind=lecture]
-- **The landing page's opening sentence** now spends a clause and two class
+  the material into the body. [kind=lecture]~~ *Overtaken: the page has had no questions section since pass 6, and the weather is in the body — pass 8 session J.*
+- ~~**The landing page's opening sentence** now spends a clause and two class
   names on the scheduler exception before reaching "no render thread", which
-  is the sentence people will quote. Consider a footnote-shaped fix.
+  is the sentence people will quote. Consider a footnote-shaped fix.~~ *Overtaken: the opening names no class now — pass 8 session J.*
 
 ### Structural findings (logged, not acted on)
 
@@ -3040,7 +3040,7 @@ was cut or moved, and why)*
   codec*, which is precise but is the sort of phrase a viewer hears as a
   singular file rather than a composed dispatcher. **VIII's share ruled, pass 8 session H**: the second person is V14's (A1 stands). **IX's share ruled, pass 8 session I**: *message*, *chain* and *connection* stay the three outcomes' names, since they name what a refusal kills and the `ChatAbilities` path refuses nothing; *the phase's one codec* is on neither page now.~~ *Ruled, pass 8 session I: every share is settled (VIII's by session H, IX's above).*
 
-- **2026-09-03, session K, Part X's cuts and its wording debt.** [kind=record]
+- ~~**2026-09-03, session K, Part X's cuts and its wording debt.** [kind=record]
   **Cuts, all of them moves rather than losses.** `hud`'s twenty-eight-row
   element gate table, which pass 2 had compressed to a paragraph of prose,
   is now `src/reference/hud-elements.md` and the page links to it — the page
@@ -3054,8 +3054,8 @@ was cut or moved, and why)*
   still named in *Where to look*. Nothing factual was dropped except one
   stale framing sentence in `sound`, which called the sound system "the first
   system after Anatomy"; the lecture order it referred to no longer exists.
-  **Wording debt.**
-  - **The formula sweep is now overdue and Part X is where it is worst.**
+  **Wording debt.**~~ *Record: session K's cuts, logged — pass 8 session J.*
+  - ~~**The formula sweep is now overdue and Part X is where it is worst.**
     Session H recorded that three Part X pages opened with "The headline for
     a 1.21-era reader" and four with "The one sentence a player would
     recognise"; session I found Part XI eight for eight. This session
@@ -3069,7 +3069,7 @@ was cut or moved, and why)*
     for sessions L and M — removing a formula leaves a *count* of the thing it
     became, and the count is the next thing to rot: the landing page said ten
     of these twelve pages carry a 1.21 box and nine do, which is a correction
-    in [pass9.md](pass9.md). [kind=lecture]
+    in [pass9.md](pass9.md). [kind=lecture]~~ *Overtaken: the sweep was pass 5's, and the count it warned about is corrected this session (eight of twelve) — pass 8 session J.*
   - ~~**The *questions players ask* device is now doing a lot of work.** Six of
     the twelve pages use it, because it is the honest home for what used to
     be a bullet wall of invariants. That is one page in two, which is the
@@ -3084,7 +3084,7 @@ was cut or moved, and why)*
     All three of the *reader asks* pages failed the test, because a heading that
     admits it is answering a reader rather than a player is admitting that its
     answers are the page's own mechanism.
-  - **Second person again.** `input-and-keybinds`, `hud`, [kind=voice]
+  - ~~**Second person again.** `input-and-keybinds`, `hud`, [kind=voice]
     `what-makes-a-sound` and `the-gui-render-tree` all open in the second
     person (*hold the key*, *press F1*, *you break a block*, *a chest full of
     the same item*). Sessions I and J both flagged the drift; it is now four
@@ -3093,7 +3093,7 @@ was cut or moved, and why)*
     since been rewritten for other reasons, and the part now opens one page of
     twelve in the second person (`prediction-and-acks`), which A1 allows
     without comment. Retagged `voice`, because what is left of this is the
-    register question and that is pass 8's.
+    register question and that is pass 8's.~~ *Ruled by V14 (pass 8 session A): A1 stands, and Part X opens one page in twelve on the second person — pass 8 session J.*
   - ~~**`the-gui-render-tree`'s title is still the weakest in the part**
     (session H's note, unresolved). It is really *how the UI is recorded and
     drawn*, and the tree is the mechanism rather than the subject. Not
@@ -3109,10 +3109,10 @@ was cut or moved, and why)*
     would leave eight sentences pointing at a title that no longer matches
     the words around the link. A title that is not misleading is not worth a
     redirect and five files.
-  - **"Record" and "extract" are used interchangeably across four pages** —
+  - ~~**"Record" and "extract" are used interchangeably across four pages** —
     `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud` —
     because the methods are all named *extract* and the concept reads better
-    as *record*. The glossary has *extract*. One of the two should win. [kind=voice]
+    as *record*. The glossary has *extract*. One of the two should win. [kind=voice]~~ *Ruled by V7 (pass 8 session A): *extract* is the stage's name, Mojang's word, and *record* the plain verb, which is how Part X's four pages use them — pass 8 session J.*
 
 ## Session N — Part XIII Commands and data packs *(2026-09-03)*
 
@@ -3296,7 +3296,7 @@ pass 5: at most half the pages in a part end on it**, and on the others
 the same question-and-answer material either dissolves into the section
 where the answer happens (session G's precedent — *Three things about the
 id*, *Why mobs look stupid*) or takes a heading that says what the section
-says. **IX checked, pass 8 session I**: two of the five pages end on one (`the-connection`, `chat-and-signing`).
+says. **IX checked, pass 8 session I**: two of the five pages end on one (`the-connection`, `chat-and-signing`). **X checked, pass 8 session J**: five of the twelve end on one (`prediction-and-acks`, `input-and-keybinds`, `options`, `hud`, `sound-engine`).
 
 **Seven pairs of pages share a skeleton**, which the charter says means
 neither is done. Within one part: `server-tick` / `server-level-tick`
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's.
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4039,8 +4039,8 @@ that takes it. Everything session F did act on is struck above or logged in
   *there is not a future, an executor or a thread anywhere in…* verbatim. The
   two are a declared pair, so the repetition may be deliberate; it reads as an
   accident.~~ *Ruled: each page states the discipline for its own machinery, and the repetition marks the pair — pass 8, session F.*
-- `client/the-client-level`:195 calls the interpolation window "three-tick"
-  where `movement-and-collision`:379 says "three steps". One number, two names. [kind=voice] **VI's share done, pass 8 session F**: `movement-and-collision` now says a living entity's step count is its update interval, three by default; `client/the-client-level`'s *three-tick window* is session J's.
+- ~~`client/the-client-level`:195 calls the interpolation window "three-tick"
+  where `movement-and-collision`:379 says "three steps". One number, two names. [kind=voice] **VI's share done, pass 8 session F**: `movement-and-collision` now says a living entity's step count is its update interval, three by default; `client/the-client-level`'s *three-tick window* is session J's.~~ *Done, pass 8 session J: `the-client-level` gives the window as the type's update interval, three by default and two for a player.*
 - ~~`entity-anatomy` uses *frozen* for three unrelated things on one page: the [kind=voice]
   registry freeze, an `EntityType`'s frozen dimensions, and
   `Entity.DATA_TICKS_FROZEN`.~~ *Ruled: the type and its dimensions are frozen in one sense, and `Entity.DATA_TICKS_FROZEN` is a name, not the word — pass 8, session F.*
@@ -4160,7 +4160,7 @@ that takes it. Everything session E did act on is struck above or logged in
   names. It is the page's only genuine internal duplicate.~~ **Cut, pass 6
   session E** — the body says it inside the trace, which is the better place.
   Logged below. [kind=lecture]
-- The *constant nobody reads* device appears several times in Part V [kind=lecture]
+- ~~The *constant nobody reads* device appears several times in Part V [kind=lecture]
   (`PistonStructureResolver.MAX_PUSH_DEPTH`, `PistonMovingBlockEntity.TICKS_TO_EXTEND`,
   `HopperBlockEntity.MOVE_ITEM_SPEED`, plus the torch's three) and the page that
   explains why a decompile cannot tell is `client/the-client-loop`. None of the
@@ -4168,7 +4168,7 @@ that takes it. Everything session E did act on is struck above or logged in
   survived the session, none was cut, and adding the same citation six times in
   one part is a worse page than leaving the phrase alone. It is a wording
   decision about how the corpus says *nothing reads this*, so it is pass 8's —
-  retag it there rather than acting on it in a part session.
+  retag it there rather than acting on it in a part session.~~ *Overtaken by V6 (pass 8 session A): the device is reversed, Part V's sentences corrected by session E and `the-client-loop`'s by pass 8 session J.*
 
 **For pass 7, the figures.**
 
@@ -4309,7 +4309,7 @@ corrections it made are in [pass9.md](pass9.md).*
   unlinked in both directions on three shared mechanisms**: the null `MenuType`
   (its hook), `AbstractContainerScreen`'s click resolution, and
   `CreativeModeInventoryScreen`. The glossary's **Menu** entry (`glossary`:391)
-  describes only the server's object, where the page insists there are two. **VII's share ruled, pass 8 session G**: the missing links are `client/gui-and-screens`' to add (J), and the glossary's *Menu* entry is O's.
+  describes only the server's object, where the page insists there are two. **VII's share ruled, pass 8 session G**: the missing links are `client/gui-and-screens`' to add (J), and the glossary's *Menu* entry is O's. **X's share done, pass 8 session J**: `gui-and-screens` links the null `MenuType` and the creative screen to `containers-and-menus`, which it already linked for the click; the glossary's *Menu* is session O's.
 - ~~**Session M (XIII) — `brigadier-and-commands`:255 routes `LootCommand` and~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M, as the entry's own last line says.
   `ItemCommands` to `loot-tables`, which names neither**; both are on
   ~~`contexts-and-predicates`:233-234. The row's `/item modify` claim is~~ **Struck by the pass-6 planning session (2026-09-07):** settled with the entry above.
@@ -4824,35 +4824,35 @@ it made are in [pass9.md](pass9.md).*
   `FontSet.Source.getGlyph` through the `GlyphSource` interface, which is the
   distinction the page's own 1.21 box draws. The arrow is true as an
   *object* interaction and misleading as a call. Session J left it.~~ — **ruled, pass 7 session O**: the arrow stays. `FontSet.getGlyph` is the method the figure's lane owns, and the page's 1.21 box already says why it is not the API; the figure draws objects, and the private route is the prose's.
-- **The Part X landing figure's seven spokes against twelve pages** is now
+- ~~**The Part X landing figure's seven spokes against twelve pages** is now
   contradicted by nothing in the prose (the verified line no longer counts),
   but the figure still collapses four GUI pages into one node and two sound
   pages into another. Pass 7 should judge whether that is the right picture
-  now that the GUI node is the part's only pipeline.
+  now that the GUI node is the part's only pipeline.~~ *Ruled by pass 7 session J, which redrew the figure left to right and numbered to the watch order — pass 8 session J.*
 
 ### For pass 8 (the voice)
 
-- **"The hop" means two things in Part X.** `reference/threads`:120 fixes it
+- ~~**"The hop" means two things in Part X.** `reference/threads`:120 fixes it
   as `ensureRunningOnSameThread` — a packet reaching the game thread — and
   `sound-engine`'s verified line and hook use it for the post *out* to the
   sound thread. Both senses appear within fifteen lines of each other on that
-  page. One of the two needs a different word, corpus-wide.
-- **"Record" and "extract" are still interchangeable** across [kind=voice]
+  page. One of the two needs a different word, corpus-wide.~~ *Ruled by V7 (pass 8 session A): *the hop* unqualified is the packet's; `sound-engine`'s opening and the landing page now say the hop to the sound thread, and the verified line stays (V16) — pass 8 session J.*
+- ~~**"Record" and "extract" are still interchangeable** across [kind=voice]
   `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud`
   (session I's note, now four pages confirmed). Session J added prose to
   three of the four and used *record* throughout, which is a vote, not a
-  ruling.
-- **Second person, again, and now five pages.** `input-and-keybinds`, `hud`, [kind=voice]
+  ruling.~~ *Ruled with pass5.md:3112 — pass 8 session J.*
+- ~~**Second person, again, and now five pages.** `input-and-keybinds`, `hud`, [kind=voice]
   `what-makes-a-sound`, `the-gui-render-tree` and `gui-and-screens` all open
   in it. Sessions I, J and K have each flagged the drift; it is corpus-wide
   and pass 8's, not a part session's. **Overtaken for Part X, pass 6 session
   J**: one page of the twelve opens in the second person now
   (`prediction-and-acks`), which A1 allows without comment. Retagged `voice`,
   with the entry above — what is left of this is the register question, and
-  that is pass 8's.
-- **`hud`'s "the most-loved fifty-seven lines in the client"** is a line
+  that is pass 8's.~~ *Ruled by V14 (pass 8 session A), with pass5.md:3087 — pass 8 session J.*
+- ~~**`hud`'s "the most-loved fifty-seven lines in the client"** is a line
   count of a method, which will rot at the next release. Session J left it;
-  the sentence works without the number.
+  the sentence works without the number.~~ *Done, pass 8 session J: the sentence has no number now (V10).*
 
 ## Session K — Part XI, rendering (pass 5) *(2026-09-06)*
 
@@ -6013,30 +6013,30 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 ## Part X · The client — raised by pass 6, session J (2026-09-14)
 
-**Logged cuts** (nothing dropped except by moving it or logging it). [kind=record]
+~~**Logged cuts** (nothing dropped except by moving it or logging it). [kind=record]~~ *Record: a lead-in; its units are settled — pass 8 session J.*
 
-- `the-client-level`'s field roll-call in *What else it holds*: six fields [kind=record]
+- ~~`the-client-level`'s field roll-call in *What else it holds*: six fields [kind=record]
   walked one by one. Three are now one sentence naming what each *is* the whole
   of (`globallyRenderedBlockEntities`, `blockStatePredictionHandler`,
   `explosionTracker`); the `TransientEntitySectionManager` sentences went
   because the comparison table's last row already says them, which the page
   itself pointed out; the tint caches were promoted to a subsection of their
-  own instead.
-- `the-client-loop`'s *Where work leaves this thread* bullet for the two [kind=record]
+  own instead.~~ *Record, pass 8 session J.*
+- ~~`the-client-loop`'s *Where work leaves this thread* bullet for the two [kind=record]
   timers kept its content but lost its framing as one of "four queues"; nothing
-  was dropped.
-- `input-and-keybinds`' two orphan paragraphs at the foot of the closer [kind=record]
+  was dropped.~~ *Record, pass 8 session J.*
+- ~~`input-and-keybinds`' two orphan paragraphs at the foot of the closer [kind=record]
   (the two packet-sending presses, and `ScrollWheelHandler` / `InputType`) were
   moved into a section of their own rather than cut — they were good facts filed
-  under a heading the reader had already decided to skip.
-- `hud`'s boss-bar closer answer was moved into *The hidden flag travels two [kind=record]
+  under a heading the reader had already decided to skip.~~ *Record, pass 8 session J.*
+- ~~`hud`'s boss-bar closer answer was moved into *The hidden flag travels two [kind=record]
   ways*, where its evidence already was; nothing of it was dropped, and the
-  three-questions half is no longer told twice.
-- `prediction-and-acks`' first and fourth closer answers were the only [kind=record]
+  three-questions half is no longer told twice.~~ *Record, pass 8 session J.*
+- ~~`prediction-and-acks`' first and fourth closer answers were the only [kind=record]
   material this session cut rather than moved: both were second tellings of the
   opening paragraph and of *The four writes*, and everything in them that was
   not a repeat (the zero sequence, the no-timeout rule,
-  `lastTeleportSequence`, the two flag sets) is now in a section of its own.
+  `lastTeleportSequence`, the two flag sets) is now in a section of its own.~~ *Record, pass 8 session J.*
 
 **For pass 7, the figures.**
 
@@ -6078,33 +6078,33 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   that a message name a method *of the lane it is sent to*, inheritance included,
   and the lane is the object the caller holds. The arrow stays; the page's own
   1.21 box already draws the distinction the label cannot.
-- The Part X landing figure's seven spokes are now *explained* in the prose [kind=figure]
+- ~~The Part X landing figure's seven spokes are now *explained* in the prose [kind=figure]
   (the GUI four and the sound two answer together), which settles session K's
   entry about the count. What is left for pass 7 is whether collapsing them is
-  the right picture.
+  the right picture.~~ *Ruled with pass5.md:4827 — pass 8 session J.*
 
 **For pass 8, the voice.**
 
-- *Render thread*, *the game thread*, *the client thread* and *the main [kind=voice]
+- ~~*Render thread*, *the game thread*, *the client thread* and *the main [kind=voice]
   thread* are used for one thread across this part, and every reader who read a
   cast table said so. `the-client-loop` now states the identity once; the
   terminology sweep should decide whether the other three spellings survive
-  anywhere.
-- The **thread column** in a cast table is one repeated value on eight of [kind=voice]
+  anywhere.~~ *Done, pass 8 session J: Part X's prose says *Render thread* (V7), `the-client-loop` stating the identity once; *the client thread* survives only inside a quoted wrong description.*
+- ~~The **thread column** in a cast table is one repeated value on eight of [kind=voice]
   these twelve pages, and every reader reported skipping it after the second
   row. On `sound-engine` it is the opposite problem: four different *kinds* of
-  answer in one column. Both are the same question — what is that column for.
-- `hud`'s *"the most-loved fifty-seven lines in the client"* (session K's [kind=voice]
+  answer in one column. Both are the same question — what is that column for.~~ *Ruled, pass 8 session J: the column stays, its values the key's thread names (V7), and `sound-engine`'s rows now say where each class's calls run.*
+- ~~`hud`'s *"the most-loved fifty-seven lines in the client"* (session K's [kind=voice]
   entry, still open) is joined by `the-client-loop`'s *"under a hundred lines"*
   of `BlockStatePredictionHandler` on `prediction-and-acks` — two line counts of
-  a class or a method that will rot at the next release.
-- The citation possessive — *is [x](y)'* with the noun elided — was read as a [kind=voice]
+  a class or a method that will rot at the next release.~~ *Done, pass 8 session J: both line counts are gone (V10).*
+- ~~The citation possessive — *is [x](y)'* with the noun elided — was read as a [kind=voice]
   typo by four of the thirteen readers, independently, on four different pages.
-  It is the book's house form and it is not landing.
-- `debugging-the-running-game` names no JVM property, so the page's own [kind=voice]
+  It is the book's house form and it is not landing.~~ *Ruled by V8 (pass 8 session A); Part X hangs no possessive on a link now — pass 8 session J.*
+- ~~`debugging-the-running-game` names no JVM property, so the page's own [kind=voice]
   scenario cannot be performed by a reader who wants to. It now names the
   constants; whether the book says property *names* anywhere is a convention
-  question.
+  question.~~ *Ruled, pass 8 session J: the page names the `SharedConstants` flags a reader can grep, and the property names are theirs.*
 
 **Notes.**
 
@@ -6112,11 +6112,11 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   is used unglossed on `options`, `hud`, `gui-and-screens` and
   `the-gui-render-tree`, and its owner is `the-frame` in Part XI. It is the
   clearest case in the part of a term the book allows and no page in the part
-  introduces. For session O, against the glossary.
-- `client/README`'s *before you start* opens on Part IX *"and not [kind=record]
+  introduces. For session O, against the glossary. **X's share, pass 8 session J**: nothing on Part X's pages; the glossary's *extract* is session O's.
+- ~~`client/README`'s *before you start* opens on Part IX *"and not [kind=record]
   optionally"* and the reader skipped the three per-page prerequisites as
   something to read later. That is probably right and probably fine; noting it
-  because the same shape is on every landing page.
+  because the same shape is on every landing page.~~ *Record, pass 8 session J.*
 
 ## Session K — Part XI, rendering (pass 6) *(2026-09-14)*
 
@@ -6358,7 +6358,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   of Part XII's four within-part twin pairs are artefacts of this session's own
   dissolutions. Two of the four rulings now change what `pass6_shape.py`
   reports; the audit should say so once rather than thirteen times. [kind=record]
-- **A cut on this part's page moved another part's coverage number.**
+- ~~**A cut on this part's page moved another part's coverage number.**
   `creating-a-world` is a Part XII page, but the classes its trimmed *rest of
   the family* section named — `OptimizeWorldScreen` and
   `FileFixerProgressScreen` — live in `client/gui/screens/worldselection`,
@@ -6368,7 +6368,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   The include is what made that safe — a hand-counted number would simply have
   gone stale — but it is the first time a session's cut has moved a part it did
   not open, and session O should know it can happen in both directions before it
-  reads the thirteen landing pages.
+  reads the thirteen landing pages.~~ *Record: a note for session O; the phrase is generated and reads 27% on 2026-09-28 — pass 8 session J.*
 - **The landing page came out shorter, which is the first time in four
   sessions.** 179 lines outside the watch order to 166, with A6's move, the
   coverage include and two real trims. Sessions I, J and K each reported A6
@@ -6965,28 +6965,28 @@ Part 3; these are the pieces of work that ruling created.
 
 ## Pass 7, session J (Part X · the client) — opened
 
-**For pass 8.** [kind=voice]
+~~**For pass 8.** [kind=voice]~~ *Record: a lead-in; its units are settled — pass 8 session J.*
 
-- **Three captions written this session lean on a demonstrative the sentence
+- ~~**Three captions written this session lean on a demonstrative the sentence
   before them does not set up** — `the-client-level`'s *the band is the whole
   span*, `hud`'s *the band below*, `sound-engine`'s *the right-hand box*. They
   read correctly beside the picture and badly in `llms-full.txt`, where the
   picture is a mermaid block a reader may not render. Worth one rule: a caption
-  names the thing it points at before it points at it. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*
-- **`the-gui-render-tree`'s two figures now both say "the tree"** where the
+  names the thing it points at before it points at it. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*~~ *Done, pass 8 session J: `hud`'s caption now points past its note and `sound-engine`'s names the sound thread's box; `the-client-level`'s band is named as the one `Minecraft.runTick` in the same sentence.*
+- ~~**`the-gui-render-tree`'s two figures now both say "the tree"** where the
   first means the strata-and-nodes structure and the second means the whole
   `GuiRenderState`. The page's prose uses *the tree* for both too. One of the
-  two wants a different word. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*
-- **`what-makes-a-sound`'s doors read 1, 3, 2 left to right** in the redrawn
+  two wants a different word. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*~~ *Ruled, pass 8 session J: on this page *the tree* is `GuiRenderState` throughout, and the first caption names it.*
+- ~~**`what-makes-a-sound`'s doors read 1, 3, 2 left to right** in the redrawn
   figure, because door 3 had to sit beside door 1 for the convergence at
   `ClientLevel.playSeededSound` to be drawable without an edge crossing door 2.
   The numbers carry it, but a reader scanning left to right meets them out of
   order. If pass 8 finds a wording that makes the convergence the *subject*,
-  the numbering could follow the geometry instead. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*
+  the numbering could follow the geometry instead. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*~~ *Ruled, pass 8 session J: the numbers carry the order, and this session's redraw (your own break split from your own place) keeps door 3 beside door 1 for the convergence.*
 
-**For pass 10.** [kind=book]
+~~**For pass 10.** [kind=book]~~ *Record: a lead-in; its units are settled — pass 8 session J.*
 
-- **Part X's sections that wanted a figure and did not get one**, in the order
+- ~~**Part X's sections that wanted a figure and did not get one**, in the order
   the viewers asked: `the-client-loop`'s *Where work leaves this thread, and
   where it comes back* — "five ways off this thread, and one re-entry that is
   not a way off it", a boundary diagram read as a bullet list, on the part
@@ -7000,22 +7000,22 @@ Part 3; these are the pieces of work that ruling created.
   and a number in a sentence does not; `the-gui-render-tree`'s *When the atlas
   costs something*, five outcomes of one question written as prose;
   `prediction-and-acks`' *The four writes*, a fan-out on one side and a flat
-  list on the other, which the page itself calls "the whole mechanism".
-- **`Gui.handleKeybinds` and `Minecraft.handleKeybinds` both exist**, and
+  list on the other, which the page itself calls "the whole mechanism".~~ *Second edition, pass 8 session J: a new figure is new material (R10).*
+- ~~**`Gui.handleKeybinds` and `Minecraft.handleKeybinds` both exist**, and
   `gui-and-screens` names the first in its prose and draws the second in its
   figure. Both are correct — `Minecraft.handleKeybinds` calls
   `Gui.handleKeybinds` — but the page never says there are two, so a reader who
   compares the two halves of the page finds a contradiction that is not one.
   One clause fixes it; it is a *book* job because the same pair is cited from
-  `input-and-keybinds` and `hud`. [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
-- **`input-and-keybinds` promises five chances to swallow a key press and its
+  `input-and-keybinds` and `hud`. [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Done, pass 8 session J: `gui-and-screens` says `Gui.handleKeybinds` is the share of the drain `Minecraft.handleKeybinds` hands it.*
+- ~~**`input-and-keybinds` promises five chances to swallow a key press and its
   figure now shows four**, because the fifth is not in the callback at all: it
   is the no-screen-no-overlay test on *draining* the clicks, inside
   `Minecraft.handleKeybinds`, a tick later. This session put that in the
   caption rather than adding a lane. Whether the page's own sentence should
-  say which gate lives where is a prose decision above a figure's pay grade. [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  say which gate lives where is a prose decision above a figure's pay grade. [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Done, pass 8 session J: the caption places the fifth gate in `Minecraft.tick`, the prose says a held mapping never meets it, and *Where to look* says four of the five are `KeyboardHandler.keyPress`.*
 
-**From pass 7, session L — Part XII.** [kind=book]
+~~**From pass 7, session L — Part XII.** [kind=book]~~ *Record: a lead-in; Part XII's units under it route there by their pages — pass 8 session J.*
 
 - **Part XII's sections that wanted a figure and did not get one**, as the
   viewers asked: `terrain`'s *Carving, and who chooses the block* — a four-way
@@ -7044,9 +7044,9 @@ Part 3; these are the pieces of work that ruling created.
 - The sequence-diagram self-messages across Part XII still begin with bare
   verbs (*reseed*, *pick*, *measure*, *out if*) — the gate notes them under
   F12(d) and they read well, but pass 8 should settle one register for a
-  self-message's first word. [kind=voice]
+  self-message's first word. [kind=voice] **Routed to Part XII (session M), pass 8 session J**: the router files this block under Part X because the Part XII lead-in above it is a bold paragraph, not a heading.
 
-**From pass 7, session M — Part XIII.** [kind=book]
+~~**From pass 7, session M — Part XIII.** [kind=book]~~ *Record: a lead-in; Part XIII's units under it route there by their pages — pass 8 session J.*
 
 - **Part XIII's sections that wanted a figure and did not get one**, as the
   viewers asked: `functions-and-macros`' *What calls a function, and when* —
@@ -7076,7 +7076,7 @@ Part 3; these are the pieces of work that ruling created.
   should settle whether a caption's *how to read it* clause has one form
   across the book. [kind=voice]
 
-**For session O, from pass 7 session M.** [kind=figure]
+~~**For session O, from pass 7 session M.** [kind=figure]~~ *Record: a lead-in; its unit was settled by pass 7 session O — pass 8 session J.*
 
 - ~~**The brief's F18 regex is blind to a break one or two letters after a
   dot.** `[A-Za-z]{3,}-` misses `SimpleCriterionTrigger.tr-` and
@@ -7092,7 +7092,7 @@ Part 3; these are the pieces of work that ruling created.
   to V closed before session J wrote the regex, so theirs are not a lapse,
   but they are live. [kind=figure]~~ — **done, pass 7 session O**: the re-measure used the wider reading, now `tools/pass7/broken_names.py` with a probe (a break one or two letters after a dot or an open parenthesis counts); 20 found, 20 fixed, zero left.
 
-**For session O, from pass 7 session N.** [kind=figure]
+~~**For session O, from pass 7 session N.** [kind=figure]~~ *Record: a lead-in; its units were settled by pass 7 session O — pass 8 session J.*
 
 - ~~**The parts-dependency figure is generated now, and session O reads it with
   the thirteen landing figures.** `check_deps.py --write-figure` draws it from

@@ -12,7 +12,7 @@ half follows anyway, down the *shape* channel, which is the half of the
 update machinery the client also runs. That is why a door feels instant on a
 laggy server and a redstone lamp does not.
 
-> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — once the client has finished loading in, it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
+> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — once the server considers the client loaded, it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
 
 ## The cast
 
@@ -323,7 +323,7 @@ players have two of them — one for blocks and a shorter one for entities
 | the hit location lying within one block of the clicked block's centre on every axis — a 2×2×2 box, not the block | nothing, plus a server-side log line naming the player |
 | above `LevelHeightAccessor.getMaxY` or below `LevelHeightAccessor.getMinY` | `ServerPlayer.sendBuildLimitMessage` — an action-bar line, and **no block update** |
 | `MinecraftServer.isUnderSpawnProtection` | `ServerPlayer.sendSpawnProtectionMessage`, plus both block updates |
-| a pending teleport, or `ServerLevel.mayInteract` refusing for the world border | `ServerPlayer.sendBuildLimitMessage` — you are told you are building too high, whatever the real reason |
+| a pending teleport, or `ServerLevel.mayInteract` refusing for the world border | `ServerPlayer.sendBuildLimitMessage` — you are told you are building too high, whatever the real reason — plus both block updates |
 | everything passed | `ServerPlayerGameMode.useItemOn` runs, plus both block updates |
 
 The two block updates are a `ClientboundBlockUpdatePacket` for the clicked

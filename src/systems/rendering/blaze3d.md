@@ -147,8 +147,7 @@ direction and thicker in the other: `BackendCreationException`, in
 fail to be created and **eight of the eleven are Vulkan's**, so the neutral
 façade layer knows rather a lot about one of the two APIs it is meant not to.
 Graphics is not all of it either, and neither is the render thread:
-`com/mojang/blaze3d/audio` is the OpenAL wrapper and runs on
-the sound engine's own thread — see [the sound
+`com/mojang/blaze3d/audio` is the OpenAL wrapper, whose per-source calls run on the sound engine's own thread — see [the sound
 engine](../client/sound-engine.md).
 
 ## Vulkan is not a stub
@@ -279,8 +278,7 @@ Which target a draw lands on is never in doubt: it is the one its
 `RenderPass` was opened on, and `PreparedRenderType.drawFromBuffer` draws into
 the pass its caller hands it. The GUI's item atlas and its picture-in-picture
 renderers open that pass on a texture of their own and hand it to
-`FeatureRenderDispatcher.renderAllFeatures`, which is how [a spinning entity
-in an inventory screen](../client/the-gui-render-tree.md) is drawn by the
+`FeatureRenderDispatcher.renderAllFeatures`, which is how [an entity that turns to follow the mouse in an inventory screen](../client/the-gui-render-tree.md) is drawn by the
 world's machinery into a texture instead of onto the screen.
 
 ## Shaders, and the reflection that checks them

@@ -45,8 +45,8 @@ decides, and once on the way in, where the server checks.
   matters here: the movement keys are **polled** with `KeyMapping.isDown`
   and never drained with `KeyMapping.consumeClick`, so a key held for ten
   ticks reads down ten times. What a mapping is, how a press reaches one,
-  what a toggle does to it and why a sneak *toggle* survives opening the
-  inventory when a held sneak does not all belong to [input and
+  what a toggle does to it and why a sneak *toggle* comes back when the
+  inventory closes, and a held sneak only if its key is still down (and not on macOS) all belong to [input and
   keybinds](../client/input-and-keybinds.md#two-ways-gameplay-reads-a-mapping-and-they-behave-differently).
 - **`Options`** — the movement bindings: `Options.keyUp`,
   `Options.keyDown`, `Options.keyLeft`, `Options.keyRight`,
@@ -132,8 +132,7 @@ bumps `KeyMapping.clickCount`, and does even that only when no screen is
 open; everything else the method does — the screen's own key handling, the
 debug keys, the pause — reaches a `KeyMapping` only to clear one or to hold
 the debug modifier down. A release is recorded screen or no screen, unless an
-open screen consumes it, and a consumed release is how a mapping is left stuck
-down; repairing that belongs to [input and
+open screen consumes it, and a consumed release would leave a mapping stuck down were it not already released when the screen opened, which belongs to [input and
 keybinds](../client/input-and-keybinds.md#two-ways-gameplay-reads-a-mapping-and-they-behave-differently),
 along with when the callback runs. The *read* happens once per game
 tick, deep inside `LocalPlayer.aiStep`, which calls
@@ -383,9 +382,7 @@ same teleport on purpose. The client replies
 with `ServerboundAcceptTeleportationPacket`, which carries the position it
 snapped to and which the server runs through the same checks as a move, then calls
 `BlockStatePredictionHandler.onTeleport`, which does *not* drop its
-outstanding block predictions: it records the sequence the teleport arrived
-at, so that when those predictions are settled later the ledger skips the
-position snap that would otherwise shove you back ([prediction and
+outstanding block predictions: it records the sequence the teleport arrived at, so that a receipt at or below that number settles those predictions without the position snap that would otherwise shove you back ([prediction and
 acknowledgement](../client/prediction-and-acks.md#the-four-writes)). On the
 receiving end `ClientPacketListener.handleMovePlayer` applies the position
 only when the player is not a passenger, and never interpolates: it passes

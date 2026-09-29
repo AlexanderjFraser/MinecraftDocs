@@ -3,8 +3,7 @@
 > Verified against **Minecraft 26.3** · Part X · you break a block and you hear it: three doors a sound can come through, and only one of them says what the sound is.
 
 Watch someone place a block and the server sends `ClientboundSoundPacket`,
-naming the sound. Watch them break the same block and it sends nothing of the
-kind: `Block.spawnDestroyParticles` fires a **level event**, and
+naming the sound. Watch them break the same block and it sends nothing of the kind: `Block.playerWillDestroy` fires a **level event** through `Block.spawnDestroyByEntityParticles`, and
 `ClientboundLevelEventPacket` carries an int and a block-state id. The client
 decides for itself what that int means — for a break,
 `SoundType.getBreakSound` off the block's own `SoundType`, the five-sound
@@ -35,24 +34,23 @@ flowchart TD
     NAMED["door 1 — Level.playSound names a SoundEvent"]
     NOWIRE["door 3 — nothing crosses the wire"]
     EVENT["door 2 — Level.levelEvent sends an int and a block-state id"]
-    P1["ClientboundSoundPacket, ClientboundSoundEntityPacket, or one inside ClientboundExplodePacket"]
+    P1["ClientboundSoundPacket or ClientboundSoundEntityPacket"]
     P2["ClientboundLevelEventPacket"]
     LEH["LevelEventHandler reads the int against this client's block data"]
     LOCAL["ClientLevel.playSeededSound — the excluded entity is you, so the test passes"]
-    MINE["your own place and break, through the shared Level.playSound"]
+    MINE["your own place, through the shared Level.playSound"]
+    MINEB["your own break, a level event run locally"]
     AMB["BiomeAmbientSoundsHandler, MusicManager, the underwater and bubble-column handlers"]
     SM["SoundManager.play"]
     SERVER --> NAMED --> P1 --> LOCAL
     NOWIRE --> MINE --> LOCAL
+    NOWIRE --> AMB --> SM
+    NOWIRE --> MINEB --> LEH
     LOCAL --> SM
     SERVER --> EVENT --> P2 --> LEH --> SM
-    NOWIRE --> AMB --> SM
 ```
 
-*Doors one and three meet, which is the point of the picture: a packet and your
-own hand both arrive at `ClientLevel.playSeededSound`, and the only reason both
-get through its one test is that the excluded entity is you in both cases. Door
-two is the one that never names a sound on the wire at all.*
+*Doors one and three meet, which is the point of the picture: a packet and your own placing hand both arrive at `ClientLevel.playSeededSound`, and both pass its one test because the excluded entity is you. Your own break runs door two's handler locally instead, and door two never names a sound on the wire at all.*
 
 The three columns are how to reason about the wire, and the third is the one
 the usual summary leaves out entirely.
@@ -61,7 +59,7 @@ the usual summary leaves out entirely.
 |---|---|---|---|
 | what crosses | a `SoundEvent` holder, a position in eighths of a block, a seed | an int and a block-state id | nothing |
 | who chooses the sound | the server | **this client**, from its own resource pack and block data | this client |
-| can it name a sound in no registry | **yes** — `SoundEvent.STREAM_CODEC` sends either a registry id or an id plus a range | no | no |
+| can it name a sound in no registry | **yes** — `SoundEvent.STREAM_CODEC` sends either a registry id or an id plus a range | only a jukebox song's, whose entry may carry one inline | yes, when the data behind it carries one inline: the synced ambience and music attributes, a goat horn's instrument, an item's consume sound |
 | examples | a block placed, `/playsound`, a mob's voice | a block broken, a dispenser, fire extinguished, a ghast warning, the wither spawn, the dragon's death | your own place and break; biome loops, cave mood, music, underwater, bubble columns |
 
 That third row is a genuine hole in the usual summary. Data packs cannot
@@ -84,8 +82,8 @@ other packets and tells everyone else about the sound.
 | `SoundEvent` | a name and an optional fixed range — never a file | both sides |
 | `SoundEvents` | the static registry of every event the game defines | both sides |
 | `SoundSource` | which volume slider applies | both sides |
-| `SoundEventRegistration` | what one `sounds.json` entry says, and whether it replaces or appends | Render thread |
-| `WeighedSoundEvents` | the weighted list a name resolves to, and the redirects in it | Render thread |
+| `SoundEventRegistration` | what one `sounds.json` entry says, and whether it replaces or appends | worker pool |
+| `WeighedSoundEvents` | the weighted list a name resolves to, and the redirects in it | worker pool, then Render thread |
 | `LevelEventHandler` | what an int from `ClientboundLevelEventPacket` means | Render thread |
 | `BiomeAmbientSoundsHandler` | the loop, the random additions and the cave mood | Render thread |
 | `MusicManager` | which track, how often, and the fade that is not the slider | Render thread |
@@ -93,8 +91,7 @@ other packets and tells everyone else about the sound.
 ## What a sound *is*, as data
 
 `SoundEvent` — in `net/minecraft/sounds`, and therefore shared — is a record
-of an `Identifier` and an optional fixed range. `SoundEvents` is the
-2,000-line static registry of every one the game defines. **It is a name, not
+of an `Identifier` and an optional fixed range. `SoundEvents` is the static registry of every one the game defines. **It is a name, not
 a file.**
 
 The file comes from `sounds.json`, one per namespace in every resource pack,
@@ -106,9 +103,7 @@ and whether to *stream* rather than load whole. `SoundManager` owns the
 loaded form, a map of `Identifier` to `WeighedSoundEvents`, rebuilt on every
 resource reload.
 
-Packs merge rather than replace, unless told otherwise — the one place the
-[resource system](../foundations/resource-system.md#discover-the-repository-and-its-packs)'s
-ordinary top-pack-wins rule is overridden by the data itself.
+Packs merge rather than replace, as tags, languages and atlas sources do among the lists [the resource system](../foundations/resource-system.md#discover-the-repository-and-its-packs) merges instead of letting the top pack win, and, as a tag can, an entry may say otherwise.
 `SoundEventRegistration` carries a replace flag; without it a higher pack's
 entries are **appended** to the lower pack's list, so a pack that adds one
 variant gets a mix rather than an override. A redirect entry multiplies
@@ -122,18 +117,14 @@ anything asking for it is silenced with **no** log warning. An event that
 simply does not resolve is the other kind, and it logs — including a pack that
 empties an event's list, which gets the warning rather than the quiet.
 
-Two development constants exist to make each of those visible.
-`SoundEngine.MISSING_SOUND` makes a failed resolve *audible*, and
-`SharedConstants.DEBUG_SUBTITLES` makes every sound that plays *visible* as a
-subtitle whether or not its event declares one.
+One development flag makes sounds *visible*: `SharedConstants.DEBUG_SUBTITLES` gives every sound that plays a subtitle, its path, whether or not its event declares one. Neither kind of silence gets one, because neither reaches the listeners.
 
 `SoundSource` is the volume category and each one is an options slider:
 `SoundSource.MASTER`, `SoundSource.MUSIC`, `SoundSource.RECORDS`,
 `SoundSource.WEATHER`, `SoundSource.BLOCKS`, `SoundSource.HOSTILE`,
 `SoundSource.NEUTRAL`, `SoundSource.PLAYERS`, `SoundSource.AMBIENT`,
-`SoundSource.VOICE`, `SoundSource.UI`. Two of those are read wrongly from the
-options screen alone: `SoundSource.RECORDS` is the jukebox slider and
-`SoundSource.WEATHER` the rain one. Neither is `SoundSource.AMBIENT`.
+`SoundSource.VOICE`, `SoundSource.UI`. Two of those carry more than the
+options screen says: `SoundSource.RECORDS`, *Jukebox/Note Blocks*, also carries the goat horn, and `SoundSource.WEATHER` carries thunder and the End flash as well as rain. Neither is `SoundSource.AMBIENT`.
 
 ## Who hears it
 
@@ -159,18 +150,13 @@ and it is worth being explicit about which is which. When a packet arrives,
 as the excluded entity, so the test passes and a bystander hears the packet
 normally. When shared block or item code calls `Level.playSound` while running
 on your own client, the excluded entity is you for the same reason it was you
-on the server — and the test passes again, locally. So the one method plays the
-sounds sent to you and the sounds never sent to anyone, and each machine hears
-exactly one copy: yours locally, theirs by packet. That is the whole of the
-third door, and it is why your own place and break are silent on the wire.
+on the server — and the test passes again, locally. So the one method plays the sounds sent to you and the sounds never sent to anyone, and each machine hears exactly one copy: yours locally, theirs by packet. That is how your own place comes through the third door, with every other sound shared code plays with you excluded. Your break comes through it another way, and never reaches this method: the same shared code fires a level event on your client and on the server, `ClientLevel.levelEvent` plays it with no test at all, and `ServerLevel.levelEvent` sends it to everyone in range but the player who broke the block.
 
 Two qualifications keep it from being a law. The rule needs an exclusion to
 read: `Player.playServerSideSound`, which plays the six attack sounds,
 excludes nobody, so your own critical hit does travel the whole way out and
 back. And your local copy is genuinely a *different* sound from the one your
-neighbour hears — your client drew its own seed from `Level.soundSeedGenerator`
-rather than reading one off a packet, so the variant and the pitch are rolled
-twice ([block interaction](../blocks/block-interaction.md#the-sound-only-you-hear)
+neighbour hears — your client drew its own seed (from `Level.soundSeedGenerator` for a place or a door, from the level's own random for a break, which carries no seed on the wire, so every client that hears it rolls its own) rather than reading one off a packet, so the variant and the pitch are rolled twice ([block interaction](../blocks/block-interaction.md#the-sound-only-you-hear)
 follows a door through both rolls).
 
 The position is quantised on the way:
@@ -190,15 +176,7 @@ the exclusion check.
 
 ## Music and ambience are environment attributes
 
-This is the biggest change in the system and the one a 1.21-era reader
-will get wrong. *BiomeSpecialEffects* no longer carries music, ambient loops,
-additions or mood — it is block tint only. Every one of those is now an
-`EnvironmentAttribute` (see [environment attributes and
-timelines](../world/environment-attributes-and-timelines.md)):
-`EnvironmentAttributes.BACKGROUND_MUSIC`,
-`EnvironmentAttributes.MUSIC_VOLUME`,
-`EnvironmentAttributes.AMBIENT_SOUNDS` and
-`EnvironmentAttributes.FIREFLY_BUSH_SOUNDS`, all syncable, all resolved
+`BiomeSpecialEffects` carries block tint only. Music and the ambient loop, additions and mood are carried by `EnvironmentAttribute`s (see [environment attributes and timelines](../world/environment-attributes-and-timelines.md)): `EnvironmentAttributes.BACKGROUND_MUSIC` and `EnvironmentAttributes.MUSIC_VOLUME` for the music, `EnvironmentAttributes.AMBIENT_SOUNDS` for the other three together, beside `EnvironmentAttributes.FIREFLY_BUSH_SOUNDS`, a gate on the firefly bush's own sound — all syncable, all resolved
 through the same dimension-then-biome-then-timeline-then-weather layer stack
 as fog and sky colour.
 
@@ -216,8 +194,7 @@ the cave "mood" that accumulates in darkness (`AmbientMoodSettings`).
 `UnderwaterAmbientSoundHandler` and `BubbleColumnAmbientSoundHandler` are the
 two that remain plain client-side handlers with no attribute behind them.
 
-`MusicManager` owns the rest: a `MusicManager.MusicFrequency` setting that
-scales the gap between tracks, a fade that drives
+`MusicManager` owns the rest: a `MusicManager.MusicFrequency` setting that caps the gap between tracks, a fade that drives
 `SoundManager.updateCategoryVolume` rather than the player's slider (the third
 of the engine's [three volume
 factors](sound-engine.md#volume-looping-and-the-attenuation-everyone-explains-wrongly)),
@@ -225,16 +202,11 @@ and the now-playing toast — a `NowPlayingToast` shown or withheld on the
 `SoundEngine.PlayResult` the engine returned, and suppressed again by the
 pause screen and by `MusicToastDisplayState`.
 
-The remaining callers are worth naming because they are the ones that are
-neither the world nor the wire: `PlaySoundCommand`, the ambient handlers in
-`client/resources/sounds` for loops that exist only on the client, and
-`SoundPreviewHandler`, which previews a representative sound per category
-while a volume slider is dragged outside a world.
+The remaining callers are worth naming because they are the ones that are neither the world nor the wire: the ambient handlers in `client/resources/sounds` for loops that exist only on the client, the GUI's clicks and toast chimes (`AbstractWidget.playButtonClickSound`, `ToastManager`), and `SoundPreviewHandler`, which previews a representative sound for most categories while a volume slider is dragged outside a world.
 
 ## Where to look
 
-`LevelEventHandler` — the whole second door is one switch, and reading it is
-the fastest way to see how much of the game's audio is not named on the wire.
+`LevelEventHandler` — the whole second door is two switches in one class, `LevelEventHandler.levelEvent` and `LevelEventHandler.globalLevelEvent`, and reading them is the fastest way to see how much of the game's audio is not named on the wire.
 `ServerLevel.playSeededSound` and `PlayerList.broadcast` for who is told;
 `ClientLevel.playSeededSound` for the local-player branch that closes the
 loop. `SoundEventRegistration` and `WeighedSoundEvents` for the pack model,
