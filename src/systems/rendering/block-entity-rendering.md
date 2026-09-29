@@ -43,25 +43,32 @@ larger than the shared machinery suggests.
 ```mermaid
 flowchart TD
     BE["A chest placed in the world"]
-    IT["A chest in your hand, on a shelf, or on the ground as an item"]
-    BD["A chest carried by something that is not a chest — a block display, a minecart, an enderman"]
+    IT["A chest as an item: held, shelved or dropped"]
+    BD["A chest block shown by an entity"]
     SEC["LevelExtractor walks the visible sections, then the globally-rendered set"]
     BERD["BlockEntityRenderDispatcher — one shared ChestRenderer, one fresh ChestRenderState"]
-    IMR["ItemModelResolver reads the item-model component and opens a layer"]
-    SMW["SpecialModelWrapper puts a ChestSpecialRenderer in that layer"]
+    IMR["ItemModelResolver finds the stack's item model"]
+    SMW["SpecialModelWrapper opens a layer with its renderer"]
     BMR["BlockModelResolver reads the built-in block-model table"]
-    SBM["SpecialBlockModelWrapper puts a ChestSpecialRenderer in that state"]
+    SBM["SpecialBlockModelWrapper sets its renderer on a BlockModelRenderState"]
+    CSR["a ChestSpecialRenderer, from renderer/special"]
     COL["SubmitNodeCollector — the same phases, the same feature renderers, the same vertices"]
     BE --> SEC
     SEC --> BERD
     BERD --> COL
     IT --> IMR
     IMR --> SMW
-    SMW --> COL
+    SMW --> CSR
     BD --> BMR
     BMR --> SBM
-    SBM --> COL
+    SBM --> CSR
+    CSR --> COL
 ```
+
+*Three ways a chest reaches the collector: its own block entity on the left,
+and two roads that end in the same special renderer class on the right. Only
+the left road's chest is a block entity; the other two are drawn by whatever
+holds them.*
 
 Two of the three roads end in `renderer/special`, and that is the package's
 whole reason to exist: a chest that is not a block entity still has to look
@@ -80,34 +87,35 @@ state class of its own, or an extract stage that reads the live world.
 
 ## The chest, both halves, one frame
 
+Followed through one frame, band by band, the two chests take these routes:
+
 ```mermaid
 sequenceDiagram
     participant LX as LevelExtractor
     participant FPHAI as FirstPersonHands<br/>AndItems
-    participant IMR as ItemModelResolver
     participant BERD as BlockEntity<br/>RenderDispatcher
     participant ChestR as ChestRenderer
     participant LR as LevelRenderer
-    participant CSR as ChestSpecialRenderer
+    participant FPHAIR as FirstPersonHands<br/>AndItemsRenderer
 
     rect rgba(0, 0, 0, 0.04)
-    Note over LX,CSR: the extract half — one partial tick for every block entity in the world
-    LX->>FPHAI: extractRenderState at the player's own partial tick
-    FPHAI->>IMR: updateForTopItem with the held stack
-    IMR->>IMR: the item model has no quads, only a special renderer
-    LX->>LX: walk visibleSections, skip a section under 0.3 of its fade
-    LX->>BERD: tryExtractRenderState with the not-global flag
-    BERD->>BERD: the flag must equal shouldRenderOffScreen, then shouldRender within 64 blocks
-    BERD->>ChestR: createRenderState, then extractRenderState
-    ChestR->>ChestR: combine with the neighbour half — lid openness, the brighter of two lights
+    Note over LX,FPHAIR: extract — the hand at the player's partial tick, the block entities at the world's
+    LX->>FPHAI: extractRenderState, at the player's own partial tick
+    FPHAI->>FPHAI: the held chest resolved — a special renderer, no quads
+    LX->>BERD: tryExtractRenderState, for a block entity in a visible section
+    BERD->>ChestR: createRenderState, then extractRenderState, past the off-screen and distance gates
     end
     rect rgba(0, 0, 0, 0.04)
-    Note over LX,CSR: the draw half — the world first, the hand afterwards, in two storages
-    LR->>BERD: submit, with the pose already translated to the block
+    Note over LX,FPHAIR: submit — into the level's storage, then the hand's own
+    LR->>BERD: submit, the pose translated to the block
     BERD->>ChestR: submit — one model, one sprite, no world access
-    CSR->>CSR: submit for the hand renderer — the same ChestModel, openness fixed
+    FPHAIR->>FPHAIR: the held stack's layer submits to the ChestSpecialRenderer
     end
 ```
+
+*Both chests in one frame, extract then submit: the ground chest goes through
+the block-entity classes, the held one through the hand's. They have separate
+renderers, states and storages, and share the chest model's layer definition.*
 
 The two chests are not two runs of one pipeline. The world's block entities
 go through `LevelRenderer.submitFeatures` into the frame graph. The held

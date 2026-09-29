@@ -41,37 +41,39 @@ that drives it is [the frame](the-frame.md).
 
 The four are interfaces in `renderpearl/api`, and behind each sits one
 concrete, validating class in `renderpearl/frontend` over one thin per-backend
-interface: the game holds the left column below, never the other two.
+interface. The figure draws those three rungs for one of the four, and the
+table after it names them for all four: the game holds the left column, never
+the other two.
 
 ```mermaid
-flowchart TD
-    GB["GpuBackend makes the device, then the window"]
-    subgraph F["what the game holds"]
-      GD["GpuDevice"]
-      CE["CommandEncoder"]
-      RP["RenderPass"]
-      GS["GpuSurface"]
-    end
-    subgraph V["the validating frontend"]
-      FGD["FrontendGpuDevice"]
-      FCE["FrontendCommandEncoder"]
-      FRP["FrontendRenderPass"]
-      FGS["FrontendGpuSurface"]
-    end
-    subgraph I["the backend interfaces"]
-      GDB["GpuDeviceBackend"]
-      CEB["CommandEncoderBackend"]
-      RPB["RenderPassBackend"]
-      GSB["GpuSurfaceBackend"]
-    end
-    GB -- "creates" --> GD
-    GD --> FGD --> GDB
-    CE --> FCE --> CEB
-    RP --> FRP --> RPB
-    GS --> FGS --> GSB
-    I --> OGL["renderpearl/backend/opengl: GlStateManager shadows every toggle"]
-    I --> VK["renderpearl/backend/vulkan: swapchain, pipelines built from SPIR-V"]
+classDiagram
+    class RenderPass {
+        <<interface>>
+        what the game holds
+        setPipeline()
+        drawIndexed()
+    }
+    class FrontendRenderPass {
+        checks the API contract
+        RenderPassBackend backend
+    }
+    class RenderPassBackend {
+        <<interface>>
+        one implementation per API
+        setPipeline()
+        drawIndexed()
+    }
+    RenderPass <|.. FrontendRenderPass
+    FrontendRenderPass *-- RenderPassBackend
+    RenderPassBackend <|.. GlRenderPass
+    RenderPassBackend <|.. VulkanRenderPass
 ```
+
+*One of the four façades as the objects behind it: the game holds a
+`RenderPass`, which is a `FrontendRenderPass` wrapping one backend's
+`RenderPassBackend`. The API's contract is checked in `FrontendRenderPass`, and
+only the bottom row, `GlRenderPass` or `VulkanRenderPass`, knows which API is
+running.*
 
 | the game holds | which checks | the backend implements |
 |---|---|---|
@@ -310,31 +312,37 @@ sequenceDiagram
     participant GD as GpuDevice
     participant CE as CommandEncoder
     participant RP as RenderPass
+    participant GlRP as GlRenderPass
     participant GlCE as GlCommandEncoder
-    participant GpuS as GpuSurface
 
-    Game->>GD: createCommandEncoder — the same facade every time
+    Game->>GD: createCommandEncoder — the same façade every time
     Game->>CE: createRenderPass with a RenderPassDescriptor
     CE->>CE: validate attachments, sizes, usage bits, render area, no pass open
-    CE->>GlCE: bind an FBO from the cache, viewport, scissor, clear
-    CE-->>Game: the RenderPass, which the caller must close
+    CE->>GlCE: createRenderPass — a cached FBO bound, scissor, clear, viewport
+    CE-->>Game: the RenderPass, wrapping a GlRenderPass, to be closed
     Game->>RP: setPipeline, from RenderSystem.getCompiledPipeline — formats must match
     Game->>RP: RenderSystem.bindDefaultUniforms — Projection, Fog, Globals, Lighting
-    Game->>RP: setVertexBuffer, setIndexBuffer, setUniform for each texture
+    Game->>RP: setVertexBuffer, setIndexBuffer, setUniform per texture
     Game->>RP: drawIndexed
-    RP->>GlCE: executeDraw — apply pipeline state, bind uniforms and the VAO
-    GlCE->>GlCE: glDrawElements<br/>InstancedBaseVertex
+    RP->>GlRP: drawIndexed
+    GlRP->>GlCE: executeDraw — the VAO, the pipeline, the dirty uniforms
+    GlCE->>GlCE: the GL draw call itself
     Game->>RP: close — debug groups must balance
-    RP->>CE: FrontendCommandEncoder.submitRenderPass
-    Note over GpuS: the surface, at the two ends of the frame
-    Game->>GpuS: acquireNextTexture at the top of renderFrame, then blitFromTexture of the main target and present at the bottom
+    RP->>CE: FrontendCommandEncoder.<br/>submitRenderPass
+    CE->>GlCE: submitRenderPass
 ```
 
-Everything above the `GlCommandEncoder` lane is validation or declaration.
-Below it, one call is not one call: pass setup alone binds a framebuffer, sets
-viewport and scissor and clears, and a single `RenderPass.drawIndexed` applies
-depth, cull, blend, polygon mode and colour mask, binds a program, walks the
-uniform and sampler bindings, binds a vertex array and finally draws. The
+*One draw on the OpenGL backend: the game talks only to the three façade lanes
+beside it, which check what can break the API's contract and pass the work to
+the two on the right. A single `RenderPass.drawIndexed` becomes a vertex array,
+a pipeline, the dirty uniforms and the driver's draw.*
+
+What the game and the three façades do is declaration and the contract's
+checks. In the two lanes on the right, one call is not one call: pass setup
+alone binds a framebuffer, sets the scissor, clears and sets the viewport, and
+the first `RenderPass.drawIndexed` of a pass binds a vertex array and an index
+buffer, binds a program and applies its depth, cull, colour mask, blend and
+polygon mode, walks the uniform and sampler bindings and finally draws. The
 point is not that a draw is cheap. It is that *the game* never sees any of it.
 
 A pipeline reaches `RenderPass.setPipeline` already compiled: the game asks

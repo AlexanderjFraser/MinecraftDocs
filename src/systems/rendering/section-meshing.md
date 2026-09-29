@@ -30,45 +30,53 @@ second, for an hour, for as long as you keep your back turned.
 
 ```mermaid
 sequenceDiagram
-    participant MPGM as MultiPlayer<br/>GameMode
     participant CL as ClientLevel
     participant LX as LevelExtractor
     participant SUT as SectionUpdateTracker
     participant LR as LevelRenderer
     participant SRD as SectionRender<br/>Dispatcher
-    participant Worker as Worker
     participant SectC as SectionCompiler
 
-    MPGM->>CL: setBlock, from BlockItem.placeBlock inside useItemOn's prediction
-    CL->>LX: setBlockDirty, but only if ModelManager.requiresRender
-    CL->>LX: blockChanged, player-changed or not, read off the update flags
-    LX->>SUT: dirty over a 3x3x3 block halo, one section or up to eight on a boundary
-
-    Note over LX,SUT: the same frame's extract pass, which runs after the tick that handled the click
-    LX->>LR: walk the visible sections, and only those
-    LX->>LX: RenderRegionCache builds a 27-section snapshot
-    LX->>SUT: the flag is cleared as the work is taken
-
-    Note over LR,SRD: same frame, after this frame's terrain has already been drawn
-    LR->>SRD: compileAsync, or compileSync under PrioritizeChunkUpdates
-    SRD->>Worker: taken nearest-first, and only if a buffer pack is free
-    Worker->>SectC: compile every block in the section into at most three layers
-    SectC-->>Worker: layers, block entities, visibility, sort state
-    Worker->>SRD: append to the staging buffer, spin-waiting if it is full
-
-    Note over LR,SRD: the end of a later frame
-    LR->>SRD: uploadTerrainBuffersToGpu, whose callback swaps the mesh in
+    rect rgba(0, 0, 0, 0.04)
+    Note over CL,SectC: the client tick that handles the click
+    CL->>CL: setBlock, from BlockItem.placeBlock in the placement prediction
+    CL->>LX: setBlockDirty, which asks whether a model cares
+    CL->>LX: blockChanged, the player-changed bit read off the flags
+    LX->>SUT: dirty over a 3x3x3 block halo, one to eight sections
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over CL,SectC: the frame after that tick
+    LX->>LR: visibleSections, the only ones the sweep asks about
+    LX->>LX: RenderRegionCache takes a visible dirty section's 27-section snapshot
+    LX->>SUT: that section's flag cleared
+    LX->>LR: the swept sections, in the level's render state
+    alt player-changed or nearby, as PrioritizeChunkUpdates says
+        LR->>SRD: compileSync
+        SRD->>SectC: compile inline, on the Render thread
+    else otherwise
+        LR->>SRD: compileAsync
+        SRD->>SectC: on a worker, nearest-first, once a buffer pack is free
+    end
+    SectC-->>SRD: at most three layers, into the staging buffer
+    LR->>SRD: uploadTerrainBuffersToGpu, whose callback swaps in each fully staged mesh
+    end
 ```
 
+*The trip from a placed block to a drawn mesh: a tick sets flags, and the
+frame after it sweeps only visible sections and compiles or queues the dirty
+ones after its own terrain is drawn. A synchronous compile is swapped in at the
+end of that frame, an asynchronous one at the end of whichever frame's upload
+finds all of it staged.*
+
 Read it in three beats: a change makes a flag, a frame turns some flags into
-work, and a much later frame publishes the result. The middle beat is the one
+work, and the end of that frame or a later one publishes the result. The middle beat is the one
 that leaves the Render thread, and it does not always — a synchronous rebuild
 compiles inline where it stands, and an empty mesh is published by the worker
 that found it empty.
 
 ## A click, and the flag it leaves behind
 
-The first arrow is not what it looks like. `MultiPlayerGameMode` owns the
+The first arrow hides who starts it. `MultiPlayerGameMode` owns the
 prediction sequence — the client places the block itself and remembers what
 it assumed — but the `Level.setBlock` that actually changes the world happens
 down inside `BlockItem.placeBlock`. From the renderer's side it makes no
@@ -229,7 +237,7 @@ callback, and the layer comes from the `FluidModel`.
 
 ### Why "prioritise chunk updates" still costs you a frame
 
-The figure's third note says it and it is worth stating plainly, because it
+The figure's caption says it and it is worth stating plainly, because it
 is the one ordering fact on this page a player can feel:
 `LevelRenderer.compileSections` runs *after* `FrameGraphBuilder.execute`, so
 [terrain is drawn before the sections queued this frame are

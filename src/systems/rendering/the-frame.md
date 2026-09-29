@@ -60,37 +60,56 @@ named.
 | *frameLimiter* | `Minecraft.renderFrame` | the parking, spending the limit *extract* snapshotted |
 | *fpsUpdate* | `Minecraft.renderFrame` | the counter behind the number in the top-left |
 
+Drawn as calls rather than zones, the same frame shows who calls whom:
+`Minecraft.renderFrame` hands `GameRenderer` its update, its extract and its
+render, and only the two ends of the frame touch the surface's texture.
+
 ```mermaid
 sequenceDiagram
     participant MC as Minecraft
     participant GpuS as GpuSurface
-    participant Camera as Camera
     participant GR as GameRenderer
     participant LX as LevelExtractor
     participant LR as LevelRenderer
     participant GuiR as GuiRenderer
 
-    MC->>GpuS: update window — reconfigure if needed, then acquireNextTexture
-    Note over MC,GpuS: vsync lives here, as a GpuSurface.PresentMode
-    MC->>MC: update — advanceRealTime, the timer query, pauseIfInactive, Gui.update
-    MC->>MC: ClientLevel.update — the client's own light engine, ticking frames only
-    GR->>Camera: Camera.update — align, fov, cull frustum, perspective
+    MC->>GpuS: GpuSurface.acquireNextTexture, if the surface is valid — a throw invalidates it
+    MC->>MC: update — clock, pause check, GUI, ClientLevel.update on a ticking frame
+    MC->>GR: GameRenderer.update — the camera zone, then the frame's post chains listed
     MC->>MC: Minecraft.pick writes Minecraft.hitResult
-    GR->>LX: extract — window, options, lightmap, camera, the level, the GUI
-    Note over GR,LX: the wall. Everything after this reads GameRenderState
-    MC->>MC: gpuAsync:<br/>RenderSystem.<br/>executePendingTasks<br/>drains fences
-    GR->>GR: render — resize if needed, clear, the lightmap, then the world
-    GR->>LR: LevelRenderer.render with a CameraRenderState, no live game object
-    GR->>GR: the held item under a second projection, then the screen effects
-    GR->>GuiR: render, then endFrame
-    MC->>GpuS: swapchainBlit — blitFromTexture from GameRenderer.mainRenderTarget
-    MC->>MC: submit — CommandEncoder.submit, surface or no surface
-    MC->>GpuS: present — GpuSurface.present
-    Note over MC: endFrame, frameLimiter, then fpsUpdate
+    MC->>GR: GameRenderer.extract — the window and the options
+    opt there is a world to draw
+        GR->>GR: the lightmap and the camera
+        GR->>LX: LevelExtractor.extract — the level
+    end
+    GR->>GR: the GUI
+    Note over MC,GuiR: the wall — sealed at LevelRenderer.render, leaky one level up
+    MC->>MC: gpuAsync — the signalled fences drained
+    MC->>GR: GameRenderer.render — resize, clear
+    opt there is a world to draw
+        GR->>GR: the lightmap, then the world zone
+        GR->>LR: LevelRenderer.render with a CameraRenderState
+        GR->>GR: the hand and the screen effects
+        GR->>LR: LevelRenderer.blitEntityOutline
+        GR->>GR: the post chains
+    end
+    GR->>GuiR: GuiRenderer.render, then GuiRenderer.endFrame
+    opt GpuSurface.isAcquired
+        MC->>GpuS: GpuSurface.blitFromTexture from the main target
+    end
+    MC->>MC: submit — the frame's GPU work, surface or none
+    opt GpuSurface.isAcquired
+        MC->>GpuS: GpuSurface.present
+    end
+    Note over MC: the zones endFrame, frameLimiter, fpsUpdate
 ```
 
-Read it as **acquire, snapshot, draw, present** — and note that only the
-first and last of those four touch the surface.
+*One frame as the calls `Minecraft.renderFrame` makes, with `GameRenderer`'s
+work under the three it hands over. The surface's texture is touched only at
+the two ends, and only the blit and the present are guarded on having one.*
+
+Read it as **acquire, snapshot, draw, present**: everything but the blit and
+the present is paid for whether or not a surface was acquired.
 
 ## Acquire, and the frame that carries on without one
 

@@ -92,34 +92,45 @@ dimension without touching the client.
 
 ```mermaid
 sequenceDiagram
-    participant Time as Timelines
-    participant EAS as Environment<br/>AttributeSystem
-    participant EAP as Environment<br/>AttributeProbe
     participant LRSE as LightmapRender<br/>StateExtractor
+    participant EAP as Environment<br/>AttributeProbe
+    participant EAS as Environment<br/>AttributeSystem
+    participant LM as Lightmap
     participant FR as FogRenderer
     participant SR as SkyRenderer
-    participant LR as LevelRenderer
-    participant LM as Lightmap
 
-    Note over Time,EAS: per client tick
-    Time->>EAS: the keyframe tracks for this world time — SUN_ANGLE, SKY_COLOR, SKY_LIGHT_FACTOR
-    EAP->>EAP: tick — Gaussian biome blend, last becomes new, unread attributes evicted, driven from Camera.tick
-    LRSE->>LRSE: tick — flicker walk, then needsUpdate is raised
-    EAS->>EAS: invalidateTickCache, the last statement of ClientLevel.tick — marks the non-positional values stale, recomputing none of them
-
-    Note over EAP,SR: per frame, extract
-    LRSE->>EAP: getValue(SKY_LIGHT_FACTOR, BLOCK_LIGHT_TINT, AMBIENT_LIGHT_COLOR)
-    LRSE-->>LM: LightmapRenderState — ten std140 values, plus the flag
-    FR->>EAP: getValue(FOG_COLOR, SUNRISE_SUNSET_COLOR, SKY_FOG_END_DISTANCE)
-    FR-->>LR: FogData — one colour and six distances, in one UBO
-    SR->>EAP: getValue(SUN_ANGLE, MOON_ANGLE, STAR_BRIGHTNESS, MOON_PHASE)
-    SR-->>LR: SkyRenderState
-
-    Note over LM,LR: per frame, render
-    LM->>LM: render — one three-vertex draw into a 16×16 texture
-    LR->>LR: addSkyPass — disc, sunrise fan, sun, moon, stars, dark disc
-    LR->>LR: addMainPass — terrain samples the lightmap, then clouds and weather
+    rect rgba(0, 0, 0, 0.04)
+    Note over LRSE,SR: a client tick
+    LRSE->>LRSE: tick — the flicker walks, the flag raised
+    EAP->>EAP: tick — each value rolled over and cleared, the biome blend resampled
+    EAS->>EAS: invalidateTickCache — cached values stale, none recomputed
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over LRSE,SR: each frame's extract, in this order
+    opt the flag a tick raised, so at most once a tick
+        LRSE->>EAP: getValue(SKY_LIGHT_FACTOR, BLOCK_LIGHT_TINT, …) at partial tick 1
+    end
+    EAP->>EAS: getValue, an attribute's first ask this tick — timelines sampled now
+    LRSE->>LM: LightmapRenderState, and the flag
+    FR->>EAP: getValue(FOG_COLOR, SUNRISE_SUNSET_COLOR, …) at the frame's partial tick
+    SR->>EAP: getValue(SUN_ANGLE, SKY_COLOR, SUNRISE_SUNSET_COLOR, …)
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over LRSE,SR: each frame's render
+    opt the same flag
+        LM->>LM: render — one three-vertex draw into the 16×16 texture
+    end
+    SR->>SR: render, in the sky pass — disc, fan, sun, moon, stars
+    end
 ```
+
+*Dusk across one tick and one frame, drawn for the lightmap, the fog and the
+sky. The probe asks the attribute system only on an attribute's first read in
+a tick, and the lightmap asks and draws only when a tick has raised its flag.*
+
+The clouds are left out because they add nothing new to the picture:
+`LevelExtractor` reads their colour and height from the same probe during the
+extract. The rain asks it nothing.
 
 The middle band's order is a dependency order. `GameRenderer.extract` runs
 `LightmapRenderStateExtractor.extract`, then `GameRenderer.extractCamera` —

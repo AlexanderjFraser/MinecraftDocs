@@ -34,38 +34,50 @@ and the barrier this rides on — and at no other time.
 ## The shape of the work: seventeen fans, one barrier
 
 This is the clearest fan-out-and-barrier in the client. Seventeen independent
-pieces of work start on worker threads at once, and every one of them is a
-box in the figure below: twelve atlas stitches behind the two boxes at the
-left, and the five roots `ModelManager.reload` opens. Three of those five are
-directory listings that are each themselves a fan of one task per file. They
-converge exactly once.
+pieces of work start on worker threads at once, and the figure below draws
+all of them, each set in two boxes: the twelve atlas stitches
+`AtlasManager.reload` schedules, and the five roots `ModelManager.reload`
+opens. Three of those five
+are directory listings that are each themselves a fan of one task per file.
+The bake waits on only two of the twelve stitches, and everything meets at the
+barrier.
 
 ```mermaid
 flowchart TD
     RL["a reload starts: F3+T, a pack change, or the game booting"]
-    HS["AtlasManager.prepareSharedState on the Render thread, before any task runs"]
-    S1["blocks and items atlases: one task per sprite to decode and read metadata, then one stitch each, then mipmaps"]
-    S2["the other ten atlases, the same fan, nothing awaits them until upload"]
-    L1["listing of models/, one task per file"]
-    L2["listing of blockstates/, one task per file"]
-    L3["listing of items/, one task per file"]
-    L4["EntityModelSet.vanilla"]
-    L5["BuiltInBlockModels.createBlockModels"]
-    RES["ModelDiscovery interns and resolves, ModelGroupCollector groups the states"]
-    BAKE["ModelBakery.bakeModels in batches: one bake per BlockState, one per item file"]
+    HS["Render thread: AtlasManager.prepareSharedState, then every listener's reload called"]
+    subgraph W["on worker threads"]
+        subgraph AT["the atlas stitches"]
+            S1["the blocks and items atlases"]
+            S2["the other ten atlases"]
+        end
+        subgraph MR["the five model roots"]
+            LST["three listings, models/, blockstates/ and items/, one task per file"]
+            ONE["EntityModelSet.vanilla and BuiltInBlockModels.createBlockModels"]
+        end
+        RES["ModelDiscovery resolves what the three listings name"]
+        BAKE["the bakes: ModelBakery.bakeModels, then the BlockModel layer and fluids"]
+    end
     BAR["the barrier"]
     UP["Render thread: TextureAtlas.upload, then ModelManager.apply"]
     INV["LevelExtractor.allChanged raises a flag the next frame reads"]
     RL --> HS
-    HS --> S1 & S2 & L1 & L2 & L3 & L4 & L5
-    L1 & L2 & L3 --> RES
-    S1 & RES --> BAKE
-    BAKE & S2 & L4 & L5 --> BAR
+    HS --> AT
+    HS --> MR
+    LST --> RES
+    S1 & RES & ONE --> BAKE
+    BAKE & S2 --> BAR
     BAR --> UP --> INV
 ```
 
-Read it as **spread, converge, upload, invalidate**: above the barrier,
-worker threads in any order; below it, the Render thread in exactly one.
+*The reload as a fan and its joins: the Render thread publishes the pending
+stitches and calls each listener's reload, and what those schedule runs on
+workers, the bake waiting on two atlases and all five roots. Everything meets
+at the barrier, and what follows it runs on the Render thread in one order.*
+
+Read it as **spread, converge, upload, invalidate**: inside the outer box,
+worker threads in whatever order the joins allow; below the barrier, the
+Render thread in exactly one.
 
 ## Twelve atlases and three listings, all at once
 

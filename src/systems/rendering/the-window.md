@@ -62,27 +62,36 @@ candidate a clean slate.
 
 ```mermaid
 flowchart TD
-    BOOT["NativeLibrariesBootstrap probes the loaders, RenderSystem.initBackendSystem starts SDL"]
-    MonM["MonitorManager asks SDL for displays and modes"]
-    MC["Minecraft takes the next candidate from PreferredGraphicsApi.getBackendsToTry"]
-    LIB["GpuBackend.loadLibrary loads the API's library through SDL"]
-    Q1{"did the library load?"}
-    DEV["GpuBackend.createDevice, before the game has a window"]
-    Q2{"did a device come back?"}
-    UNL["GpuBackend.unloadLibrary, for a clean slate"]
-    LEFT{"any candidate left?"}
+    START["RenderSystem.initBackendSystem starts SDL, MonitorManager lists the displays"]
+    subgraph LOOP["each candidate in turn"]
+        NEXT{"a candidate left?"}
+        LIB["GpuBackend.loadLibrary"]
+        Q1{"did it load?"}
+        DEV["GpuBackend.createDevice, with no window yet"]
+        Q2{"a device?"}
+        UNL["GpuBackend.unloadLibrary"]
+    end
     BOX["MessageBox.error, and the game never starts"]
-    RS["RenderSystem.initRenderer with the device that survived"]
+    RS["RenderSystem.initRenderer with that device"]
     WIN["the one Window, from GpuBackend.createWindow"]
+    Q3{"a window?"}
+    CRASH["a crash report, and no next candidate"]
     DONE["Window.setIcon, then GpuDevice.createSurface on its handle"]
-    BOOT --> MonM --> MC --> LIB --> Q1
-    Q1 -- "no" --> LEFT
+    START --> NEXT
+    NEXT -- "yes" --> LIB --> Q1
     Q1 -- "yes" --> DEV --> Q2
-    Q2 -- "no" --> UNL --> LEFT
-    Q2 -- "yes" --> RS --> WIN --> DONE
-    LEFT -- "yes" --> MC
-    LEFT -- "no" --> BOX
+    Q1 -- "no" --> NEXT
+    Q2 -- "no" --> UNL --> NEXT
+    NEXT -- "no" --> BOX
+    Q2 -- "yes" --> RS --> WIN --> Q3
+    Q3 -- "yes" --> DONE
+    Q3 -- "no" --> CRASH
 ```
+
+*The startup retry loop, the box being the loop: a library or a device that
+fails sends the next candidate in, and the loop is left by a device that
+survives or by running out of candidates. The window is made once, outside the
+loop, and a window that fails is a crash rather than a retry.*
 
 **The list is never one candidate long.** `PreferredGraphicsApi.getBackendsToTry`
 returns an ordered *pair*: every setting has the other API behind it as a
@@ -153,20 +162,20 @@ the window only ever reaches for three of those four methods.
 
 ```mermaid
 flowchart LR
-    SEH["SDLEventHandler.pollEvents drains SDL's queue"]
+    SEH["SDLEventHandler.pollEvents, once per loop pass"]
     IN["keys, text, mouse, dropped files"]
     KMH["KeyboardHandler and MouseHandler"]
-    WHE["Window.handleEvent, nineteen kinds of event"]
-    TOLD["pixel size, display, cursor or fullscreen changed"]
+    WHE["Window.handleEvent, nineteen kinds"]
+    TOLD["pixel size, display or mode, cursor, fullscreen — seven"]
     WEH["WindowEventHandler, implemented by Minecraft"]
-    IC["minimised, maximised or restored"]
+    IC["minimised, maximised, restored — three"]
     MC["Minecraft.invalidateSurfaceConfiguration"]
-    QT["quit, close or terminate requested"]
+    QT["quit, close, terminate — three"]
     CB["Window.shouldClose, and the close callback"]
-    LOOK["moved, resized, focus gained or lost"]
-    W["a field on the Window, read later"]
-    DS["display added or removed"]
-    MM["the monitors MonitorManager keeps"]
+    LOOK["moved, resized, focus in or out — four"]
+    W["a Window field, looked up later"]
+    DS["display added or removed — two"]
+    MM["the monitors MonitorManager keeps, looked up later"]
     SEH --> IN --> KMH
     SEH --> WHE
     WHE --> TOLD --> WEH
@@ -176,6 +185,11 @@ flowchart LR
     WHE --> LOOK --> W
     WHE --> DS --> MM
 ```
+
+*The poll's one fork and the window's five groups of event, with how many of
+the nineteen kinds each group holds. Input never reaches the window, and the moves,
+resizes, focus changes and displays arriving or leaving are the six the game is
+never told.*
 
 `WindowEventHandler.framebufferSizeChanged`,
 `WindowEventHandler.cursorEntered` and

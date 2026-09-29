@@ -38,23 +38,37 @@ graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-th
 
 ```mermaid
 flowchart TD
-    DISK["a JSON file under post_effect, plus the GLSL programs it names"]
-    PREP["ShaderManager.loadConfigs — every chain parsed into a PostChainConfig, off the render thread"]
-    LOAD["first request: PostChain.load builds one PostPass per declared pass and precompiles each pipeline"]
-    CACHE["cached by id, and only by id, until the next resource reload"]
-    ADD["PostChain.addToFrame — external targets fetched from a bundle, internal ones declared in the graph"]
-    PASS["PostPass.addToFrame — one FramePass per pass, reading its inputs and read-writing its output"]
-    EXEC["FrameGraphBuilder.execute — each body binds a pipeline, binds the samplers, draws three vertices"]
-    OUT["the last pass lands on an imported target, which is what the rest of the frame goes on to use"]
-    DISK --> PREP --> LOAD --> CACHE --> ADD --> PASS --> EXEC --> OUT
+    subgraph RELOAD["once per resource reload"]
+        DISK["a JSON file under post_effect, and the GLSL it names"]
+        PREP["ShaderManager.loadConfigs, on a worker: one PostChainConfig each"]
+        APPLY["the apply half: every cached chain closed, a new empty cache"]
+    end
+    subgraph FRAME["inside a frame"]
+        GET["ShaderManager.getPostChain, on the Render thread"]
+        ASK{"cached already?"}
+        LOAD["PostChain.load: one PostPass per pass, each pipeline compiled now"]
+        CACHE["cached by id, and only by id"]
+        ADD["PostChain.addToFrame: the targets resolved"]
+        PASS["PostPass.addToFrame: one FramePass per pass"]
+        EXEC["FrameGraphBuilder.execute: three vertices a pass"]
+        OUT["the last pass writes an imported target"]
+    end
+    DISK --> PREP --> APPLY
+    APPLY -- "a later frame asks" --> GET --> ASK
+    ASK -- "no, the first ask" --> LOAD --> CACHE --> ADD
+    ASK -- "yes" --> ADD
+    ADD --> PASS --> EXEC --> OUT
 ```
 
+*A chain's life in its two phases: the reload parses every file and empties
+the cache, and the first frame to ask for a chain compiles and caches it.
+Every later ask is answered from the cache.*
+
 The chain splits across two phases of the client's life, and the split is the
-thing to hold: everything down to *CACHE* happens once, during a resource
-reload, and everything from *ADD* onward happens inside a frame, every frame,
-for as long as the effect is on. The compile in the middle is the awkward one,
-because it belongs to neither — it happens the first time something asks, and
-that first time is inside a frame.
+thing to hold: the top box happens once, during a resource reload, and the
+bottom one inside a frame, every frame the effect is on — all but the compile
+and the cache entry, which happen only on the first ask after a reload. That
+first ask is inside a frame, which is what makes the compile the awkward step.
 
 ## What a chain declares, and the two kinds of name in it
 
@@ -212,21 +226,23 @@ sequenceDiagram
     participant FGB as FrameGraphBuilder
     participant GR as GameRenderer
 
-    LR->>FGB: importExternal — the entity outline target, for the main pass to draw into
+    LR->>FGB: importExternal — the entity outline target, for the main pass
     opt something submitted an outline this frame
         LR->>ShadM: getPostChain for entity_outline, allowing main and entity_outline
-        ShadM-->>LR: the cached chain, or four freshly compiled pipelines
+        ShadM-->>LR: the chain, compiled on its first ask
         LR->>PChain: addToFrame with the screen size and the level's target bundle
         PChain->>FGB: createInternal — the chain's own swap target, at screen size
         PChain->>PPass: addToFrame, four times, in declared order
-        PPass->>FGB: addPass, reads the input, reads and writes the output
-        Note over PPass,FGB: sobel to swap, blur across, blur down, blit back
-        PChain-->>LR: the bundle's outline handle replaced with the last one written
+        PPass->>FGB: addPass, declaring what it reads and what it writes
     end
-    FGB->>FGB: execute — bodies run in dependency order, three vertices each
-    GR->>LR: blitEntityOutline, after the whole graph has finished
-    Note over GR,LR: RenderTarget.blitAndBlendToTexture composites the glow onto the main target
+    FGB->>FGB: execute — with the chain added, sobel, blur, blur, blit back
+    GR->>LR: blitEntityOutline, after the graph — the glow onto the main target
 ```
+
+*The outline chain across one frame: declared into the level's graph only when
+something glows, run when the graph executes, and composited by a separate
+call after the graph has finished. The four passes bounce between the outline
+target and the chain's own swap target, ending where they began.*
 
 The first pass is an edge detector and what it detects edges in is **alpha**,
 not colour: the target is transparent everywhere nothing was submitted, so

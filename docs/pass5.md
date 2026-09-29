@@ -1610,9 +1610,9 @@ fell, and none has had a wording pass:
   fact-check because it is not falsifiable from the sources the book uses.
   Pass 5 should decide whether to keep it, and if so to say in the caption
   that it is a reading rather than a citation. [kind=book]
-- The landing page's pipeline figure no longer claims to be frame order, and
+- ~~The landing page's pipeline figure no longer claims to be frame order, and
   the paragraph under it now spends four lines saying what the arrows are
-  *not*. That is honest and it is also the longest caption in the part.
+  *not*. That is honest and it is also the longest caption in the part.~~ *Done, pass 8 session K: the figure has an italic caption of one sentence, and the paragraph under it says what the order is and why the fourth and fifth lectures feed each other.*
 
 **Smaller misleading items, verified but left as they are** (each is true as [kind=voice]
 written and imprecise in a way that costs a reader nothing at this pass):
@@ -2442,12 +2442,12 @@ correction):
   use each name. `lightmap-fog-and-sky` came *down* from 447 to 339 by
   dissolving the twenty-four-attribute enumeration Part IV already owns.
 
-  The one shape note pass 5 might revisit: **`models-and-atlases` carries a
+  ~~The one shape note pass 5 might revisit: **`models-and-atlases` carries a
   single figure over 330 lines.** Its drafter cut a sequence diagram that
   repeated the fan-out flowchart, which was right, and cut an item-model
   flowchart with it, which is arguable — the *How an item picks its model*
   section is where two forward links from Part VII land and it is now the
-  page's longest stretch of unbroken prose.
+  page's longest stretch of unbroken prose.~~ *Second edition, pass 8 session K: the item-model path is the section K's viewer named as wanting a figure, and pass 8 adds none; the page's one figure was redrawn.*
 
   **Cuts made, all field inventories, no behaviour:** `the-frame` dropped the
   `GameRenderer` field roll-call (eleven fields), most of the `GameRenderState`
@@ -4907,22 +4907,22 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 7 (the figures)
 
-- **The Part XI landing page's pipeline figure asserts an order the page spends
+- ~~**The Part XI landing page's pipeline figure asserts an order the page spends
   a paragraph disowning.** Session K cut the disowning from ten lines to four
   and relabelled the subgraph, but the honest fix is the figure: either label
   the arrows for what they are or drop the last one, which is the only arrow
-  whose claim is false in two of six cases. [kind=figure]
-- **`entity-rendering`'s four-stage flowchart and its zombie sequence diagram
+  whose claim is false in two of six cases. [kind=figure]~~ *Done, pass 8 session K: the edge labels that asserted an order are gone and the caption says the arrows are the watch order.*
+- ~~**`entity-rendering`'s four-stage flowchart and its zombie sequence diagram
   say the same thing twice**, the second in more detail. Pass 7 should decide
-  whether the part's longest page needs both. [kind=figure]
-- **`the-window`'s six-callback flowchart draws six events and the section now
+  whether the part's longest page needs both. [kind=figure]~~ *Done, pass 8 session K: the lead flowchart is the four stages in the cast's words, across the wall; the zombie's trace is three small figures, one in each stage's own section.*
+- ~~**`the-window`'s six-callback flowchart draws six events and the section now
   discusses seven.** The figure and the heading no longer agree.
-  [kind=figure]
-- **`visibility-and-the-frame-graph` has a six-node figure under a heading that
+  [kind=figure]~~ *Overtaken, pass 8 session K: the second figure draws all nineteen events, in five groups with their counts.*
+- ~~**`visibility-and-the-frame-graph` has a six-node figure under a heading that
   says *Five stages*.** The sixth is the walk re-run for the next frame and the
   figure draws it looping; the heading counts stages of one frame. Session K
   made the prose say so; the figure and the heading still disagree on their
-  face. [kind=figure]
+  face. [kind=figure]~~ *Done, pass 8 session K: the nodes carry the stage numbers, and the last box is stage one's walk, re-run for the next frame.*
 
 ### For pass 8 (the voice)
 
@@ -6157,39 +6157,39 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 ### For pass 7 (the figures)
 
-- **`lightmap-fog-and-sky`'s trace figure has no `CloudRenderer` and no
+- ~~**`lightmap-fog-and-sky`'s trace figure has no `CloudRenderer` and no
   `WeatherEffectRenderer` lane**, on a page whose table and opening both
   promise five askers. The figure draws three of the five and then names the
   other two only in its last box (*addCloudsPass, then addWeatherPass*). Either
   two lanes or an explicit note that the figure follows the three that ask the
-  probe. [kind=figure]
-- **`entity-rendering`'s two figures disagree with the prose and with the
+  probe. [kind=figure]~~ *Done, pass 8 session K: the figure is drawn for the lightmap, the fog and the sky, and the sentence under its caption says why the clouds and the rain are left out.*
+- ~~**`entity-rendering`'s two figures disagree with the prose and with the
   cast.** The sequence puts the frustum test on `EntityRenderDispatcher` where
   the prose puts it on `EntityRenderer.shouldRender`, and `LevelRenderer`
   drives two of the four stages in both figures while appearing in neither the
-  cast table nor the flowchart's labels. [kind=figure]
-- **`the-window`'s retry flowchart makes `GpuBackend.handleWindowCreationErrors`
+  cast table nor the flowchart's labels. [kind=figure]~~ *Done in the figures, pass 8 session K: the extract trace puts the distance and frustum tests on the renderer; `LevelRenderer` is a lane of the submit and prepare traces and a box of the lead figure. It stays out of the cast, which is at its eight-row limit.*
+- ~~**`the-window`'s retry flowchart makes `GpuBackend.handleWindowCreationErrors`
   look inert**: its `ERRS` node and the `KILL` node both flow to `LEFT`
   unconditionally, so the figure shows a verdict that changes nothing. The
   prose now says what the verdict is *for* (the loop learns why); the figure
-  should either show it or stop implying a branch. [kind=figure]
-- **`particles`' sequence diagram starts its server branch from a lane with no
+  should either show it or stop implying a branch. [kind=figure]~~ *Overtaken: session V2's redraw removed both nodes; pass 8 session K redrew the loop again, with the window's own failure exit.*
+- ~~**`particles`' sequence diagram starts its server branch from a lane with no
   incoming arrow** (`Block ->> SL`, where `SL` has not been reached). A reader
   cannot tell whether the two branches are two machines or two moments.
-  [kind=figure]
-- **`post-processing`'s outline sequence carries an eight-line note band** and
+  [kind=figure]~~ *Done, pass 8 session K: a flowchart with one box per machine; the server's route starts at `ServerPlayerGameMode.destroyBlock`.*
+- ~~**`post-processing`'s outline sequence carries an eight-line note band** and
   is the densest figure in the part; its *sobel to swap, blur across, blur
   down, blit back* note is doing the work four arrows would do better.
-  [kind=figure]
-- **`visibility-and-the-frame-graph`'s frame-graph flowchart draws the entity
+  [kind=figure]~~ *Done, pass 8 session K: the note is gone; the four passes are named in the execute message, and the caption says they bounce between the two targets.*
+- ~~**`visibility-and-the-frame-graph`'s frame-graph flowchart draws the entity
   outline chain as one node** while the prose says it has four passes, and the
   page's other figure has six numbered boxes under a heading that used to say
   five. The second is fixed in the prose; the first is a figure question.
-  [kind=figure]
-- **`rendering/README`'s pipeline figure now declares its arrows to be reading
+  [kind=figure]~~ *Ruled, pass 8 session K: the chain's four passes are post-processing's figure; this one shows the chain declared, and its outline step now says it fills the target the chain reads.*
+- ~~**`rendering/README`'s pipeline figure now declares its arrows to be reading
   order only** and says two of them are a frame's reverse. Pass 7 should decide
   whether a figure whose arrows need that disclaimer is the right figure.
-  [kind=figure]
+  [kind=figure]~~ *Ruled, pass 8 session K: the arrows are the watch order, which the caption says in one clause; the paragraph under the figure now says what the order is not (a frame's order) and why the fourth and fifth lectures feed each other.*
 
 ### For pass 8 (the voice)
 
@@ -7161,7 +7161,7 @@ pass 4's close found.~~ *Record: pass 7 session O's strike audit; the entry it l
 - **The gate is strict now**, and Part XI is clean under it only because this
   session made ten small repairs there (listed in [pass9.md](pass9.md)); K
   re-reads them with the rest of its figures rather than taking them. [kind=figure]
-- **`rendering/README`'s figure is the one landing figure that fails the set's
+- ~~**`rendering/README`'s figure is the one landing figure that fails the set's
   grammar** (`TEMPLATE.md`, *The landing page*): no numbers, no caption, two
   subgraph titles hidden under their first node, `direction TB`, and a
   327-by-1,563px strip. The set reader proposed: number the eleven boxes to
@@ -7171,14 +7171,14 @@ pass 4's close found.~~ *Record: pass 7 session O's strike audit; the entry it l
   substrate under a pipeline, numbered to the watch order; an arrow points at
   the page that needs the one it leaves, which is not the order a frame runs
   in* — no arrow changes. Separately, `:74-77` says *two of them are its
-  reverse* and names only one. [kind=figure]
-- **Four Part XI figures show type under 11px** (`entity-rendering` f2,
+  reverse* and names only one. [kind=figure]~~ *Done, pass 8 session K: numbered to the watch order, the subgraph titles short, the edge labels and direction lines gone, captioned; the paragraph's "two … names one" corrected. The pairs are left to the watch list: a box around two pages is outside the set's grammar.*
+- ~~**Four Part XI figures show type under 11px** (`entity-rendering` f2,
   `lightmap-fog-and-sky` f1, `models-and-atlases` f1, `section-meshing` f1):
   three of them are eight-lane sequence diagrams, which `TEMPLATE.md` no
-  longer allows at all. [kind=figure]
-- **Nineteen Part XI figures have no caption**, `blaze3d` f1's cluster title
+  longer allows at all. [kind=figure]~~ *Done, pass 8 session K: each redrawn at six lanes or fewer or split at its stages; the part's smallest type is now 12.5px.*
+- ~~**Nineteen Part XI figures have no caption**, `blaze3d` f1's cluster title
   runs outside its box, and 17 of the corpus's 69 sentence labels are Part
-  XI's. [kind=figure]
+  XI's. [kind=figure]~~ *Done, pass 8 session K: every Part XI figure is captioned; `blaze3d` f1 is a class diagram; one band note of fourteen words is the part's last long label, inside the note budget.*
 
 **Reopened by the audit.**
 

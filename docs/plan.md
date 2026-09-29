@@ -50,7 +50,7 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, and G, H, I and J on 2026-09-28** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, and K on 2026-09-29** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
@@ -58,7 +58,7 @@ and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
 audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit; H found 241 on
 Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit; J found 314 on Part X, 131 of them by that
-audit — and K onward have not. After it, nothing more is done here except a
+audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit — and L onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -571,3 +571,15 @@ understood; recording is after the release.
   314, 74 in sentences the session had just written** — about two in five, the highest of the pass. Sixteen pages outside the part
   corrected with it (four in Part XI, three Reference pages beside the glossary, `lectures.md` twice); items handed to L, M, O and P.
   Deployed.
+
+- **2026-09-29, pass 8, session K — Part XI · Rendering, the figures (Opus).** Pass 7's session K under that pass's runbook:
+  twelve viewer agents with a page and its pictures, the part's figures looked at as a set, every figure redrawn, rendered and
+  read again. **Every Part XI figure is captioned**, so all 224 in the book are; nothing below 0.78 or under 12.5px (from 0.60 /
+  9.7px), no sequence diagram over six lanes (from three at eight), no name broken on screen. `entity-rendering`'s eight-lane
+  trace is three stage traces, `blaze3d` f1 a class diagram, `particles` f1 a box per machine, the landing figure numbered to the
+  watch order. **110 corrections**, every one re-derived in the tree: a figure bucketing terrain after the graph had executed, a
+  synchronous compile sent to a worker, the lightmap asked and drawn every frame, two model roots drawn around the bake, the
+  caller's list drawn at the callee (a twelfth part of twelve). The record's audit, one agent per page, found **59 of them, 55 in
+  what the session had just written** — more than half, the pass's highest rate. Sixteen queue units struck (Part XI has no open
+  figure unit); lane rows `GlRP`, `MFR`, `FPHAIR` added and five emptied rows removed; items handed to L, O, P and the second
+  edition. Deployed.

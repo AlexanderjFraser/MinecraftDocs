@@ -49,19 +49,37 @@ order.
 
 ```mermaid
 flowchart TD
-    S1["Stage 1, what is visible, in extract — SectionOcclusionGraph reaches sections outward from the camera, then LevelExtractor.applyFrustum keeps the ones the Frustum admits and caches them as LevelRenderer.visibleSections"]
-    S2["Stage 2, what is submitted — LevelRenderer.submitFeatures gathers entities and block entities, and FeatureRenderDispatcher.prepareFrame groups them, all before a pass exists"]
-    S3["Stage 3, what passes exist — FrameGraphBuilder.addPass declares each pass with its reads and writes, then FrameGraphBuilder.execute orders and runs them"]
-    S4["Stage 4, how terrain is drawn — LevelRenderer.prepareChunkRendersIndirect or LevelRenderer.prepareChunkRenders buckets the visible sections, and ChunkSectionsToRender draws the buckets inside the main pass"]
-    S5["Stage 5, what is re-sorted — a rolling budget of translucent sections is scheduled, for a mesh that arrives a frame or more later"]
-    S6["SectionOcclusionGraph.update — the walk is re-run at the end of render, so the next frame reads a newer graph"]
-    S1 --> S2 --> S3 --> S4 --> S5 --> S6
-    S6 -. "next frame" .-> S1
+    subgraph EXT["extract, before the wall"]
+        S1["1 · visible: LevelExtractor.applyFrustum trims the graph into LevelRenderer.visibleSections"]
+    end
+    subgraph REN["LevelRenderer.render"]
+        S2["2 · submitted: LevelRenderer.submitFeatures, then FeatureRenderDispatcher.prepareFrame"]
+        S3["3 · the first passes declared: clear, and the sky if drawn"]
+        S4["4 · the visible sections bucketed into ChunkSectionsToRender"]
+        S3B["3 · the main pass and any outline chain declared, then FrameGraphBuilder.execute"]
+        S5["5 · translucent re-sorts, scheduled for a worker at the end of LevelRenderer.compileSections"]
+        S6["the walk that feeds stage one: SectionOcclusionGraph.update, partial"]
+    end
+    BG["a full walk, on Util.backgroundExecutor"]
+    S1 --> S2 --> S3 --> S4 --> S3B --> S5 --> S6
+    S6 -. "when one is due" .-> BG
+    S6 -. "raises the flag" .-> S1
+    BG -. "publishes, raises the flag" .-> S1
 ```
 
+*One frame's five stages in the order they run, the first on the far side of
+the wall and the other four inside `LevelRenderer.render`, which ends by
+re-running the walk. The dotted arrows are a full rebuild handed to a worker
+and the flag either walk can raise: stage one re-applies the frustum only when
+that flag is up or the camera has turned.*
+
 Stage one has already happened when `LevelRenderer.render` is entered, and
-the last box is that same walk being re-run for the frame after this one,
-which is why the figure loops rather than ending. The two bookkeeping stages
+the box at the end of `LevelRenderer.render` is the walk that feeds it being
+re-run for the frame after this one, which is why the figure loops rather than
+ending. Stages three and four
+interleave: the terrain is bucketed after the first passes are declared and
+before the main pass is, and drawn when `FrameGraphBuilder.execute` runs that
+pass. The two bookkeeping stages
 are the first and the fifth, and they are incomplete in two different ways:
 the first is a **cache**, thrown away and rebuilt only when something
 invalidates it, and the fifth is a **budget**, doing a fixed slice of the work
@@ -209,12 +227,12 @@ flowchart TD
         direction TB
         T1["opaque terrain — the OPAQUE draw group"]
         T2["FeatureRenderDispatcher.PreparedFrame.<br/>executeSolid"]
-        D{"is improved transparency on"}
+        D{"improved transparency?"}
         T3["LevelRenderer.<br/>executeClassicTransparency"]
         T4["LevelRenderer.executeOit, once per OitStage"]
-        T5["LevelRenderer.executeOutline"]
-        T6["LevelRenderer.executeSeeThrough"]
-        T7["LevelRenderer.executeAlwaysOnTop, which clears depth first"]
+        T5["LevelRenderer.executeOutline, only with outlines: into the outline target"]
+        T6["LevelRenderer.executeSeeThrough, only if anything sees through"]
+        T7["LevelRenderer.executeAlwaysOnTop, only with always-on-top gizmos: depth cleared"]
         T1 --> T2 --> D
         D -->|"no"| T3
         D -->|"yes"| T4
@@ -228,7 +246,7 @@ flowchart TD
     MAIN --> OUT
 ```
 
-*The passes `LevelRenderer.render` declares, with the one `LevelRenderer.addMainPass` declares opened up; look for the one decision inside it, which picks how everything translucent is drawn.*
+*The passes `LevelRenderer.render` declares, with the one `LevelRenderer.addMainPass` declares opened up. The diamond picks how everything translucent is drawn, and the last three steps are skipped in a frame with nothing of their kind.*
 
 The post chain in that figure is declared here and explained in
 [post-processing](post-processing.md), and it is why the entity-outline target
@@ -378,7 +396,7 @@ you have already left.
 
 `LevelExtractor.applyFrustum` first, because stage one is the one that is not
 in `LevelRenderer.render`; then `LevelRenderer.render`, which is stages two to
-five top to bottom. `SectionOcclusionGraph.update` for the walk, and
+five in the order the first figure draws them. `SectionOcclusionGraph.update` for the walk, and
 `SectionOcclusionGraph.runPartialUpdate` for the only part of it on the client
 thread. `LevelExtractor.applyFrustum` for why the visible list is usually a
 cache. `FrameGraphBuilder.execute` for how declared passes are ordered and

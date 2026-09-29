@@ -74,6 +74,295 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session K — Part XI · Rendering: the figures *(2026-09-29)*
+
+Pass 7's session K, run inside pass 8 under [pass7-brief.md](pass7-brief.md)'s Part 1 and Part 2: the part's figures rendered
+at the reading column, one viewer agent per page with nothing but the page and its pictures (twelve), the part's figures
+looked at as a set, every finding the session acted on re-derived in `reference/26.3`, every figure redrawn under pass 7's
+standard and rendered again. Then, as every pass-8 session since C, the record audited by one agent per page told to
+re-derive every changed arrow, label, caption and sentence against the tree and read its neighbours and the corpus: **the
+audit found 59 errors, 55 of them in labels, captions and sentences this session had just written** (corrections 52–110),
+and each was re-derived and fixed before the commit. Page lines are the pages as the session left them. Paths are under
+`reference/26.3/`, with `net/minecraft/` left off.
+
+**The part, before and after** (`render_figures.js` at the 1,092px column; `pass7_figures.py --part rendering`): 20 mermaid
+figures and one generated tree on 12 pages → 21 mermaid figures and the tree (`entity-rendering`'s eight-lane zombie trace is
+three small traces, one in each stage's own section; nothing else was added or cut). Captioned 2 of 21 → **22 of 22**, so the
+book's 224 figures are all captioned. Lowest scale 0.60 → **0.78**; smallest type 9.7px → **12.5px**; figures under 11px 4 →
+**0**; sequence diagrams over six lanes 6 (three at eight) → **0**; Mojang names hyphen-broken on screen 2 → **0**; figures
+with a label over a label, over a shape or outside its box 2 → **0**; the figure gate's notes on the part 4, all ruled kinds
+(a prose head, a static helper). Two kinds changed: `blaze3d` f1 is a class diagram (the book's eleventh), `particles` f1 a flowchart with one subgraph
+per machine. Lane rows added: `GlRP` (`GlRenderPass`), `MFR` (`ModelFeatureRenderer`), `FPHAIR`
+(`FirstPersonHandsAndItemsRenderer`); removed as no page declares them now: `ZS`, `Time`, `PE`, `CSR`, `IMR`.
+
+### Figures redrawn, and the orderings they assert
+
+- `rendering/the-frame` f1 (sequence, six lanes; `Camera` folded into `GameRenderer.update`'s message): acquire, only if the
+  surface is valid → update (clock, pause check, GUI, `ClientLevel.update` on a ticking frame) → MC→GR
+  `GameRenderer.update` (the camera zone, then the frame's post chains listed) → `Minecraft.pick` → MC→GR
+  `GameRenderer.extract` (window, options) → opt *there is a world to draw* {the lightmap and the camera; GR→LX
+  `LevelExtractor.extract`} → the GUI → the wall note → *gpuAsync* → MC→GR `GameRenderer.render` (resize, clear) → opt
+  {the lightmap, then the world zone; GR→LR `LevelRenderer.render`; the hand and the screen effects; GR→LR
+  `LevelRenderer.blitEntityOutline`; the post chains} → GR→GuiR `GuiRenderer.render` then `GuiRenderer.endFrame` → opt
+  `GpuSurface.isAcquired` {blit} → *submit* → opt `GpuSurface.isAcquired` {present} → the three bookkeeping zones.
+- `rendering/the-window` f1 (flowchart): the candidate test at the loop's head; the loop a box holding load, the load check,
+  device, the device check and the unload; a library that fails goes back without an unload; no candidate left →
+  `MessageBox.error`; a device → `RenderSystem.initRenderer` → the one `Window` from `GpuBackend.createWindow` → a window
+  that fails is a crash report, one that appears gets `Window.setIcon` then `GpuDevice.createSurface`. f2 (flowchart LR): no
+  arrow changed; each group labelled with its count (seven, three, four, three, two).
+- `rendering/blaze3d` f1: a class diagram, `RenderPass` <|.. `FrontendRenderPass` *-- `RenderPassBackend` <|..
+  `GlRenderPass`, `VulkanRenderPass` (was an 18-node grid the table beside it repeats). f2 (sequence, lanes Game, GD, CE, RP,
+  GlRP, GlCE; the `GpuSurface` lane cut): createCommandEncoder → createRenderPass → validate → CE→GlCE createRenderPass (a
+  cached FBO bound, scissor, clear, viewport) → the `RenderPass` back → setPipeline → `RenderSystem.bindDefaultUniforms` →
+  buffers and per-texture uniforms → drawIndexed → RP→GlRP drawIndexed → GlRP→GlCE executeDraw → the GL draw → close →
+  RP→CE `FrontendCommandEncoder.submitRenderPass` → CE→GlCE submitRenderPass.
+- `rendering/visibility-and-the-frame-graph` f1 (flowchart): extract {1 · `LevelExtractor.applyFrustum`} →
+  `LevelRenderer.render` {2 · submit and prepare → 3 · clear, and the sky if drawn → 4 · the visible sections bucketed → 3 ·
+  the main pass and any outline chain declared, then `FrameGraphBuilder.execute` → 5 · translucent re-sorts scheduled for a
+  worker at the end of `LevelRenderer.compileSections` → the walk that feeds stage one, partial}; dotted: a full walk handed
+  to `Util.backgroundExecutor` when one is due; the flag either walk can raise, to stage one. f2: no arrow changed; the
+  outline, see-through and always-on-top steps each marked with its guard.
+- `rendering/section-meshing` f1 (sequence, six lanes; `MultiPlayerGameMode` and `Worker` folded): band *the client tick*
+  {setBlock from `BlockItem.placeBlock` → setBlockDirty (which asks whether a model cares) → blockChanged (the
+  player-changed bit) → the halo, one to eight sections} → band *the frame after that tick* {LX→LR `visibleSections` →
+  `RenderRegionCache`'s 27-section snapshot → the flag cleared → the swept sections to LR in the level's render state → alt
+  [player-changed or nearby, as `PrioritizeChunkUpdates` says] {compileSync; compile inline on the Render thread} else
+  {compileAsync; on a worker, nearest-first, once a buffer pack is free} → at most three layers into the staging buffer →
+  `uploadTerrainBuffersToGpu`, whose callback swaps in each fully staged mesh}.
+- `rendering/models-and-atlases` f1 (flowchart): a reload starts → the Render thread runs
+  `AtlasManager.prepareSharedState`, then every listener's reload → on worker threads {the five model roots (the three
+  listings; `EntityModelSet.vanilla` and `BuiltInBlockModels.createBlockModels`); the atlas stitches (blocks and items; the
+  other ten); the listings → `ModelDiscovery`; blocks and items, discovery and the two single roots → the bakes
+  (`ModelBakery.bakeModels`, then the `BlockModel` layer and fluids)} → the bakes and the other ten → the barrier → Render
+  thread: `TextureAtlas.upload`, then `ModelManager.apply` → `LevelExtractor.allChanged`.
+- `rendering/entity-rendering` f1 (flowchart): `GameRenderer.extract` {Extract} → `LevelRenderer.render` {Submit → Prepare →
+  Execute}. The eight-lane trace became: f2 extract (LX, ERD, ZR): shouldRender via the dispatcher to the renderer (distance,
+  then frustum) → the section test → extractEntity at the zombie's own partial tick → createRenderState → a fresh state filled
+  down the chain → finalizeRenderState's shadow; f4 submit (LR, ERD, ZR, SNS, ZM): submit per state → the renderer's submit →
+  submitModel → setupAnim, the first pose → each `RenderLayer.submit` → leash if leashed, name tag if named → flame if
+  burning, shadow if it has pieces; f5 prepare (LR, FRD, MFR, ZM): prepareFrame → drain and group → prepareGroup for the
+  model submits → setupAnim, the second pose → renderToBuffer.
+- `rendering/block-entity-rendering` f1: `ChestSpecialRenderer` a node both non-block-entity roads reach before the
+  collector. f2 (sequence, six lanes; `ItemModelResolver` and `ChestSpecialRenderer` folded, `FirstPersonHandsAndItemsRenderer`
+  added): band extract {LX→FPHAI at the player's own partial tick → the held chest resolved to a special renderer → LX→BERD
+  tryExtractRenderState → BERD→ChestR, past the off-screen and distance gates} → band submit {LR→BERD → BERD→ChestR →
+  FPHAIR: the held stack's layer submits to the `ChestSpecialRenderer`}.
+- `rendering/lightmap-fog-and-sky` f1 (sequence, six lanes; `Timelines` and `LevelRenderer` folded): band tick {the
+  extractor's tick raises the flag → the probe's tick rolls its values over and resamples the biome blend →
+  `invalidateTickCache`} → band extract {opt the flag {LRSE→EAP getValue at partial tick 1} → EAP→EAS getValue on an
+  attribute's first ask this tick → the state and the flag to `Lightmap` → the fog's ask → the sky's ask} → band render {opt
+  the flag {`Lightmap.render`} → `SkyRenderer.render` in the sky pass}.
+- `rendering/particles` f1 (flowchart, a subgraph per machine): the breaker's client (`MultiPlayerGameMode.destroyBlock` →
+  `Block.playerWillDestroy`, which calls `Block.spawnDestroyByEntityParticles`); the server (`ServerPlayerGameMode.destroyBlock`
+  → the same → `ServerLevel.levelEvent` → `PlayerList.broadcast`); each other client (`ClientPacketListener.handleLevelEvent`);
+  both routes → `ClientLevel.levelEvent` → `ParticleEngine.add`. f2: the two refusals split (never queued; refused by the
+  group, a counted one's count given back); the chance a decision.
+- `rendering/post-processing` f1 (flowchart): once per resource reload {the file → `ShaderManager.loadConfigs` on a worker →
+  the apply half empties the cache} → a later frame {`ShaderManager.getPostChain` → cached? no: `PostChain.load` → cached by id
+  → addToFrame; yes → addToFrame → `PostPass.addToFrame` → `FrameGraphBuilder.execute` → an imported target}. f2: the pass
+  note moved into the execute message; the closing composite a message from `GameRenderer`.
+- `rendering/README` f1: every page a node numbered to the watch order; *the substrate* and *the pipeline* titled short;
+  every edge label and both direction lines gone; no arrow added, removed or reversed.
+
+### Corrections
+
+#### `rendering/the-frame`
+
+1. `rendering/the-frame` f1 (was GR→LX *extract — window, options, lightmap, camera, the level, the GUI*) — `GameRenderer.extract` copies the window, options, lightmap, camera and GUI itself and calls `LevelExtractor.extract` for the level alone (the caller's list drawn at the callee) — `client/renderer/GameRenderer.java`:479–489
+2. `rendering/the-frame` f1 — `GameRenderer`'s arrows started from nowhere — `Minecraft.renderFrame` calls `GameRenderer.update`, `.extract` and `.render` — `client/Minecraft.java`:1400, 1406, 1429
+3. `rendering/the-frame` f1 note *the wall. Everything after this reads GameRenderState* — the page's own wall section says `GameRenderer.render` still reads live state; the wall is sealed at `LevelRenderer.render` — `client/renderer/GameRenderer.java`:672–700 *(page-internal, :212–229)*
+4. `rendering/the-frame` f1 — the blit and the present drawn unconditionally — both guarded on `GpuSurface.isAcquired` — `client/Minecraft.java`:1447, 1471
+5. `rendering/the-frame` f1 — the world half drawn unconditionally — guarded on `GameRenderState.shouldRenderLevel`, the lightmap inside the guard — `client/renderer/GameRenderer.java`:518–526
+6. `rendering/the-frame`:111 (old reading sentence) *only the first and last of those four touch the surface* — the blit, between the draw and the present, touches it too — `client/Minecraft.java`:1447–1454
+
+#### `rendering/blaze3d`
+
+7. `rendering/blaze3d` f2 RP→GlCE *executeDraw* — the pass forwards to its backend, `GlRenderPass.drawIndexed`, which calls `GlCommandEncoder.executeDraw` — `com/mojang/renderpearl/frontend/FrontendRenderPass.java`:234; `com/mojang/renderpearl/backend/opengl/GlRenderPass.java`:154–155
+8. `rendering/blaze3d` f2 — one `GpuSurface` arrow drawn last carried a call made at the top of the frame — *(page-internal)*; the frame's order is `the-frame`'s
+9. `rendering/blaze3d` f2 *bind an FBO from the cache, viewport, scissor, clear* — FBO, scissor, clear, viewport — `com/mojang/renderpearl/backend/opengl/GlCommandEncoder.java`:137–188
+10. `rendering/blaze3d`:340 *Everything above the GlCommandEncoder lane … Below it* (a lane is a column) — rewritten to the lanes' sides *(page-internal)*
+11. `rendering/blaze3d`:42–44 *the game holds the left column below* under a figure drawn top-down — the left column is the table's *(page-internal)*
+
+#### `rendering/visibility-and-the-frame-graph`
+
+12. `rendering/visibility-and-the-frame-graph` f1 — stage 4 (the bucketing) drawn after stage 3's execute — `LevelRenderer.prepareChunkRenders` runs after the clear and sky passes are declared and before the main pass is — `client/renderer/LevelRenderer.java`:230–263
+13. `rendering/visibility-and-the-frame-graph` f1 stage 1 *SectionOcclusionGraph reaches sections outward from the camera … in extract* — the walk runs at the end of `LevelRenderer.render` (and a full one on the background pool); stage 1 is the frustum's trim — `client/renderer/LevelRenderer.java`:299; `client/renderer/extract/LevelExtractor.java`:514–521
+14. `rendering/visibility-and-the-frame-graph` f1 — stage 1 drawn running every frame — only when the graph's flag is up or the camera has turned past a two-degree step — `client/renderer/extract/LevelExtractor.java`:147–155
+15. `rendering/visibility-and-the-frame-graph` f1 stage 5 *for a mesh that arrives a frame or more later* — a re-sort reorders an existing mesh on a worker — `client/renderer/chunk/SectionRenderDispatcher.java`:305–311
+16. `rendering/visibility-and-the-frame-graph`:77 *the last box is that same walk* (stage 1 is the frustum) — *the walk that feeds it* *(page-internal)*
+17. `rendering/visibility-and-the-frame-graph`:399 *stages two to five top to bottom* — they interleave — `client/renderer/LevelRenderer.java`:230–263
+18. `rendering/visibility-and-the-frame-graph` f2 caption *the one decision inside it* — three steps are also skipped in a frame with nothing of their kind — `client/renderer/LevelRenderer.java`:461, 465, 803
+
+#### `rendering/section-meshing`
+
+19. `rendering/section-meshing` f1 *compileAsync, or compileSync …*, then every compile to a worker — a synchronous compile runs inline on the Render thread — `client/renderer/chunk/SectionRenderDispatcher.java`:350–354; `client/renderer/LevelRenderer.java`:1110–1128
+20. `rendering/section-meshing` f1 *walk the visible sections* drawn arriving at `LevelRenderer` before the snapshot and the clear, with no hand-off — the sweep reads `LevelRenderer.visibleSections`, and hands the sections over in the level's render state — `client/renderer/extract/LevelExtractor.java`:174–184; `client/renderer/LevelRenderer.java`:1106
+21. `rendering/section-meshing` f1 note *the end of a later frame* — true of an asynchronous compile only — `client/renderer/LevelRenderer.java`:283–290
+22. `rendering/section-meshing`:71 *a much later frame publishes the result* — the end of that frame or a later one (same evidence)
+23. `rendering/section-meshing`:240 *The figure's third note says it* (it was the second) *(page-internal)*
+
+#### `rendering/models-and-atlases`
+
+24. `rendering/models-and-atlases` f1 — `AtlasManager.prepareSharedState` drawn as the source of the model roots — `ModelManager.reload` opens them; `prepareSharedState` publishes twelve empty futures, which `AtlasManager.reload` schedules — `client/resources/model/ModelManager.java`:105–111; `client/resources/model/sprite/AtlasManager.java`:100–119, 126–135
+25. `rendering/models-and-atlases` f1 — `EntityModelSet.vanilla` and `BuiltInBlockModels.createBlockModels` drawn straight to the barrier — both feed the bake — `client/resources/model/ModelManager.java`:119–124
+26. `rendering/models-and-atlases` f1 *then mipmaps* for the blocks and items atlases — only the blocks atlas mipmaps — `client/resources/model/sprite/AtlasManager.java`:31 *(the page's own :100–101)*
+27. `rendering/models-and-atlases`:36–41 *every one of them is a box* (seven boxes, seventeen pieces) and *They converge exactly once* — rewritten *(page-internal; `ModelManager.java`:112, 121, 124)*
+28. `rendering/models-and-atlases`:78 *above the barrier, worker threads* (the Render thread's step sits above it) *(page-internal)*
+
+#### `rendering/entity-rendering`
+
+29. `rendering/entity-rendering` f1 *FeatureRenderDispatcher sorts every submit* — only the translucent phases sort — `client/renderer/feature/phase/SimpleFeatureRenderPhase.java`:44–69; `TranslucentFeatureRenderPhase.java`:25–53
+30. `rendering/entity-rendering` (old f2) *isEntityVisible — frustum via ERD, then …* — three tests, distance first, distance and frustum the renderer's — `client/renderer/entity/EntityRenderer.java`:66–78; `client/renderer/extract/LevelExtractor.java`:290–299
+31. `rendering/entity-rendering` (old f2) FRD→ZM *setupAnim again, then walk ModelPart and write vertices* — `ModelFeatureRenderer` poses and writes — `client/renderer/feature/ModelFeatureRenderer.java`:34–48
+32. `rendering/entity-rendering` (old f2) ZR→SNS *each RenderLayer submits* — the layers submit through `RenderLayer.submit` — `client/renderer/entity/LivingEntityRenderer.java`:111–118
+33. `rendering/entity-rendering`:133 figcaption *Every render state in the game, by depth* — the entity family only, cut at three levels, each count a descendant count — `tools/map_source.py`:65, 317–328; `client/renderer/entity/state/UndeadRenderState.java`, `ZombieRenderState.java`
+
+#### `rendering/block-entity-rendering`
+
+34. `rendering/block-entity-rendering` (old f2) *CSR->>CSR: submit for the hand renderer* — `FirstPersonHandsAndItemsRenderer` submits the held stack, whose layer calls the special renderer — `client/renderer/FirstPersonHandsAndItemsRenderer.java`:511; `client/renderer/item/ItemStackRenderState.java`:121–123, 240–244
+35. `rendering/block-entity-rendering` (old f2) extract note *one partial tick for every block entity* over the hand's arrow — the hand is extracted at the player's own — `client/renderer/extract/LevelExtractor.java`:445
+
+#### `rendering/lightmap-fog-and-sky`
+
+36. `rendering/lightmap-fog-and-sky` f1 *Time->>EAS: the keyframe tracks for this world time*, once a tick — a track is sampled when a value is asked for, cached per tick — `world/timeline/AttributeTrackSampler.java`:31–37; `world/attribute/EnvironmentAttributeProbe.java`:66–67
+37. `rendering/lightmap-fog-and-sky` f1 — no link from the system to the probe — the probe asks the system on an attribute's first read since its tick — `world/attribute/EnvironmentAttributeProbe.java`:60, 81–82
+38. `rendering/lightmap-fog-and-sky` f1 — the lightmap's ask and draw in the per-frame bands with no condition — both only when a tick has raised the flag — `client/renderer/LightmapRenderStateExtractor.java`:46; `client/renderer/Lightmap.java`:53
+39. `rendering/lightmap-fog-and-sky` f1 — the probe's tick drawn before the extractor's — `GameRenderer.tick` runs the extractor's first — `client/renderer/GameRenderer.java`:295, 302
+40. `rendering/lightmap-fog-and-sky` f1 — the sky's ask omitted `SUNRISE_SUNSET_COLOR` and `SKY_COLOR` — `client/renderer/SkyRenderer.java`:177, 179
+41. `rendering/lightmap-fog-and-sky` f1 *LR->>LR: addSkyPass — disc, sunrise fan, …* — the draws are `SkyRenderer.render`'s — `client/renderer/LevelRenderer.java`:371–376; `SkyRenderer.java`:201–203
+42. `rendering/lightmap-fog-and-sky` f1 *FR-->>LR: FogData … in one UBO* in the extract band — stashed on `CameraRenderState` then, uploaded in `GameRenderer.renderLevel` — `client/renderer/GameRenderer.java`:740–741 *(the page's own :135–142)*
+
+#### `rendering/particles`
+
+43. `rendering/particles` f1 *MPGM->>Block: playerWillDestroy, then spawnDestroyByEntityParticles* — `Block.playerWillDestroy` calls `Block.spawnDestroyByEntityParticles` — `world/level/block/Block.java`:504–505
+44. `rendering/particles` f1 — one `Block` lane taking a client call and calling `ServerLevel` — two machines; the server's copy runs from `ServerPlayerGameMode.destroyBlock` — `server/level/ServerPlayerGameMode.java`:298–313
+45. `rendering/particles` f1 — the second route drawn without `LevelEventHandler` and the sound — both routes go through `ClientLevel.levelEvent` — `client/multiplayer/ClientPacketListener.java`:1737; `client/multiplayer/ClientLevel.java`:891–893
+46. `rendering/particles` f1 note *the breaker's own client* spanning the server's lanes *(page-internal)*
+47. `rendering/particles` f2 *dropped, and never queued* as the target of the group's refusals too, which are queued first — `client/particle/ParticleEngine.java`:71, 106
+
+#### `rendering/post-processing`
+
+48. `rendering/post-processing` f1 — the compile and the cache drawn in the reload's line, and the paragraph under it *everything down to CACHE happens once, during a resource reload* — both happen on a frame's first ask; the reload empties the cache — `client/renderer/ShaderManager.java`:206, 260–261, 337–343
+49. `rendering/post-processing` f1 — no branch — a cached chain skips `PostChain.load` — `client/renderer/ShaderManager.java`:337–338
+50. `rendering/post-processing` f2 — the note naming the four passes drawn in the build half — nothing is drawn while the graph is built — `client/renderer/LevelRenderer.java`:263 *(the page's own :142)*
+
+#### `rendering/README`
+
+51. `rendering/README`:69–73 *The arrows … what the next page needs you to have read … two of them are its reverse* (naming one) — three arrows are not dependencies (`lightmap-fog-and-sky`, `particles` and `post-processing` never link the page before them); the arrows are the watch order *(page-internal and the part's links)*
+
+#### `rendering/the-window`
+
+
+No correction before the audit: f1's order was right and it lacked the window's own failure exit (a claim added, not a correction), and f2's groups were right; two of the viewer's suspicions were not borne out (maximise joins minimise and restore, and quit and terminate run the close callback — `com/mojang/blaze3d/platform/Window.java`:219–225, 252–275).
+
+#### What the audit found (52–110)
+
+52. `rendering/the-frame`:111 (new) *everything between the first and the last of those four is paid for* — the blit is not paid without a surface — `client/Minecraft.java`:1447 — now *everything but the blit and the present*
+53. `rendering/the-frame` f1 (new) — the lightmap, camera and level extract drawn unconditionally — inside `shouldRenderLevel` in `GameRenderer.extract` — `client/renderer/GameRenderer.java`:476–487 — now an `opt`
+54. `rendering/the-frame` f1 (new) — `ClientLevel.update` drawn unconditioned — only on a ticking frame with a level — `client/Minecraft.java`:1396
+55. `rendering/the-frame` f1 (new) — the acquire drawn unconditioned — only when the surface is valid — `client/Minecraft.java`:1371
+56. `rendering/the-frame` f1 (new) *Camera.update alone* for `GameRenderer.update` — it also lists the frame's post chains — `client/renderer/GameRenderer.java`:461–469
+57. `rendering/the-frame` f1 (new) *the outline* as `GameRenderer`'s own step — `LevelRenderer.blitEntityOutline`, a call to the level renderer — `client/renderer/GameRenderer.java`:524
+58. `rendering/the-frame`:63–65 and f1 caption (new) *touch the surface* — with F3 up the GUI extract reads `GpuSurface.currentConfiguration` mid-frame; the texture is what the ends touch — `client/gui/components/debug/DebugEntryFps.java`:20
+59. `rendering/the-window` f1 caption (new) *only a surviving device leaves* — running out of candidates leaves it too — `client/Minecraft.java`:510, 535–540
+60. `rendering/the-window` f2 caption (new) *how many … take each* — the numbers count the groups — `com/mojang/blaze3d/platform/Window.java`:192–244
+61. `rendering/the-window` f2 (new) *MonitorManager's list* — a map keyed by display id — `com/mojang/blaze3d/platform/MonitorManager.java`:16
+62. `rendering/blaze3d` f2 caption (new) *where every call is checked* — `FrontendRenderPass.setIndexBuffer` forwards unchecked, and a shipped game's draw checks only that a pipeline is bound — `com/mojang/renderpearl/frontend/FrontendRenderPass.java`:221–224, 448–451
+63. `rendering/blaze3d` f1 (new) *checks every call first* — setIndexBuffer and disableScissor forward unchecked — `FrontendRenderPass.java`:200–202, 221–224
+64. `rendering/blaze3d`:341–342 (beside the corrected figure) *binds a framebuffer, sets viewport and scissor and clears* — FBO, scissor, clear, viewport — `com/mojang/renderpearl/backend/opengl/GlCommandEncoder.java`:139, 163–164, 166–186, 188
+65. `rendering/blaze3d`:342–345 (beside it) *applies depth, cull, blend, polygon mode and colour mask, binds a program, …, binds a vertex array and finally draws* — the vertex array and index buffer first, then the program and its state — `GlCommandEncoder.java`:455–468; `com/mojang/renderpearl/backend/opengl/GlRenderPipeline.java`:113–155
+66. `rendering/blaze3d` f1 caption (new) *The validation lives in the middle box* — the render has four tiers; the contract's checks are `FrontendRenderPass`'s — `FrontendRenderPass.java`:97–119
+67. `rendering/visibility-and-the-frame-graph` f1 caption (new) *The dotted arrows are the walk's results reaching a later frame* — one is the full walk handed to a worker — `client/renderer/SectionOcclusionGraph.java`:160–161, 189
+68. `rendering/visibility-and-the-frame-graph` f1 (new) *1 again* inside `LevelRenderer.render` against the caption and `:398` (stage one outside render) — the walk feeds stage one and is not it *(page-internal)*
+69. `rendering/visibility-and-the-frame-graph` f1 (new) S3B omitted the outline chain declared between the main pass and execute — `client/renderer/LevelRenderer.java`:254–260
+70. `rendering/visibility-and-the-frame-graph` f1 (new) *clear, sky* — the sky only when drawn — `LevelRenderer.java`:238
+71. `rendering/visibility-and-the-frame-graph` f1 (new) stage 5 lost the lateness — the re-sort is a worker task — `client/renderer/chunk/SectionRenderDispatcher.java`:305–311
+72. `rendering/visibility-and-the-frame-graph` f2 (new) *only with such gizmos* — no antecedent — *only with always-on-top gizmos*
+73. `rendering/section-meshing` f1 caption (new) *at the end of whichever frame finds it uploaded* — the frame's own upload does the upload and the swap — `com/mojang/blaze3d/vertex/UberGpuBuffer.java`:138–140
+74. `rendering/section-meshing` f1 caption (new) *sweeps only the visible ones and compiles them* — visible sections; the async path only queues — `client/renderer/LevelRenderer.java`:1110–1128
+75. `rendering/section-meshing` f1 (new) *setBlockDirty, if a model cares* — the call is made whenever the state changed; the check is inside — `world/level/Level.java`:227; `client/renderer/extract/LevelExtractor.java`:590–594
+76. `rendering/section-meshing`:79 (broken by the redraw) *The first arrow is not what it looks like* — now *hides who starts it*
+77. `rendering/section-meshing` f1 (new) the upload *swaps the mesh in* inside the frame band — it swaps in what is fully staged — `client/renderer/chunk/SectionRenderDispatcher.java`:403–404, 625–651
+78. `rendering/models-and-atlases`:42 (new) *the ten atlases no model needs* — the built-in block models and the chest's special renderer read other atlases at draw time — `client/renderer/block/BuiltInBlockModels.java`:23–58; `client/renderer/special/ChestSpecialRenderer.java`:77–81
+79. `rendering/models-and-atlases`:42 (new) *They join in three places* — at least six (discovery, the built-in models, the bake, all twelve uploads, `ParticleResources`, the barrier) — `ModelManager.java`:112, 121, 124; `AtlasManager.java`:114; `client/particle/ParticleResources.java`:222–223
+80. `rendering/models-and-atlases`:42 (new) *the barrier, is the only one the ten atlases … wait at* — `ParticleResources` awaits the particles atlas before its barrier — `client/particle/ParticleResources.java`:222–226
+81. `rendering/models-and-atlases` f1 caption (new) *after one step on the Render thread* — the Render thread also calls every listener's reload — `server/packs/resources/SimpleReloadInstance.java`:69–83
+82. `rendering/models-and-atlases` f1 (new) the subgraphs `AtlasManager.reload` and `ModelManager.reload` inside the worker box — their bodies run on the Render thread; only what they schedule runs on workers (same)
+83. `rendering/models-and-atlases` f1 (new) *then the block and fluid models* — the `BlockModel` display layer — `ModelManager.java`:235–241
+84. `rendering/models-and-atlases`:78 (new) *inside the box … in any order* — three boxes; the joins order some work — *the outer box … the order the joins allow*
+85. `rendering/entity-rendering` f5 caption (new) *before any pass has run* — `Lightmap.render` opens a pass before the level renders — `client/renderer/Lightmap.java`:52–78; `GameRenderer.java`:520–522
+86. `rendering/entity-rendering` f2 caption (new) *the third is the extractor's own* — the extractor asks it of `LevelRenderer` — `client/renderer/LevelRenderer.java`:1407–1414
+87. `rendering/entity-rendering` f4 (new) leash and name tag unconditioned — only if leashed, only if named — `client/renderer/entity/EntityRenderer.java`:110, 137, 143
+88. `rendering/entity-rendering` f5 (new) *prepare the model group* — the hop is `prepareGroup` — `client/renderer/feature/RenderTypeFeatureRenderer.java`:37; `FeatureRenderDispatcher.java`:387–391
+89. `rendering/entity-rendering`:133 figcaption (new) *every state below its box* — no boxes; a folded row counts the states it folds — `tools/map_source.py`:636–654
+90. `rendering/entity-rendering`:57 (new) *drawn stage by stage* — three of the four stages have a figure *(page-internal)*
+91. `rendering/entity-rendering` f4, f5 lead-ins (new) — the paragraphs before them did not say a figure follows (TEMPLATE, *Figures*) — added
+92. `rendering/block-entity-rendering` f1 (new) *SpecialModelWrapper, in that layer* — the wrapper puts its renderer in a layer it opens — `client/renderer/item/SpecialModelWrapper.java`:50, 64
+93. `rendering/block-entity-rendering` f1 (new) *SpecialBlockModelWrapper, in a BlockModelRenderState* — it sets its renderer on the state — `client/renderer/block/model/SpecialBlockModelWrapper.java`:21–22
+94. `rendering/block-entity-rendering` f1 (redrawn figure, older label) *ItemModelResolver … opens a layer* — it finds the model; the wrapper opens the layer — `client/renderer/item/ItemModelResolver.java`:48–64
+95. `rendering/block-entity-rendering` f1 (new) *A chest carried by something else* — overlapped *held*; the road is a chest block shown by an entity — `client/renderer/block/BlockModelResolver.java`:19–21
+96. `rendering/block-entity-rendering` f1 caption (new) *meet at one special renderer … Only the left road walks the world to find its chest* — one class, two instances; a shelved chest is found by the section walk — `SpecialModelWrapper.java`:86; `SpecialBlockModelWrapper.java`:29; `client/renderer/blockentity/ShelfRenderer.java`:50
+97. `rendering/block-entity-rendering` f2 caption (new) *They share only the model they draw* — both use one collector and one dispatcher; they share the chest model's layer definition — `client/renderer/blockentity/ChestRenderer.java`:50–52, 106; `ChestSpecialRenderer.java`:46, 78
+98. `rendering/block-entity-rendering` f2 caption (new) *each band one half of it* — the bands are extract and submit — *(the-frame's halves are extract and render)*
+99. `rendering/block-entity-rendering` f2 (new) *past two gates* — which two: the off-screen equality and the distance test — `client/renderer/blockentity/BlockEntityRenderDispatcher.java`:68, 70
+100. `rendering/lightmap-fog-and-sky` f1 (new) *so once a tick* — at most once a tick — `LightmapRenderStateExtractor.java`:35, 92
+101. `rendering/lightmap-fog-and-sky` f1 (new) the probe's tick *last becomes new* — each value rolled over and cleared, which is why the next read reaches the system — `EnvironmentAttributeProbe.java`:35, 74–75
+102. `rendering/particles` f2 caption (new) *a `SPORE_BLOSSOM` particle* — failed `verify_names.py`; the limit is `ParticleLimit.SPORE_BLOSSOM` — `core/particles/ParticleLimit.java`:5
+103. `rendering/particles` f2 (new) *queued …, counted* on the node every particle reaches — only a limited particle is counted — `client/particle/ParticleEngine.java`:71–75
+104. `rendering/particles` f2 (new) *refused by the group, and uncounted* — the count is given back, for a counted particle — `ParticleEngine.java`:107–109
+105. `rendering/particles` f1 (new) *Block.playerWillDestroy, then …* — kept the reading correction 43 removed — *which calls*
+106. `rendering/post-processing`:68–71 (new) *the bottom one inside a frame, every frame … the compile … belongs to neither* — the compile and the cache entry are the bottom box's, on the first ask — `ShaderManager.java`:337–343
+107. `rendering/post-processing` f2 (new) the four passes in the execute message after the `opt` — they exist only when the chain was added — `client/renderer/LevelRenderer.java`:254–263
+108. `rendering/post-processing` f1 caption (new) *straight into the frame's graph* — four of the five chains go into a throwaway graph — `client/renderer/PostChain.java`:349–355
+109. `rendering/README` f1 (new) — the pair boxes, outside the landing set's grammar, put the 6→7 arrow through a subgraph title — removed
+110. `rendering/README` f1 caption and :69–73 (new) *not a dependency*; *not what each page needs from the last* — seven of the ten arrows are backed by links; the dropped true clause (*visibility hands section meshing the sections to compile*) restored
+
+Not borne out: `the-window` f2's grouping of maximise and of quit and terminate (the viewer's); `particles` f1's
+`PlayerList` applying the range and the skip (it does, `server/players/PlayerList.java`:674–679); `the-frame`'s
+`GuiRenderer.endFrame` (real, `client/renderer/GameRenderer.java`:537); the fog's `SUNRISE_SUNSET_COLOR` (it reads it,
+conditionally, `client/renderer/fog/environment/AtmosphericFogEnvironment.java`:35, 41–43). Two record-only changes the
+audit called rewordings, not corrections: `post-processing` f2's *blur across, blur down* (true of the blur directions) and
+*reads and writes the output* (true of the declared access), both reworded for clarity.
+
+### Captions written
+
+Every caption on the part, word for word, is listed by `python tools/pass7/captions.py` (22, all of Part XI's).
+
+### Lead-ins and reading sentences changed
+
+`the-frame`:63–65 (new lead-in) and :111; `blaze3d`:42–46 and :340–345; `visibility-and-the-frame-graph`:76–81 and :398–399;
+`section-meshing`:71–73, :79 and :240; `models-and-atlases`:36–43 and :78–80; `post-processing`:67–71; `entity-rendering`:57
+and the three new lead-ins (:98, the submit and prepare paragraphs); `block-entity-rendering`:90; `lightmap-fog-and-sky`:131–133
+(new); `README`:69–73.
+
+### For later sessions
+
+- **L** — sentences the figures now disagree with, left for the check because they are prose, not a figure's apparatus:
+  `section-meshing`:5–10 (the opening, J's handoff), :71–73 (*an empty mesh is published by the worker*; on the synchronous
+  branch the Render thread publishes it, `SectionRenderDispatcher.java`:612–613), :104–108 (self-contradicting), :271–273;
+  `rendering/README`:118–120 (watch line 5, *a worker compiles … frames later*); `rendering/the-frame`'s zone table rows
+  *render* and *extract* (no guard shown; the flag is `GameRenderState.shouldRenderLevel`, `GameRenderer.java`:476–487);
+  `particles`:21 and :185–186 (*on dimension and distance, nothing else*; the source is skipped too), :244–245 (the limited
+  particle is the ambient `SPORE_BLOSSOM_AIR`, not a falling petal, `world/level/block/SporeBlossomBlock.java`:47–55),
+  :253–254; `lightmap-fog-and-sky`:206–210 (the fog's colour also reads `SUNRISE_SUNSET_COLOR`, `SKY_COLOR` and `SUN_ANGLE`);
+  `entity-rendering`:9 and `block-entity-rendering`:21 (*sorted and batched* every description; only the translucent phases
+  sort), `entity-rendering`:82–84 (the third test is a look-up, not the walk's list), :296 (twelve feature renderers, not
+  thirteen), :368 (`.executeOutline` guarded, opening its own pass; see-through and always-on-top also guarded);
+  `block-entity-rendering`:3 (*share a model and nothing else*, a verified line) and :187–188 (block entities are
+  frustum-culled per section, since `visibleSections` is the trimmed list); `blaze3d`:360–362 (*the swapchain lives in
+  `VulkanGpuSurface`* now has no lane beside it); `models-and-atlases`:115–125 and :253–254 (the handshake never names
+  `ParticleResources`; the Render thread does more than one thing); `the-window`:59–61 (*fail identically* against two
+  drawn paths).
+- **O or P** — two Mojang names hyphen-broken on screen outside Part XI (`tools/pass7/broken_names.py`):
+  `blocks/block-entities` f1 (`AbstractContainerMenu.broadcast-`) and `items/contexts-and-predicates` f2
+  (`ContextMap.Builder.buildAndValid-`).
+- **Second edition** — the sections K's viewers named as wanting a figure: `models-and-atlases`' *How an item picks its
+  model*, `the-frame`'s *Acquire, and the frame that carries on without one*, `the-window`'s F11 negotiation, `blaze3d`'s
+  shader pipeline, `section-meshing`'s queue choice, `visibility`'s re-sort rule, `lightmap-fog-and-sky`'s fog-environment
+  list, `particles`' setting gate, `post-processing`'s two doors, `entity-rendering`'s global order grid,
+  `block-entity-rendering`'s two model tables.
+- **P** — every figure and caption above, and this session's diff.
+
 ## Pass 8, session J — Part X · The client *(2026-09-28)*
 
 Thirteen pages in one session, not split at the GUI stack, each checked under Part 2 by its own agent while the session read the

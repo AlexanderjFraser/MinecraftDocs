@@ -43,40 +43,34 @@ what a `GpuDevice` is.
 
 ```mermaid
 flowchart TD
-    FRAME["The frame — extract, then draw"]
-    subgraph SUB["the substrate — no trace through the world, made once at startup"]
-        direction LR
-        WIN["The window"]
-        B3D["Blaze3D"]
+    FRAME["1 · The frame"]
+    subgraph SUB["the substrate"]
+        WIN["2 · The window"]
+        B3D["3 · Blaze3D"]
     end
-    subgraph PIPE["the pipeline — the order to watch them in, and what each page needs from the last"]
-        direction TB
-        VIS["Visibility and the frame graph"]
-        MESH["Section meshing"]
-        MOD["Models and atlases"]
-        ENT["Entity rendering"]
-        BEN["Block-entity rendering"]
-        SKY["Lightmap, fog and sky"]
-        PART["Particles"]
-        POST["Post-processing"]
-        VIS -- "and then: where those sections got their triangles" --> MESH
-        MESH -- "and where a section's quads came from" --> MOD
-        MOD -- "the same atlases, a different pipeline" --> ENT
-        ENT -- "and the things that are neither terrain nor entity" --> BEN
-        BEN -- "and every draw needs a colour" --> SKY
-        SKY -- "plus the quads that are not geometry" --> PART
-        PART -- "then the finished picture, read back" --> POST
+    subgraph PIPE["the pipeline"]
+        VIS["4 · Visibility and the frame graph"]
+        MESH["5 · Section meshing"]
+        MOD["6 · Models and atlases"]
+        ENT["7 · Entity rendering"]
+        BEN["8 · Block-entity rendering"]
+        SKY["9 · Lightmap, fog and sky"]
+        PART["10 · Particles"]
+        POST["11 · Post-processing"]
+        VIS --> MESH --> MOD --> ENT --> BEN --> SKY --> PART --> POST
     end
-    FRAME --> SUB
-    SUB --> PIPE
+    FRAME --> SUB --> PIPE
 ```
 
-The arrows in that figure are one thing and one thing only: **what the next
-page needs you to have read**. None of them is the order a frame runs in, and
-two of them are its reverse — visibility hands section meshing the list of
-sections to compile, and a frame's terrain is drawn from meshes an earlier
-frame made. Inside a frame the
-order is different — the sky pass is declared before the main one, the
+*The part as a substrate and a pipeline, numbered to the watch order, the
+frame first: an arrow is the next lecture, which is not the order a frame runs
+in.*
+
+The arrows in that figure are **the order to watch in**, which is not the
+order a frame runs in. Visibility hands section meshing the sections to
+compile, and a frame's terrain is drawn from meshes an earlier frame made, so
+the fourth and fifth lectures feed each other. Inside a frame the order is
+different — the sky pass is declared before the main one, the
 lightmap is built before the world is drawn at all, and [one of the five post
 chains runs as passes of the world's own graph while the other four build one
 and throw it away](post-processing.md#two-doors-into-the-gpu-and-one-of-them-is-deprecated).

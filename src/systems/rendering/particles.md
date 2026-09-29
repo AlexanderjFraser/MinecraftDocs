@@ -52,27 +52,28 @@ sound happen](../client/what-makes-a-sound.md#the-three-doors), which owns
 the switch has decided.
 
 ```mermaid
-sequenceDiagram
-    participant MPGM as MultiPlayer<br/>GameMode
-    participant Block as Block
-    participant SL as ServerLevel
-    participant PL as PlayerList
-    participant CPL as ClientPacketListener
-    participant CL as ClientLevel
-    participant PE as ParticleEngine
-
-    Note over MPGM,PE: the breaker's own client, predicting
-    MPGM->>Block: playerWillDestroy, then spawnDestroyByEntityParticles
-    Block->>CL: levelEvent, PARTICLES_AND_SOUND_DESTROY_BLOCK, the breaker as source
-    CL->>CL: LevelEventHandler, the sound, then addDestroyBlockEffect
-    CL->>PE: add, one TerrainParticle per quarter-block cell of the shape
-    Note over SL,PE: everybody else, within 64 blocks
-    Block->>SL: the same levelEvent, on the server's copy of the block
-    SL->>PL: broadcast within 64 blocks, skipping the source
-    PL->>CPL: ClientboundLevelEventPacket
-    CPL->>CL: levelEvent, then the same addDestroyBlockEffect
-    CL->>PE: add, the identical particles
+flowchart TD
+    subgraph BC["the breaker's client"]
+        MPGM["MultiPlayerGameMode.destroyBlock, predicting"] --> PWD1["Block.playerWillDestroy, which calls Block.spawnDestroyByEntityParticles"]
+    end
+    subgraph SV["the server"]
+        SPGM["ServerPlayerGameMode.destroyBlock, once the dig succeeds"] --> PWD2["the same, on the server's level"]
+        PWD2 --> SL["ServerLevel.levelEvent, the breaker as source"]
+        SL --> PL["PlayerList.broadcast: within 64 blocks, not the breaker"]
+    end
+    subgraph OC["each other client in range"]
+        CPL["ClientPacketListener.handleLevelEvent"]
+    end
+    MPGM -- "the dig reaches the server" --> SPGM
+    PL -- "ClientboundLevelEventPacket" --> CPL
+    PWD1 --> CL["ClientLevel.levelEvent: LevelEventHandler, the sound, then ClientLevel.addDestroyBlockEffect"]
+    CPL --> CL
+    CL -- "one TerrainParticle per cell" --> PE["ParticleEngine.add, never through ClientLevel.addParticle"]
 ```
+
+*One break puff by two routes: the breaker's client raises the event itself,
+and the server sends it to everyone else in range. Both routes end in the same
+client code, which hands finished particles straight to the engine.*
 
 **Neither route is gated.** Both end in `ClientLevel.addDestroyBlockEffect`,
 which calls `ParticleEngine.add` directly and never passes through
@@ -205,18 +206,23 @@ Everything else meets the engine's own two limits.
 
 ```mermaid
 flowchart TD
-    A["a constructed particle reaches ParticleEngine.add"] --> B{"does Particle.getParticleLimit name a ParticleLimit"}
-    B -- "no limit, the overwhelming majority" --> Q
-    B -- "SPORE_BLOSSOM, already at its count" --> X["dropped, and never queued"]
-    B -- "SPORE_BLOSSOM, under its count" --> Q["queued in ParticleEngine.particlesToAdd — every particle that survives goes here"]
-    Q --> D{"at the next ParticleEngine.tick, ParticleGroup.add for the particle's ParticleRenderType"}
-    D -- "at ParticleGroup.MAX_PARTICLES" --> X
-    D -- "past ParticleGroup.RESERVOIR_START" --> E["kept with probability equal to the square of the fraction of RESERVOIR_SIZE still free"]
-    D -- "below RESERVOIR_START" --> K["kept"]
-    E --> K
-    E --> X
+    A["a particle reaches ParticleEngine.add"] --> B{"a ParticleLimit?"}
+    B -- "none, nearly all" --> Q
+    B -- "ParticleLimit.SPORE_BLOSSOM, full" --> X1["dropped, never queued"]
+    B -- "under it, counted" --> Q["queued in ParticleEngine.particlesToAdd"]
+    Q --> D{"next ParticleEngine.tick: its group's room"}
+    D -- "at ParticleGroup.MAX_PARTICLES" --> X2["refused; a counted one's count given back"]
+    D -- "past ParticleGroup.RESERVOIR_START" --> E{"kept by chance?"}
+    D -- "below ParticleGroup.RESERVOIR_START" --> K["kept"]
+    E -- "yes" --> K
+    E -- "no" --> X2
     K --> T["ticked from the next tick onward"]
 ```
+
+*The engine's two limits in the order a particle meets them: the per-type
+count on arrival, and its render type's group at the next tick. Only a
+particle carrying `ParticleLimit.SPORE_BLOSSOM` has a count to meet, and one the
+group refuses gives its count back.*
 
 **There are four render types in the game**, and they are the whole
 population every *four* below counts against: `ParticleRenderType.SINGLE_QUADS`,

@@ -37,47 +37,25 @@ everything drawn is a redrawing of what the server already told the client
 
 ```mermaid
 flowchart TD
-    E["Extract: LevelExtractor walks the visible entities and fills one fresh render state per entity"]
-    S["Submit: LevelRenderer walks the states, and each renderer describes what should be drawn"]
-    P["Prepare: FeatureRenderDispatcher sorts every submit, groups it, and builds the vertices"]
-    X["Execute: the frame graph's passes issue the draws the prepare already built"]
+    subgraph EX["GameRenderer.extract"]
+        E["Extract: LevelExtractor gets one fresh render state per visible entity"]
+    end
+    subgraph RE["LevelRenderer.render"]
+        S["Submit: each renderer describes what should be drawn"]
+        P["Prepare: FeatureRenderDispatcher groups, sorts the translucent, writes vertices"]
+        X["Execute: the frame graph's passes issue the draws"]
+    end
     E -- "value objects, no Entity, no Level" --> S
-    S -- "submit nodes in SubmitNodeStorage, bucketed by order" --> P
-    P -- "one prepared frame of batched draws" --> X
+    S -- "submit nodes, bucketed by order" --> P
+    P -- "one prepared frame" --> X
 ```
 
-The worked instance is one zombie going through all four.
+*The four stages and what each hands the next, the first inside the extract
+and the other three inside the level's render. Only the box at the top reads a
+live entity: everything below it works from the copy.*
 
-```mermaid
-sequenceDiagram
-    participant LX as LevelExtractor
-    participant ERD as EntityRender<br/>Dispatcher
-    participant ZR as ZombieRenderer
-    participant ZS as ZombieRenderState
-    participant LR as LevelRenderer
-    participant SNS as SubmitNodeStorage
-    participant FRD as FeatureRender<br/>Dispatcher
-    participant ZM as ZombieModel
-
-    LX->>LX: isEntityVisible — frustum via ERD, then: is its section compiled and visible?
-    LX->>ERD: extractEntity(zombie, its own partial tick)
-    ERD->>ZR: createRenderState — a fresh object, every entity, every frame
-    ZR->>ZS: fills it, in extractRenderState down the whole chain
-    Note over ZR,ZS: position lerp, walk animation, equipment, the red hurt overlay, the light level
-    ZR->>ZS: adds shadow pieces, in finalizeRenderState, from the blocks under it
-
-    LR->>ERD: submit(state, camera, relative position, PoseStack, collector)
-    ERD->>ZR: LivingEntityRenderer.submit
-    ZR->>SNS: submitModel — the PoseStack pose is COPIED, not held
-    ZR->>ZM: setupAnim — so the layers can read posed parts
-    ZR->>SNS: each RenderLayer submits at its own order
-    ZR->>SNS: submitLeash and submitNameTag, from the renderer
-    ERD->>SNS: submitFlame if burning, submitShadow if it has pieces
-
-    LR->>FRD: prepareFrame — group by feature type, batch by RenderType
-    FRD->>ZM: setupAnim again, then walk ModelPart and write vertices
-    Note over LR,FRD: later, inside the frame graph's passes: the prepared frame's solid, translucent and outline draws
-```
+The worked instance is one zombie, traced through extract, submit and prepare
+in the sections below.
 
 ## Extract: the live entity becomes a snapshot
 
@@ -117,6 +95,27 @@ an entity on the other end of a visible leash, an end crystal with a beam
 target and a guardian firing one, each of which is drawn because something
 *else* in view is attached to it.
 
+One zombie through this stage, from the three tests to a finished state:
+
+```mermaid
+sequenceDiagram
+    participant LX as LevelExtractor
+    participant ERD as EntityRender<br/>Dispatcher
+    participant ZR as ZombieRenderer
+
+    LX->>ERD: shouldRender, from LevelExtractor.isEntityVisible
+    ERD->>ZR: shouldRender — Entity.shouldRender's distance, then the frustum
+    LX->>LX: the third test — is its section compiled and visible?
+    LX->>ERD: extractEntity, at the zombie's own partial tick
+    ERD->>ZR: createRenderState, with the zombie and that partial tick
+    ZR->>ZR: a fresh ZombieRenderState, filled down the whole chain
+    ZR->>ZR: finalizeRenderState samples the shadow from the blocks below
+```
+
+*Extract for one zombie: two of the three visibility tests are the renderer's,
+and the extractor asks the third of `LevelRenderer`. Everything after them
+happens inside the renderer, which builds a new state object and fills it.*
+
 Light is not read at draw time. It comes from
 `EntityRenderer.getPackedLightCoords` during extract — the dispatcher has a
 method of the same name, and nothing calls it — and
@@ -131,7 +130,7 @@ shadow at any settings, and an invisible entity skips the sampling entirely.
 
 <figure class="map">
 {{#include ../../generated/tree-EntityRenderState.svg}}
-<figcaption>Every render state in the game, by depth. Click to enlarge.</figcaption>
+<figcaption>Every entity render state, cut three levels down: a number counts the states below a name, a folded row the states it folds, and the zombie's last two rungs are inside HumanoidRenderState's count. Click to enlarge.</figcaption>
 </figure>
 
 The tree is a ladder, each rung adding what the rung below could not assume.
@@ -175,7 +174,29 @@ the way is ever tinted red.
 `EntityRenderDispatcher.prepare` has set the camera for the frame.
 `LivingEntityRenderer.submit` then describes the body, poses the model, and
 lets every `RenderLayer` describe its own extra through `RenderLayer.submit` —
-in that order, because the pose is only needed by the layers.
+in that order, because the pose is only needed by the layers. One zombie
+through this stage:
+
+```mermaid
+sequenceDiagram
+    participant LR as LevelRenderer
+    participant ERD as EntityRender<br/>Dispatcher
+    participant ZR as ZombieRenderer
+    participant SNS as SubmitNodeStorage
+    participant ZM as ZombieModel
+
+    LR->>ERD: submit, for each state LevelRenderer.submitEntities walks
+    ERD->>ZR: submit, the pose translated to the zombie
+    ZR->>SNS: submitModel — the body, its pose copied
+    ZR->>ZM: setupAnim — the first pose, for the layers
+    ZR->>ZR: each RenderLayer.submit, at the layer's own order
+    ZR->>SNS: submitLeash if leashed, submitNameTag if named, from EntityRenderer.submit
+    ERD->>SNS: submitFlame if burning, submitShadow if it has pieces
+```
+
+*Submit for one zombie: the body, then the one pose the layers need, then the
+extras, all of it descriptions filed into `SubmitNodeStorage`. Nothing here
+writes a vertex.*
 
 The description API is `SubmitNodeCollector` and its ordered form. The
 methods a renderer is likely to call are
@@ -275,7 +296,26 @@ a road of their own, `SkinManager` and `SkinTextureDownloader` through a
 `FeatureRenderDispatcher.prepareFrame` drains every phase of every order
 bucket, groups the nodes, and lets the thirteen feature renderers build
 geometry — `ModelFeatureRenderer` being where a `ModelPart` tree finally
-becomes vertices.
+becomes vertices, as it does here for one zombie:
+
+```mermaid
+sequenceDiagram
+    participant LR as LevelRenderer
+    participant FRD as FeatureRender<br/>Dispatcher
+    participant MFR as ModelFeature<br/>Renderer
+    participant ZM as ZombieModel
+
+    LR->>FRD: prepareFrame
+    FRD->>FRD: drain every phase of every order bucket, and group
+    FRD->>MFR: prepareGroup, for the model submits
+    MFR->>ZM: setupAnim — the second pose, from the baked one
+    MFR->>ZM: renderToBuffer — the vertices, written now
+    Note over LR,ZM: drawn later, when the frame graph runs the main pass
+```
+
+*Prepare for one zombie: the model is posed a second time because its submit
+carried the state but not a pose for every part. The vertices exist before
+any of the frame graph's passes has run.*
 
 The phases come in two kinds and the kind decides how hard the grouping is
 allowed to try. Twelve are a `SimpleFeatureRenderPhase`, which groups by
