@@ -5,10 +5,9 @@
 Game tests are how Mojang checks that a piston still pushes and a hopper
 still pulls: a small structure is pasted into a spare corner of a world, a
 test body runs against it for a bounded number of ticks, and a block beside
-it turns green or red. That much has been true for years. What changed is
-where a test *lives*.
+it turns green or red. That much is the familiar part. The unusual part is where a test *lives*.
 
-There is no *GameTest* annotation any more, and no test registry class. A
+There is no *GameTest* annotation and no test registry class. A
 test is a **registry element** loaded from `data/<ns>/test_instance/`, and
 the Java body — when there is one — is a value in a second registry,
 `Registries.TEST_FUNCTION`, that the JSON points at. The Java half is a
@@ -19,27 +18,22 @@ body for it, and `GameTestEnvironments`' default environment — an empty
 test sources, not in the game you downloaded.
 
 This is [the data-driven type pattern](../foundations/data-driven-types.md)
-again, and game tests are its most complete instance. Four registries hold
-the system: `Registries.TEST_INSTANCE` and `Registries.TEST_ENVIRONMENT` are
-loaded from a data pack, and `BuiltInRegistries.TEST_INSTANCE_TYPE` and
-`BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE` are the built-in type
-registries the JSON in those two dispatches on.
+again, and game tests are its most complete instance. Five registries hold the system: `Registries.TEST_INSTANCE` and `Registries.TEST_ENVIRONMENT` are loaded from a data pack, `BuiltInRegistries.TEST_INSTANCE_TYPE` and `BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE` are the built-in type registries the JSON in those two dispatches on, and `Registries.TEST_FUNCTION` holds the Java bodies.
 
 ## The cast
 
 | class | what it decides |
 |---|---|
 | `GameTestInstance` | the registry element. `GameTestInstance.run` takes a `GameTestHelper` and is the body — `BlockBasedTestInstance` needs no Java at all, `FunctionGameTestInstance` invokes a `Registries.TEST_FUNCTION` entry |
-| `TestData` | the declaration record every instance delegates to: environment, structure, tick budgets, required, rotation, manual-only, the two retry counts, sky access, padding |
+| `TestData` | the declaration record every instance delegates to: environment, dimension, structure, tick budgets, required, rotation, manual-only, the two retry counts, sky access, padding |
 | `TestEnvironmentDefinition` | the seven ways to bend the world for a test, shaped as an **undo log** |
-| `GameTestBatch` | a group of tests keyed by their environment holder. A batch *is* an environment |
-| `GameTestRunner` | owns the batches and the structure spawner, and re-queues a failure when the retry options say so |
+| `GameTestBatch` | a group of tests keyed by their environment holder and their dimension. A batch *is* an environment, in one dimension |
+| `GameTestRunner` | owns the batches and the two structure spawners, and runs a test again when `ReportGameListener`, reading the run's retry options or the test's own two retry counts, asks it to |
 | `GameTestInfo` | one *run* of one test: its position, its timeout, its sequences, its outcome |
-| `GameTestHelper` | 1,353 lines, and the entire surface a test body sees — coordinate translation, world edits, spawning, assertions, outcomes |
-| `TestInstanceBlockEntity` | 551 lines: the block that owns a test's bounding box, status and beacon beam, and does the real work of placing, saving and encasing the structure |
+| `GameTestHelper` | the entire surface a test body sees — coordinate translation, world edits, spawning, assertions, outcomes |
+| `TestInstanceBlockEntity` | the block entity that owns a test's bounding box, status and beacon beam, and does the real work of placing, saving and encasing the structure |
 
-`net/minecraft/gametest/framework` is forty-four classes, all server-side,
-with `net/minecraft/gametest/Main` as the headless entry point beside it. The
+Every class in `net/minecraft/gametest/framework` is server-side, and `net/minecraft/gametest/Main` is the headless entry point beside it. The
 screens that *author* a test are not in it — they are client-only and live
 with the rest of the GUI, and they are below.
 
@@ -66,8 +60,9 @@ classDiagram
         setup(ServerLevel)
         teardown(ServerLevel, saved)
     }
-    class GameTestBatch {
+        class GameTestBatch {
         Collection gameTestInfos
+        ResourceKey dimension
     }
     class GameTestInfo {
         int tickCount
@@ -80,32 +75,28 @@ classDiagram
     GameTestInstance --> TestData : info
     TestData --> TestEnvironmentDefinition : environment
     GameTestBatch --> TestEnvironmentDefinition : keyed by
-    GameTestBatch --> GameTestInfo : up to fifty
+    GameTestBatch --> GameTestInfo : fifty by default
     GameTestInfo --> GameTestInstance : test
     GameTestInfo --> TestInstanceBlockEntity : the block in the world
     GameTestInfo ..> GameTestHelper : a new one at tick zero
 ```
 
-*A run at the top — a batch is one environment's worth of test runs — and the declaration below it, an instance, its record and the environment the record names; a solid arrow is a field, labelled with its name or its meaning, and the dotted one is the helper each run makes for its body.*
+*A run at the top — a batch is one environment's worth of test runs in one dimension — and the declaration below it, an instance, its record and the environment the record names; a solid arrow is a field, labelled with its name or its meaning, and the dotted one is the helper each run makes for its body.*
 
-**A batch is not a name and not a class: it is an environment.**
-`GameTestBatchFactory` groups tests by their `TestEnvironmentDefinition`
-holder, because that is what `GameTestBatch` is keyed by, and each group is
-split into runs of fifty (a default the builder can change, not a cap). One
+**A batch is not a name: it is an environment, in a dimension.** `GameTestBatchFactory` groups tests by their `TestEnvironmentDefinition` holder and their dimension, because that pair is what `GameTestBatch` is keyed by, and each group is
+split into runs of fifty (a default, not a cap — `/test verify` builds batches of a hundred). One
 environment is active at a time on the runner, and moving between batches
 tears the old one down and stands the new one up.
 
 **The environment interface is an undo log.**
 `TestEnvironmentDefinition.setup` returns a value that
 `TestEnvironmentDefinition.teardown` is handed back, and the seven kinds
-divide three ways. Five bend one thing about the world and hand back what it
-was, so teardown puts it straight: `TestEnvironmentDefinition.ClockTime`,
+divide three ways. Five bend one thing about the world and hand back what it was, so teardown puts it back (the weather to its kind, not to its old countdowns): `TestEnvironmentDefinition.ClockTime`,
 `TestEnvironmentDefinition.SetDifficulty`,
 `TestEnvironmentDefinition.SetGameRules`,
 `TestEnvironmentDefinition.Timelines` and `TestEnvironmentDefinition.Weather`.
 `TestEnvironmentDefinition.Functions` is the exception with no state to
-return — it runs one data-pack function on the way in and a *different* one
-on the way out. And `TestEnvironmentDefinition.AllOf` is the composite: it
+return — it runs one data-pack function on the way in and another on the way out, either one optional. And `TestEnvironmentDefinition.AllOf` is the composite: it
 returns its children's activations and unwinds them in reverse.
 
 ## One test, from a command to a green block
@@ -119,11 +110,11 @@ sequenceDiagram
     participant GI as GameTestInfo
     participant RGL as ReportGameListener
 
-    TC->>GTR: the batches, one per environment
+    TC->>GTR: the batches, by environment and dimension
     GTR->>GI: prepareTestStructure, for each run
     GI->>TIB: placeStructure, then encaseStructure
     GTR->>GTR: activate the environment — keep what setup returns
-    GTR->>GTT: add, for every run whose structure was placed
+    GTR->>GTT: add, for every run whose test block was made
     rect rgba(0, 0, 0, 0.04)
     Note over GTT,GI: every server tick, from a negative count
     GTT->>GI: tick
@@ -144,13 +135,10 @@ running test where it stands ([the server
 tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
 for the order, and its questions for what a freeze does and does not stop).
 
-**The structure comes first, then the environment.** For every run in a
-batch `GameTestRunner` calls `GameTestInfo.prepareTestStructure`, which has
+**The structure comes first, then the environment.** For every run in a batch `GameTestRunner` has its spawner call `GameTestInfo.prepareTestStructure`, which has
 the run's block entity paste the structure
 (`TestInstanceBlockEntity.placeStructure`) and wall it in with barriers
-(`TestInstanceBlockEntity.encaseStructure`); only then is the batch's
-environment activated, and only the runs whose structure was placed are
-handed to the ticker.
+(`TestInstanceBlockEntity.encaseStructure`); only then is the batch's environment activated, and only the runs whose test block was made are handed to the ticker — a run whose paste failed goes too, already carrying its error.
 
 **Setup ticks run before tick zero.** `GameTestInfo.startExecution` starts
 its counter *negative* — by the declared setup ticks, plus the spawner's own
@@ -165,26 +153,18 @@ uses an exception as ordinary control flow, at most one thrown and swallowed
 per sequence per tick. What it catches is a `GameTestAssertException`: an
 assertion that has not come true *yet* is not a failure, so the sequence
 swallows it and tries again next tick. A timeout is a different subclass —
-`GameTestTimeoutException`, raised by `GameTestInfo` when the tick count
-passes the budget — and nothing swallows it: to `GameTestInfo`, which records whatever
+`GameTestTimeoutException`, which `GameTestInfo` builds and records when the tick count passes the budget, never throwing it — so nothing can swallow it: to `GameTestInfo`, which records whatever
 `GameTestException` ends the run, a timeout is one more failure.
 
-**Reporting is a listener chain, and it writes to four places.** Chat, the
+**Reporting is a listener chain, and it writes to up to four places.** Chat, the
 block, the progress bar and the report. A finished run calls
 `GameTestListener.testPassed` or `GameTestListener.testFailed` on each of its
 listeners, and `ReportGameListener` answers with
 `TestInstanceBlockEntity.setSuccess` or
-`TestInstanceBlockEntity.setErrorMessage`, which is what colours the beam. `ReportGameListener` is what says
-something in chat and what writes the outcome back to the
-`TestInstanceBlockEntity` that owns the beam; `MultipleTestTracker` is the
-progress bar; and `GlobalTestReporter` dispatches to `LogTestReporter` or to
-`JUnitLikeTestReporter`, which is the same report in two formats rather than
-two places.
+`TestInstanceBlockEntity.setErrorMessage`, which is what colours the beam. `ReportGameListener` is also what says something in chat, to every player; `MultipleTestTracker` is the progress bar, which only the headless server prints; and `GlobalTestReporter` hands the outcome to one of two reporters, `LogTestReporter`, which logs the failures, or `JUnitLikeTestReporter`, which writes every result to an XML file.
 
 **What a test leaves behind is not undone.** The environment has its undo
-log; the world does not. A passing test has its barrier shell removed and
-nothing else: the pasted blocks stay where they were put, the test instance
-block stays with them, and the chunks it force-loaded stay forced. A
+log; the world does not. A passing test has its barrier shell removed and the non-player entities in and around it discarded, and nothing else: the pasted blocks stay where they were put and the test instance block stays with them — except under `/test verify`, which clears each finished batch's space and breaks its test blocks before the next. When its batch finishes, or under `/test verify` when a test fails, the runner unforces every force-loaded chunk in the level, the test's and any other's. A
 *failing* test does not even lose its shell, which is the point — the
 failure is left standing so it can be walked into and looked at. Clearing
 any of it is a command: `/test clearall` walks the test instance blocks in
@@ -206,20 +186,13 @@ The client half the framework's package list hides is what makes that
 practical: `TestInstanceBlockEditScreen` and `TestBlockEditScreen` are how a
 test is authored in game, `TestInstanceRenderer` draws the bounding box, and
 `GameTestBlockHighlightRenderer` is the sole consumer of
-`ClientboundGameTestHighlightPosPacket`. Both serverbound test packets are sent *by* the client, from those screens,
-which makes this the one system in the part whose *declaration* a client
-edits. `TestInstanceBlock` is the block itself; `TestInstanceBlockEntity`
-below is where the work is.
+`ClientboundGameTestHighlightPosPacket`. Both serverbound test packets are sent *by* the client, from those screens: one sets a test block's fields, and the other sets a test instance block's test, size and rotation and queries, runs, resets or saves it, from inside the game. `TestInstanceBlock` is the block itself; `TestInstanceBlockEntity`, in the cast above, is where the work is.
 
 ## Three things a running server should know
 
 **`/test` exists on every server**, not only in a development environment.
-`TestCommand` is 572 lines of subcommands and only the export ones are gated
-on running from an IDE; the rest sit at `Commands.LEVEL_GAMEMASTERS`, the
-rung every data-pack command in this part asks for
-([permissions](permissions.md#the-requirement-is-consulted-inside-the-parse)).
-How it addresses a test is the data-driven move again: `TestFinder` turns a
-subcommand's argument into a set of `Registries.TEST_INSTANCE` ids, and the
+Only `TestCommand`'s export subcommands are gated on running from an IDE; the rest sit at `Commands.LEVEL_GAMEMASTERS` ([permissions](permissions.md#the-requirement-is-consulted-inside-the-parse)).
+How it addresses a test is the data-driven move again: `TestFinder` hands a subcommand the tests it names, as `Registries.TEST_INSTANCE` holders where it takes an id selector or asks for the last failures, and as test blocks found by position otherwise, and the
 glob in `/test run *` is `ResourceSelectorArgument`, the one argument type in
 the game that takes one.
 
@@ -230,22 +203,19 @@ a 250-block radius is a POI query, not a block scan
 tests carry them in its POI storage.
 
 **Underneath both sits a layer with no command of its own.**
-`StructureUtils` and `StructureGridSpawner` clear the space, lays tests out in a grid, transforms the far corner
-and find every test block by position
+`StructureUtils` and `StructureGridSpawner` clear the space, lay tests out in a grid, transform the far corner and find every test block by position
 ([jigsaw and templates](../worldgen/jigsaw-and-templates.md) owns the
 template machinery they call). `GameTestServer` is the third
 `MinecraftServer` subclass — beside the integrated and the dedicated ones
 ([anatomy](../anatomy/anatomy.md#from-main-to-a-world)) — driven by
-`GameTestMainUtil`, and the one thing it changes that matters here is
-`GameTestServer.waitUntilNextTick`: it drains tasks instead of sleeping, so a
+`GameTestMainUtil`, and one thing it changes that matters here is `GameTestServer.waitUntilNextTick`: it drains tasks instead of sleeping, so a
 headless test run goes flat out rather than at twenty ticks a second. It also
 installs a no-op gizmo collector ([debugging the running
 game](../client/debugging-the-running-game.md#a-renderer-does-not-draw-a-gizmo-it-appends-one)).
 
 ## Where to look
 
-`GameTestInstance` and `TestData` for what a test *is*, then `GameTestInfo`
-for what actually happens on a tick, then `TestInstanceBlockEntity` for what
+`GameTestInstance` and `TestData` for what a test *is*, then `GameTestInfo` for what happens on a tick, then `TestInstanceBlockEntity` for what
 a test costs the world, and `GameTestHelper` when you want to write one.
 
 ---

@@ -1,6 +1,6 @@
 # Scores, teams and stored data
 
-> Verified against **Minecraft 26.3** · Part XIII · `execute as @a store result score @s ticks_frozen run data get entity @s TicksFrozen`: one command writing a scoreboard through a callback the inner command has never heard of, and the two data models `execute store` exists to join.
+> Verified against **Minecraft 26.3** · Part XIII · `execute as @a store result score @s ticks_frozen run data get entity @s TicksFrozen`: one command writing a scoreboard through a callback the inner command has never heard of, and two of the three data models `execute store` exists to join.
 
 Look at the sidebar on a well-built server and some of the names in it are
 not players. *#total*, *constant*, *.timer* — rows belonging to nothing
@@ -27,34 +27,30 @@ language for reaching into any tag at all, over command storage, which is a
 place to put a tag belonging to no block and no entity; and the boss bar,
 which turns out to be the scoreboard's shape one floor up. Teams are the
 fourth, and they are here because they live in the scoreboard's package and
-its class — read by five subsystems that have nothing to do with scores.
+its class — read by systems that have nothing to do with scores.
 
 The instinct they share is worth stating before the classes, because it
 explains three otherwise-odd decisions: **the server is the only participant
 that knows anything.** The client is sent scores it can draw and nothing
 else — not an objective's criteria, not a score's lock bit, not which
-objectives exist. There is **no serverbound packet in this whole system**.
-Every write is a command.
+objectives exist. There is **no serverbound packet in this whole system**. Every write a player asks for is a command.
 
 ## The cast
 
 | class | what it decides | side |
 |---|---|---|
-| `Scoreboard` | six maps and nothing else, plus ten empty hooks that are the entire extension surface. A pure data structure, used unmodified by the client | both |
+| `Scoreboard` | six maps and nothing else, plus ten empty hooks for a subclass to fill. A pure data structure, used unmodified by the client | both |
 | `Objective` | criteria, display name, render type, number format, auto-update — and a **back-pointer to the scoreboard**, so every setter reports its own change | both |
 | `Score` | four mutable fields: the value, a lock bit, a display component and a number format. `ReadOnlyScoreInfo`, `PlayerScoreEntry` and `ScoreAccess` are the other three faces of it | both |
 | `ScoreHolder` | the interface `Entity` implements, with `ScoreHolder.forNameOnly` minting anonymous ones — the most consequential class on the page | both |
 | `PlayerTeam` | the **only** subclass of `Team`: the mutable state, the setters, a precomputed display style, and friendly-fire plus see-invisibles packed into one wire byte | both |
-| `ServerScoreboard` | three fields — the server, `ServerScoreboard.trackedObjectives`, and one dirty boolean — and thirteen overrides across ten hooks, each conditionally broadcasting, then marking dirty. It lives in `net/minecraft/server`, not beside `Scoreboard` | server |
+| `ServerScoreboard` | three fields — the server, `ServerScoreboard.trackedObjectives`, and one dirty boolean — and thirteen overrides, the ten hooks and three methods that change team membership and display slots, which between them broadcast what changed and mark the save dirty. It lives in `net/minecraft/server`, not beside `Scoreboard` | server |
 | `NbtPathArgument` | 874 lines, the largest argument type in the game, and a whole query language: six node kinds and a depth limit of 512 | both |
-| `DataCommands` | `/data`, over three `DataAccessor`s — `BlockDataAccessor`, `EntityDataAccessor` and `StorageDataAccessor`. Beside it, `ScoreboardCommand`, `TeamCommand` and `TriggerCommand` are this system's entire write surface | server |
+| `DataCommands` | `/data`, over three `DataAccessor`s — `BlockDataAccessor`, `EntityDataAccessor` and `StorageDataAccessor`. Beside it, `ScoreboardCommand`, `TeamCommand` and `TriggerCommand` write the scoreboard, as `execute store` does | server |
 
-`net/minecraft/world/scores` is sixteen files and 1,442 lines — the whole
-model — and every class in it ships in both jars. Beside it:
+`net/minecraft/world/scores` is the whole model, and every class in it ships in both jars. Beside it:
 `CommandStorage`, a lazy façade over one `SavedData` *per namespace*, so
-`minecraft:foo` and `mypack:foo` are different files; and
-`net/minecraft/network/chat/numbers`, seven files and 167 lines, holding
-`NumberFormat` with the three kinds `NumberFormatTypes` registers.
+`minecraft:foo` and `mypack:foo` are different files; and `net/minecraft/network/chat/numbers`, holding `NumberFormat` with the three kinds `NumberFormatTypes` registers.
 
 ## One command, two models, and a number that lands in a third place
 
@@ -78,7 +74,7 @@ sequenceDiagram
     BC->>BC: as @a — one source becomes one per player
     BC->>ExecC: store result score — the modifier, once per source
     ExecC->>ExecC: storeValue — @s and the objective already resolved
-    BC->>DataC: the leaf, getData, once per source
+    BC->>DataC: getData, the leaf, queued once per source
     DataC->>DataC: build the entity's whole save tag
     DataC->>DataC: follow the path, collapse the tag to one int
     DataC-->>ExecC: the result, to the source's callback
@@ -91,7 +87,7 @@ sequenceDiagram
 
 *One `execute store result score` for one player — the store is fixed on the source before the inner command runs, the number reaches it by callback, and two separate gates decide whether the write is a packet.*
 
-The paragraphs below take its arrows in order.
+The paragraphs below take its arrows.
 
 **The store target is resolved before the inner command runs, not after.**
 `ExecuteCommand.wrapStores` builds the store node as a **redirect with a
@@ -108,9 +104,8 @@ chat whose *frame* callback is empty
 ([the execution engine](the-execution-engine.md)).
 
 **A failing command under `store result` writes 0**, whichever kind it is.
-On the custom-executor path that is `CustomCommandExecutor.WithErrorHandling`
-doing what it does for everything ([the execution
-engine](the-execution-engine.md#a-result-is-a-flag-and-a-number-and-nothing-aggregates)),
+On the custom-executor path that is `CustomCommandExecutor.WithErrorHandling` doing what it does for every executor built on it ([the execution
+engine](the-execution-engine.md#a-result-is-a-flag-and-a-number-and-only-a-function-tag-sums-them)),
 so a failing `/function` writes 0. For an ordinary leaf the result consumer is
 driven by Brigadier, and
 `ContextChain.runExecutable` catches the `CommandSyntaxException` and calls
@@ -154,18 +149,13 @@ re-derive the first fact on every call, and the second is unrecoverable
 after the fact — once the `Score` exists, nothing can tell whether *this*
 call created it. Newness is what decides whether an unchanged value still
 needs a packet, so it has to survive from the lookup to the write. The
-handle is also the one place that knows when to fire the change hook, which
-is why every write path in the game funnels through
-`ScoreAccess.set`, `ScoreAccess.add`, `ScoreAccess.increment`,
-`ScoreAccess.reset`, `ScoreAccess.lock`, `ScoreAccess.unlock` and
-`ScoreAccess.numberFormatOverride`.
+handle is also the one place that knows when to fire the change hook, which is why a write goes through `ScoreAccess.set`, `ScoreAccess.add`, `ScoreAccess.increment`, `ScoreAccess.reset`, `ScoreAccess.lock`, `ScoreAccess.unlock`, `ScoreAccess.display` or `ScoreAccess.numberFormatOverride`; only removal — `Scoreboard.resetSinglePlayerScore`, `Scoreboard.resetAllPlayerScores` and `Scoreboard.removeObjective` — and loading from the save go round it.
 
-Nothing here is ticked, either. `MinecraftServer` mentions the scoreboard
+Nothing here is ticked. `MinecraftServer` mentions the scoreboard
 five times in total — the field, the constructor, the load, the getter, and
 one call to `ServerScoreboard.storeToSaveDataIfDirty` inside
 `MinecraftServer.saveAllChunks`. There is no periodic sweep and no
-dirty-queue drain: every mutation broadcasts its own packet synchronously,
-inside the call that made it, and there is **one scoreboard per server, not
+dirty-queue drain: every mutation that reaches the wire sends its packet synchronously, inside the call that made it, and there is **one scoreboard per server, not
 per level**, so scores and teams are global across dimensions.
 
 ## Names that belong to nobody, and the `#` that hides them
@@ -174,10 +164,7 @@ The opening's fake players are not one mechanism but two, and the `#` in
 front of *#total* does a different job in each.
 
 In `ScoreHolderArgument` a leading `#` skips entity resolution entirely, so
-the token is taken as a literal name and no lookup happens. The argument
-type has four resolution branches in order — the wildcard `*`, a `#` name, a
-UUID searched across every level, and an online player — and the last three
-fall back to a bare name when they find nothing. The wildcard does not: with
+the token is taken as a literal name and no lookup happens. Its literal side has four branches in order — the wildcard `*`, a `#` name, a UUID searched across every level, and an online player — and the UUID and player branches fall back to a bare name when they find nothing. The wildcard does not: with
 no tracked holders at all it throws.
 
 In the sidebar the same character means something unrelated:
@@ -213,17 +200,15 @@ The identity-keyed reverse index is what makes that cheap.
 `Scoreboard.objectivesByCriteria` is an **identity** map from criteria to
 the objectives watching it, `ServerPlayer.awardStat` hands the `Stat` object
 itself to `Scoreboard.forAllObjectives`, and object identity finds the
-watchers — sound only because stat objects are interned in their registries.
+watchers — sound only because each stat object is interned, one per value, in its `StatType`.
 
 Criteria-driven scores are the one part of this page with a schedule, and it
 is narrower than it sounds. `Scoreboard.forAllObjectives` has **seven call
-sites and every one is in `ServerPlayer`**: one loop over the six read-only
-criteria, one for the death count, two for the kill counts, one that fires
+sites and every one is in `ServerPlayer`**: one inside the helper each of the six read-only criteria is updated through, one for the death count, two for the kill counts, one that fires
 both team-kill criteria, and two for statistics — one awarding, one
 resetting. No *criterion* is driven from `Entity`, `LivingEntity` or
 `Mob`, so a skeleton killing a zombie increments nobody's kill count —
-though `LivingEntity` does reach the scoreboard once, calling
-`Scoreboard.addPlayerToTeam` when it reads its own saved team back. The six read-only criteria are change-detection diffs — six
+though `Entity.load` does write to it, calling `Scoreboard.addPlayerToTeam` when the tag it loads names a *Team* — a field the game reads but never saves, so it arrives only in a tag a command or an item supplies. The six read-only criteria are change-detection diffs — six
 consecutive comparisons against remembered fields — living in
 `ServerPlayer.doTick`, which runs in the **connection** phase, after the
 levels have ticked ([the level tick](../server/server-level-tick.md)). So
@@ -238,9 +223,7 @@ limit of 512.
 
 The elegant part is **creation**. The parent-creating walk goes through the
 nodes and, for each one, asks *the next node* what shape its parent has to
-be: a named child wants a compound, an index wants a list. So a *set*
-through `a.b[0].c` materialises a compound, a list and a compound without
-any node knowing more than its own type. Removal is the same walk with a
+be: a named child wants a compound, an index wants a list. So a *set* through *a.b.c* materialises two compounds without any node knowing more than its own type — though an index never creates an element, so through `a.b[0].c` the walk makes *a* and an empty list *b*, finds nothing at `[0]`, and fails. Removal is the same walk with a
 plain lookup instead, so it never creates.
 
 The three accessors, by contrast, are coarse. `DataAccessor` has two methods
@@ -254,30 +237,23 @@ by hand, because loading would have overwritten it. What each accessor
 builds the target half and the source half of every subcommand from one list
 of three providers applied twice.
 
-## Teams, which five systems read and none of them are scores
+## Teams, which systems far from scores read
 
 `Team` declares everything a reader asks for and `PlayerTeam` is its only
-subclass. What makes teams worth their own paragraph is who consults them,
-because it is not the scoreboard: collision through
+subclass. What makes teams worth their own paragraph is who else consults them: collision through
 `EntitySelector.pushableBy`; nametag visibility through
 `LivingEntityRenderer.shouldShowName`; invisibility through
-`Entity.isInvisibleTo`; friendly fire through `Player.canHarmPlayer`; and
+`Entity.isInvisibleTo`; friendly fire through `Entity.doTeamsAllowDamage`; and
 death-message routing through `ServerPlayer.die`. Only `ServerPlayer.die` and
 `LivingEntityRenderer.shouldShowName` are reached from anywhere near one
-place; `EntitySelector.pushableBy` and `Player.canHarmPlayer` have six call
-sites each and `Entity.isInvisibleTo` two. A sixth system is joined to teams and does not read them at all; the traffic
-runs the other way. Every team join, leave and modification calls through to
-`ServerWaypointManager` to remake the locator bar's connections and
-re-colour its icons — the team system driving a waypoint system rather than
-being consulted by one.
+place; `EntitySelector.pushableBy` has six call sites, `Entity.doTeamsAllowDamage` seven, among them `Player.canHarmPlayer` and the attacks of a few mobs, and `Entity.isInvisibleTo` two. A sixth system is joined to teams both ways. Every team join, leave and modification calls through to `ServerWaypointManager` to remake the locator bar's connections, and remaking one reads the team's colour to re-colour its icon.
 
 Two team behaviours are worth pinning. `Team.isAlliedTo` is **reference
 equality**, so two teams with byte-identical settings are never allied;
 every "same team?" test in the game is really "same object?", safe only
 because `Scoreboard.teamsByName` is the single owner of every instance. And
 a team has two visibility settings of which only one ships: the wire
-parameters carry nametag visibility, while death-message visibility has a
-single reader in `ServerPlayer.die` and the client never learns the rule
+parameters carry nametag visibility, while death-message visibility has a single reader in play, `ServerPlayer.die`, and the client never learns the rule
 because it does not need to. Nametag visibility also *widens*: when an
 entity has a team, `LivingEntityRenderer.shouldShowName` returns from the
 team switch directly and never reaches the checks that hide a name behind
@@ -286,13 +262,12 @@ F1, for the camera entity, or for a vehicle — so a mob on a team set to
 
 ## What the client is ever told
 
-### Five packets, and one field that decides whether any of them go
+### Five packets, and one field that gates four of them
 
 Five packets, all server → client, and no serverbound counterpart exists:
 `ClientboundSetObjectivePacket`, `ClientboundSetDisplayObjectivePacket`,
 `ClientboundSetScorePacket`, `ClientboundResetScorePacket` and
-`ClientboundSetPlayerTeamPacket`. All five go through
-`PlayerList.broadcastAll` — no distance filter, no dimension filter
+`ClientboundSetPlayerTeamPacket`. All five reach every player, through `PlayerList.broadcastAll` or a loop over the player list — no distance filter, no dimension filter
 ([what the client is told](../networking/what-the-client-is-told.md)).
 
 An objective in no display slot **does not exist on the network**.
@@ -335,19 +310,14 @@ reference ([text components](../foundations/text-components.md)). A
 
 Saving is one boolean for the entire scoreboard, cleared by re-packing the
 whole thing, and it happens only when the world is saved — the autosave,
-`/save-all`, or shutdown. A tick-loop crash is a shutdown: it falls into the
-same *finally*, which calls `MinecraftServer.saveAllChunks`, whose very first
-statement is `ServerScoreboard.storeToSaveDataIfDirty`. **What loses a score
-is an ending that never reaches that method** — a watchdog kill, a *kill -9*,
-a power cut — and then everything since the last autosave goes with it ([how a
+`/save-all`, or shutdown. A crash thrown by the tick itself is a shutdown: it falls into the same *finally*, which calls `MinecraftServer.saveAllChunks`, whose very first statement is `ServerScoreboard.storeToSaveDataIfDirty`. **What loses a score is an ending that never reaches that method** — a crash relayed from a worker thread, which the shutdown's own drain throws again before the save, a watchdog kill, a *kill -9*, a power cut — and then every score since the last autosave goes with it ([how a
 server dies](../server/how-a-server-dies.md#what-you-lose-if-you-kill-the-process)). `ScoreboardSaveData` sits under
 `minecraft:scoreboard` beside the world, with one command-storage file per
 namespace, both through the data fixer
 ([level data and rules](../../reference/level-data-and-rules.md)). The NBT
 field names are the archaeology — *Objectives*, *PlayerScores*,
 *DisplaySlots*, *Teams*, and inside them *Name*, *CriteriaName*,
-*RenderType*, *Locked* — capitalised, pre-flattening conventions, preserved
-by codec.
+*RenderType*, *Locked* — capitalised, and preserved by codec.
 
 ## The third sink is a boss bar, and it is this page's shape again
 
@@ -375,16 +345,14 @@ float progress from them on every write, and holds its membership as a
 what persists and what `/bossbar set … players` edits; the live set is
 maintained by `CustomBossEvent.onPlayerConnect`, which re-attaches a player
 whose UUID is on the list, and by `CustomBossEvent.onPlayerDisconnect`, which
-calls the superclass's removal deliberately so that the UUID stays. A bar's
+calls the superclass's removal, so that the UUID stays. A bar's
 membership outlives the session the same way a score outlives the entity.
 
 `CustomBossEvents` is the `SavedData` that holds them, one file at
 *data/minecraft/custom_boss_events.dat* ([level data and
 rules](../../reference/level-data-and-rules.md)), and its NBT is the same
 archaeology as the scoreboard's — *Name*, *Visible*, *Value*, *Max*,
-*Players*, capitalised, preserved by codec. `BossBarCommands` is the write
-surface, at gamemaster like everything else in this part, and
-`ExecuteCommand.storeValue` is the store sink: a sibling of the score sink
+*Players*, capitalised, preserved by codec. `BossBarCommands` is the write surface, at gamemaster, and an overload of `ExecuteCommand.storeValue`, the score sink's own name, is the store sink: a sibling of the score sink
 rather than the same code, chaining the same kind of callback onto the source
 and writing the value or the maximum instead of a `ScoreAccess`. What the
 client does with the packet — the interpolation, the sky it darkens — is [the
@@ -407,8 +375,7 @@ omits the field is not. `/trigger` is the only command an unprivileged
 player can use to write a score, and its gate is three-part — the criteria
 must be the trigger criteria, the score must already exist, and it must be
 unlocked — and the command re-locks it immediately, so each *enable* buys
-exactly one use. It is also the only command in this area registered with no
-permission requirement at all.
+exactly one use. It is also, with `/teammsg` (and its `/tm` alias), one of the two commands in this area registered with no permission requirement at all.
 
 **Why did my `execute store` throw an internal error?** Because
 `/scoreboard` refuses a read-only objective and `execute store` does not
@@ -422,17 +389,13 @@ same hole is reachable through `/scoreboard players operation` with `><`,
 the one operator that writes both sides.
 
 **Why did my `execute store` into a data target do nothing at all?** Its
-read-mutate-write is wrapped in a catch with an **empty body**: a malformed
-target, an uncreatable path, a too-deep path, a block that stopped being a
-block entity — no message, no failure, no write. The score sink has no such
+read-mutate-write is wrapped in a catch with an **empty body**: a player target, an uncreatable path, a path too deep — no message, no failure, no write. The score sink has no such
 catch.
 
 **Why can I read a player's NBT but not write it?** The entity accessor's
 write path rejects any `Player` before doing anything else, and the read
 path has no such check. That one asymmetry is why every player-NBT technique
-is read-only. Relatedly, a no-op is a **hard failure** in four places —
-`/data merge`, `/data modify`, `/data remove` and
-`/scoreboard players enable` all throw when they changed nothing, which
+is read-only. Relatedly, a no-op is a **hard failure** across the area — `/data merge`, `/data modify`, `/data remove` and `/scoreboard players enable` all throw when they changed nothing, as do most of `/team`'s setters and every one of `/bossbar`'s, which
 makes them usable as conditionals in a function, the same choice
 `/advancement grant` makes.
 
@@ -444,9 +407,8 @@ not alive.
 ## Where to look
 
 `Scoreboard` for the six maps, `ScoreAccess` for why a write is a handle,
-and `ServerScoreboard.trackedObjectives` for the one field that decides what
-a client ever knows. `ObjectiveCriteria.byName` for the statistics bridge,
-`NbtPathArgument.NbtPath` for the nicest ten lines in the area, and
+and `ServerScoreboard.trackedObjectives` for the one field that decides which objectives and scores a client's scoreboard ever holds. `ObjectiveCriteria.byName` for the statistics bridge,
+`NbtPathArgument.NbtPath` for the tidiest piece of the area, and
 `ExecuteCommand.wrapStores` for the one that makes `execute store` stop
 feeling like magic.
 

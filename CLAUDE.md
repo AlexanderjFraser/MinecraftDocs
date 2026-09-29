@@ -32,7 +32,7 @@ wording done after the check and read again by a session that changed
 nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
 the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
 (sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
-that file's Part 6; **V1, V2, A, B, C, D, E, F, G, H, I, J, K, L and M have run** (the tools read 26.3 and every
+that file's Part 6; **V1, V2, A, B, C, D, E, F, G, H, I, J, K, L, M and N have run** (the tools read 26.3 and every
 page says 26.3; V2 rewrote the 42 pages whose systems 26.3 reshaped; A ruled the
 voice into `TEMPLATE.md` and found the book's *constant nobody reads* asides to
 be javac's inlining, not the game; B made 293 corrections on Parts I and II and
@@ -44,8 +44,7 @@ audit, 45 in its own new sentences; H made 241 on Part VIII, 50 found by that au
 own new sentences; I made 220 on Part IX, 71 found by that audit, 52 in its own new sentences; J made 314 on
 Part X, 131 found by that audit, 74 in its own new sentences; K redrew and captioned Part XI's figures, 110 corrections,
 59 found by that audit, 55 in its own new labels, captions and sentences; L made 393 on Part XI, 113 found by that
-audit, 86 in its own new sentences; M made 421 on Part XII, 141 found by that audit, 94 in its own new
-sentences), and session N is next. After it the
+audit, 86 in its own new sentences; M made 421 on Part XII, 141 found by that audit, 94 in its own new sentences; N made 334 on Part XIII, 83 found by that audit, 58 in its own new sentences), and session O is next. After the pass the
 production process is rebuilt from first
 principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
 returns here with what it learned; until then only a version pass the owner

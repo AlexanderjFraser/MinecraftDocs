@@ -380,8 +380,7 @@ twice over, because two of its pages turn on where in that order a thing
 sits. It assumes Part II's [codecs](systems/foundations/codecs-nbt-json.md)
 and [the data-driven type pattern](systems/foundations/data-driven-types.md),
 of which dialogs and game tests are the two clearest instances; Part IX's
-[connection](systems/networking/the-connection.md) for the Netty/server
-thread boundary the command packets cross two different ways; and Part VII's
+[connection](systems/networking/the-connection.md) for the boundary between the Netty threads and the Server thread, which the command packets and the suggestion request each cross their own way; and Part VII's
 [contexts and predicates](systems/items/contexts-and-predicates.md), which advancements need for every trigger that tests a player and selectors for
 one option.
 

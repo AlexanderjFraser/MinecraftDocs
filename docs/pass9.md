@@ -74,6 +74,568 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session N — Part XIII · Commands and data packs *(2026-09-29)*
+
+Ten pages, each checked under Part 2 by its own agent while the session read the part whole (the whole-part read was
+written before any report was opened and listed forty-two items, among them the sign's click command said three ways on
+three pages, *four things reach* `ServerPlayer.openDialog` beside a route that *needs no server*, and *Every write is a
+command* several sections before the criteria that write scores; every one the reports then found too, except the same
+thread-boundary clause on `lectures.md` and three glossary entries, which no page's agent reads). Each prompt carried
+the page's pass 5–7 ledger entries and, added by script because `pass8_prompts.py` leaves them out, every pass 8 entry
+naming the page (V1's note, V2's sections on `advancements` and `permissions` with their *For the part session (N)*
+lines, J's correction on `game-tests`) and the handoffs to N (C's on the suggestion packet and the relayed crash, E's on
+the command block, G's on `/item`'s modifier forms, H's on the slot argument), and every fact this pass had corrected on
+another page that a Part XIII page might repeat. **334 corrections**, every one re-derived in `reference/26.3` before it
+was made: 251 from the reports and the whole-part read, and **83 from the record's audit** — ten agents re-deriving every
+changed sentence against the tree, its neighbours and the corpus — **58 of them in sentences this session had just
+written** (tested, not judged: a fix is the session's own when its target text is absent from the page at git HEAD) —
+the audit's share about one in four, within C to H's range and below every session since. The 119 pass 5–7 ledger entries routed to the
+part struck (and one of pass 5 session M's that routes to `lectures.md`); the pass 8 entries were checked as claims in
+the prompts and are session P's. Part XIII's queue settled: 49 units struck, so `pass5_queue.py --summary` has no Part
+XIII row.
+
+**The three worst.** `brigadier-and-commands` answered its own hook wrongly and taught 26.2's thread boundary: *why is
+completing a loot table not instant?* was answered with the tree's per-node provider, where a loot table's node carries
+none and the client asks because the loot-table registry is reloadable and never sent (`ClientSuggestionProvider`
+falling through for a registry it lacks), and `ServerboundCommandSuggestionPacket` was said to take
+`PacketUtils.ensureRunningOnSameThread` — in 26.3 it is handed on the Netty thread to a `ServerCommandSuggestionsProvider`
+that keeps only the newest request and answers at most one a tick (C's handoff), so neither command route is the ordinary
+hop (the landing page and `lectures.md` said the same and are corrected); its counts were all 26.2's (454 argument-node
+declarations, 73 with a provider, 66 *ask_server*, four named providers, 62 registered types). `permissions`' frame —
+*two permission universes that overlap in one place*, `GameModeCommand.PERMISSION_CHECK` *the one object both universes
+read* — was false: the client runs the server's rung constants and the entity-selector atom against its own copy of your
+op level in several places, and a sign's click command, which the page said *never travels to the client* and whose text
+*the client was never told*, reaches every client that loads the sign with its click event intact (V2's handoff); its 1.21
+blockquote named a model the 1.21.11 tree already had, and now names the real move, the singleplayer seam. And
+`game-tests` said a passing test leaves *nothing else* behind and *the chunks it force-loaded stay forced*: `succeed`
+discards the non-player entities round the structure, and when a batch finishes the runner unforces **every**
+force-loaded chunk in the level, a `/forceload`'s included (a probable upstream surprise, written as mechanism) — and
+26.3 keys a batch by environment *and* dimension, which the cast, both figures and the landing page had missed.
+
+**Headings corrected**, each with `check_links.py` and a grep of `src/` for the anchor: `dialogs` *Four ways a dialog
+opens, and one of them is not a click* (typed and hotkey routes are not clicks either) is *…and two of them never ask the
+server* (no inbound link); `the-execution-engine` *A result is a flag and a number, and nothing aggregates* is *…and only
+a function tag sums them* (its link from `scoreboard-and-data` repointed); `scoreboard-and-data` *Teams, which five
+systems read and none of them are scores* (the team-kill criteria and the sidebar read them) is *Teams, which systems far
+from scores read* (the glossary's link repointed) and *Five packets, and one field that decides whether any of them go*
+(the team packet is never gated) is *…one field that gates four of them* (no inbound link); `advancements` *The table
+only shrinks, and the two things that refill it*, against its own body's *only is the wrong word*, is *The table shrinks,
+…* (no inbound link).
+
+**Every 1.21 blockquote re-read against the 1.21.11 tree.** Part XIII has two: `permissions`' said
+*ServerPlayer.hasPermissions(int)* and the integer levels were gone, which 1.21.11 already had, and now says what moved
+since (*PlayerList.setAllowCommandsForAllPlayers* gone, singleplayer's own `IntegratedServer.getProfilePermissions`, the
+host told by the entity event); `entity-selectors`' is cut to the parser's booleans, its atom and *ResourceLocation*
+clauses being 1.21.11's already. The same finding cut `server/players-and-sessions`' box whole (`NameAndId` and the
+level-based op entry are both in 1.21.11) and is handed to O for `naming-drift`'s Part XIII rows.
+
+No V6 sentence was in the part (session A's table named none for N).
+
+### Figures changed
+
+No arrow reversed and no ordering changed; each change is a label, a node or a leaf.
+
+- `commands/entity-selectors` f2 — the players-only UUID decision and its `PlayerList.getPlayer` leaf removed (a UUID
+  always brings non-players into scope, so vanilla never reaches it): the UUID edge now runs straight to
+  `Level.getEntity`, level by level; the name leaf is `PlayerList.getPlayerByName` without *either way*; the box leaf says
+  *only the sections near the box*. Asserts, as before: name, UUID and neither are tested first and return unsorted.
+- `commands/functions-and-macros` f1 — the failure node is *a command reports it, ServerFunctionManager swallows it*
+  (was *a tag swallows it*).
+- `commands/game-tests` f1 — `GameTestBatch` gains `ResourceKey dimension`; its edge to `GameTestInfo` reads *fifty by
+  default* (was *up to fifty*). f2 — message 1 *the batches, by environment and dimension*; message 5 *add, for every run
+  whose test block was made*. Orderings unchanged.
+- `commands/permissions` f2 — the first test reads *parses with your set, restricted atom added?*. Order unchanged.
+- `commands/scoreboard-and-data` f1 — message 8 reads *getData, the leaf, queued once per source*. Order unchanged.
+- `commands/brigadier-and-commands` f1 — the `opt` frame reads *a node, or a registry the client lacks, asks the
+  server*. Order unchanged.
+
+All thirteen Part XIII figures rendered at the reading column after the changes: every scale 0.78 or more, the smallest
+label 12.6px.
+
+### Captions changed
+
+- `commands/README` f1: *The part as three floors, numbered to the watch order — parsing turns a string into a call,
+  execution turns the call into work on a queue, and the four systems on top each have a command of their own. An arrow
+  runs from a floor to the floor it is built on, the reverse of the prerequisite-first arrows on most other landing
+  figures, so that the top floor is drawn on top, and nothing on the top floor points at another box there.*
+- `commands/brigadier-and-commands` f1: *… the round trip in the frame is taken only when a node asks the server or an
+  argument needs data the client lacks, and `/give` has neither.*
+- `commands/permissions` f1: *… and the one dotted arrow without a hollow head is the single call that joins them.*
+- `commands/entity-selectors` f1: *… the third on the Server thread each time a command asks for its argument …* (*once*
+  cut: sibling arguments parse the text again).
+- `commands/game-tests` f1: *… a batch is one environment's worth of test runs in one dimension …*
+
+### For later sessions
+
+- **O** — `reference/naming-drift`'s Part XIII rows (:216, :398–:413: *hasPermissions(int)*, the permission rewrite
+  *the largest single break in this table*, *ResourceLocationArgument*) and its *ResourceLocation* row name APIs the
+  1.21.11 tree no longer had: `server/permissions` and `Identifier` are both in it
+  (`D:/pvpmod/reference/minecraft/net/minecraft/server/permissions/`, `resources/Identifier.java`). The same finding as
+  L's and M's. The atlas's own count for `server/commands` is files with `package-info.java` (111; 108 without), which the
+  landing page now states as the atlas's.
+- **O** — `networking/protocol-phases`:411–414 says `DebugConfigCommand` is registered *only by a dedicated server
+  started with its debug system properties*; the game-test server uses the dedicated command set too
+  (`gametest/framework/GameTestServer.java`:103), so *a dedicated server's command set* is the exact wording
+  (`dialogs` now uses it).
+- **P** — the pass 8 entries on these pages (V1's note, V2's sections on `advancements` and `permissions`, J's 314),
+  checked as claims in the prompts and not struck here; this session's diff; and two things the audit left as low: the
+  *advancements* option drops non-players only when its map is non-empty, and `functions-and-macros`' *the maps are
+  volatile, the library object being built on a background thread* reads as a reason the code does not state.
+- **Second edition** — the six sections pass 7's viewers asked a figure for (pass5.md:7051) and `game-tests`' reporting
+  places as a table (pass5.md:7063).
+- **Worth a look in game.** When a game-test batch finishes, or under `/test verify` when a test fails, `GameTestRunner`
+  unforces every force-loaded chunk in the level (`gametest/framework/GameTestRunner.java`:124–135, :148–156), so a
+  `/forceload` a player set by hand is lifted by any test run in that level. Written on `game-tests` and
+  `world/tickets-and-loading` as what the code does (R10); a hotfix would change it back.
+
+### Corrections
+
+#### `commands/advancements`
+
+1. `commands/advancements`:139 — was “## The table only shrinks, and the two things that refill it” — now “## The table shrinks, and the two things that refill it” — false heading: the body calls "only" the wrong word; no inbound link
+2. `commands/advancements`:3 — was “delivered by a subscription table that only ever shrinks, over a packet that never says what the criterion was.” — now “delivered by a subscription table that shrinks as you play, over a packet that never says what a criterion tests.” — verified line: revoke and reload refill the table (PlayerAdvancements.java:251, :88-97); the packet carries criterion names, not what they test (AdvancementProgress.java:50-52; Advancement.java:47)
+3. `commands/advancements`:18 — was “A veteran player is cheaper to run than a new one, and the cost of the whole system to a save file falls monotonically over its life.” — now “A veteran player is cheaper to run than a new one, and a save's cost falls as its players play.” — not monotone: revoke, reload, a joining player's fresh table (PlayerList.java:873-884)
+4. `commands/advancements`:25 — was “All fifty-eight registered triggers exist because something in the game wanted a hook and this was the hook that already existed.” — now “Of the fifty-eight registered triggers, fifty-seven are hooks something in the game fires, and the fifty-eighth is never fired at all.” — ImpossibleTrigger has no trigger method (ImpossibleTrigger.java:8-24); intent is not in the tree
+5. `commands/advancements`:36 — was “and the **trigger object is stateless** | both |” — now “and the **trigger object is stateless** | server |” — side column: the sweep takes a ServerPlayer; the client's copy has no criteria (SimpleCriterionTrigger.java:24; Advancement.java:47)
+6. `commands/advancements`:37 — was “| `SimpleCriterionTrigger` | the base class for all but one trigger, and the owner of the per-fire sweep | both |” — now “| `SimpleCriterionTrigger` | the base class for all but one trigger, and the owner of the per-fire sweep | server |” — side column: the sweep takes a ServerPlayer; the client's copy has no criteria (SimpleCriterionTrigger.java:24; Advancement.java:47)
+7. `commands/advancements`:101 — was “That is the floor cost of every slot change of every player, forever, and it is the most expensive trigger per fire. (The most *frequent* is `Criteri…” — now “That is the floor cost of every change to a player's inventory, forever. (The one fired unconditionally is `CriteriaTriggers.TICK`, once a tick for e…” — the fire is only for the player's own inventory slots (ServerPlayer.java:381-384); "most expensive per fire" has no measure; TICK is the one fired unconditionally (pass5.md:6432)
+8. `commands/advancements`:124 — was “broadcast to every player, gated on `GameRules.SHOW_ADVANCEMENT_MESSAGES`)” — now “broadcast to every player, gated on the display's own flag and on `GameRules.SHOW_ADVANCEMENT_MESSAGES`)” — the announcement is gated on the display's own flag too (PlayerAdvancements.java:230)
+9. `commands/advancements`:127 — was “**The rewards are `AdvancementRewards.EMPTY` here, and that is unusual.**” — now “**The rewards are `AdvancementRewards.EMPTY` here, as for most advancements outside the recipe book.**” — 103 of 126 non-recipe advancements have no rewards
+10. `commands/advancements`:143 — was “Play for a year and your table is nearly empty; the cost of the system to a save falls for as long as the save lives.” — now “The longer you play, the smaller your table, and the cost of the system to a save falls as its players play.” — play-dependent, and recipe advancements stay unfinished for many players
+11. `commands/advancements`:147 — was “and `/reload` re-subscribes everything unfinished in the new pack.” — now “and a reload — `/reload`, or `/datapack` enabling or disabling a pack — re-subscribes everything unfinished in the new pack.” — /datapack enable and disable reload too (DataPackCommand.java:217, :229)
+12. `commands/advancements`:182 — was “So everything awarded between those points — a kill, an `/advancement grant`, an item granted by another advancement's reward — coalesces into one pa…” — now “So everything awarded between those points — a `minecraft:tick` criterion, or an item that another advancement's reward grants, whose diff runs insid…” — V2's handoff: a melee kill and a typed grant are awarded before the levels tick, not in the window (SGPL.java:2080-2081; MinecraftServer.java:812, :1100)
+13. `commands/advancements`:219 — was “| `EntitySubPredicate` | a per-mob test as a **registry element** instead of a code branch | the twenty-odd small entity predicates are each a record…” — now “| `EntitySubPredicate` | every part of an entity predicate as a **registry element** instead of a code branch | its twenty-five kinds are each a reco…” — every part of an entity predicate is an EntitySubPredicate; 25 kinds, a few with builders (EntitySubPredicates.java:11-35)
+14. `commands/advancements`:233 — was “The client's half is five classes in `net/minecraft/client/gui/screens/advancements` plus `ClientAdvancements` over in `client/multiplayer` — about 1…” — now “The client's half is five classes in `net/minecraft/client/gui/screens/advancements`, `ClientAdvancements` over in `client/multiplayer`, and the toas…” — size (V10); the toast is part of the client's half
+15. `commands/advancements`:261 — was “scales the server-decided coordinates by a fixed factor,” — now “scales the server-decided coordinates by fixed factors,” — two factors (AdvancementWidget.java:66-67)
+16. `commands/advancements`:268 — was “Two more things ride this boundary and go nowhere.” — now “Two more things ride this boundary for almost nothing.” — the telemetry flag does go somewhere (WorldSessionTelemetryManager.java:74)
+17. `commands/advancements`:280 — was “The **thirty-five unnamed triggers** —” — now “The **forty triggers it does not explain** —” — 44 trigger classes less the four the page explains is forty
+18. `commands/advancements`:287 — was “are each one of the four shapes above applied to one kind of thing, and the two that matter to another part — `LocationPredicate` and `BlockPredicate…” — now “are each a small record over one kind of thing, the entity ones instances of `EntitySubPredicate`, and the one that matters most to another part, `Lo…” — only EntityFlagsPredicate and EntityEquipmentPredicate are EntitySubPredicates; the BlockPredicate features-and-placement names is levelgen's (blockpredicates/BlockPredicate.java:22)
+19. `commands/advancements`:307 — was “(An `AdvancementProgress` with no requirement clauses is permanently incompletable — `AdvancementRequirements.test` returns false for an empty list r…” — now “(An `AdvancementProgress` with no requirement clauses cannot be complete — `AdvancementRequirements.test` returns false for an empty list rather than…” — the server's disk decode and a fresh progress start empty too, and update fills them (AdvancementProgress.java:46-81)
+20. `commands/advancements`:324 — was “`PlayerAdvancements.save` runs from `PlayerList.save`, on disconnect, on a save-all, or from the reload above.” — now “`PlayerAdvancements.save` runs from `PlayerList.save`, on disconnect, on every save of the world — the autosave, `/save-all`, shutdown — or from the…” — the autosave and shutdown save players too (MinecraftServer.java:646-651, :679)
+21. `commands/advancements`:334 — was “`AdvancementCommands.Mode` — *only*, *through*, *from*, *until*, *everything* — is a graph traversal collecting parents or children or both, and `/ad…” — now “`AdvancementCommands.Mode` — *only*, *through*, *from*, *until* — picks one advancement or collects its parents or children or both (its *everything*…” — V2's handoff: Mode.EVERYTHING is never used; the literal takes every advancement (AdvancementCommands.java:51-52, :65-66, :305)
+22. `commands/advancements`:348 — was “because that flag is **write-only on the wire**.” — now “because that flag **never goes on the wire**.” — the flag is neither written nor read (DisplayInfo.java:21-45, :57)
+
+#### `commands/README`
+
+23. `commands/README`:3 — was “and four whole systems are built on top of that and nothing else.” — now “and four whole systems are built on top of that.” — the four systems rest on other parts too (before you start names them); the scoreboard imports nothing from commands
+24. `commands/README`:5 — was “The text turns grey and green and red as you type,” — now “The text turns grey and aqua and red as you type,” — literals grey, the first argument aqua, the unparsed tail red (CommandSuggestions.java:58-59, :483)
+25. `commands/README`:14 — was “a scoreboard is a number written by `/scoreboard` or by `execute store`,” — now “a scoreboard is a number that `/scoreboard` and `execute store` write, as the game's own criteria do,” — the game writes scores itself (ServerPlayer.java:783-808, :1035, :1072)
+26. `commands/README`:17 — was “What they need is the parse and the queue, and a reader who has those two can explain any of the four from them.” — now “What they need from this part is the parse and the queue; what else they need, from other parts, *before you start* names.” — advancements need loot conditions from Part VII, as *before you start* says
+27. `commands/README`:23 — was “`net/minecraft/server/commands`, one file per command.” — now “`net/minecraft/server/commands`, one file per command and a few helpers beside them.” — twelve catalogue files are helpers, not commands
+28. `commands/README`:28 — was “of which the catalogue alone is 102 files and 12,800 lines, each of them a thin lambda over machinery some other part of this book owns. So what a co…” — now “of which the catalogue alone is 111 files and 13,357 lines, most of them a thin lambda over machinery another page owns. So what a command *does* onc…” — 111 files and 13,357 lines in 26.3 (src/generated/packages-depth4.md:10); some catalogue files front this part's own systems
+29. `commands/README`:40 — was “The code is less tidy than the lecture order — a selector's *advancements=* and *scores=* options reach straight up into two of the top-floor systems…” — now “The code is less tidy than the lecture order: the lower floors reach up into all four top-floor systems — a selector's *advancements=* and *scores=*…” — the lower floors reach into all four; TeamPredicate reads PlayerTeam sideways (TeamPredicate.java:7)
+30. `commands/README`:64 — was “and the four systems on top are each written to by a command. The arrows point down, the one landing figure in the book where they do, so that the to…” — now “and the four systems on top are each driven by a command. An arrow runs from a floor to the floor it is built on, the reverse of the other landing fi…” — caption: dialogs and tests are opened and run, not written to; ten other landing figures also point down
+31. `commands/README`:85 — was “and the pattern page is where that argument is made.” — now “and the pattern page is where the pattern is set out.” — data-driven-types lists them as rows, it does not argue it
+32. `commands/README`:88 — was “for the Netty-thread / server-thread boundary that the command packets cross in two different ways on purpose.” — now “for the boundary between the Netty threads and the Server thread, which the command packets and the suggestion request each cross their own way.” — in 26.3 neither route is the ordinary hop (SGPL.java:620-627, :1886-1895)
+33. `commands/README`:94 — was “as it owns `/execute if predicate`, which a selector's own *predicate* option is the second caller of.” — now “as it owns `/execute if predicate`, whose test a selector's own *predicate* option runs too.” — ambiguous "second caller"
+34. `commands/README`:101 — was “Also: which sixty-two of the four hundred and fifty-nine argument nodes do leave it, and why they feel like all of them.” — now “Also: which sixty-six of the four hundred and fifty-three argument nodes ask the server by hand, and why they feel like all of them.” — watch lines: 26.3's counts; no history (rule 3); thirteen names shape the plan; the batch key
+35. `commands/README`:103 — was “the biggest API break in the game since the flattening. A permission is no longer an integer,” — now “a permission is not an integer,” — watch lines: 26.3's counts; no history (rule 3); thirteen names shape the plan; the batch key
+36. `commands/README`:107 — was “and eight of its twenty-one options are not filters but the query plan.” — now “and thirteen of its twenty-one options shape the query plan as well as filtering.” — watch lines: 26.3's counts; no history (rule 3); thirteen names shape the plan; the batch key
+37. `commands/README`:129 — was “The *GameTest* annotation is gone, a batch *is* an environment,” — now “There is no *GameTest* annotation, a batch *is* an environment in one dimension,” — watch lines: 26.3's counts; no history (rule 3); thirteen names shape the plan; the batch key
+38. `commands/README`:135 — was “{{#include ../../generated/coverage-commands.md}}, and the catalogue is where they sit: not quite a third of this part by line is command registratio…” — now “{{#include ../../generated/coverage-commands.md}}, nearly half of them in the catalogue — itself not quite a third of this part by line — and most of…” — nearly half the unnamed lines are the catalogue's, most of the rest advancements' (pass5_coverage.py --part commands)
+39. `commands/README`:143 — was “The **thirty-five unnamed advancement triggers** and the **concrete predicates** beside them are instances of two shapes [advancements](advancements.…” — now “The **forty advancement triggers** the advancements page does not explain and the **concrete predicates** beside them are instances of the shapes [ad…” — the advancements page's corrected count and wording
+40. `commands/README`:149 — was “names the families rather than the fifty-seven registered types” — now “names the families rather than the sixty-two registered types” — the advancements page's corrected count and wording
+41. `commands/README`:151 — was “which is why the same page counts 459 of those.” — now “which is why the same page counts 453 of those.” — the advancements page's corrected count and wording
+42. `commands/README`:155 — was “Each is a self-contained routine that belongs to no other part,” — now “Each is a self-contained routine that no part's page is about,” — CloneCommands copies scheduled ticks, which world/scheduled-ticks names
+43. `commands/README`:166 — was “an advancement tab, and the two a test block's edit screens send.” — now “an advancement tab, a command block's settings, and the two the test blocks' edit screens send.” — two blocks' screens; the command block's settings come back too
+
+#### `commands/brigadier-and-commands`
+
+44. `commands/brigadier-and-commands`:15 — was “Because the tree the client rebuilt says, node by node, who is allowed to answer. Vanilla registers **459 argument nodes**, and only **62** of them s…” — now “Because a loot table is data the client was never sent. The tree the client rebuilt says, node by node, which nodes ask the server, and an argument o…” — hook: a loot table round-trips because the client lacks the registry (ResourceOrIdArgument.java:168; ClientSuggestionProvider.java:102-110); 26.3's counts (grep: 453 Commands.argument, 73 .suggests, 7 named)
+45. `commands/brigadier-and-commands`:30 — was “| the three providers that have a name on the wire — *ask_server*, *available_sounds* and *summonable_entities*. Everything else serialises as *ask_s…” — now “| the four providers that have a name on the wire — *ask_server*, *available_sounds*, *summonable_entities* and *post_effects*. Everything else seria…” — four named providers in 26.3 (SuggestionProviders.java:20-33)
+46. `commands/brigadier-and-commands`:33 — was “| the 688-line widget over it —” — now “| the widget over it —” — size (V10)
+47. `commands/brigadier-and-commands`:76 — was “the round trip in the frame is taken only by a node that asks the server, and `/give` has none.” — now “the round trip in the frame is taken only when a node asks the server or an argument needs data the client lacks, and `/give` has neither.” — caption: the second route
+48. `commands/brigadier-and-commands`:86 — was “that parse produces the red underline,” — now “that parse produces the red tail,” — the client colours the unparsed tail red, no underline (CommandSuggestions.java:58, :436)
+49. `commands/brigadier-and-commands`:94 — was “so the client instantiated a real `ItemParser` and a real `BlockStateParser` against its own registries.” — now “so the client holds a real `ItemParser` and builds a real `BlockStateParser` against its own registries.” — BlockStateArgument builds its parser per call (BlockStateParser.parseForBlock)
+50. `commands/brigadier-and-commands`:106 — was “Of the **67** vanilla nodes that attach a provider at all, exactly five name one of the two providers that mean anything on the wire — three *availab…” — now “Of the **73** vanilla nodes that attach a provider at all, seven name one of the three providers that mean anything on the wire — three *available_so…” — 26.3's counts
+51. `commands/brigadier-and-commands`:110 — was “The other 392 argument nodes attach nothing” — now “The other 380 argument nodes attach nothing” — 26.3's counts
+52. `commands/brigadier-and-commands`:120 — was “and it is what every suggestion lambda is written against, so the same lambda runs on either. Most of its 355 lines are static helpers” — now “and it is what every argument type's suggestions are written against, so the same code runs on either. Most of it is static helpers” — server command lambdas take CommandSourceStack and run only on the server (FunctionCommand.SUGGEST_FUNCTION); size (V10); more instance methods differ (getAvailablePostEffects, suggestRegistryElements)
+53. `commands/brigadier-and-commands`:124 — was “and its handful of instance methods are exactly the questions the two sides answer differently: the tab list,” — now “and its instance methods are the questions the two sides answer differently — among them the tab list,” — server command lambdas take CommandSourceStack and run only on the server (FunctionCommand.SUGGEST_FUNCTION); size (V10); more instance methods differ (getAvailablePostEffects, suggestRegistryElements)
+54. `commands/brigadier-and-commands`:145 — was “and is parsed twice more before anything is sent” — now “and is parsed once or twice more before anything is sent” — the second parse runs only when the first passes and nothing is signable (ClientPacketListener.java:2899-2908)
+55. `commands/brigadier-and-commands`:148 — was “its click command is never checked by the client, because it never reaches the client at all.” — now “its click command reaches the client only as the sign's text, and is never checked there, because the server runs it when the sign is used.” — the sign's text, click event included, reaches every client; the server runs it (SignBlockEntity.java:117, :271; SignBlock.java:127-144)
+56. `commands/brigadier-and-commands`:151 — was “**The two inbound packets cross the thread boundary differently, on purpose.** `ServerboundCommandSuggestionPacket` goes through `PacketUtils.ensureR…” — now “**The inbound packets cross the thread boundary differently, and neither takes the ordinary hop.** `ServerboundCommandSuggestionPacket` is handed, on…” — C's handoff: in 26.3 the suggestion packet goes to ServerCommandSuggestionsProvider, not the hop (SGPL.java:620-627; ServerCommandSuggestionsProvider.java:29-42, :74-90)
+57. `commands/brigadier-and-commands`:181 — was “Success goes to `CommandSourceStack.sendSuccess` — which takes a *supplier*,” — now “Success goes, through `CommandResponseTracker.sendFeedback`, to `CommandSourceStack.sendSuccess` — which takes a *supplier*,” — sendSuccess is reached through CommandResponseTracker (GiveCommand.java:92; CommandResponseTracker.java:171-177)
+58. `commands/brigadier-and-commands`:188 — was “`CommandSourceStack` carries a `CommandSource` — four methods and no state — and its four implementations are the whole answer to why a command block…” — now “`CommandSourceStack` carries a `CommandSource` — four questions, a fifth with a default, and no state — and its implementations are the whole answer…” — five methods, six implementations; SEND_COMMAND_FEEDBACK gates players' feedback too; a non-tracking command block gets NULL; NULL is one of several silencers (CommandSource.java:7-37; BaseCommandBlock.java:109, :155-157; ServerPlayer.java:393-415)
+59. `commands/brigadier-and-commands`:194 — was “under `GameRules.COMMAND_BLOCK_OUTPUT`, which is what those two game rules *are*; a command block that has been broken accepts nothing at all.” — now “under `GameRules.COMMAND_BLOCK_OUTPUT`, which is what the second of those game rules is for; a command block with *Track Output* off gets no source o…” — five methods, six implementations; SEND_COMMAND_FEEDBACK gates players' feedback too; a non-tracking command block gets NULL; NULL is one of several silencers (CommandSource.java:7-37; BaseCommandBlock.java:109, :155-157; ServerPlayer.java:393-415)
+60. `commands/brigadier-and-commands`:196 — was “`CommandSource.NULL` refuses everything, and the game hands it to every source with nobody to talk to — a sign running its own click command, a text…” — now “`CommandSource.NULL` refuses everything, and the game hands it to several sources with nobody to talk to — a sign running its own click command, a te…” — five methods, six implementations; SEND_COMMAND_FEEDBACK gates players' feedback too; a non-tracking command block gets NULL; NULL is one of several silencers (CommandSource.java:7-37; BaseCommandBlock.java:109, :155-157; ServerPlayer.java:393-415)
+61. `commands/brigadier-and-commands`:198 — was “The command block is `BaseCommandBlock` plus the `CommandBlockEntity` that holds one: a `CommandSource`, a stored string and a redstone edge, and no…” — now “The command block is `CommandBlock`, whose own redstone edge, tick and chain walk decide when it runs, and the `CommandBlockEntity` that holds a `Bas…” — E's handoff: CommandBlock has its own neighborChanged, tick and executeChain (CommandBlock.java:53, :84, :198); BaseCommandBlock builds a source per run
+62. `commands/brigadier-and-commands`:221 — was “thirteen final fields with no reader and no grammar in them,” — now “thirteen final fields with no grammar in them,” — EntitySelector keeps a String playerName and lambdas over the parser
+63. `commands/brigadier-and-commands`:278 — was “an id resolved against a registry through the `CommandBuildContext` —” — now “an id resolved against a registry, most of them through the `CommandBuildContext` —” — ResourceKeyArgument and ResourceOrTagKeyArgument take no context (ResourceKeyArgument.java:66-71); brigadier:bool is registered too (ArgumentTypeInfos.java:81)
+64. `commands/brigadier-and-commands`:285 — was “the four `ArgumentTypeInfo`s for integer, long, float and double, the only argument types in the game the game did not write.” — now “the four `ArgumentTypeInfo`s for integer, long, float and double; with the boolean, which needs no class of its own, they are the only argument types…” — ResourceKeyArgument and ResourceOrTagKeyArgument take no context (ResourceKeyArgument.java:66-71); brigadier:bool is registered too (ArgumentTypeInfos.java:81)
+65. `commands/brigadier-and-commands`:295 — was “**thirty-eight** argument-type classes sit directly in `net/minecraft/commands/arguments`,” — now “**forty** argument-type classes sit directly in `net/minecraft/commands/arguments`,” — 26.3's counts: forty classes, sixty-two entries; the six resource types are twelve entries (ArgumentTypeInfos.java:125-140; ResourceOrIdArgument.java:175-221)
+66. `commands/brigadier-and-commands`:297 — was “while **fifty-seven** entries are registered in `ArgumentTypeInfos` — a class may register several (the six resource types above are six entries) and…” — now “while **sixty-two** entries are registered in `ArgumentTypeInfos` — a class may register several: the six resource types above are twelve entries, `R…” — 26.3's counts: forty classes, sixty-two entries; the six resource types are twelve entries (ArgumentTypeInfos.java:125-140; ResourceOrIdArgument.java:175-221)
+67. `commands/brigadier-and-commands`:306 — was “op and deop, and the four LAN toggles, and **not** after `/reload`.” — now “op and deop, and the singleplayer toggles for cheats and guest command access, and **not** after `/reload`.” — two setters from three call sites (IntegratedServer.java:306-310, :366-369)
+68. `commands/brigadier-and-commands`:307 — was “And an **unknown argument type deletes the node, not its children**:” — now “And an **unknown argument type deletes the node and everything under it**:” — the children are attached to a throwaway root and vanish too (ClientboundCommandsPacket.java:359-385); an unknown type's own bytes desync the read (:146-153)
+69. `commands/brigadier-and-commands`:313 — was “The packet is not rejected. What the *filtering* means,” — now “The packet is not rejected, as long as the unknown type wrote no bytes of its own. What the *filtering* means,” — the children are attached to a throwaway root and vanish too (ClientboundCommandsPacket.java:359-385); an unknown type's own bytes desync the read (:146-153)
+70. `commands/brigadier-and-commands`:317 — was “a server pushing arbitrary non-command completions into the tab list, add / remove / set.” — now “a server pushing arbitrary completions for ordinary chat messages into the chat box, add / remove / set.” — the non-command completion set, not the player tab list (ClientSuggestionProvider.java:183-199)
+71. `commands/brigadier-and-commands`:333 — was “Most of `net/minecraft/server/commands` — 102 files and 12,800 lines, counted the way [the atlas](../../maps/packages.md#where-each-part-lives) count…” — now “Most of `net/minecraft/server/commands` — [the atlas](../../maps/packages.md#where-each-part-lives) has its size — is a thin lambda over machinery an…” — size (V10): 102/12,800 were 26.2's; the atlas has the size
+72. `commands/brigadier-and-commands`:343 — was “| four doors: a configured feature with no placement layer,” — now “| four doors: a feature with no placement layer, by id or inline,” — 26.3 has no ConfiguredFeature; /place feature takes a Feature holder, by id or inline (PlaceCommand.java:67-70, :96-102)
+73. `commands/brigadier-and-commands`:344 — was “— `/item modify`, and the `from … <modifier>` form of `/item replace`.” — now “— `/item modify`, and the `from … <modifier>` forms of `/item replace`, `fill` and `override`. A slot is named in the numbering [player anatomy](../p…” — G's handoff: fill and override take the form too (server/commands/item/ItemCommands.java:76, :94-98); H's handoff (pass5.md:240): the slot numbering's owner
+74. `commands/brigadier-and-commands`:347 — was “| the entire write surface of the scoreboard and of stored NBT |” — now “| the commands that write the scoreboard and stored NBT, beside `execute store` |” — execute store writes both too (ExecuteCommand.java:282-318)
+
+#### `commands/permissions`
+
+75. `commands/permissions`:12 — was “There are two permission universes in this game and they overlap in one place.” — now “There are two permission universes in this game, and they overlap only where the client runs the server's rung checks against its copy of your op lev…” — the client reads several server rung constants locally (WorldOptionsScreen.java:232, :253, :681; KeyboardHandler.java:247-270), so the universes do not overlap in one place
+76. `commands/permissions`:15 — was “That is the shape of the change, and it is the largest API break in this book: **a permission is no longer an integer.** The five levels are still th…” — now “That is the shape of the model, and the thing to unlearn: **a permission is not an integer.** The five levels are there, numbered nought to four and…” — the model was already in 1.21.11 (rule 3; V2's handoff); "the largest API break in this book" names no population
+77. `commands/permissions`:26 — was “| the nine the game actually defines, as constants — four rungs and five atoms. The plural class is the catalogue; the singular one is the shape |” — now “| nine permissions as constants — four rungs and five atoms; the client mints one more of its own. The plural class is the catalogue; the singular on…” — the client mints a tenth (ClientPacketListener.java:367)
+78. `commands/permissions`:28 — was “| *the answer*. A functional interface with one method, `PermissionSet.hasPermission` |” — now “| *the answer*. An interface with one abstract method, `PermissionSet.hasPermission` |” — one abstract method and a default union; not annotated (PermissionSet.java:3-16)
+79. `commands/permissions`:33 — was “| `ChatAbilities` | the client's own set, built by **subtraction** from local reasons |” — now “| `ChatAbilities` | holds the client's own set, built by **subtraction** from local reasons |” — ChatAbilities is a plain class holding a PermissionSet (ChatAbilities.java:14, :18)
+80. `commands/permissions`:35 — was “Eleven classes and 398 lines in `net/minecraft/server/permissions` — every row above but `ChatAbilities`, which is the client's and sits with the cli…” — now “`net/minecraft/server/permissions` holds every row above but `ChatAbilities`, which is the client's and sits with the client's chat code: a small pac…” — size (V10) and a superlative with no population
+81. `commands/permissions`:90 — was “`Permissions` holds all nine the game defines, and the split is four to five:” — now “`Permissions` holds nine, and the split is four to five:” — nine in Permissions, not all the game defines
+82. `commands/permissions`:97 — was “The **answer** is behaviour: `PermissionSet` is one method, so every set in the game above is a lambda or a small object, and there is no set-of-perm…” — now “The **answer** is behaviour: `PermissionSet` has one abstract method, so every set in the game above is a lambda or a small object, and there is no s…” — PermissionSet has one abstract method; Permissions.CHAT_PERMISSIONS and ChatRestriction work on a Set<Permission> (Permissions.java:16; ChatRestriction.java:19-69)
+83. `commands/permissions`:123 — was “The exception is the case the game actually uses.” — now “The exception is the case the server uses.” — the client uses the general union too (ClientPacketListener.java:474); the lower set is a cap, a ceiling (LevelBasedPermissionSet.java:27)
+84. `commands/permissions`:127 — was “`CommandSourceStack.withMaximumPermission` is that union, so the one method in the game named for a ceiling enforces a floor instead — which is how” — now “`CommandSourceStack.withMaximumPermission` is that union, which for these sets takes the minimum and so works as the ceiling its name promises — whic…” — the client uses the general union too (ClientPacketListener.java:474); the lower set is a cap, a ceiling (LevelBasedPermissionSet.java:27)
+85. `commands/permissions`:144 — was “built when the file was read from the integer the file stores. Failing that, on a dedicated server the fallback is the configured *op-permission-leve…” — now “built when the file was read from the integer the file stores, which on a dedicated server is the *op-permission-level* property as it stood when `/o…” — the op-permission-level fallback is unreachable on a dedicated server; the property is the level /op writes (MinecraftServer.java:1965-1972; PlayerList.java:596)
+86. `commands/permissions`:177 — was “One permission escapes the parse entirely.” — now “One permission is not settled by the parse alone.” — it is tested at parse time, so it does not escape the parse
+87. `commands/permissions`:228 — was “`ChatAbilities` is the other client-only set, and it is built the opposite way round” — now “`ChatAbilities` holds the other client-only set, and it is built the opposite way round” — "Three of the four" is the four ChatRestriction values, not the atoms; two are settings of one option (Minecraft.java:2647-2661)
+88. `commands/permissions`:234 — was “Three of the four are decisions the machine you are sitting at makes — two chat options and a launcher flag — and the fourth,” — now “Three of the four `ChatRestriction`s that can remove them are decisions the machine you are sitting at makes — two settings of the chat option and a…” — "Three of the four" is the four ChatRestriction values, not the atoms; two are settings of one option (Minecraft.java:2647-2661)
+89. `commands/permissions`:243 — was “`WorldOptionsScreen` gates the hardcore and gamemode buttons on `Permissions.COMMANDS_OWNER` and `Permissions.COMMANDS_GAMEMASTER`, `KeyboardHandler`…” — now “`WorldOptionsScreen` gates *Allow Cheats* in a hardcore world on `Permissions.COMMANDS_OWNER` and its game-rule, game-mode and difficulty buttons on…” — WorldOptionsScreen's gates (:232, :253, :681); KeyboardHandler gates two keys and reads a third (:247, :254, :270)
+90. `commands/permissions`:249 — was “read by its own command registration, twice by `KeyboardHandler`, once by `GameModeSwitcherScreen` against `LocalPlayer`'s own set — which is why F3+…” — now “read by its own command registration, twice by `KeyboardHandler` — the second is why F3+F4 refuses to open the switcher at all, with *debug.gamemodes…” — the refusal is KeyboardHandler's read (:270-273); the screen's read is at the send (GameModeSwitcherScreen.java:115); it is the one PermissionCheck both sides read
+91. `commands/permissions`:265 — was “A sign's click command is stored in the block entity and never travels to the client as a command at all: `SignBlockEntity` runs it on the server, an…” — now “A sign's click command reaches every client as part of the sign's text, but no client runs it: `SignBlockEntity` runs it on the server when the sign…” — the sign's text, click event included, reaches every client in the update tag; no client runs it (SignBlockEntity.java:117, :271; SignBlock.java:127-144)
+92. `commands/permissions`:269 — was “There is nothing for the client to vet, because the client was never told what the text does.” — now “There is nothing for the client to vet, because the client never sends it.” — the sign's text, click event included, reaches every client in the update tag; no client runs it (SignBlockEntity.java:117, :271; SignBlock.java:127-144)
+93. `commands/permissions`:276 — was “IN --> P1{"parses with your own set?"}” — now “IN --> P1{"parses with your set, restricted atom added?"}” — the first parse's set is the player's OR-ed with the restricted atom (ClientPacketListener.java:474)
+94. `commands/permissions`:291 — was “Succeeding with your set and failing without it means some node on the path was gated” — now “Succeeding with the ordinary source and failing with the no-permission one means some node on the path was gated” — the first parse's set is the player's OR-ed with the restricted atom (ClientPacketListener.java:474)
+95. `commands/permissions`:309 — was “That is what two permission universes overlapping in one place buys — and the one place they overlap is the paragraph above.” — now “That is what two permission universes buy — and where they overlap, at the rungs, is the paragraph above.” — the old endings rested on "one place"
+96. `commands/permissions`:313 — was “> **For a 1.21-era reader.** *ServerPlayer.hasPermissions(int)* and > *CommandSourceStack.hasPermission(int)* are gone. The nearest thing is > `Permi…” — now “> **For a 1.21-era reader.** *PlayerList.setAllowCommandsForAllPlayers* is gone: > singleplayer answers through its own override, `IntegratedServer.g…” — the blockquote: against the 1.21.11 tree the model is already there; the real move is the singleplayer seam (1.21.11 IntegratedServer.publishServer; 26.3 IntegratedServer.java:342-369)
+97. `commands/permissions`:326 — was “`Permissions` for the nine vanilla permissions, and `Commands.hasPermission` for the one idiom every command registration uses.” — now “`Permissions` for its nine, and `Commands.hasPermission` for the one idiom every requirement in a command registration uses.” — Where to look: nine in Permissions; the requirement idiom; the server's inspector reasons about a missing permission too (Commands.java:194-199)
+98. `commands/permissions`:329 — was “and `ClientPacketListener.verifyCommand` for the only place either side reasons about a permission it does not have.” — now “and `ClientPacketListener.verifyCommand` for the only place the client reasons about a permission it does not have.” — Where to look: nine in Permissions; the requirement idiom; the server's inspector reasons about a missing permission too (Commands.java:194-199)
+
+#### `commands/entity-selectors`
+
+99. `commands/entity-selectors`:14 — was “and the cheapest of those seven, *distance*, is also the one that decides whether the game walks every entity in the level or asks the chunk sections…” — now “and four of those seven, *distance* and the three box deltas, are also what decides whether the game walks every entity in the level or asks the chun…” — dx/dy/dz build the box too, and win over distance (EntitySelectorParser.java:149-159); "cheapest" has no measure
+100. `commands/entity-selectors`:19 — was “but a handful of its twenty-one option names are not filters at all: they are the query plan.” — now “but many of its twenty-one option names are more than filters: they write the query plan.” — the plan options add tests too (EntitySelector.java:284-294); thirteen of twenty-one shape the plan
+101. `commands/entity-selectors`:26 — was “| the reader, the grammar and thirty-two half-built fields.” — now “| the reader, the grammar and thirty-one half-built fields besides it.” — thirty-two fields counts the reader (EntitySelectorParser.java:78-109)
+102. `commands/entity-selectors`:27 — was “filled once by `Bootstrap.bootStrap` and never again | class init |” — now “filled once by `Bootstrap.bootStrap` and never again | bootstrap |” — the map is filled at bootstrap, as the row says (server/Bootstrap.java:58)
+103. `commands/entity-selectors`:28 — was “the three-state machine behind *type=!zombie,!skeleton*:” — now “the three-state machine behind *type=!zombie,type=!skeleton*:” — an option key cannot begin with ! (StringReader.readString); the working form repeats type= (EntitySelectorParser.java:341)
+104. `commands/entity-selectors`:130 — was “which is why *type=!zombie,!skeleton* works” — now “which is why *type=!zombie,type=!skeleton* works” — an option key cannot begin with ! (StringReader.readString); the working form repeats type= (EntitySelectorParser.java:341)
+105. `commands/entity-selectors`:29 — was “The other nine once-only options enforce it by checking their own field” — now “The other ten once-only options enforce it by checking their own field” — fourteen once-only options, four with SetOnceOptionState, ten checking their own field (EntitySelectorOptions.java:121-182)
+106. `commands/entity-selectors`:30 — was “| the compiled query: thirteen final fields, no reader, no grammar, no string |” — now “| the compiled query: thirteen final fields, and no grammar left in them |” — EntitySelector keeps a String playerName (EntitySelector.java:66)
+107. `commands/entity-selectors`:35 — was “`net/minecraft/commands/arguments/selector` is five classes and 1,717 lines, and every one of them is in the server jar *and* the client jar.” — now “`net/minecraft/commands/arguments/selector` holds five classes, and every one of them is in the server jar *and* the client jar.” — size (V10)
+108. `commands/entity-selectors`:67 — was “the first two while Brigadier parses, once, and the third on the server thread each time a command asks for its argument;” — now “the first two while Brigadier parses, and the third on the Server thread each time a command asks for its argument;” — caption: sibling arguments parse the text again (CommandDispatcher.java:300-308); the thread's name (V7)
+109. `commands/entity-selectors`:94 — was “So a player sitting on the death screen is invisible to *@e* and *@n*, and still a target for *@a*, *@p* and *@r*.” — now “So a player sitting on the death screen is invisible to *@e* and *@n*, and still a target for *@a*, *@p* and *@r* — though twenty ticks after death t…” — a dead player leaves ServerLevel.players twenty ticks after death but stays in PlayerList until respawn (LivingEntity.java:579-584; ServerLevel.java:2105; PlayerList.java:411)
+110. `commands/entity-selectors`:150 — was “which is what makes *x=0* mean the same thing everywhere and *@s* mean something different at each link of a chain.” — now “which is what makes *x=0* mean the same thing everywhere while every axis left unwritten follows the source at each link of a chain.” — @s follows the sender's entity, not the origin function (EntitySelector.java:157, :223)
+111. `commands/entity-selectors`:169 — was “C -- UUID --> B1{"non-players in scope?"} B1 -- yes --> UE["ServerLevel.getEntity, level by level"] B1 -- no --> UP["PlayerList.getPlayer"]” — now “C -- UUID --> UE["Level.getEntity, level by level"]” — a UUID always brings non-players into scope, so PlayerList.getPlayer is never reached (EntitySelectorParser.java:318-319; EntityArgument.java:119); the UUID overload is Level's
+112. `commands/entity-selectors`:189 — was “a UUID is looked up with `ServerLevel.getEntity`, level by level, when non-players are in scope, and with `PlayerList.getPlayer` when they are not;” — now “a UUID is looked up with `Level.getEntity`, level by level, since a UUID always brings non-players into scope;” — a UUID always brings non-players into scope, so PlayerList.getPlayer is never reached (EntitySelectorParser.java:318-319; EntityArgument.java:119); the UUID overload is Level's
+113. `commands/entity-selectors`:202 — was “which visits only the accessible non-empty 16-cubes the box overlaps.” — now “which visits only the accessible non-empty 16-cubes the box overlaps once widened by two blocks sideways and four below.” — the storage widens the box first (EntitySectionStorage.java:38-43)
+114. `commands/entity-selectors`:206 — was “`EntityTypeTest` being the one-method "is this the type I asked for, and give it to me typed" the whole entity-fetching API is generic over.” — now “`EntityTypeTest` being the small "is this the type I asked for, and give it to me typed" interface the whole entity-fetching API is generic over.” — EntityTypeTest has two methods, tryCast and getBaseClass (EntityTypeTest.java:35-38)
+115. `commands/entity-selectors`:209 — was “Only the seven box options narrow the search itself, and only when they add up to a box.” — now “Within a level only *distance* and the three deltas narrow the search, and only when they add up to a box; the other three of the seven narrow it to…” — x, y and z build no box; they limit the search to one level
+116. `commands/entity-selectors`:229 — was “*@n* and *@p* live permanently in the second mode: their heads set the nearest order, so they always collect first and cut afterwards.” — now “*@n* and *@p* live in the second mode unless told otherwise: their heads set the nearest order, so they collect first and cut afterwards, and only an…” — sort=arbitrary is accepted on @n and @p (EntitySelectorOptions.java:215-216, :225)
+117. `commands/entity-selectors`:232 — was “**So the query plan is written by eight of the twenty-one names**: the seven above, which build the box and world-limit the search, and *sort*, which…” — now “**So the query plan is written by thirteen of the twenty-one names**: the seven above, which build the box and world-limit the search; *limit*, which…” — limit aborts early; level, gamemode, advancements and a positive type=player send the search to a player list (EntitySelectorOptions.java:130, :275, :370, :586)
+118. `commands/entity-selectors`:240 — was “from gamemaster upward as the one hard-coded exception in that class” — now “from gamemaster upward as the one hard-coded exception in that interface” — LevelBasedPermissionSet is an interface
+119. `commands/entity-selectors`:259 — was “which is how an email address survives” — now “which is how an address like *me@gmail.com* survives” — an address whose domain starts with a selector head parses as a selector (MessageArgument.java:156-162)
+120. `commands/entity-selectors`:292 — was “with the last three falling back to a bare name and the wildcard alone throwing when there is nothing to return” — now “with the UUID and player branches falling back to a bare name and the wildcard alone throwing when there is nothing to return” — the # branch is the bare name; the UUID and player branches fall back (ScoreHolderArgument.java:134-180)
+121. `commands/entity-selectors`:297 — was “Both take the permission the same way this page's own parse does, and both enforce their single-or-many shape on the compiled selector rather than on…” — now “Both take the permission the same way this page's own parse does, and both check the compiled selector rather than the text, as `EntityArgument` does…” — GameProfileArgument has one shape and rejects non-players and @s (GameProfileArgument.java:51-60)
+122. `commands/entity-selectors`:365 — was “that enforce the same rules structurally. *ResourceLocation* is `Identifier`. And the check > that used to be an op-level comparison is now an atom,…” — now “that enforce the same rules structurally.” — the blockquote against 1.21.11: the atom and Identifier were already there; the booleans are the real drift
+
+#### `commands/the-execution-engine`
+
+123. `commands/the-execution-engine`:13 — was “Every construct that used to nest —” — now “Every construct that nests —” — history the tree cannot show (rule 3)
+124. `commands/the-execution-engine`:17 — was “you can **delete** entries out of the middle of it, and you can hand each entry to a tracer on the way past. `/return`, `/debug function` and the for…” — now “you can **delete** pending entries from it before they run, and a tracer can watch the work as it runs. `/return` and `/debug function` are built on…” — discards pop a run from the head, never the middle (ExecutionContext.java:78-83); the driver never calls the tracer, the tasks do (BuildContexts.java:142-149, CallFunction.java:29-32)
+125. `commands/the-execution-engine`:26 — was “| 153 lines, and the whole engine is in its `ExecutionContext.runCommandQueue` loop |” — now “| the whole engine is in its `ExecutionContext.runCommandQueue` loop |” — size (V10): the cast keeps what the class is, not its line count
+126. `commands/the-execution-engine`:86 — was “An action never sees the context directly: it is handed an `ExecutionControl`, which is the (context, frame) pair with two methods — queue an action,…” — now “A queued action is handed the `ExecutionContext` itself. A custom executor or modifier is handed an `ExecutionControl` instead, the (context, frame)…” — ExecutionControl has four methods, and queued actions are handed the ExecutionContext itself (ExecutionControl.java:8-15; EntryAction.java:6)
+127. `commands/the-execution-engine`:95 — was “element *i* and everything it spawns runs to completion before element *i+1* is even materialised.” — now “element *i* and everything it spawns runs to completion before element *i+1* runs — and, from three elements up, before it is even materialised.” — for two elements both entries are made at once (ContinuationTask.java:285-288)
+128. `commands/the-execution-engine`:124 — was “Who installed the callback decides where a returned value goes, and this is the part the page's shape invites getting backwards. Two corrections wort…” — now “Who installed the callback decides where a returned value goes, and two details settle it:” — the tic the queue unit names (pass5.md:6427)
+129. `commands/the-execution-engine`:131 — was “queues one function call per player with no reduction at all.” — now “queues one function call per player, unreduced — and the first to finish, by returning or by falling through, discards the rest.” — per source a CallFunction with returnParentFrame and a FallthroughTask; the first to finish discards the rest (FunctionCommand.java:146-161; FallthroughTask.java:12-15)
+130. `commands/the-execution-engine`:138 — was “## A result is a flag and a number, and nothing aggregates” — now “## A result is a flag and a number, and only a function tag sums them” — false heading: /function on a tag sums (FunctionCommand.java:185-218); one inbound link, repointed in r1_scoreboard
+131. `commands/the-execution-engine`:141 — was “The engine aggregates nothing, with one exception it makes itself.” — now “The engine aggregates nothing, and there is one exception, which `/function` makes.” — false heading: /function on a tag sums (FunctionCommand.java:185-218); one inbound link, repointed in r1_scoreboard
+132. `commands/the-execution-engine`:142 — was “so an `execute store result` writes N times and the last one wins” — now “so an `execute store result` placed before the fork writes N times and the last one wins” — a store placed after the fork is per source (ExecuteCommand.java:236-238)
+133. `commands/the-execution-engine`:152 — was “`FallthroughTask` exists so that a chain which produced no sources still *fails* rather than returning nothing,” — now “`FallthroughTask` makes a chain that produced no sources, or a called function that ended without `/return`, *fail* rather than return nothing,” — two of the four sites queue it after function calls (FunctionCommand.java:160; ExecuteCommand.java:834)
+134. `commands/the-execution-engine`:157 — was “between them they belong to three commands: `/function`, `/return` and `/debug`.” — now “between them they belong to four commands: `/function`, `/return`, `/debug` and `/execute`, whose `if function` is one.” — ExecuteCommand.ExecuteIfFunctionCustomModifier is the sixth class (ExecuteCommand.java:857)
+135. `commands/the-execution-engine`:168 — was “Two things end an execution before its work is done, and they are not the same event.” — now “Three things end an execution before its work is done. One is an exception thrown out of an action, which `Commands.executeCommandInContext` passes u…” — an exception thrown out of an action ends it too, and reaches the source (Commands.java:351-369, :425-433)
+136. `commands/the-execution-engine`:171 — was “**The quota runs out.**” — now “**The budget runs out.**” — one word for the counter (pass5.md:6416)
+137. `commands/the-execution-engine`:180 — was “and a latch the quota path has no equivalent of.” — now “and a latch the budget path has no equivalent of.” — one word for the counter (pass5.md:6416)
+138. `commands/the-execution-engine`:186 — was “before the quota path above fires” — now “before the budget path above fires” — one word for the counter (pass5.md:6416)
+139. `commands/the-execution-engine`:201 — was “and what bounds a fan-out is the ten-million entry cap above.” — now “and what bounds a fan-out is the fork limit, with the budget again at one unit a leaf.” — a lazy fan-out keeps about two entries queued; the fork limit and the budget bound it (BuildContexts.java:83; tasks/ExecuteCommand.java:31)
+140. `commands/the-execution-engine`:206 — was “*while one is running* appends to the running queue rather than making a new context, and the limits were read once by the outermost call. Its top fr…” — now “*while one is running* queues its work into the running context, to run next, rather than making a new context, and the limits were read once by the…” — re-entry is staged and spliced onto the head; under a depth-zero entry the new top frame shares depth zero (ExecutionContext.java:41-45, :67-76)
+141. `commands/the-execution-engine`:222 — was “and **`execute if function` and `/return run` are free**: neither custom modifier ever reaches the counter.” — now “and **the `execute if function` and `/return run` stages are free**: neither custom modifier ever reaches the counter, though what they go on to run…” — the stages are free, what they run is charged (ExecuteCommand.java:831 -> CallFunction.java:26)
+142. `commands/the-execution-engine`:240 — was “`DebugCommand.Tracer` installs itself on the whole `ExecutionContext` rather than per frame, so it traces everything in that context. It refuses to n…” — now “`/debug function` installs a `DebugCommand.Tracer` on the whole `ExecutionContext` rather than per frame, so it traces everything in that context. Th…” — TraceCustomExecutor does the install and both refusals; Tracer implements CommandSource (DebugCommand.java:107-126, :165)
+143. `commands/the-execution-engine`:255 — was “converts its errors into nothing. They still reach the tracer, which is what `/debug function` is for.” — now “converts its errors into nothing: in forked mode Brigadier catches the error and returns zero, so even a trace shows only that zero.” — in forked mode ContextChain.runExecutable catches the error and returns 0 (brigadier ContextChain.java:76-80)
+144. `commands/the-execution-engine`:260 — was “`/function` dispatches its N sources eagerly in a plain Java loop, each opening its own frame at the next depth,” — now “a forked `/function` has its N calls queued at once, in a plain Java loop, and each opens its own frame at the next depth when it runs,” — the per-source loop is BuildContexts'; each frame opens when its CallFunction runs (BuildContexts.java:117-123; CallFunction.java:34-37)
+145. `commands/the-execution-engine`:262 — was “It is `return run …` that sets `CallFunction.returnParentFrame`, making” — now “It is `return run …` that sets `CallFunction.returnParentFrame` against the caller's own frame, making” — execute if function sets it too, against the isolated frame (ExecuteCommand.java:831)
+146. `commands/the-execution-engine`:268 — was “`ExecutionContext` and `Frame` first — 153 lines and 24 explain the whole design.” — now “`ExecutionContext` and `Frame` first — two short files that explain the whole design.” — size (V10)
+
+#### `commands/functions-and-macros`
+
+147. `commands/functions-and-macros`:36 — was “EX --> SW["/function reports it, a tag swallows it"]” — now “EX --> SW["a command reports it,<br/>ServerFunctionManager swallows it"]” — figure: the swallow is ServerFunctionManager.execute's catch (:87-88), reached by the tags, /schedule, rewards, RunFunction, test environments; /function #tag reports
+148. `commands/functions-and-macros`:44 — was “(the two managers), and both are entirely server-side.” — now “(the two managers), and both are server-side but for `StringTemplate`, which a dialog's command template also runs on the client ([dialogs](dialogs.m…” — StringTemplate runs on the client for a dialog's command template (DialogControlSet.java:54 -> CommandTemplate.java:22 -> StringTemplate.substitute)
+149. `commands/functions-and-macros`:58 — was “carries a `Component`, which is why `/function` can render the failure and the tick loop can swallow it |” — now “carries a `Component`, which is what `/function` shows when it reports the failure |” — the Component is what /function renders; the swallow is a typed catch (ServerFunctionManager.java:87)
+150. `commands/functions-and-macros`:69 — was “a leading `$` is a macro line, kept as text;” — now “a leading `$` is a macro line, kept as a template;” — a $ line is parsed into a StringTemplate at compile time (FunctionBuilder.java:57-61)
+151. `commands/functions-and-macros`:76 — was “A syntax error on any line fails the *whole file*,” — now “A syntax error on any plain line fails the *whole file*,” — a $ line's command is parsed only at instantiation (MacroFunction.java:302-306)
+152. `commands/functions-and-macros`:83 — was “Only the map swap happens on the main thread, and the maps are volatile because the library object is built on a background thread and read from seve…” — now “Only the last stage — collecting the parses, logging the files that failed, resolving the function tags and swapping in the maps — runs on the thread…” — the apply stage also joins the parses, logs failures and resolves the tags (ServerFunctionLibrary.java:105-122); no second reader thread found
+153. `commands/functions-and-macros`:85 — was “An argument type that dereferenced the world during parsing would break a reload” — now “An argument type that dereferenced the world during parsing would fail every function that used it” — an NPE there fails the file's future, which is logged and dropped (CommandFunction.java:77-81; ServerFunctionLibrary.java:110-115)
+154. `commands/functions-and-macros`:87 — was “defers the lookup. In 26.3 no argument type actually tests the constraint:” — now “defers the lookup. No argument type actually tests the constraint:” — function-permission-level is the dedicated server's; singleplayer is GAMEMASTER always (IntegratedServer.java:475-477); "In 26.3" is a version in the body
+155. `commands/functions-and-macros`:89 — was “and those come from the *function-permission-level* server property, gamemaster by default.” — now “and those come from the dedicated server's *function-permission-level* property, gamemaster by default, and are gamemaster always in singleplayer.” — function-permission-level is the dedicated server's; singleplayer is GAMEMASTER always (IntegratedServer.java:475-477); "In 26.3" is a version in the body
+156. `commands/functions-and-macros`:117 — was “`StringTemplate` also decides what a parameter may be called, and the rule is the narrowest in the area: inside `$(…)`, letters, digits and underscor…” — now “`StringTemplate` also decides what a parameter may be called: inside `$(…)`, letters, digits and underscore and nothing else — any Unicode letter or…” — Character.isLetterOrDigit admits any Unicode letter or digit; Identifier's rule is narrower (StringTemplate.java:50-57)
+157. `commands/functions-and-macros`:149 — was “which in 26.3 happen *after* the levels” — now “which happen *after* the levels” — version in the body
+158. `commands/functions-and-macros`:151 — was “so `/tick freeze` suspends data packs.” — now “so `/tick freeze` suspends the tick and load tags.” — the freeze stops the tags, not data packs (rewards and RunFunction still run)
+159. `commands/functions-and-macros`:162 — was “and the only way to see it is to run the same function through `/function`, which reports what the tick tag does not.” — now “and the way to see it is to call the same function from a command — `/function`, `/debug function` or `execute if function` — each of which reports w…” — /debug function and execute if function report it too (DebugCommand.java:147-148; ExecuteCommand.java:804-805)
+160. `commands/functions-and-macros`:166 — was “Each function in a tag gets its **own** `ExecutionContext` — its own copy of the cost budget the engine spends, rather than one shared across the tag” — now “Each function in the tick or load tag gets its **own** `ExecutionContext` — its own copy of the budget the engine spends, rather than one shared acro…” — /function #tag shares one context (FunctionCommand.java:176-184); the tick and load tags run each member separately (ServerFunctionManager.java:65-69)
+161. `commands/functions-and-macros`:175 — was “is what `ScheduleCommand` refuses outright: a macro function, and a delay of zero.” — now “is what `ScheduleCommand` refuses outright: a delay of zero, and a macro function named on its own — a tag holding one is accepted, and fails when it…” — a scheduled tag with a macro member is accepted and fails silently (ScheduleCommand.java:65-67, :79-85; FunctionTagCallback.java:27)
+162. `commands/functions-and-macros`:178 — was “`/function` itself and the two constructs the engine builds on it, `execute if function` and `/return run function` ([the execution engine](the-execu…” — now “`/function` itself, with `/return run function`; `execute if function` and `/debug function`, the two commands that are part of the engine ([the exec…” — /debug function runs a function too; the engine page's two commands are execute if function and /debug
+163. `commands/functions-and-macros`:205 — was “Both verbs land on the same rung: there is no way to reach a function body above gamemaster.” — now “Both verbs land on the same rung, and no route runs a function body's source above gamemaster. What the body's lines may do was settled earlier, when…” — the source is capped; what a line may run was decided at compile, and Brigadier does not re-check a requirement at run (CommandFunction.java:99; ContextChain.java:70-73)
+
+#### `commands/scoreboard-and-data`
+
+164. `commands/scoreboard-and-data`:3 — was “and the two data models `execute store` exists to join.” — now “and two of the three data models `execute store` exists to join.” — the page's own count is three sinks, three models; the scenario joins two of them
+165. `commands/scoreboard-and-data`:36 — was “There is **no serverbound packet in this whole system**. Every write is a command.” — now “There is **no serverbound packet in this whole system**. Every write a player asks for is a command.” — the game writes scores itself (ServerPlayer.java:783-808, :1035, :1072-1094, :1704-1712)
+166. `commands/scoreboard-and-data`:30 — was “read by five subsystems that have nothing to do with scores.” — now “read by systems that have nothing to do with scores.” — teams are read far more widely; five was a chosen subset
+167. `commands/scoreboard-and-data`:43 — was “| six maps and nothing else, plus ten empty hooks that are the entire extension surface. A pure data structure, used unmodified by the client |” — now “| six maps and nothing else, plus ten empty hooks for a subclass to fill. A pure data structure, used unmodified by the client |” — ServerScoreboard also overrides setDisplayObjective, addPlayerToTeam, removePlayerFromTeam; two hooks never broadcast (ServerScoreboard.java:70-73, :95-143)
+168. `commands/scoreboard-and-data`:48 — was “and one dirty boolean — and thirteen overrides across ten hooks, each conditionally broadcasting, then marking dirty.” — now “and one dirty boolean — and thirteen overrides, the ten hooks and three methods that move teams and display slots, which between them broadcast what…” — ServerScoreboard also overrides setDisplayObjective, addPlayerToTeam, removePlayerFromTeam; two hooks never broadcast (ServerScoreboard.java:70-73, :95-143)
+169. `commands/scoreboard-and-data`:50 — was “Beside it, `ScoreboardCommand`, `TeamCommand` and `TriggerCommand` are this system's entire write surface |” — now “Beside it, `ScoreboardCommand`, `TeamCommand` and `TriggerCommand` write the scoreboard, as `execute store` does |” — execute store writes the scoreboard too (ExecuteCommand.java:290-293)
+170. `commands/scoreboard-and-data`:52 — was “`net/minecraft/world/scores` is sixteen files and 1,442 lines — the whole model — and every class in it ships in both jars.” — now “`net/minecraft/world/scores` is the whole model, and every class in it ships in both jars.” — sizes (V10)
+171. `commands/scoreboard-and-data`:55 — was “and `net/minecraft/network/chat/numbers`, seven files and 167 lines, holding `NumberFormat`” — now “and `net/minecraft/network/chat/numbers`, holding `NumberFormat`” — sizes (V10)
+172. `commands/scoreboard-and-data`:81 — was “BC->>DataC: the leaf, getData, once per source” — now “BC->>DataC: getData, the leaf, queued once per source” — figure: BuildContexts queues the leaf; a task runs it later (BuildContexts.java:132-136; tasks/ExecuteCommand.java:32)
+173. `commands/scoreboard-and-data`:94 — was “The paragraphs below take its arrows in order.” — now “The paragraphs below take its arrows.” — the callback paragraph comes before the leaf's
+174. `commands/scoreboard-and-data`:111 — was “that is `CustomCommandExecutor.WithErrorHandling` doing what it does for everything” — now “that is `CustomCommandExecutor.WithErrorHandling` doing what it does for every executor built on it” — ReturnCommand's executors are not WithErrorHandling
+175. `commands/scoreboard-and-data`:157 — was “which is why every write path in the game funnels through `ScoreAccess.set`, `ScoreAccess.add`, `ScoreAccess.increment`, `ScoreAccess.reset`, `ScoreA…” — now “which is why a write goes through `ScoreAccess.set`, `ScoreAccess.add`, `ScoreAccess.increment`, `ScoreAccess.reset`, `ScoreAccess.lock`, `ScoreAcces…” — display writes too; a reset and a load go round the handle (Scoreboard.java:209-235, :390)
+176. `commands/scoreboard-and-data`:163 — was “Nothing here is ticked, either.” — now “Nothing here is ticked.” — the "either" joined nothing (pass5.md:6425); gated writes send nothing (ServerScoreboard.java:62, :70-73, :140-143)
+177. `commands/scoreboard-and-data`:167 — was “every mutation broadcasts its own packet synchronously, inside the call that made it,” — now “every mutation that reaches the wire sends its packet synchronously, inside the call that made it,” — the "either" joined nothing (pass5.md:6425); gated writes send nothing (ServerScoreboard.java:62, :70-73, :140-143)
+178. `commands/scoreboard-and-data`:177 — was “The argument type has four resolution branches in order — the wildcard `*`, a `#` name, a UUID searched across every level, and an online player — an…” — now “Its literal side has four branches in order — the wildcard `*`, a `#` name, a UUID searched across every level, and an online player — and the UUID a…” — the literal side has four branches after the selector; # is the bare name; UUID and player fall back (ScoreHolderArgument.java:103-180)
+179. `commands/scoreboard-and-data`:216 — was “sound only because stat objects are interned in their registries.” — now “sound only because each stat object is interned, one per value, in its `StatType`.” — stats are interned in their StatType's own map, not a registry (StatType.java:15, :33-34)
+180. `commands/scoreboard-and-data`:220 — was “one loop over the six read-only criteria,” — now “one inside the helper each of the six read-only criteria is updated through,” — one of the seven is inside the helper called for each read-only criterion (ServerPlayer.java:783-808, :988)
+181. `commands/scoreboard-and-data`:225 — was “though `LivingEntity` does reach the scoreboard once, calling `Scoreboard.addPlayerToTeam` when it reads its own saved team back.” — now “though every entity reaches the scoreboard once, calling `Scoreboard.addPlayerToTeam` from `Entity.load` when it reads its own saved team back.” — 26.3 moved the saved-team read-back to Entity.load (Entity.java:2370-2373)
+182. `commands/scoreboard-and-data`:241 — was “So a *set* through `a.b[0].c` materialises a compound, a list and a compound without any node knowing more than its own type.” — now “So a *set* through `a.b.c` materialises two compounds without any node knowing more than its own type — though an index never creates an element, so…” — an index node never creates (NbtPathArgument.java:236-249, :684-687)
+183. `commands/scoreboard-and-data`:257 — was “## Teams, which five systems read and none of them are scores” — now “## Teams, which systems far from scores read” — false heading: team-kill criteria and Hud read teams (ServerPlayer.java:1086-1096; Hud.java:444-449); one inbound link, the glossary's
+184. `commands/scoreboard-and-data`:260 — was “What makes teams worth their own paragraph is who consults them, because it is not the scoreboard:” — now “What makes teams worth their own paragraph is who else consults them:” — false heading: team-kill criteria and Hud read teams (ServerPlayer.java:1086-1096; Hud.java:444-449); one inbound link, the glossary's
+185. `commands/scoreboard-and-data`:264 — was “friendly fire through `Player.canHarmPlayer`;” — now “friendly fire through `Entity.doTeamsAllowDamage`;” — 26.3's friendly-fire read is Entity.doTeamsAllowDamage, asked from seven places (Player.java:727; Pufferfish, EnderDragon, AbstractCubeMob, ServerExplosion)
+186. `commands/scoreboard-and-data`:267 — was “`EntitySelector.pushableBy` and `Player.canHarmPlayer` have six call sites each and `Entity.isInvisibleTo` two.” — now “`EntitySelector.pushableBy` has six call sites, `Entity.doTeamsAllowDamage` seven, among them `Player.canHarmPlayer` and the attacks of a few mobs, a…” — 26.3's friendly-fire read is Entity.doTeamsAllowDamage, asked from seven places (Player.java:727; Pufferfish, EnderDragon, AbstractCubeMob, ServerExplosion)
+187. `commands/scoreboard-and-data`:268 — was “A sixth system is joined to teams and does not read them at all; the traffic runs the other way. Every team join, leave and modification calls throug…” — now “A sixth system is joined to teams both ways. Every team join, leave and modification calls through to `ServerWaypointManager` to remake the locator b…” — the waypoint system reads the team colour (LivingEntity.java:4380; Waypoint.java:63-71)
+188. `commands/scoreboard-and-data`:279 — was “death-message visibility has a single reader in `ServerPlayer.die`” — now “death-message visibility has a single reader in play, `ServerPlayer.die`,” — TeamCommand reads it for its no-op check (TeamCommand.java:157)
+189. `commands/scoreboard-and-data`:289 — was “### Five packets, and one field that decides whether any of them go” — now “### Five packets, and one field that gates four of them” — false heading: the team packet is never gated on trackedObjectives (ServerScoreboard.java:122-184; PlayerList.java:216); no inbound link
+190. `commands/scoreboard-and-data`:294 — was “All five go through `PlayerList.broadcastAll` — no distance filter, no dimension filter” — now “All five reach every player, through `PlayerList.broadcastAll` or a loop over the player list — no distance filter, no dimension filter” — false heading: the team packet is never gated on trackedObjectives (ServerScoreboard.java:122-184; PlayerList.java:216); no inbound link
+191. `commands/scoreboard-and-data`:338 — was “A tick-loop crash is a shutdown: it falls into the same *finally*, which calls `MinecraftServer.saveAllChunks`, whose very first statement is `Server…” — now “A crash thrown by the tick itself is a shutdown: it falls into the same *finally*, which calls `MinecraftServer.saveAllChunks`, whose very first stat…” — C's handoff: a relayed crash is thrown again by the shutdown's drain before the save (BlockableEventLoop.java:206-234; MinecraftServer.java:709, :712)
+192. `commands/scoreboard-and-data`:349 — was “*RenderType*, *Locked* — capitalised, pre-flattening conventions, preserved by codec.” — now “*RenderType*, *Locked* — capitalised, and preserved by codec.” — history the tree cannot show (rule 3)
+193. `commands/scoreboard-and-data`:378 — was “calls the superclass's removal deliberately so that the UUID stays.” — now “calls the superclass's removal, so that the UUID stays.” — an inference from the override's shape (the part-wide note)
+194. `commands/scoreboard-and-data`:385 — was “`BossBarCommands` is the write surface, at gamemaster like everything else in this part, and `ExecuteCommand.storeValue` is the store sink:” — now “`BossBarCommands` is the write surface, at gamemaster, and an overload of `ExecuteCommand.storeValue`, the score sink's own name, is the store sink:” — /trigger, /msg and /teammsg take no permission; storeValue is two overloads (ExecuteCommand.java:282, :299)
+195. `commands/scoreboard-and-data`:410 — was “It is also the only command in this area registered with no permission requirement at all.” — now “It is also, with `/teammsg`, one of the two commands in this area registered with no permission requirement at all.” — /teammsg is a team command with no requirement (TeamMsgCommand.java:33)
+196. `commands/scoreboard-and-data`:425 — was “a malformed target, an uncreatable path, a too-deep path, a block that stopped being a block entity — no message, no failure, no write.” — now “a player target, an uncreatable path, a value nested too deep — no message, no failure, no write.” — the target is resolved outside the catch; what it swallows (ExecuteCommand.java:252-272, :312-323)
+197. `commands/scoreboard-and-data`:433 — was “Relatedly, a no-op is a **hard failure** in four places — `/data merge`, `/data modify`, `/data remove` and `/scoreboard players enable` all throw wh…” — now “Relatedly, a no-op is a **hard failure** across the area — `/data merge`, `/data modify`, `/data remove` and `/scoreboard players enable` all throw w…” — far more than four no-op failures in the area (TeamCommand.java:33-42; BossBarCommands.java:42-49)
+198. `commands/scoreboard-and-data`:447 — was “and `ServerScoreboard.trackedObjectives` for the one field that decides what a client ever knows.” — now “and `ServerScoreboard.trackedObjectives` for the one field that decides which objectives and scores a client ever knows.” — teams bypass trackedObjectives; "ten lines" is a line-level claim (rule 2)
+199. `commands/scoreboard-and-data`:449 — was “`NbtPathArgument.NbtPath` for the nicest ten lines in the area,” — now “`NbtPathArgument.NbtPath` for the tidiest piece of the area,” — teams bypass trackedObjectives; "ten lines" is a line-level claim (rule 2)
+200. `commands/scoreboard-and-data`:113 — was “(the-execution-engine.md#a-result-is-a-flag-and-a-number-and-nothing-aggregates)” — now “(the-execution-engine.md#a-result-is-a-flag-and-a-number-and-only-a-function-tag-sums-them)” — the engine's heading was corrected (r1_engine #8)
+
+#### `reference/glossary`
+
+201. `reference/glossary`:744 — was “scoreboard-and-data.md#teams-which-five-systems-read-and-none-of-them-are-scores)” — now “scoreboard-and-data.md#teams-which-systems-far-from-scores-read)” — 
+202. `reference/glossary`:61 — was “**Batch** (game tests) — a group of game tests that share an environment, and the key they are grouped by *is* that environment rather than a name or…” — now “**Batch** (game tests) — a group of game tests that share an environment and a dimension, and the key they are grouped by *is* that pair rather than…” — game-tests: the batch key is environment and dimension (GameTestBatchFactory.java:28-29)
+203. `reference/glossary`:186 — was “thirteen fields, no reader and no grammar, resolvable any number of times” — now “thirteen fields and no grammar, resolvable any number of times” — entity-selectors: EntitySelector keeps a String playerName, and its origin lambda can reach the parser
+204. `reference/glossary`:472 — was “and which materialises the structure it walks through on a write.” — now “and which materialises the compounds and lists it walks through on a write, though never a missing list element.” — scoreboard-and-data: an index node never creates an element (NbtPathArgument.java:684-687)
+
+#### `commands/dialogs`
+
+205. `commands/dialogs`:3 — was “a form appears with text boxes on it, and no vanilla server will ever send it to you.” — now “a form appears with text boxes on it, and a vanilla server sends one only from a command it registers behind debug flags.” — verified line: a vanilla server does send it, from DebugConfigCommand (Commands.java:283, :290-291; DebugConfigCommand.java:107)
+206. `commands/dialogs`:22 — was “What is "context-free" is the *buffer*, not the payload.” — now “The dialog is encoded with no registry access at all, so any data-pack element it refers to goes inline too.” — the payload is context-free too: fromCodecTrusted uses plain NbtOps, so a RegistryFileCodec holder goes inline (ByteBufCodecs.java:375-376, :406)
+207. `commands/dialogs`:24 — was “a move Mojang has been making everywhere — [game tests](game-tests.md) is the other — take something that used to be a Java class and make it a regis…” — now “a move Mojang has made across the game — [game tests](game-tests.md) is the other — making a thing a registry element loaded from a data pack rather…” — history the tree cannot show (rule 3)
+208. `commands/dialogs`:41 — was “there are two stream codecs, and which one is used decides the whole page | server |” — now “there are two stream codecs, and which one is used decides the whole page | both |” — side column: the codec and its validation run on both sides; Action.createAction's one caller is client-side (DialogControlSet.java:54)
+209. `commands/dialogs`:42 — was “Its `MapCodec` is where the pause validation lives | server |” — now “Its `MapCodec` is where the pause validation lives | both |” — side column: the codec and its validation run on both sides; Action.createAction's one caller is client-side (DialogControlSet.java:54)
+210. `commands/dialogs`:43 — was “`DialogAction.willUnpause` is what that validation tests | server |” — now “`DialogAction.willUnpause` is what that validation tests | both |” — side column: the codec and its validation run on both sides; Action.createAction's one caller is client-side (DialogControlSet.java:54)
+211. `commands/dialogs`:44 — was “and the key must be a valid **macro** variable name | server |” — now “and the key must be a valid **macro** variable name | both |” — side column: the codec and its validation run on both sides; Action.createAction's one caller is client-side (DialogControlSet.java:54)
+212. `commands/dialogs`:45 — was “from the *live* input values, through `Action.ValueGetter` | server |” — now “from the *live* input values, through `Action.ValueGetter` | client |” — side column: the codec and its validation run on both sides; Action.createAction's one caller is client-side (DialogControlSet.java:54)
+213. `commands/dialogs`:46 — was “extended with `ClickEvent.ShowDialog` and `ClickEvent.Custom`, which is how anything clickable can open a dialog” — now “extended with `ClickEvent.ShowDialog`, which is how anything clickable can open a dialog, and `ClickEvent.Custom`, which sends a custom action” — only ShowDialog opens a dialog; Custom sends a custom action (Screen.java:318-325)
+214. `commands/dialogs`:51 — was “client-only in `net/minecraft/client/gui/screens/dialog`, one per dialog kind — `SimpleDialogScreen`, `MultiButtonDialogScreen`, `ButtonListDialogScr…” — now “client-only in `net/minecraft/client/gui/screens/dialog` — `SimpleDialogScreen` for both simple kinds, and `MultiButtonDialogScreen`, `DialogListDial…” — five kinds, four concrete screens over an abstract base (DialogScreens.java:32-36; ButtonListDialogScreen.java:14)
+215. `commands/dialogs`:122 — was “## Four ways a dialog opens, and one of them is not a click” — now “## Four ways a dialog opens, and two of them never ask the server” — false heading: /dialog show and the hotkey are not clicks either; no inbound link
+216. `commands/dialogs`:124 — was “`ServerPlayer.openDialog` is the server-side entry point, and four things reach it.” — now “Four things open a dialog. Two of them go through `ServerPlayer.openDialog`, the server-side entry point, and the other two open it on the client wit…” — only DialogCommand.java:49 and SignBlockEntity.java:238 reach ServerPlayer.openDialog; a client click and a tag open it locally (Screen.java:320, PauseScreen.java:204, Minecraft.java:2171)
+217. `commands/dialogs`:129 — was “there are exactly three places on the client where they actually are — chat, a book, and `DialogScreen` itself,” — now “there are exactly three places on the client where a *show dialog* event actually is — chat, a book, and `DialogScreen` itself,” — the three places are the ones that dispatch a show_dialog event; DeathScreen dispatches open_url (DeathScreen.java:130-143)
+218. `commands/dialogs`:141 — was “let a data pack add buttons to the pause menu and to a hotkey,” — now “let a data pack put dialogs behind a pause-menu button and behind a hotkey,” — the pause menu gets one button (PauseScreen.java:156-159, :183-193)
+219. `commands/dialogs`:144 — was “and it is registered in both phases exactly as the two packets already on this page are —” — now “and it is registered in both phases, as the two packets already on this page are —” — ClearDialog and CustomClickAction use one codec in both phases; ShowDialog two
+220. `commands/dialogs`:164 — was “which is why `CommandTemplate` can substitute a dialog's inputs into a command at all, and the seam into” — now “which is why every input can be named in a `CommandTemplate`, and the seam into” — the key rule makes an input nameable in a template; substitution itself defaults a missing name to "" (ParsedTemplate.java:41-46)
+221. `commands/dialogs`:176 — was “An action that waits for a response swaps in `WaitingForResponseScreen`,” — now “A dialog whose after-action waits for a response swaps in `WaitingForResponseScreen`,” — waiting is the dialog's after-action (DialogScreen.java:157, :170-171)
+222. `commands/dialogs`:189 — was “which parses it twice and, on three of its four outcomes,” — now “which parses it up to twice and, on three of its four outcomes,” — the second parse runs only when the first passes and nothing is signable (ClientPacketListener.java:2900-2909)
+223. `commands/dialogs`:200 — was “an arbitrary id plus an arbitrary NBT payload, sent by a screen the server described —” — now “an arbitrary id plus an arbitrary NBT payload, sent from a dialog or from any text the server made clickable —” — chat and book clicks send the packet too (Screen.java:322-325)
+224. `commands/dialogs`:206 — was “`DebugConfigCommand`, one of the commands a shipped game never registers ([Brigadier and commands](brigadier-and-commands.md#commands-that-are-a-door…” — now “`DebugConfigCommand`, which the game registers only on a dedicated server started with its debug system properties ([Brigadier and commands](brigadie…” — DebugConfigCommand is registered with the debug properties, on a dedicated server (Commands.java:283, :290-291)
+
+#### `commands/game-tests`
+
+225. `commands/game-tests`:8 — was “it turns green or red. That much has been true for years. What changed is where a test *lives*.” — now “it turns green or red. That much is the familiar part. The unusual part is where a test *lives*.” — history the tree cannot show (rule 3); the absence is checkable
+226. `commands/game-tests`:11 — was “There is no *GameTest* annotation any more, and no test registry class.” — now “There is no *GameTest* annotation and no test registry class.” — history the tree cannot show (rule 3); the absence is checkable
+227. `commands/game-tests`:22 — was “Four registries hold the system: `Registries.TEST_INSTANCE` and `Registries.TEST_ENVIRONMENT` are loaded from a data pack, and `BuiltInRegistries.TES…” — now “Five registries hold the system: `Registries.TEST_INSTANCE` and `Registries.TEST_ENVIRONMENT` are loaded from a data pack, `BuiltInRegistries.TEST_IN…” — five registries: TEST_FUNCTION too (BuiltInRegistries.java:346; RegistryDataLoader.java:98)
+228. `commands/game-tests`:33 — was “environment, structure, tick budgets, required, rotation, manual-only, the two retry counts, sky access, padding |” — now “environment, dimension, structure, tick budgets, required, rotation, manual-only, the two retry counts, sky access, padding |” — TestData has a dimension, new in 26.3 (TestData.java:15, :18)
+229. `commands/game-tests`:35 — was “| a group of tests keyed by their environment holder. A batch *is* an environment |” — now “| a group of tests keyed by their environment holder and their dimension. A batch *is* an environment, in one dimension |” — a batch is keyed by environment and dimension (GameTestBatch.java:8; GameTestBatchFactory.java:29)
+230. `commands/game-tests`:36 — was “| owns the batches and the structure spawner, and re-queues a failure when the retry options say so |” — now “| owns the batches and the two structure spawners, and runs a test again when `ReportGameListener`, reading the retry options, asks it to |” — two spawners; ReportGameListener reads the retry options and asks for the rerun, passes too (GameTestRunner.java:32-33; ReportGameListener.java:46-48, :98-99)
+231. `commands/game-tests`:38 — was “| 1,353 lines, and the entire surface a test body sees —” — now “| the entire surface a test body sees —” — sizes (V10): 1,353, 551 and forty-four were 26.2's
+232. `commands/game-tests`:39 — was “| 551 lines: the block that owns a test's bounding box,” — now “| the block entity that owns a test's bounding box,” — sizes (V10): 1,353, 551 and forty-four were 26.2's
+233. `commands/game-tests`:41 — was “`net/minecraft/gametest/framework` is forty-four classes, all server-side, with `net/minecraft/gametest/Main` as the headless entry point beside it.” — now “Every class in `net/minecraft/gametest/framework` is server-side, and `net/minecraft/gametest/Main` is the headless entry point beside it.” — sizes (V10): 1,353, 551 and forty-four were 26.2's
+234. `commands/game-tests`:69 — was “class GameTestBatch { Collection gameTestInfos }” — now “class GameTestBatch { Collection gameTestInfos ResourceKey dimension }” — figure 1: the batch's dimension, and fifty is a default (TestCommand.java:196-205 verifies in hundreds)
+235. `commands/game-tests`:83 — was “GameTestBatch --> GameTestInfo : up to fifty” — now “GameTestBatch --> GameTestInfo : fifty by default” — figure 1: the batch's dimension, and fifty is a default (TestCommand.java:196-205 verifies in hundreds)
+236. `commands/game-tests`:89 — was “a batch is one environment's worth of test runs —” — now “a batch is one environment's worth of test runs in one dimension —” — figure 1: the batch's dimension, and fifty is a default (TestCommand.java:196-205 verifies in hundreds)
+237. `commands/game-tests`:91 — was “**A batch is not a name and not a class: it is an environment.** `GameTestBatchFactory` groups tests by their `TestEnvironmentDefinition` holder, bec…” — now “**A batch is not a name and not a class: it is an environment, in a dimension.** `GameTestBatchFactory` groups tests by their `TestEnvironmentDefinit…” — the batch key in the prose (GameTestBatchFactory.java:28-29, :59, :83)
+238. `commands/game-tests`:122 — was “TC->>GTR: the batches, one per environment” — now “TC->>GTR: the batches, by environment and dimension” — figure 2: the batches by environment and dimension; the filter is the test block's creation, not a clean paste (GameTestInfo.java:73-77, :306-316)
+239. `commands/game-tests`:126 — was “GTR->>GTT: add, for every run whose structure was placed” — now “GTR->>GTT: add, for every run whose test block was made” — figure 2: the batches by environment and dimension; the filter is the test block's creation, not a clean paste (GameTestInfo.java:73-77, :306-316)
+240. `commands/game-tests`:151 — was “only then is the batch's environment activated, and only the runs whose structure was placed are handed to the ticker.” — now “only then is the batch's environment activated, and only the runs whose test block was made are handed to the ticker — a run whose paste failed goes…” — figure 2: the batches by environment and dimension; the filter is the test block's creation, not a clean paste (GameTestInfo.java:73-77, :306-316)
+241. `commands/game-tests`:101 — was “Five bend one thing about the world and hand back what it was, so teardown puts it straight:” — now “Five bend one thing about the world and hand back what it was, so teardown puts it back (the weather to its kind, not to its old countdowns):” — Weather hands back only the kind; Functions' two ids are independent (TestEnvironmentDefinition.java:144-148, :255-273)
+242. `commands/game-tests`:107 — was “it runs one data-pack function on the way in and a *different* one on the way out.” — now “it runs one data-pack function on the way in and another on the way out, either one optional.” — Weather hands back only the kind; Functions' two ids are independent (TestEnvironmentDefinition.java:144-148, :255-273)
+243. `commands/game-tests`:168 — was “`GameTestTimeoutException`, raised by `GameTestInfo` when the tick count passes the budget — and nothing swallows it:” — now “`GameTestTimeoutException`, which `GameTestInfo` builds and records when the tick count passes the budget, never throwing it — so nothing can swallow…” — the timeout is built and recorded, never thrown (GameTestInfo.java:158, :164)
+244. `commands/game-tests`:177 — was “which is what colours the beam. `ReportGameListener` is what says something in chat and what writes the outcome back to the `TestInstanceBlockEntity`…” — now “which is what colours the beam. `ReportGameListener` is also what says something in chat, to every player; `MultipleTestTracker` is the progress bar,…” — the progress bar is printed only headless (GameTestServer.java:224, :229); LogTestReporter logs failures only, JUnitLikeTestReporter writes XML (LogTestReporter.java:26; JUnitLikeTestReporter.java:68-79); the second sentence repeated the first
+245. `commands/game-tests`:185 — was “A passing test has its barrier shell removed and nothing else: the pasted blocks stay where they were put, the test instance block stays with them, a…” — now “A passing test has its barrier shell removed and the non-player entities in and around it discarded, and nothing else: the pasted blocks stay where t…” — a pass also discards the non-player entities; a finished batch unforces every forced chunk in the level (GameTestInfo.java:271-283; GameTestRunner.java:124-135)
+246. `commands/game-tests`:209 — was “Both serverbound test packets are sent *by* the client, from those screens, which makes this the one system in the part whose *declaration* a client…” — now “Both serverbound test packets are sent *by* the client, from those screens: one sets a test block's fields, and the other runs, resets or saves a tes…” — command blocks are client-edited too, and the JSON is not what a client edits (ServerGamePacketListenerImpl.java:992, :1002); "below" pointed the wrong way
+247. `commands/game-tests`:217 — was “`TestCommand` is 572 lines of subcommands and only the export ones are gated on running from an IDE; the rest sit at `Commands.LEVEL_GAMEMASTERS`, th…” — now “Only `TestCommand`'s export subcommands are gated on running from an IDE; the rest sit at `Commands.LEVEL_GAMEMASTERS` ([permissions](permissions.md#…” — size (V10: 572 was 26.2's; 734 now); /trigger has no requirement, so "every data-pack command" fails; TestFinder mostly finds positions (TestFinder.java:101-157)
+248. `commands/game-tests`:221 — was “`TestFinder` turns a subcommand's argument into a set of `Registries.TEST_INSTANCE` ids,” — now “`TestFinder` hands a subcommand the tests it names, as `Registries.TEST_INSTANCE` holders where it takes an id and as test blocks found by position w…” — size (V10: 572 was 26.2's; 734 now); /trigger has no requirement, so "every data-pack command" fails; TestFinder mostly finds positions (TestFinder.java:101-157)
+249. `commands/game-tests`:233 — was “`StructureUtils` and `StructureGridSpawner` clear the space, lays tests out in a grid, transforms the far corner and find every test block by position” — now “`StructureUtils` and `StructureGridSpawner` clear the space, lay tests out in a grid, transform the far corner and find every test block by position” — grammar, and GameTestServer also overrides tickServer (GameTestServer.java:215-255)
+250. `commands/game-tests`:239 — was “and the one thing it changes that matters here is `GameTestServer.waitUntilNextTick`:” — now “and one thing it changes that matters here is `GameTestServer.waitUntilNextTick`:” — grammar, and GameTestServer also overrides tickServer (GameTestServer.java:215-255)
+
+#### `lectures`
+
+251. `lectures`:383 — was “for the Netty/server thread boundary the command packets cross two different ways;” — now “for the boundary between the Netty threads and the Server thread, which the command packets and the suggestion request each cross their own way;” — in 26.3 both command packets cross by tryHandleChat -> MinecraftServer.execute, the suggestion request through ServerCommandSuggestionsProvider (SGPL.java:620-627, :1886-1895)
+
+### The record's audit: corrections to what the session wrote or left
+
+Ten agents, one per page (the landing page's also took the glossary), each given the page's word diff against the last
+commit and the edit scripts' reasons, re-derived every changed sentence. *(own)* marks a fix whose target was a sentence
+this session wrote (absent from the page at HEAD); *(beside)* one left beside a correction or on another page.
+
+#### `commands/README`
+
+252. `commands/README`:17 *(beside)* — was “**None of those four needs any of the others.**” — now “**None of those four needs any of the others to be understood.**” — the code reaches sideways once (TeamPredicate); the claim is a reader's
+253. `commands/README`:15 *(own)* — was “What they need from this part is the parse and the queue; what else they need, from other parts, *before you start* names.” — now “What they need from this part is the parse and the queue; *before you start* names the other parts they lean on most.” — before you start names the main dependencies, not all (dialogs lean on protocol phases, tests on templates)
+254. `commands/README`:30 *(own)* — was “the scoreboard's own argument types, a dialog's id — and one advancement predicate reads a team, sideways.” — now “the scoreboard's own argument types, a dialog's id, and `/test`'s registration — and one advancement predicate reads a team, sideways.” — the fourth reach up is /test's registration (Commands.java:267)
+255. `commands/README`:51 *(own)* — was “and the four systems on top are each driven by a command. An arrow runs from a floor to the floor it is built on, the reverse of the other landing fi…” — now “and the four systems on top each have a command of their own. An arrow runs from a floor to the floor it is built on, the reverse of the prerequisite…” — advancements are driven by triggers; five other landing figures draw hand-offs, cadences, lecture order, a ring or run order
+256. `commands/README`:82 *(own)* — was “Also: which sixty-six of the four hundred and fifty-three argument nodes ask the server by hand,” — now “Also: which sixty-six of the four hundred and fifty-four argument-node declarations ask the server by hand,” — ReturnCommand.java:24 declares a 454th with RequiredArgumentBuilder.argument; the unit is a declaration
+257. `commands/README`:123 *(own)* — was “which is why the same page counts 453 of those.” — now “which is why the same page counts 454 declarations of those.” — ReturnCommand.java:24 declares a 454th with RequiredArgumentBuilder.argument; the unit is a declaration
+258. `commands/README`:107 *(own)* — was “a batch *is* an environment in one dimension,” — now “a batch is keyed by an environment and a dimension,” — a group of one environment and dimension is cut into batches of fifty (GameTestBatchFactory.java:45, :66)
+259. `commands/README`:113 *(own)* — was “nearly half of them in the catalogue —” — now “over two-fifths of them in the catalogue —” — the catalogue holds 42% of the unnamed lines (pass5_coverage.py --part commands)
+260. `commands/README`:137 *(own)* — was “an advancement tab, a command block's settings,” — now “an advancement tab, a command block's settings from the block or the minecart,” — the minecart's screen sends its own packet (MinecartCommandBlockEditScreen.java:33)
+261. `commands/README`:10 *(beside)* — was “which is why a command can be deleted out of the middle of an execution” — now “which is why pending commands can be deleted part-way through an execution” — the engine pops pending work from the head; "the middle" read as a position
+262. `commands/README`:86 *(own)* — was “and thirteen of its twenty-one options shape the query plan as well as filtering.” — now “and thirteen of its twenty-one options do more than filter: they shape the query plan.” — the same: five of the thirteen add no filter
+
+#### `reference/glossary`
+
+263. `reference/glossary`:61 *(own)* — was “and the key they are grouped by *is* that pair rather than a name or a class of its own.” — now “and the key they are grouped by *is* that pair rather than a name.” — the key is GameTestBatchFactory.BatchKey, a record (GameTestBatchFactory.java:83)
+264. `reference/glossary`:470 *(own)* — was “though never a missing list element.” — now “though an index never creates the element it names.” — a match-element node and an all-elements node do create (NbtPathArgument.java:515-520, :594-598); only an index never does (:684)
+265. `reference/glossary`:771 *(beside)* — was “or needs a permission the client believes it lacks;” — now “or needs any permission at all;” — PERMISSIONS_REQUIRED fires when the no-permission parse fails (ClientPacketListener.java:2907-2909)
+
+#### `commands/game-tests`
+
+266. `commands/game-tests`:91 *(own)* — was “**A batch is not a name and not a class: it is an environment, in a dimension.**” — now “**A batch is not a name: it is an environment, in a dimension.**” — GameTestBatch is a record and its key the record BatchKey; what a batch is not is a name
+267. `commands/game-tests`:31 *(own)* — was “and runs a test again when `ReportGameListener`, reading the retry options, asks it to |” — now “and runs a test again when `ReportGameListener`, reading the run's retry options or the test's own two retry counts, asks it to |” — a flaky test is rerun on its own two retry counts, not only the run's retry options (ReportGameListener.java:46-47, :73, :98-99; GameTestInfo.java:372-373)
+268. `commands/game-tests`:94 *(beside)* — was “(a default the builder can change, not a cap)” — now “(a default, not a cap — `/test verify` builds batches of a hundred)” — the builder's batcher only rebatches reruns; /test verify builds batches of a hundred (GameTestRunner.java:258, :281; TestCommand.java:195-205)
+269. `commands/game-tests`:147 *(beside)* — was “For every run in a batch `GameTestRunner` calls `GameTestInfo.prepareTestStructure`,” — now “For every run in a batch `GameTestRunner` has its spawner call `GameTestInfo.prepareTestStructure`,” — a spawner makes the call (GameTestRunner.java:206-207, :217-221; StructureGridSpawner.java:64)
+270. `commands/game-tests`:172 *(beside)* — was “**Reporting is a listener chain, and it writes to four places.**” — now “**Reporting is a listener chain, and it writes to up to four places.**” — the progress bar is printed only headless (GameTestServer.java:224, :229)
+271. `commands/game-tests`:167 *(own)* — was “the pasted blocks stay where they were put and the test instance block stays with them. When its batch finishes, the runner unforces every force-load…” — now “the pasted blocks stay where they were put and the test instance block stays with them — except under `/test verify`, which clears each finished batc…” — /test verify clears between batches; haltOnError unforces on a failure (GameTestRunner.java:93-101, :150-156; TestCommand.java:210)
+272. `commands/game-tests`:189 *(own)* — was “and the other runs, resets or saves a test instance block's test, from inside the game.” — now “and the other sets a test instance block's test, size and rotation and queries, runs, resets or saves it, from inside the game.” — the instance block's packet sets the test first, and queries too (ServerboundTestInstanceBlockActionPacket: INIT, QUERY, SET, RESET, SAVE, EXPORT, RUN; SGPL.java:991-992)
+273. `commands/game-tests`:195 *(own)* — was “as `Registries.TEST_INSTANCE` holders where it takes an id and as test blocks found by position where it does not,” — now “as `Registries.TEST_INSTANCE` holders where it takes an id selector or asks for the last failures, and as test blocks found by position otherwise,” — /test runfailed takes no id and still gets holders; run takes an id selector (TestFinder.java:144-157)
+
+#### `commands/brigadier-and-commands`
+
+274. `commands/brigadier-and-commands`:15 *(own)* — was “Vanilla's command code declares **453 argument nodes**,” — now “Vanilla's command code declares **454 argument nodes**,” — ReturnCommand.java:24 declares a 454th through RequiredArgumentBuilder.argument; TickCommand's and TimeCommand's lambdas round-trip over constants and synced data
+275. `commands/brigadier-and-commands`:15 *(own)* — was “*which* completions take it: they are the ones over data the client was never sent.” — now “*which* completions take it: they are mostly the ones over data the client was never sent.” — ReturnCommand.java:24 declares a 454th through RequiredArgumentBuilder.argument; TickCommand's and TimeCommand's lambdas round-trip over constants and synced data
+276. `commands/brigadier-and-commands`:58 *(beside)* — was “opt a node that asks the server” — now “opt a node, or a registry the client lacks, asks the server” — the figure's frame named one of the caption's two routes
+277. `commands/brigadier-and-commands`:99 *(own)* — was “The other 380 argument nodes attach nothing” — now “The other 381 argument nodes attach nothing” — the figure's frame named one of the caption's two routes
+278. `commands/brigadier-and-commands`:108 *(own)* — was “and it is what every argument type's suggestions are written against, so the same code runs on either.” — now “and it is what an argument type's suggestions ask of the source, when they ask it anything, so the same code runs on either.” — Brigadier's own types and the item and block parsers never name the interface (BoolArgumentType.java:36-44)
+279. `commands/brigadier-and-commands`:110 *(own)* — was “and its instance methods are the questions the two sides answer differently,” — now “and all but one of its instance methods are the questions the two sides answer differently,” — the HolderLookup overload of suggestRegistryElements is overridden by neither side (SharedSuggestionProvider.java:69)
+280. `commands/brigadier-and-commands`:131 *(own)* — was “because the server runs it when the sign is used.” — now “because the server runs it when the sign is used, and only if the sign's *allow_op_features* flag is set.” — own/neighbour: the server runs it only with the sign's flag set (SignBlockEntity.java:228-230), as permissions says
+281. `commands/brigadier-and-commands`:164 *(own)* — was “— four questions, a fifth with a default, and no state —” — now “— a message sink, three questions and a fourth question with a default, and no state —” — sendSystemMessage is a sink, not a question (CommandSource.java:27-37)
+282. `commands/brigadier-and-commands`:275 *(own)* — was “as long as the unknown type wrote no bytes of its own.” — now “as long as the unknown type wrote no bytes of its own and its node names no suggestion provider.” — the read returns before the node's suggestion id (ClientboundCommandsPacket.java:146-152, :204)
+283. `commands/brigadier-and-commands`:294 *(own)* — was “— [the atlas](../../maps/packages.md#where-each-part-lives) has its size —” — now “— [the atlas](../../maps/packages.md#the-table) has its size —” — that anchor is the parts table; the package's own size is under the table section (maps/packages.md)
+284. `commands/brigadier-and-commands`:303 *(own)* — was “A slot is named in the numbering [player anatomy](../player/player-anatomy.md#the-other-numbering-the-one-a-command-speaks) decodes.” — now “A slot is named in the numbering [player anatomy](../player/player-anatomy.md#the-other-numbering-the-one-a-command-speaks) decodes, and `/item` also…” — /item's slots are SlotSourceArgument (ItemCommands.java:77, :88, :94; SlotSourceArgument.java:29-51)
+
+#### `commands/permissions`
+
+285. `commands/permissions`:12 *(own)* — was “and they overlap only where the client runs the server's rung checks against its copy of your op level.” — now “and they overlap only where the client runs the server's checks, its rungs and its entity-selector atom, against its copy of your op level.” — the client runs the selector atom's check too, through its suggestion source (EntityArgument.java:103, :134; EntitySelectorParser.java:126-131; LevelBasedPermissionSet.java:20)
+286. `commands/permissions`:90 *(own)* — was “anywhere outside the client's chat code that builds `ChatAbilities`.” — now “anywhere but `Permissions.CHAT_PERMISSIONS` and the client's chat code that copies it into `ChatAbilities`.” — Permissions.CHAT_PERMISSIONS is a Set<Permission> in the shared package (Permissions.java:16)
+287. `commands/permissions`:131 *(own)* — was “which on a dedicated server is the *op-permission-level* property as it stood when `/op` wrote the entry.” — now “which for an entry `/op` wrote on a dedicated server is the *op-permission-level* property as it stood then (the management API's operator methods ca…” — /op is one writer of three; the management API writes any level (OperatorService.java:66, :96 -> PlayerList.op)
+288. `commands/permissions`:200 *(beside)* — was “the fourth is a constant the two sides literally share.” — now “the fourth is the server's own constants, which the two sides literally share.” — the paragraph the fourth source introduces now names several shared constants
+289. `commands/permissions`:228 *(own)* — was “the one `PermissionCheck` both sides read, where the other names they share are rungs.” — now “the one `PermissionCheck` both sides read; the other permissions they share are the rungs and the entity-selector atom.” — the selector atom is read on both sides too (EntitySelector.java:108; EntityArgument.java:103, :134)
+290. `commands/permissions`:238 *(own)* — was “A sign's click command reaches every client as part of the sign's text,” — now “A sign's click command reaches every client that loads the sign, as part of its text,” — the text reaches the clients that load the sign (ClientboundLevelChunkPacketData.java:138)
+291. `commands/permissions`:292 *(beside)* — was “means some node on the path was gated” — now “means some node on the path was gated, or an argument used a selector” — the no-permission parse also fails on a selector (EntitySelectorParser.java:514-516)
+292. `commands/permissions`:278 *(own)* — was “That is what two permission universes buy — and where they overlap, at the rungs, is the paragraph above.” — now “That is what two permission universes buy — and where they overlap, at the rungs and the selector atom, is *The server's own constants, read locally*…” — the overlap is the rungs and the atom, in the section before
+293. `commands/permissions`:293 *(own)* — was “for the only place the client reasons about a permission it does not have.” — now “for the only place the client reasons about a permission it was never told about.” — the client acts elsewhere on permissions it lacks; verifyCommand is the one that reasons about one it was never told about
+
+#### `server/players-and-sessions`
+
+294. `server/players-and-sessions`:507 *(beside)* — was “> **For a 1.21-era reader.** Stored identity is a `NameAndId` record, not a > `GameProfile` — the ban list, the op list, the whitelist, the save file…” — now “” — both drift claims were already true of 1.21.11 (NameAndId.java, ServerOpListEntry.java:8 in the 1.21.11 tree), so the box names nothing that moved
+
+#### `commands/the-execution-engine`
+
+295. `commands/the-execution-engine`:30 *(beside)* — was “the reason N players cost one queue entry at a time rather than N at once” — now “the reason three or more players cost one element's entry at a time rather than N at once” — two elements are queued at once (ContinuationTask.java:42-45)
+296. `commands/the-execution-engine`:144 *(beside)* — was “which sums its members' results, and only when the caller installed a real callback.” — now “which sums its members' results, and only when the caller installed a real callback and it is not under `return run`.” — return mode has no accumulator (FunctionCommand.java:121-122, :146-161)
+297. `commands/the-execution-engine`:131 *(own)* — was “so an `execute store result` placed before the fork writes N times and the last one wins” — now “so an `execute store result` whose target every forked source shares — one placed before the fork, or one naming a fixed holder — writes N times and…” — a store after the fork naming a fixed holder also writes N times (ExecuteCommand.java:282-296)
+298. `commands/the-execution-engine`:153 *(own)* — was “One is an exception thrown out of an action, which `Commands.executeCommandInContext` passes up so that the source sees the command fail; the other t…” — now “One is an exception thrown out of an action, which `Commands.executeCommandInContext` passes up: `Commands.performCommand` tells the source the comma…” — only performCommand reports the throw; ServerFunctionManager.execute logs it (Commands.java:351-369)
+299. `commands/the-execution-engine`:231 *(own)* — was “in forked mode Brigadier catches the error and returns zero, so even a trace shows only that zero.” — now “in forked mode Brigadier catches a plain command's error and returns zero, which is all a trace shows of it, though the engine's own commands, a fork…” — the engine's own commands still write their error to a trace (CommandSourceStack.java:397-405)
+300. `commands/the-execution-engine`:233 *(own)* — was “Not normally. a forked `/function`” — now “Not normally. A forked `/function`” — the round-1 rewrite left a lower-case sentence start
+
+#### `commands/entity-selectors`
+
+301. `commands/entity-selectors`:17 *(own)* — was “but many of its twenty-one option names are more than filters: they write the query plan.” — now “but many of its twenty-one option names do more than filter: they write the query plan.” — limit, sort, x, y and z add no test (EntitySelectorOptions.java:137-154, :190, :222)
+302. `commands/entity-selectors`:168 *(beside)* — was “C -- name --> N["PlayerList.getPlayerByName, either way"]” — now “C -- name --> N["PlayerList.getPlayerByName"]” — a bare name always takes non-players out of scope (EntitySelectorParser.java:326)
+303. `commands/entity-selectors`:188 *(beside)* — was “A bare player name goes to `PlayerList.getPlayerByName` whatever the selector's scope;” — now “A bare player name goes to `PlayerList.getPlayerByName`, since a name always takes non-players out of scope;” — a bare name always takes non-players out of scope (EntitySelectorParser.java:326)
+304. `commands/entity-selectors`:160 *(beside)* — was “so the range test — the cheapest thing in a selector — runs **after**” — now “so the range test, a few multiplications, runs **after**” — the superlative had no measure, as the opening's did
+305. `commands/entity-selectors`:194 *(own)* — was “Within a level only *distance* and the three deltas narrow the search, and only when they add up to a box; the other three of the seven narrow it to…” — now “Of the seven, only *distance* and the three deltas narrow the entity walk within a level, and only when they add up to a box; *x*, *y* and *z* only c…” — all seven confine the search to one level; x, y and z move the box but do not build it (EntitySelectorParser.java:149-171)
+306. `commands/entity-selectors`:232 *(beside)* — was “the seven above, which build the box and world-limit the search;” — now “the seven above, which world-limit the search and build or place the box;” — all seven confine the search to one level; x, y and z move the box but do not build it (EntitySelectorParser.java:149-171)
+307. `commands/entity-selectors`:179 *(beside)* — was “H -- yes --> I["EntitySectionStorage — only the sections the box touches"]” — now “H -- yes --> I["EntitySectionStorage — only the sections near the box"]” — the storage widens the box before it picks sections (EntitySectionStorage.java:38-43)
+
+#### `commands/functions-and-macros`
+
+308. `commands/functions-and-macros`:44 *(own)* — was “which a dialog's command template also runs on the client ([dialogs](dialogs.md#what-a-dialog-is-made-of)).” — now “which a dialog's command template also runs on the client ([dialogs](dialogs.md#from-a-json-file-to-a-click-the-server-reads)).” — the client-side substitution is described in the dialogs trace, not the parts section
+309. `commands/functions-and-macros`:85 *(own)* — was “gamemaster by default, and are gamemaster always in singleplayer.” — now “gamemaster by default, gamemaster always in singleplayer, and owner on the game test server.” — the game test server compiles at owner (GameTestServer.java:103, :325-326)
+310. `commands/functions-and-macros`:112 *(own)* — was “— any Unicode letter or digit counts —” — now “— any letter or digit in Unicode's basic plane counts —” — isLetterOrDigit is tested one char at a time, so a surrogate pair fails (StringTemplate.java:50-57)
+311. `commands/functions-and-macros`:200 *(beside)* — was “`FunctionCommand` and `DebugCommand` instead call `CommandSourceStack.withMaximumPermission`” — now “`FunctionCommand` (for `/function` and `execute if function`) and `DebugCommand` instead call `CommandSourceStack.withMaximumPermission`” — execute if function caps through FunctionCommand.modifySenderForExecution (ExecuteCommand.java:870)
+312. `commands/functions-and-macros`:188 *(own)* — was “What the body's lines may do was settled earlier,” — now “Which commands the body's lines may run was settled earlier,” — a selector still asks the running source at resolve (EntitySelector.java:107-110); what compile settles is which commands
+313. `commands/functions-and-macros`:211 *(beside)* — was “`ServerFunctionLibrary` for what a reload does off the main thread,” — now “`ServerFunctionLibrary` for what a reload does off the thread that applies it,” — the thread the page now names
+
+#### `commands/advancements`
+
+314. `commands/advancements`:23 *(own)* — was “and the fifty-eighth is never fired at all.” — now “and the remaining one, `minecraft:impossible`, is never fired at all.” — IMPOSSIBLE is registered first, so "the fifty-eighth" named the wrong one (CriteriaTriggers.java:10)
+315. `commands/advancements`:148 *(beside)* — was “Neither is something the game does on its own, which is why *shrinks* is the honest verb and *only* is the wrong word.” — now “Neither is something the game does on its own, which is why the table shrinks as you play rather than only ever shrinking.” — the clause answered the *only* this session removed from the verified line and the heading
+
+#### `commands/scoreboard-and-data`
+
+316. `commands/scoreboard-and-data`:47 *(own)* — was “the ten hooks and three methods that move teams and display slots,” — now “the ten hooks and three methods that change team membership and display slots,” — the three non-hooks move a holder on or off a team, not a team (ServerScoreboard.java:95-137)
+317. `commands/scoreboard-and-data`:152 *(own)* — was “only removing a score, through `Scoreboard.resetSinglePlayerScore`, and loading one from the save go round it.” — now “only removal — `Scoreboard.resetSinglePlayerScore`, `Scoreboard.resetAllPlayerScores` and `Scoreboard.removeObjective` — and loading from the save go…” — resetAllPlayerScores and removeObjective go round the handle too (Scoreboard.java:209-216, :262-268)
+318. `commands/scoreboard-and-data`:211 *(own)* — was “though every entity reaches the scoreboard once, calling `Scoreboard.addPlayerToTeam` from `Entity.load` when it reads its own saved team back.” — now “though `Entity.load` does write to it, calling `Scoreboard.addPlayerToTeam` when the tag it loads names a *Team* — a field the game reads but never s…” — Entity also reads the scoreboard (getTeam, belowNameDisplay), and the Team tag is read but never saved (the only "Team" literal is Entity.java:2370)
+319. `commands/scoreboard-and-data`:341 *(beside)* — was “a watchdog kill, a *kill -9*, a power cut — and then everything since the last autosave goes with it” — now “a watchdog kill, a *kill -9*, a power cut — and then every score since the last autosave goes with it” — the relayed crash writes players and some chunks; what it loses here is the scores
+320. `commands/scoreboard-and-data`:378 *(own)* — was “It is also, with `/teammsg`, one of the two commands in this area” — now “It is also, with `/teammsg` (and its `/tm` alias), one of the two commands in this area” — /tm is the alias (TeamMsgCommand.java:55)
+321. `commands/scoreboard-and-data`:392 *(own)* — was “a player target, an uncreatable path, a value nested too deep —” — now “a player target, an uncreatable path, a path too deep —” — the stored value is one number, so what fails is the path's depth (NbtPathArgument.java:265-268, :302-304)
+322. `commands/scoreboard-and-data`:398 *(own)* — was “as do most of `/team`'s and `/bossbar`'s setters,” — now “as do most of `/team`'s setters and every one of `/bossbar`'s,” — every /bossbar setter throws on a no-op (BossBarCommands.java:155-241)
+323. `commands/scoreboard-and-data`:410 *(own)* — was “for the one field that decides which objectives and scores a client ever knows.” — now “for the one field that decides which objectives and scores a client's scoreboard ever holds.” — ScoreContents reaches a client without a score packet
+
+#### `commands/dialogs`
+
+324. `commands/dialogs`:22 *(own)* — was “The dialog is encoded with no registry access at all, so any data-pack element it refers to goes inline too.” — now “The dialog is encoded with no registry access at all, so a dialog it refers to goes inline too, and an element that can only be named by id — an ench…” — a RegistryFixedCodec holder cannot encode without RegistryOps (RegistryFixedCodec.java:50-52; Enchantment.CODEC = RegistryCodecs.holder); a RegistryFileCodec one goes inline (RegistryFileCodec.java:52)
+325. `commands/dialogs`:24 *(own)* — was “a move Mojang has made across the game — [game tests](game-tests.md) is the other — making a thing a registry element loaded from a data pack rather…” — now “a pattern found across the game — [game tests](game-tests.md) is the other — a thing made a registry element loaded from a data pack rather than a Ja…” — "has made" is still history the tree cannot show (rule 3)
+326. `commands/dialogs`:43 *(own)* — was “extended with `ClickEvent.ShowDialog`, which is how anything clickable can open a dialog, and `ClickEvent.Custom`, which sends a custom action” — now “extended with `ClickEvent.ShowDialog`, which is how a chat message, a book, a dialog or a sign can open a dialog, and `ClickEvent.Custom`, which carr…” — item names and lore dispatch nothing (the page's own section); a sign's Custom is handled on the server (SignBlockEntity.java:244-247)
+327. `commands/dialogs`:117 *(own)* — was “Four things open a dialog. Two of them go through `ServerPlayer.openDialog`,” — now “Four things open a dialog in play; the configuration-phase sender, `DebugConfigCommand`, sends its packet itself (below). Two of the four go through…” — DebugConfigCommand sends its packet itself, through neither route (DebugConfigCommand.java:103-107)
+328. `commands/dialogs`:134 *(beside)* — was “**A sign** is the one that is not a click dispatch at all.” — now “**A sign** is clicked, but its click event is never dispatched on the client.” — the removed heading's claim, still in the sign's lead-in
+329. `commands/dialogs`:131 *(own)* — was “let a data pack put dialogs behind a pause-menu button and behind a hotkey,” — now “let a data pack put dialogs behind a pause-menu button and behind a hotkey (with the shipped tags empty, that button opens the server's links, when i…” — with the shipped tags empty the pause button opens the server's links (PauseScreen.java:195-199; data/minecraft/tags/dialog/*.json)
+330. `commands/dialogs`:185 *(own)* — was “sent from a dialog or from any text the server made clickable —” — now “sent from a dialog, a chat message or a book (a sign's is handed to it on the server) —” — only chat and book text send it from the client; a sign's is handed over on the server
+331. `commands/dialogs`:190 *(own)* — was “`DebugConfigCommand`, which the game registers only on a dedicated server started with its debug system properties” — now “`DebugConfigCommand`, which the game registers only in a dedicated server's command set, and only when started with its debug system properties” — the game-test server also uses the dedicated command set (GameTestServer.java:103)
+
+#### `reference/naming-drift`
+
+332. `reference/naming-drift`:439 *(beside)* — was “`GameTestInstance.batch` — the batch *is* a `TestEnvironmentDefinition` |” — now “`GameTestInstance.batch` — the batch *is* a `TestEnvironmentDefinition`, in one dimension |” — the batch key is environment and dimension (GameTestBatchFactory.java:83)
+
+#### `world/tickets-and-loading`
+
+333. `world/tickets-and-loading`:90 *(beside)* — was “| `/forceload` via `TicketStorage.updateChunkForced` |” — now “| `/forceload`, and a game test over its structure, via `TicketStorage.updateChunkForced` |” — a game test's structure force-loads through the same ticket (TestInstanceBlockEntity.java:385, :405-411 -> ServerLevel.setChunkForced), and a finished batch removes every forced ticket (GameTestRunner.java:129-133)
+334. `world/tickets-and-loading`:404 *(beside)* — was “its source removes it: the player leaves the chunk, `/forceload remove`, the fight ends |” — now “its source removes it: the player leaves the chunk, `/forceload remove` (or a game-test batch finishing, which unforces every forced chunk in its lev…” — a game test's structure force-loads through the same ticket (TestInstanceBlockEntity.java:385, :405-411 -> ServerLevel.setChunkForced), and a finished batch removes every forced ticket (GameTestRunner.java:129-133)
+
+### Polished
+
+Eighteen edits after the facts were settled, under Part 4 as ratified: *actually* cut eleven times, where it corrected
+no belief the page had stated (V5); two em-dash chains broken, one of them made by this session's own rewrite (V4); the
+part's one bare number device given its noun (V9); `dialogs`' package size cut (V10); and three more, each a sentence
+whose meaning could move and each re-read in the tree before the commit:
+
+- `commands/permissions` — *`LevelBasedPermissionSet.ALL` — rung zero, and marked deprecated where it is declared*
+  (was *deprecated in place*; `LevelBasedPermissionSet.java`:6; pass5.md:6430).
+- `commands/permissions` f1's caption — *… and the one dotted arrow without a hollow head is the single call that joins
+  them* (was *the dotted one*: the figure has six dotted links, five of them realisations; pass5.md:7074).
+- `commands/entity-selectors` — the *predicate* row links `items/contexts-and-predicates`, the other half of the fact
+  (pass5.md:4318).
+
+The number device now reads **Ninety-seven call sites** *of `Commands.hasPermission`* (the count recounted: 97).
+
+The session's round-one corrections also did work the polish would otherwise have done, each listed above as a
+correction: every prose size in the part cut or counted as the atlas counts (V10), every history phrase the tree cannot
+show cut (rule 3), *quota* made *budget* on the engine page (V7's one word, one sense), and *main thread* and *server
+thread* made the *Server thread* or the thread that applies a reload.
+
+### The queue
+
+Part XIII's units in [pass5.md](pass5.md) settled: 49 struck — done 15, record 13, ruled 10, overtaken 9, and second
+edition 2 (the figures pass 7's viewers asked for; `game-tests`' reporting table). `pass5_queue.py --summary` has
+no Part XIII row. The ledger: `pass8_queue.py --unstruck` shows pass 5, 6 and 7 session M with nothing unstruck, and
+every other session's entries routed to Part XIII struck.
+
 ## Pass 8, session M — Part XII · World generation *(2026-09-29)*
 
 Eleven pages, each checked under Part 2 by its own agent while the session read the part whole (the whole-part read
@@ -7229,12 +7791,12 @@ tenth.
 
 ### Figures redrawn, and the orderings they assert
 
-- **`commands/README` figure 1** — `TD` with the four systems on the top floor,
+- ~~**`commands/README` figure 1** — `TD` with the four systems on the top floor,
   as the prose calls it (`TB` drew them at the bottom); the floors' internal
   `---` links, a mark outside F3's table, are layout-only; the two arrows read
   *is built on*; titles short enough not to be clipped. Asserts nothing about
-  the game. Caption: *nothing on the top floor points at another box there*.
-- **`brigadier-and-commands` figure 1** — Client and Server boxes; the
+  the game. Caption: *nothing on the top floor points at another box there*.~~ *(checked: the figure stands; its caption's *the one landing figure where they point down* was false (ten others point down too) and is corrected this session — pass 8, session N)*
+- ~~**`brigadier-and-commands` figure 1** — Client and Server boxes; the
   ask-server round trip in an `opt` frame; the server thread as a band.
   Asserts, in order: `CommandSuggestions` gets the dispatcher from
   `ClientPacketListener.getCommands` and parses on every keystroke
@@ -7248,8 +7810,8 @@ tenth.
   runs on the Netty thread; then, on the server thread,
   `ServerGamePacketListenerImpl.parseCommand`, `Commands.performCommand`, the
   registered lambda, `GiveCommand.giveItem`. Caption: *`/give` has none* (no
-  ask-server node).
-- **`permissions` figure 1** — a flowchart of three bands wired
+  ask-server node).~~ *(checked: every arrow; the caption's *taken only by a node that asks the server* missed the unsynced-registry route and is corrected this session — pass 8, session N)*
+- ~~**`permissions` figure 1** — a flowchart of three bands wired
   question → answer → check becomes a class diagram. Asserts:
   `PermissionProviderCheck` holds a `PermissionCheck`; `PermissionCheck.Require`
   and `PermissionCheck.AlwaysPass` implement it; `Require` holds a `Permission`
@@ -7257,38 +7819,38 @@ tenth.
   `Permission.HasCommandLevel` implement `Permission`;
   `LevelBasedPermissionSet` extends `PermissionSet`; `PermissionSetUnion`
   implements it; `ChatAbilities` **holds** one. The `ClientPacketListener`
-  node (its two sets) is gone.
-- **`permissions` figure 2** — `TD`. Asserts the order of
+  node (its two sets) is gone.~~ *(checked: every arrow; the caption's *the dotted one* was ambiguous among six dotted links and is corrected this session — pass 8, session N)*
+- ~~**`permissions` figure 2** — `TD`. Asserts the order of
   `ClientPacketListener.verifyCommand`'s tests — parse with your own set, then
   signable arguments, then parse with `PermissionSet.NO_PERMISSIONS` — and that
   the parse-error and permissions outcomes open a `ConfirmScreen` whose button
   sends, the signature outcome one whose button suggests or copies, and only
-  the clean outcome sends with no screen.
-- **`entity-selectors` figure 1** — titles shortened so neither is clipped
+  the clean outcome sends with no screen.~~ *(checked: the order of the three tests; node P1's *your own set* omitted the restricted atom and is corrected this session — pass 8, session N)*
+- ~~**`entity-selectors` figure 1** — titles shortened so neither is clipped
   (*at parse time*, *per execution*); the compile box's three products no
-  longer joined by an unexplained `---`.
-- **`entity-selectors` figure 2** — redrawn. Asserts: a bare name goes to
+  longer joined by an unexplained `---`.~~ *(checked — pass 8, session N)*
+- ~~**`entity-selectors` figure 2** — redrawn. Asserts: a bare name goes to
   `PlayerList.getPlayerByName` whatever the scope; a UUID goes to
   `ServerLevel.getEntity` level by level when non-players are in scope and to
   `PlayerList.getPlayer` when not; *@s* tests the source's own entity; the
   three shortcuts return with no sort and no cut; otherwise world-limited
   picks this level or every level, then players-only walks a player list and
   the rest take the box query or the lookup walk; every walk ends in *sort
-  unless arbitrary, then cut*.
-- **`the-execution-engine` figure 1** — four panels, `TD`, titles short;
+  unless arbitrary, then cut*.~~ *(checked, but for the players-only UUID leaf, which vanilla never reaches (a UUID always brings non-players into scope): removed, corrected this session — pass 8, session N)*
+- ~~**`the-execution-engine` figure 1** — four panels, `TD`, titles short;
   the starting entry (`BuildContexts.TopLevel`, depth 0) is in the lead-in.
   Asserts the queue after entry 1 ran (a `ContinuationTask` alone), after the
   task ran (A's entry, then the task behind it), after A's entry ran (the task
   alone, B not yet made), after the task ran again (B's entry, then the task);
   all at depth 0 in the top frame. Caption: `ExecuteCommand` is the leaf task
-  in `commands/execution/tasks`.
-- **`functions-and-macros` figure 1** — eight sentence boxes become a decision
+  in `commands/execution/tasks`.~~ *(checked — pass 8, session N)*
+- ~~**`functions-and-macros` figure 1** — eight sentence boxes become a decision
   flowchart. Asserts: one dollar line makes a `MacroFunction`, otherwise a
   `PlainTextFunction`; instantiating a plain one returns itself; a macro one
   fails with `FunctionInstantiationException` when arguments are missing or
   the substituted text does not parse; `/function` reports that and a tag
-  swallows it; the `InstantiatedFunction` is queued by `CallFunction`.
-- **`advancements` figure 1** — seven lanes to six (`AdvancementRewards`
+  swallows it; the `InstantiatedFunction` is queued by `CallFunction`.~~ *(checked, but for the swallow node: `ServerFunctionManager.execute` swallows, for tags, `/schedule`, rewards, `RunFunction` and test environments, while `/function #tag` reports; corrected this session — pass 8, session N)*
+- ~~**`advancements` figure 1** — seven lanes to six (`AdvancementRewards`
   folded), Server and Client boxes, the server half one `ServerPlayer.tick`
   band. Asserts: `ServerPlayer` calls
   `AbstractContainerMenu.broadcastChanges`; the menu calls
@@ -7297,8 +7859,8 @@ tenth.
   the sweep; `PlayerAdvancements.unregisterListeners` then the rewards; the
   root marked; `PlayerAdvancements.flushDirty` last in the tick, then
   `PlayerAdvancements.updateTreeVisibility`; the packet; then
-  `ClientAdvancements.update` rebuilds, reconciles and adds the toast.
-- **`scoreboard-and-data` figure 1** — seven lanes to six (`Commands`
+  `ClientAdvancements.update` rebuilds, reconciles and adds the toast.~~ *(checked as V2 redrew it: two bands, `flushDirty` second to last — pass 8, session N)*
+- ~~**`scoreboard-and-data` figure 1** — seven lanes to six (`Commands`
   dropped), Server and Client boxes. Asserts: the *as @a* fork in
   `BuildContexts`; the store modifier once per source, with
   `ExecuteCommand.storeValue` chaining the callback; the leaf
@@ -7308,8 +7870,8 @@ tenth.
   `ScoreAccess.set` itself**; `ScoreAccess` calls
   `ServerScoreboard.onScoreChanged` only if changed or new; the packet only
   for a displayed objective; `ClientPacketListener.handleSetScore` builds a
-  name-only holder.
-- **`dialogs` figure 1** — `RegistryDataLoader` lane dropped, a
+  name-only holder.~~ *(checked; the leaf's arrow now says the leaf is queued, not called, by `BuildContexts` (corrected this session) — pass 8, session N)*
+- ~~**`dialogs` figure 1** — `RegistryDataLoader` lane dropped, a
   `DialogControlSet` lane added (key row `DCS`), Server and Client boxes.
   Asserts: `DialogCommand` → `ServerPlayer.openDialog` →
   `ClientboundShowDialogPacket` (a holder id or inline) →
@@ -7317,15 +7879,15 @@ tenth.
   `DialogScreen` → `DialogControlSet.addInput` per input; at the click the
   control set's action reads the getters, then `DialogScreen.runAction`, then
   `DialogConnectionAccess.sendCustomAction` → the listener →
-  `ServerboundCustomClickActionPacket` → `MinecraftServer.handleCustomClickAction`.
-- **`game-tests` figure 1** — three bands become a class diagram. Asserts:
+  `ServerboundCustomClickActionPacket` → `MinecraftServer.handleCustomClickAction`.~~ *(checked — pass 8, session N)*
+- ~~**`game-tests` figure 1** — three bands become a class diagram. Asserts:
   `GameTestInstance` holds `TestData` (`info`) and has
   `GameTestInstance.run`; `TestData` names the environment;
   `GameTestBatch` is keyed by an environment and holds up to fifty
   `GameTestInfo`s; `GameTestInfo` holds its test and its
   `TestInstanceBlockEntity` and makes a new `GameTestHelper` at tick zero;
-  `GameTestHelper` holds its `GameTestInfo`. `TestBlock` left to its section.
-- **`game-tests` figure 2** — the tick-driven half is a band. Asserts:
+  `GameTestHelper` holds its `GameTestInfo`. `TestBlock` left to its section.~~ *(checked, but *keyed by* an environment and *up to fifty*: in 26.3 the key is environment and dimension, and fifty is a default; corrected this session — pass 8, session N)*
+- ~~**`game-tests` figure 2** — the tick-driven half is a band. Asserts:
   `GameTestRunner` calls `GameTestInfo.prepareTestStructure` for each run,
   which calls `TestInstanceBlockEntity.placeStructure` then
   `TestInstanceBlockEntity.encaseStructure`; **then** the environment is
@@ -7335,7 +7897,7 @@ tenth.
   `TestInstanceBlockEntity.setSuccess` or
   `TestInstanceBlockEntity.setErrorMessage`; chat, then `GlobalTestReporter`.
   Caption: the beam is *green, red, or orange for an optional test that
-  failed*.
+  failed*.~~ *(checked arrow by arrow; arrow 1's *one per environment* and arrow 5's *whose structure was placed* were wrong in 26.3 and are corrected this session — pass 8, session N)*
 
 ### Captions written (claims about what each figure shows)
 
@@ -7349,138 +7911,138 @@ debug log line and nothing else*); `game-tests` f2 (orange);
 
 ### Prose added (the one sentence a figure's name needed)
 
-- `brigadier-and-commands`: the client's dispatcher is the one
+- ~~`brigadier-and-commands`: the client's dispatcher is the one
   `ClientPacketListener.getCommands` hands the widget; the reply lands on
   `ClientPacketListener.handleCommandSuggestions`, which forwards it;
   `ChatScreen` calls `ClientPacketListener.sendCommand`; the plain packet is
   `ServerboundChatCommandPacket`; `ServerGamePacketListenerImpl.tryHandleChat`
   refuses illegal characters on the Netty thread; the server's parse is
   `ServerGamePacketListenerImpl.parseCommand`; the lambda calls
-  `GiveCommand.giveItem`.
-- `permissions`: a paragraph on `SignableCommand.hasSignableArguments` — an
+  `GiveCommand.giveItem`.~~ *(checked — pass 8, session N)*
+- ~~`permissions`: a paragraph on `SignableCommand.hasSignableArguments` — an
   unattended command cannot be signed, so its `ConfirmScreen` offers to put it
   in the chat box or, when a screen is to follow or chat commands are off, to
-  copy it (`ClientPacketListener.openSignedCommandSendConfirmationWindow`).
-- `entity-selectors`: *Three shortcuts come first* (name, UUID, *@s*; none is
-  sorted or cut).
-- `the-execution-engine`: the lead-in names the starting entry.
-- `functions-and-macros`: a lead-in.
-- `advancements`: the slot change reaches the trigger through the player's own
+  copy it (`ClientPacketListener.openSignedCommandSendConfirmationWindow`).~~ *(checked — pass 8, session N)*
+- ~~`entity-selectors`: *Three shortcuts come first* (name, UUID, *@s*; none is
+  sorted or cut).~~ *(checked, with the UUID caveat above (corrected this session) — pass 8, session N)*
+- ~~`the-execution-engine`: the lead-in names the starting entry.~~ *(checked — pass 8, session N)*
+- ~~`functions-and-macros`: a lead-in.~~ *(checked — pass 8, session N)*
+- ~~`advancements`: the slot change reaches the trigger through the player's own
   `ContainerListener`; the flush is one `ClientboundUpdateAdvancementsPacket`
   and runs `PlayerAdvancements.updateTreeVisibility` once per dirty root;
   `ClientAdvancements.update` removes and adds nodes, reconciles progress,
   and adds an `AdvancementToast` for each now-done advancement whose display
   asks for one, with a sound only for a challenge. *Each arrow is a decision*
-  became *The paragraphs below take its arrows in order*.
-- `scoreboard-and-data`: a lead-in naming `BuildContexts`; the same
+  became *The paragraphs below take its arrows in order*.~~ *(checked — pass 8, session N)*
+- ~~`scoreboard-and-data`: a lead-in naming `BuildContexts`; the same
   *take its arrows in order* change; `ClientPacketListener.handleSetScore`
-  builds only a name-only holder.
-- `dialogs`: `DialogControlSet.addInput` registers the getters; the click goes
+  builds only a name-only holder.~~ *(checked; the page's *take its arrows in order* was not the order and is corrected this session — pass 8, session N)*
+- ~~`dialogs`: `DialogControlSet.addInput` registers the getters; the click goes
   through `DialogScreen.runAction` and
   `DialogConnectionAccess.sendCustomAction`; the play-phase packet names a
   registered dialog by holder id and sends an unregistered one inline, and
-  the configuration-phase packet is always inline.
-- `game-tests`: *The structure comes first, then the environment*;
+  the configuration-phase packet is always inline.~~ *(checked — pass 8, session N)*
+- ~~`game-tests`: *The structure comes first, then the environment*;
   `GameTestInfo.startTest` hands the body a new helper; the listener chain's
-  two calls and the block entity's two setters.
+  two calls and the block entity's two setters.~~ *(checked — pass 8, session N)*
 
 ### Corrections
 
-- **`brigadier-and-commands` figure 1** — drew `getCompletionSuggestions`
+- ~~**`brigadier-and-commands` figure 1** — drew `getCompletionSuggestions`
   arriving at `ClientPacketListener`; it is `CommandDispatcher`'s, called by
   `CommandSuggestions.updateCommandInfo` on the dispatcher it fetched with
   `ClientPacketListener.getCommands` (`CommandSuggestions.java`:225–235,
-  `ClientPacketListener.java`:2770).
-- **`brigadier-and-commands` figure 1** — the suggestion reply ended on
+  `ClientPacketListener.java`:2770).~~ *(checked — pass 8, session N)*
+- ~~**`brigadier-and-commands` figure 1** — the suggestion reply ended on
   `ClientPacketListener`; `ClientPacketListener.handleCommandSuggestions`
   forwards it to `ClientSuggestionProvider.completeCustomSuggestions`, where
-  the id is matched (`ClientPacketListener.java`:1755–1757).
-- **`brigadier-and-commands` figure 1** — the prose under it says all three
+  the id is matched (`ClientPacketListener.java`:1755–1757).~~ *(checked — pass 8, session N)*
+- ~~**`brigadier-and-commands` figure 1** — the prose under it says all three
   parses are *in there*; the figure drew two. The second,
   `ClientPacketListener.sendCommand`, called from `ChatScreen`
-  (`ChatScreen.java`:351), is drawn now.
-- **`brigadier-and-commands` figure 1** — drew the server's parse on
+  (`ChatScreen.java`:351), is drawn now.~~ *(checked — pass 8, session N)*
+- ~~**`brigadier-and-commands` figure 1** — drew the server's parse on
   `Commands`; it is `ServerGamePacketListenerImpl.parseCommand`, and
   `performUnsignedChatCommand` then calls `Commands.performCommand`
   (`ServerGamePacketListenerImpl.java`:1713–1720, :1823). The Netty-side
-  check is `tryHandleChat`, which then calls `server.execute` (:1829–1837).
-- **`brigadier-and-commands` figure 1** — a self-message on `GiveCommand`
+  check is `tryHandleChat`, which then calls `server.execute` (:1829–1837).~~ *(checked — pass 8, session N)*
+- ~~**`brigadier-and-commands` figure 1** — a self-message on `GiveCommand`
   named `Inventory.add` and `CommandSourceStack.sendSuccess`; they are called
   from `GiveCommand.giveItem` (`GiveCommand.java`:38, :58, :80), which the
-  label now names.
-- **`permissions` figure 1** — listed `ChatAbilities` among the sets that
+  label now names.~~ *(checked: in 26.3 `GiveCommand.giveItem` reaches `sendSuccess` through `CommandResponseTracker.sendFeedback`; the prose says so (corrected this session) — pass 8, session N)*
+- ~~**`permissions` figure 1** — listed `ChatAbilities` among the sets that
   answer; it is a plain class that holds a `PermissionSet`, a lambda over a
-  literal set (`ChatAbilities.java`:14, :18, :34).
-- **`permissions` figure 2** — drew all three non-clean outcomes converging
+  literal set (`ChatAbilities.java`:14, :18, :34).~~ *(checked; the prose still called `ChatAbilities` a set, corrected this session — pass 8, session N)*
+- ~~**`permissions` figure 2** — drew all three non-clean outcomes converging
   on one *the player decides* screen; the signature outcome's confirmation
   never sends — its button suggests the command into chat or copies it
   (`ClientPacketListener.java`:2890–2903), while the other two send
-  (:2883–2887).
-- **`entity-selectors` figure 2** — the players-only branch skipped the name,
+  (:2883–2887).~~ *(checked — pass 8, session N)*
+- ~~**`entity-selectors` figure 2** — the players-only branch skipped the name,
   UUID, *@s* and world-limited decisions `EntitySelector.findPlayers` makes
-  (`EntitySelector.java`:207–258).
-- **`entity-selectors` figure 2** — the UUID leaf on the entities branch said
+  (`EntitySelector.java`:207–258).~~ *(checked — pass 8, session N)*
+- ~~**`entity-selectors` figure 2** — the UUID leaf on the entities branch said
   `PlayerList.getPlayer`; `EntitySelector.findEntities` looks the UUID up in
   every level with `ServerLevel.getEntity` (`EntitySelector.java`:131–146);
-  `PlayerList.getPlayer` is the players-only branch's (:214).
-- **`the-execution-engine` figure 1** — the fourth panel's title (*A's say hi
+  `PlayerList.getPlayer` is the players-only branch's (:214).~~ *(checked; the players-only UUID leaf was unreachable and is gone (corrected this session) — pass 8, session N)*
+- ~~**`the-execution-engine` figure 1** — the fourth panel's title (*A's say hi
   is done*) sat over the queue one step later, after the task had run again;
-  at that moment the queue is the task alone (`ContinuationTask.java`:23–29).
-- **`the-execution-engine`**, prose — *one cost unit per stage* and *the
+  at that moment the queue is the task alone (`ContinuationTask.java`:23–29).~~ *(checked — pass 8, session N)*
+- ~~**`the-execution-engine`**, prose — *one cost unit per stage* and *the
   modifier stage that forked … was the single unit charged*;
   `BuildContexts.execute` charges only a stage whose redirect modifier is
   non-null, after the custom-modifier hand-off (`BuildContexts.java`, the
   stage loop: `if (modifier != null) { context.incrementCost(); …`), so this
   chain pays for *as @a* and *at @s*, not *run* — two units. Both sentences
-  now say so.
-- **`advancements` figure 1** — the toast self-message said *silent unless it
+  now say so.~~ *(checked; the same section's *what bounds a fan-out is the ten-million entry cap* was wrong (the fork limit and the budget do) and is corrected this session — pass 8, session N)*
+- ~~**`advancements` figure 1** — the toast self-message said *silent unless it
   is a CHALLENGE*; `ClientAdvancements.update` adds the toast whenever the
   packet allows and `DisplayInfo.shouldShowToast` says so
   (`ClientAdvancements.java`:61–70), and only its sound depends on
-  `AdvancementType.CHALLENGE` (`AdvancementToast.java`:56, :62).
-- **`scoreboard-and-data` figure 1** — drew `ServerScoreboard` calling
+  `AdvancementType.CHALLENGE` (`AdvancementToast.java`:56, :62).~~ *(checked — pass 8, session N)*
+- ~~**`scoreboard-and-data` figure 1** — drew `ServerScoreboard` calling
   `ScoreAccess.set`; the store callback made by `ExecuteCommand.storeValue`
   calls `getOrCreatePlayerScore` and then `ScoreAccess.set` itself
-  (`ExecuteCommand.java`:284–298).
-- **`scoreboard-and-data` figure 1** — put the display-slot condition on the
+  (`ExecuteCommand.java`:284–298).~~ *(checked — pass 8, session N)*
+- ~~**`scoreboard-and-data` figure 1** — put the display-slot condition on the
   `ScoreAccess` → `ServerScoreboard` arrow; that arrow's gate is *changed or
   new*, and the display-slot gate is inside `ServerScoreboard.onScoreChanged`
-  (`ServerScoreboard.java`:60–66) — two gates, now on two arrows.
-- **`dialogs` figure 1** — drew `DialogScreens.createFromData` arriving at
+  (`ServerScoreboard.java`:60–66) — two gates, now on two arrows.~~ *(checked — pass 8, session N)*
+- ~~**`dialogs` figure 1** — drew `DialogScreens.createFromData` arriving at
   `DialogScreen`; it is called inside
   `ClientCommonPacketListenerImpl.showDialog`, after `handleShowDialog`
-  (`ClientCommonPacketListenerImpl.java`:270–293).
-- **`dialogs` figure 1** — put `DialogControlSet.addInput` and
+  (`ClientCommonPacketListenerImpl.java`:270–293).~~ *(checked — pass 8, session N)*
+- ~~**`dialogs` figure 1** — put `DialogControlSet.addInput` and
   `Action.createAction` on the `DialogScreen` lane; `DialogControlSet` is its
   own object — `DialogScreen` calls `addInput` on it (`DialogScreen.java`:82)
   and its bound action calls `Action.createAction` at the click, then
-  `DialogScreen.runAction` (`DialogControlSet.java`:48–66).
-- **`dialogs` figure 1** — drew the reply from `DialogScreen` straight to
+  `DialogScreen.runAction` (`DialogControlSet.java`:48–66).~~ *(checked — pass 8, session N)*
+- ~~**`dialogs` figure 1** — drew the reply from `DialogScreen` straight to
   `MinecraftServer`; it goes `DialogScreen.handleDialogClickEvent` →
   `DialogConnectionAccess.sendCustomAction` (`DialogScreen.java`:220) →
   `ClientCommonPacketListenerImpl`'s access, which sends the packet (:522–524),
   → `ServerCommonPacketListenerImpl.handleCustomClickAction` →
-  `MinecraftServer.handleCustomClickAction` (:103–105; `MinecraftServer.java`:2352).
-- **`game-tests` figure 2** — drew `succeed` arriving at
+  `MinecraftServer.handleCustomClickAction` (:103–105; `MinecraftServer.java`:2352).~~ *(checked — pass 8, session N)*
+- ~~**`game-tests` figure 2** — drew `succeed` arriving at
   `ReportGameListener`; `GameTestInfo.succeed` is the run's own
   (`GameTestInfo.java`:271), and the listener hears `testPassed` or
   `testFailed` from `GameTestInfo.tick` (:116–125) — the caller's method at
-  the callee, **eleven parts of eleven**.
-- **`game-tests` figure 2** — drew `TestEnvironmentDefinition.setup` as
+  the callee, **eleven parts of eleven**.~~ *(checked — pass 8, session N)*
+- ~~**`game-tests` figure 2** — drew `TestEnvironmentDefinition.setup` as
   `GameTestRunner`'s own step; the runner calls
   `TestEnvironmentDefinition.activate` (`GameTestRunner.java`:109), which
-  calls `setup` and keeps what it returns (`TestEnvironmentDefinition.java`:58–59).
-- **`game-tests` figure 2** — *green, red or orange* with orange explained
+  calls `setup` and keeps what it returns (`TestEnvironmentDefinition.java`:58–59).~~ *(checked — pass 8, session N)*
+- ~~**`game-tests` figure 2** — *green, red or orange* with orange explained
   nowhere; orange is a failed optional test
-  (`TestInstanceBlockEntity.java`:64–66, :219–228). In the caption.
+  (`TestInstanceBlockEntity.java`:64–66, :219–228). In the caption.~~ *(checked — pass 8, session N)*
 
 ### Tool change
 
-- **`tools/check_figure_names.py`** — a `classDiagram` member line was read
+- ~~**`tools/check_figure_names.py`** — a `classDiagram` member line was read
   as a declaration only if its name had two CamelCase humps, so a one-word
   method (`boolean check(PermissionSet)`) became a *note* and was never
   checked against its box. It now reads a parenthesised one-word name too;
-  two probe cases; the only corpus change is that note, on `permissions`.
+  two probe cases; the only corpus change is that note, on `permissions`.~~ *((no claim: a tool note) — pass 8, session N)*
 
 ## Pass 7, session L — Part XII · World generation: the figures *(2026-09-16)*
 
@@ -9882,7 +10444,7 @@ them found by a reader with no source; the rest is claims introduced.
 
 ### Corrections
 
-- `advancements`:3 — the verified line said *"a cobblestone lands in your
+- ~~`advancements`:3 — the verified line said *"a cobblestone lands in your
   inventory and **one tick later** the toast appears"*, and the trace's own
   note four sections down says *"still the same tick"*. The decompile agrees
   with the note: in `ServerPlayer.tick`
@@ -9892,22 +10454,22 @@ them found by a reader with no source; the rest is claims introduced.
   *does* demonstrate belongs to `CriteriaTriggers.LOCATION`, which fires in
   `ServerPlayer.doTick` during the connection phase, after the flush has run —
   a different scenario. The line now reads *"the toast is on its way before
-  that same tick ends"*.
-- `advancements`:303 (was :254) — the page said `DisplayInfo`'s type is one of
+  that same tick ends"*.~~ *(wrong: V2 corrected it to *before the next tick ends*, confirmed — pass 8, session N)*
+- ~~`advancements`:303 (was :254) — the page said `DisplayInfo`'s type is one of
   four. `AdvancementType` (`net/minecraft/advancements/AdvancementType.java`)
   is an enum of **three**: `TASK`, `CHALLENGE`, `GOAL`. Written as three, with
   the claim the sentence now carries: `AdvancementToast.getSoundEvent` returns
   `SoundEvents.UI_TOAST_CHALLENGE_COMPLETE` for a challenge and **null**
   otherwise, so a task and a goal toast in silence
   (`client/gui/components/toasts/AdvancementToast.java`:55–62); the same class
-  gives a challenge its own title colour at :72.
-- `entity-selectors`:96 — "a player sitting on the death screen is invisible
+  gives a challenge its own title colour at :72.~~ *(checked — pass 8, session N)*
+- ~~`entity-selectors`:96 — "a player sitting on the death screen is invisible
   to *@e* and still a target for *@a* and *@p*". Both `@e` and `@n` set
   `selectOnlyAlive` in `EntitySelectorParser.parseSelector`
   (`commands/arguments/selector/EntitySelectorParser.java`:262–273), and `@a`,
   `@p` and `@r` do not. Now "invisible to *@e* and *@n*, and still a target
-  for *@a*, *@p* and *@r*".
-- `entity-selectors`, the *Resolve* flowchart — the players-only node read
+  for *@a*, *@p* and *@r*".~~ *(wrong in part: a world-limited selector stops finding the body twenty ticks after death, when it leaves the level's player list; corrected this session — pass 8, session N)*
+- ~~`entity-selectors`, the *Resolve* flowchart — the players-only node read
   "findPlayers — a linear walk of a player list, **always**", which a reader
   took as "players are not world-limited". `EntitySelector.findPlayers`
   (`commands/arguments/selector/EntitySelector.java`:234–253) branches on
@@ -9915,25 +10477,25 @@ them found by a reader with no source; the rest is claims introduced.
   .getPlayers` or `PlayerList.getPlayers` — and both branches are linear. The
   label now says "one level or every level, but a linear walk of a player list
   either way". **The figure's shape is still wrong** (it also skips the
-  bare-name and UUID branches `findPlayers` takes) and is logged for pass 7.
-- `permissions`:148–158 — "of the **ninety-one** gates that name a level
+  bare-name and UUID branches `findPlayers` takes) and is logged for pass 7.~~ *(overtaken by pass 7's redraw, itself checked — pass 8, session N)*
+- ~~`permissions`:148–158 — "of the **ninety-one** gates that name a level
   constant … while `Commands.LEVEL_ALL` appears exactly twice" left two of the
   ninety-five unaccounted, with no sentence saying a remainder existed. The
   ninety-five `Commands.hasPermission` call sites are 66 `LEVEL_GAMEMASTERS`,
   16 `LEVEL_ADMINS`, 9 `LEVEL_OWNERS`, 2 ternaries (`SeedCommand`,
   `VersionCommand`), 1 `GameModeCommand.PERMISSION_CHECK` and 1
   `ClientPacketListener.RESTRICTED_COMMAND_CHECK`. The census now divides four
-  ways and closes.
-- `permissions`:115–118 — "the ops-file entry's own **stored set** wins" read
+  ways and closes.~~ *(overtaken by 26.3's counts (V2): ninety-seven, ninety-three, sixty-eight, confirmed — pass 8, session N)*
+- ~~`permissions`:115–118 — "the ops-file entry's own **stored set** wins" read
   against "*ops.json* stores a number" six lines later. Both are true of
   different things: `ServerOpListEntry`
   (`server/players/ServerOpListEntry.java`) holds a `LevelBasedPermissionSet`
   in memory, built in its JSON constructor from the integer `level` field, and
-  serialises that integer back. Said so.
+  serialises that integer back. Said so.~~ *(checked; the fallback sentence beside it (*op-permission-level*) described a branch a dedicated server never takes and is corrected this session — pass 8, session N)*
 
 ### Claims introduced
 
-**`advancements`** — the trace heading is now *From a slot that changed to a
+~~**`advancements`** — the trace heading is now *From a slot that changed to a
 toast* (`glossary.md`:754 repointed). New: a bolded trace paragraph claiming
 `AdvancementRewards` holds experience, loot tables, recipes and a function,
 that the recipe field is how the recipe book is filled, and that the function
@@ -9948,9 +10510,9 @@ end* and now asserts the layout is *why* every client sees the same tree.
 Section order changed: client half, coverage note, closer, *Where to look*.
 The cast's trailing sentence now claims the *side* column says where a class
 runs rather than which jar holds it, and that `PlayerAdvancements` is outside
-the 112.
+the 112.~~ *(checked in part: *The table only shrinks* contradicted its body, `/datapack` also reloads, and two cast rows' side was wrong; each corrected this session — pass 8, session N)*
 
-**`brigadier-and-commands`** — split question re-asked and answered no (see
+~~**`brigadier-and-commands`** — split question re-asked and answered no (see
 [pass5.md](pass5.md)). New claims: the three registered suggestion providers
 are named as *ask_server*, *available_sounds* and *summonable_entities*, and
 the five nodes that name one name **one of the two that mean anything** (3
@@ -9963,9 +10525,9 @@ the parser". The 38-vs-57 comparison re-scoped: 38 classes directly in
 claim that one class may register several and a nested one none. *Where a
 command's output goes* is now its own section; *The tree on the wire* gained
 four H3s (anchor kept); `ClientboundCustomChatCompletionsPacket` moved from
-the door section into the packet section.
+the door section into the packet section.~~ *(wrong in 26.3: four named providers, seven named nodes, sixty-six *ask_server*, 453 nodes; corrected this session; the split question confirmed — pass 8, session N)*
 
-**`dialogs`** — verified line's last clause changed from "it is not part of
+~~**`dialogs`** — verified line's last clause changed from "it is not part of
 Minecraft" to "no vanilla server will ever send it to you". New: the four
 dialog registries named. New claim about `ActionTypes.bootstrap`
 (`server/dialog/action/ActionTypes.java`:11–16): **seven** kinds are
@@ -9976,9 +10538,9 @@ protocols named together. Trace heading *From a JSON file to a click the
 server reads*. The four ways a dialog opens are now four bolded items; the
 parts inventory moved to a new section *What a dialog is made of* (the
 `functions-and-macros` citation repointed to it). *Game tests* named as the
-other of the two clearest instances.
+other of the two clearest instances.~~ *(wrong in part: *no vanilla server will ever send it* (DebugConfigCommand does) and *four things reach* `ServerPlayer.openDialog` (two do); corrected this session — pass 8, session N)*
 
-**`entity-selectors`** — the 1.21 blockquote moved from the body to the foot.
+~~**`entity-selectors`** — the 1.21 blockquote moved from the body to the foot.
 Two closer answers promoted to sections: *Four argument shapes, enforced on
 the query and not on the text*, and *The client parses selectors and cannot
 resolve one* (which now claims to be what the cast's "that matters later"
@@ -9991,18 +10553,18 @@ sort removes the bias. Cast cell re-scoped: `SetOnceOptionState` covers the
 four options with **no parsed field to test for emptiness**, and the other
 nine once-only options check their own field
 (`EntitySelectorOptions.java`:111–177). Closer respelled to *Questions players
-ask*.
+ask*.~~ *(checked; the cast's *the other nine* was ten, and the blockquote named drift 1.21.11 did not have; corrected this session — pass 8, session N)*
 
-**`functions-and-macros`** — the opening no longer calls the figure a
+~~**`functions-and-macros`** — the opening no longer calls the figure a
 two-step model: two steps and a hand-off, and `## 3 · Queue` is now *Then:
 queued, and gone* (`brigadier-and-commands` repointed). The cast table gained
 its own heading. New paragraph in *What calls a function, and when* claiming
 the page's own hook: nothing in `ServerFunctionManager.tick` carries an
 argument compound, the snapshot means the failure repeats every tick, and
 `/function` is the only way to see it. The *four that parse against a source*
-lost its implied population.
+lost its implied population.~~ *(checked, but *the only way to see it is `/function`*: `/debug function` and `execute if function` report it too; corrected this session — pass 8, session N)*
 
-**`game-tests`** — trace heading *One test, from a command to a green block*.
+~~**`game-tests`** — trace heading *One test, from a command to a green block*.
 New: the four registries named (`Registries.TEST_INSTANCE`,
 `Registries.TEST_ENVIRONMENT`, `BuiltInRegistries.TEST_INSTANCE_TYPE`,
 `BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE`). New: the seven
@@ -10018,9 +10580,9 @@ keeps its shell; the pasted blocks, the test instance block and the
 force-loaded chunks (`TestInstanceBlockEntity.java`:404–412) stay; `/test
 clearall` (`TestCommand.java`:334) clears space, removes barriers and breaks
 the block. Heading *Two things a running server should know* → *Three*.
-Reporting's "four places" named.
+Reporting's "four places" named.~~ *(checked in part: five registries, not four; the timeout is never thrown; a pass discards entities and a batch unforces every forced chunk; the progress bar is headless only; each corrected this session — pass 8, session N)*
 
-**`permissions`** — new cast row for `Permissions` (four rungs, five atoms),
+~~**`permissions`** — new cast row for `Permissions` (four rungs, five atoms),
 and the hook's first identifier glossed in place. The package sentence now
 claims every cast row but `ChatAbilities` is one of the eleven. The union
 paragraph reordered rule-before-exception. The client-side-gates paragraph
@@ -10031,9 +10593,9 @@ its five references are now enumerated including the command's own
 registration. New closing paragraph claiming the opening operator's `/msg`
 **goes through**, because no server-side node asks for
 `Permissions.CHAT_SEND_COMMANDS`. The unexplained *waxed* dropped, and the
-sign's exemption re-argued as "the client was never told what the text does".
+sign's exemption re-argued as "the client was never told what the text does".~~ *(wrong in part: *the one object both universes read* (the rung constants are read on both sides) and *the client was never told what the text does* (a sign's text reaches every client); corrected this session — pass 8, session N)*
 
-**`scoreboard-and-data`** — the opening re-argued from three systems to four,
+~~**`scoreboard-and-data`** — the opening re-argued from three systems to four,
 built outward from `execute store`'s three sinks. Trace heading *One command,
 two models, and a number that lands in a third place*. The
 failing-command-writes-0 paragraph moved from the closer into the trace
@@ -10047,9 +10609,9 @@ re-argued as a sixth **consumer** and explicitly not a reader, so the
 heading's *five systems read* stands. Number formats and
 `Attributes.BELOW_NAME_DISTANCE` moved into *What the client is ever told*,
 which gained two H3s; saving split out as *What survives a restart, and what
-does not*.
+does not*.~~ *(checked in part: the locator bar reads the team colour, so *does not read them at all* was wrong and is corrected this session; the two `#` mechanisms cannot be told shared or not (an inlined constant) — pass 8, session N)*
 
-**`the-execution-engine`** — the opening now names the budget in its second
+~~**`the-execution-engine`** — the opening now names the budget in its second
 sentence and claims it is what stopped the self-calling function. *Two ways to
 die* → *What actually stops a command*, with two H3s. Three closer answers
 promoted into it: both game rules named with their 65536 default and the
@@ -10061,15 +10623,15 @@ row for `ContinuationTask` re-scoped from "N players cost N entries" to "one
 queue entry at a time". Figure panel 4 now draws the `ExecuteCommand` its
 caption claims. Six-class roll-call cut to four (logged in
 [pass5.md](pass5.md)). Closer respelled and moved last, behind *The two
-commands that are part of the engine*.
+commands that are part of the engine*.~~ *(checked in part: the heading still said *nothing aggregates*, and *six classes, three commands* is four commands; corrected this session — pass 8, session N)*
 
-**`commands/README`** — the hook's *queue* now carries a clause saying what
+~~**`commands/README`** — the hook's *queue* now carries a clause saying what
 one is. The nine-package roster re-argued into three groups, which changes a
 claim: `net/minecraft/server/commands` is the **catalogue**, not the
 machinery, and `server/bossevents` belongs to `world/scores` rather than to
 the machinery. New parenthetical distinguishing an argument *type* (57) from
 an argument *node* (459). Four *watch in this order* blurbs re-synced to the
-pages as rewritten.
+pages as rewritten.~~ *(checked; the watch line's 57 and 459 are 26.3's 62 and 453, corrected this session — pass 8, session N)*
 
 ## Pass 6, session L — Part XII · World generation *(2026-09-14)*
 
@@ -12595,14 +13157,14 @@ and `docs/pass6-brief.md` Part 3 changed too and are not pages.*
 
 ### Claims introduced — `commands/README`
 
-- *Where the part stops* now opens on
+- ~~*Where the part stops* now opens on
   `{{#include ../../generated/coverage-commands.md}}` — **21% of the part's
   lines are named on no page in the book**, from `pass5_coverage.py --write`
   over `map_source.py`'s `PARTS`. The sentence around it is new: *"the
   catalogue is where they sit: not quite a third of this part by line is
   command registrations rather than machinery"* (12,781 of 43,126 lines by
   `map_source.py packages`, which is 29.6%). The claim that the unexplained
-  lines are mostly the catalogue is the old sentence's and is unchecked.
+  lines are mostly the catalogue is the old sentence's and is unchecked.~~ *(checked — pass 8, session N)*
 
 ## Pass 6, the planning session — between passes 5 and 6 *(2026-09-07)*
 
@@ -12716,11 +13278,11 @@ come first.*
    what made it false rather than loose; now "less `network/syncher`, which is
    Part VI's".~~ *(overtaken: the phrase is gone, and the count excludes `network/syncher` (`tools/map_source.py`:114) — pass 8, session I)*
 
-8. **`commands/README`:126 — "Most of this part by line is the catalogue".**
+8. ~~**`commands/README`:126 — "Most of this part by line is the catalogue".**
    The catalogue the page sizes four lines earlier is 102 files and 12,781 lines
    of a part that is 43,126 — under a third. Now "Not quite a third of this part
    by line is the catalogue rather than the machinery, and it is where the
-   unexplained lines are."
+   unexplained lines are."~~ *(checked: 13,357 of 44,083 lines, 30% — pass 8, session N)*
 
 9. **`lectures.md`:88 — lighting's consumer is not Part XI.** "Inside the
    chain, but nothing later in this part assumes it; Part XI does."
@@ -13134,68 +13696,68 @@ bar, and it is this page's shape again*.** Every sentence in it is new to the
 book; `BossEvent`, `ServerBossEvent`, `CustomBossEvent`, `CustomBossEvents`
 and `BossBarCommands` were named on no page before this session.
 
-- "A boss bar is a named server-side thing holding a number, saved with the
+- ~~"A boss bar is a named server-side thing holding a number, saved with the
   world, broadcast to the players attached to it, and writable only by a
-  command."
-- `BossEvent` is "an id, a name, a *progress* float from zero to one, a
+  command."~~ *(checked — pass 8, session N)*
+- ~~`BossEvent` is "an id, a name, a *progress* float from zero to one, a
   `BossEvent.BossBarColor`, a `BossEvent.BossBarOverlay`, and three booleans
   that ask the client to darken the screen, play the boss music and draw the
-  world fog" (`BossEvent.java`:11–18).
-- `ServerBossEvent` "adds the live membership — a `Set<ServerPlayer>` — and
-  turns every setter into a broadcast" (`ServerBossEvent.java`:18, 29–101).
-- "one `ClientboundBossEventPacket` with six operations, add and remove and
+  world fog" (`BossEvent.java`:11–18).~~ *(checked — pass 8, session N)*
+- ~~`ServerBossEvent` "adds the live membership — a `Set<ServerPlayer>` — and
+  turns every setter into a broadcast" (`ServerBossEvent.java`:18, 29–101).~~ *(checked (a setter sends only on a change, and only while visible) — pass 8, session N)*
+- ~~"one `ClientboundBossEventPacket` with six operations, add and remove and
   one update apiece for progress, name, style and properties"
-  (`ClientboundBossEventPacket.java`:118–122, the `OperationType` enum).
-- "There is no serverbound counterpart, exactly as there is none for a score."
-- "Four things in the game own one: `WitherBoss`, `Raid`, `EnderDragonFight`
-  — and `CustomBossEvent`" (the four files that name `ServerBossEvent`).
-- `CustomBossEvent` "keeps an integer `CustomBossEvent.value` and an integer
+  (`ClientboundBossEventPacket.java`:118–122, the `OperationType` enum).~~ *(checked — pass 8, session N)*
+- ~~"There is no serverbound counterpart, exactly as there is none for a score."~~ *(checked — pass 8, session N)*
+- ~~"Four things in the game own one: `WitherBoss`, `Raid`, `EnderDragonFight`
+  — and `CustomBossEvent`" (the four files that name `ServerBossEvent`).~~ *(checked — pass 8, session N)*
+- ~~`CustomBossEvent` "keeps an integer `CustomBossEvent.value` and an integer
   `CustomBossEvent.max`, derives the float progress from them on every write"
-  (`CustomBossEvent.java`:26–27, 77–87).
-- The membership claim: a persisted `Set<UUID>` beside the superclass's live
+  (`CustomBossEvent.java`:26–27, 77–87).~~ *(checked — pass 8, session N)*
+- ~~The membership claim: a persisted `Set<UUID>` beside the superclass's live
   set, `CustomBossEvent.onPlayerConnect` re-attaching a player whose UUID is
   on the list and `CustomBossEvent.onPlayerDisconnect` calling the
   superclass's removal "deliberately so that the UUID stays"
   (`CustomBossEvent.java`:25, 211–219). **The word *deliberately* is an
   inference from the shape of the override; pass 9 should decide whether the
-  book may say it.**
-- `CustomBossEvents` is "the `SavedData` that holds them, one file at
+  book may say it.**~~ *(checked; *deliberately*, an inference from the override's shape, cut (corrected this session) — pass 8, session N)*
+- ~~`CustomBossEvents` is "the `SavedData` that holds them, one file at
   *data/minecraft/custom_boss_events.dat*", with capitalised NBT field names
-  (`CustomBossEvents.java`:38; `CustomBossEvent.Packed.CODEC`).
-- `ExecuteCommand.storeValue` is "a sibling of the score sink rather than the
-  same code" — which **corrects** the parenthetical it replaces.
-- `BossBarCommands` is "the write surface, at gamemaster"
-  (`BossBarCommands.java`:57).
+  (`CustomBossEvents.java`:38; `CustomBossEvent.Packed.CODEC`).~~ *(checked: the saved-data id is `minecraft:custom_boss_events` — pass 8, session N)*
+- ~~`ExecuteCommand.storeValue` is "a sibling of the score sink rather than the
+  same code" — which **corrects** the parenthetical it replaces.~~ *(checked: two overloads of `ExecuteCommand.storeValue`, which the page now says (corrected this session) — pass 8, session N)*
+- ~~`BossBarCommands` is "the write surface, at gamemaster"
+  (`BossBarCommands.java`:57).~~ *(checked — pass 8, session N)*
 
 **`commands/entity-selectors` — a new section, *Two more argument types write
 the same fork by hand*** (discharges a `pass3.md` §7 entry).
 
-- `GameProfileArgument` "resolves to profiles, not entities"; an `@` "is
+- ~~`GameProfileArgument` "resolves to profiles, not entities"; an `@` "is
   rejected outright if it includes non-players"; the literal side is "read to
   the next space and looked up in the server's name-to-id cache — so `/ban`,
   `/whitelist` and `/op` name a player who has never joined this session"
   (`GameProfileArgument.java`:51–77; the five callers are `BanPlayerCommands`,
-  `DeOpCommands`, `OpCommand`, `PardonCommand`, `WhitelistCommand`).
-- "That lookup is the only thing on this page that leaves the game's own
-  data." **An absolute over this page's scope; pass 9 should test it.**
-- `ScoreHolderArgument`'s four literal branches "in order", the wildcard alone
-  throwing (`ScoreHolderArgument.java`:102–170).
-- "both enforce their single-or-many shape on the compiled selector rather
-  than on the text".
-- Elsewhere on the page: `EntityTypeTest` glossed as "the one-method 'is this
+  `DeOpCommands`, `OpCommand`, `PardonCommand`, `WhitelistCommand`).~~ *(checked, and it rejects *@s* too — pass 8, session N)*
+- ~~"That lookup is the only thing on this page that leaves the game's own
+  data." **An absolute over this page's scope; pass 9 should test it.**~~ *(checked, on a cache miss (`CachedUserNameToIdResolver`) — pass 8, session N)*
+- ~~`ScoreHolderArgument`'s four literal branches "in order", the wildcard alone
+  throwing (`ScoreHolderArgument.java`:102–170).~~ *(checked; *the last three fall back* was loose (the `#` branch is the bare name) and is corrected this session — pass 8, session N)*
+- ~~"both enforce their single-or-many shape on the compiled selector rather
+  than on the text".~~ *(wrong for `GameProfileArgument`, which has one shape; corrected this session — pass 8, session N)*
+- ~~Elsewhere on the page: `EntityTypeTest` glossed as "the one-method 'is this
   the type I asked for, and give it to me typed' the whole entity-fetching API
   is generic over"; `Permissions.COMMANDS_ENTITY_SELECTORS` called "the **only
   permission in the game checked in two different phases**" (moved here from
-  `commands/permissions`, where it was already asserted).
+  `commands/permissions`, where it was already asserted).~~ *(wrong in part: `EntityTypeTest` has two methods (corrected this session); the two-phase permission claim confirmed — pass 8, session N)*
 
 **`commands/brigadier-and-commands`.**
 
-- A new paragraph on `SharedSuggestionProvider`: implemented by
+- ~~A new paragraph on `SharedSuggestionProvider`: implemented by
   `CommandSourceStack` and `ClientSuggestionProvider`; "most of its 355 lines
   are static helpers"; `SharedSuggestionProvider.customSuggestion` "is the
   packet on the client and a completed empty future on the server"
-  (`SharedSuggestionProvider.java`:32–50, and the two implementors).
-- A new paragraph on `CommandSource`, restoring what pass-3 session N cut:
+  (`SharedSuggestionProvider.java`:32–50, and the two implementors).~~ *(checked in part: *every suggestion lambda* is wrong (server lambdas take a `CommandSourceStack`) and the size moved; corrected this session — pass 8, session N)*
+- ~~A new paragraph on `CommandSource`, restoring what pass-3 session N cut:
   four methods and four implementations; `RconConsoleSource.shouldInformAdmins`
   deferring to *broadcast-rcon-to-ops*; `BaseCommandBlock`'s source gated on
   `GameRules.SEND_COMMAND_FEEDBACK` and `GameRules.COMMAND_BLOCK_OUTPUT`,
@@ -13203,20 +13765,20 @@ the same fork by hand*** (discharges a `pass3.md` §7 entry).
   broken accepts nothing at all" (the `closed` field);
   `CommandSource.NULL` refusing everything. Files:
   `CommandSource.java`:7–25, `RconConsoleSource.java`:44–56,
-  `BaseCommandBlock.java`:202–214, `MinecraftServer.java`:1889–1899.
-- **"The command block is `BaseCommandBlock` plus the `CommandBlockEntity`
+  `BaseCommandBlock.java`:202–214, `MinecraftServer.java`:1889–1899.~~ *(wrong in part: five methods, six implementations, and a *broken* command block is not what refuses output; corrected this session — pass 8, session N)*
+- ~~**"The command block is `BaseCommandBlock` plus the `CommandBlockEntity`
   that holds one: a `CommandSource`, a stored string and a redstone edge, and
   no machinery of its own beyond this page's."** This is the sentence that
-  pays off `blocks/README`'s promise; it is a *scope* claim as much as a fact.
-- A new paragraph on the resource-argument family: six types "over the same
+  pays off `blocks/README`'s promise; it is a *scope* claim as much as a fact.~~ *(wrong: `CommandBlock` has its own `neighborChanged`, `tick` and `executeChain` (session E's handoff); corrected this session — pass 8, session N)*
+- ~~A new paragraph on the resource-argument family: six types "over the same
   idea", differing in what they hand back and "in whether they accept a glob.
   Only `ResourceSelectorArgument` does, which is why `/test run *` works and
   `/give @s *` does not." Also the five `commands/synchronization/brigadier`
-  classes as "the only argument types in the game the game did not write".
-- `WorldCoordinates` as "three `WorldCoordinate`s, each a value plus a *is
-  this relative* flag".
-- A sign's click command "is never checked by the client, because it never
-  reaches the client at all" (the correction below).
+  classes as "the only argument types in the game the game did not write".~~ *(checked in part: two of the six take no build context, and the boolean is a seventh type the game did not write; corrected this session — pass 8, session N)*
+- ~~`WorldCoordinates` as "three `WorldCoordinate`s, each a value plus a *is
+  this relative* flag".~~ *(checked — pass 8, session N)*
+- ~~A sign's click command "is never checked by the client, because it never
+  reaches the client at all" (the correction below).~~ *(wrong: the sign's text reaches every client with its click event; the server runs it; corrected this session — pass 8, session N)*
 
 **`commands/advancements` — a new section, *What the package holds that this
 page does not name*.** The two family claims (thirty-five unnamed triggers;
@@ -13229,79 +13791,79 @@ after the JSON has been read on a background one"
 (`SimplePreparableReloadListener.java`:14–23,
 `ServerAdvancementManager.java`:24, 36, 53).
 
-**`commands/functions-and-macros`.** The macro variable-name rule stated in
+~~**`commands/functions-and-macros`.** The macro variable-name rule stated in
 prose for the first time — "inside `$(…)`, letters, digits and underscore and
 nothing else" (`StringTemplate.java`:50–55) — and the claim that a dialog's
-input keys obey the same rule. The caller list re-scoped (below).
+input keys obey the same rule. The caller list re-scoped (below).~~ *(checked; the rule admits any Unicode letter or digit, so *the narrowest in the area* is cut (corrected this session) — pass 8, session N)*
 
-**`commands/the-execution-engine`.** `ExecutionControl` as "the (context,
+~~**`commands/the-execution-engine`.** `ExecutionControl` as "the (context,
 frame) pair with two methods … that pair is the whole privilege an action
 has" (`ExecutionControl.java`:6–25). And the reconciliation the book lacked:
 "the thread-local is null again the moment a queue drains, so two commands run
 back to back each open their own context, which is why every function in
 `#minecraft:tick` gets a budget of its own"
-(`Commands.java`:406–410, `ServerFunctionManager.java`:58–84).
+(`Commands.java`:406–410, `ServerFunctionManager.java`:58–84).~~ *(wrong: `ExecutionControl` has four methods, and queued actions are handed the context itself; corrected this session — pass 8, session N)*
 
-**`commands/permissions`.** `Permissions`' own nine, split "four to five"
+~~**`commands/permissions`.** `Permissions`' own nine, split "four to five"
 (`Permissions.java`:7–15). And the second route to a client's op level:
 "except on an integrated server, where
 `IntegratedServer.updatePermissionAndChatAbilities` writes the host's own
 `LocalPlayer` directly and no packet is involved"
-(`IntegratedServer.java`:343–353).
+(`IntegratedServer.java`:343–353).~~ *(checked; its integrated-server clause was overturned by V2, confirmed — pass 8, session N)*
 
-**`commands/dialogs`.** The five dialog screens named as one family; the three
+~~**`commands/dialogs`.** The five dialog screens named as one family; the three
 bootstraps (`DialogBodyTypes`, `InputControlTypes`, `ActionTypes`),
-`StaticAction` and `DialogCommand` named.
+`StaticAction` and `DialogCommand` named.~~ *(checked for the names; *one per dialog kind* was wrong (two kinds share a screen, one base is abstract) and is corrected this session — pass 8, session N)*
 
-**`commands/game-tests`.** `TestCommand` at "572 lines of subcommands";
+~~**`commands/game-tests`.** `TestCommand` at "572 lines of subcommands";
 `TestFinder` turning a subcommand's argument into `Registries.TEST_INSTANCE`
 ids; "the glob in `/test run *` is `ResourceSelectorArgument`, the one
 argument type in the game that takes one"
-(`TestCommand.java`:296–299); `GameTestTicker` and `TestInstanceBlock` named.
+(`TestCommand.java`:296–299); `GameTestTicker` and `TestInstanceBlock` named.~~ *(wrong in 26.3: `TestCommand` is 734 lines (the size is cut), and `TestFinder` mostly finds positions; corrected this session; the glob confirmed — pass 8, session N)*
 
-**`commands/README` — a new *Where the part stops* section**, with three
+~~**`commands/README` — a new *Where the part stops* section**, with three
 family declines and one written-out omission: "three unrelated routines do not
 make one lecture" (`SpreadPlayersCommand`, `CloneCommands`, `FillCommand`).
 Its packages sentence now names all nine, and its *Reference this part uses*
-paragraph re-scopes the traffic claim (below).
+paragraph re-scopes the traffic claim (below).~~ *(checked; *belongs to no other part* was loose for `CloneCommands` and is corrected this session — pass 8, session N)*
 
 **`reference/glossary` — a new headword, *Boss bar*.**
 
-**`src/lectures.md`** — Part XIII's dependency paragraph shortened to what is
+~~**`src/lectures.md`** — Part XIII's dependency paragraph shortened to what is
 about the order, and its Part VII clause re-scoped from "for advancements
-alone" to advancements plus the selector's *predicate* option.
+alone" to advancements plus the selector's *predicate* option.~~ *(checked; the same paragraph's thread-boundary clause was 26.2's and is corrected this session — pass 8, session N)*
 
 ### Corrections
 
-1. **`commands/scoreboard-and-data`** said "a score set and a crash a tick
+1. ~~**`commands/scoreboard-and-data`** said "a score set and a crash a tick
    later is a score lost". A tick-loop crash is not that ending:
    `MinecraftServer.java`:877's *finally* runs `stopServer()` (:689), which
    calls `saveAllChunks` (:733), whose **first statement** is
    `this.scoreboard.storeToSaveDataIfDirty(…)` (:629). `how-a-server-dies`
    says so in as many words at its opening and in *What you lose if you kill
    the process*. Now: the watchdog kill, a *kill -9* or a power cut, with the
-   link to that section.
-2. **`commands/brigadier-and-commands`** listed a sign among the commands the
+   link to that section.~~ *(checked for a crash thrown by the tick; a crash relayed from a worker never reaches the save (session C's handoff), corrected this session — pass 8, session N)*
+2. ~~**`commands/brigadier-and-commands`** listed a sign among the commands the
    client vets through `ClientPacketListener.sendUnattendedCommand`.
    `SignBlockEntity.executeClickCommandsIfPresent` calls
    `Commands.performPrefixedCommand` **on the server** with a source it builds
    itself at `LevelBasedPermissionSet.GAMEMASTER`
    (`SignBlockEntity.java`:201–247) — which `commands/permissions` already
    said. Now: a dialog button and a chat click event, with the sign named as
-   the exception.
-3. **`commands/permissions`' own figure** listed "a sign" in its entry node,
+   the exception.~~ *(checked — pass 8, session N)*
+3. ~~**`commands/permissions`' own figure** listed "a sign" in its entry node,
    four lines above prose saying a sign does not come that way. Same evidence;
-   the node now reads "a dialog button, a chat click event".
-4. **`commands/functions-and-macros`** said `ServerFunctionManager.tick` "is
+   the node now reads "a dialog button, a chat click event".~~ *(checked — pass 8, session N)*
+4. ~~**`commands/functions-and-macros`** said `ServerFunctionManager.tick` "is
    the **first** thing `MinecraftServer.tickChildren` does".
    `MinecraftServer.java`:1206–1213: the method first suspends packet flushing
    on every player, *then* opens the *commandFunctions* zone. `server-tick`'s
    order table has the suspension as row one. Now: "the first profiler zone …
-   with only the suspension of every player's packet flushing ahead of it".
-5. **`commands/dialogs`** called `WaitingForResponseScreen`'s button an
+   with only the suspension of every player's packet flushing ahead of it".~~ *(checked — pass 8, session N)*
+5. ~~**`commands/dialogs`** called `WaitingForResponseScreen`'s button an
    "escape button" in one paragraph and a "Back button" in another. It is
    built from `CommonComponents.GUI_BACK`
-   (`WaitingForResponseScreen.java`:14, 26). Now: Back, once.
+   (`WaitingForResponseScreen.java`:14, 26). Now: Back, once.~~ *(checked — pass 8, session N)*
 6. ~~**`foundations/resource-system`** said connected clients after a `/reload`
    "complete against the tree they were given until they reconnect". Both
    server-side parses read `MinecraftServer.getCommands`
@@ -13314,81 +13876,81 @@ alone" to advancements plus the selector's *predicate* option.
    `/execute if predicate`". No page in Part XIII mentions it; that page owns
    its own trace of it. Now: the page owns the command, Part XIII owns the
    engine it runs in and the selector option that is the second caller.~~ *(checked (`commands/entity-selectors`:111); the *two dependants* framing was wrong — see *Pass 8, session G*, correction 162 — pass 8, session G)*
-8. **`commands/brigadier-and-commands`**' door table routed `LootCommand` and
+8. ~~**`commands/brigadier-and-commands`**' door table routed `LootCommand` and
    `ItemCommands` to `loot-tables`, which names neither;
    `contexts-and-predicates`:247–248 names both. Repointed, with
    `loot-tables` kept for the functions themselves. *(pass5.md:3349,
-   session G)*
+   session G)*~~ *(checked; the row's *from … modifier* now names *fill* and *override* too (session G's handoff, corrected this session) — pass 8, session N)*
 9. ~~**`foundations/data-driven-types`** routed `BuiltInRegistries.PERMISSION_TYPE`
    and `PERMISSION_CHECK_TYPE` to `brigadier-and-commands`, which names
    neither identifier; `commands/permissions` owns both. Repointed with
    anchors. *(the last live row of pass5.md:424)*~~ *(checked: `commands/permissions`:40 and :133 are the two anchors, :31, :96 and :160–163 name the two registries' elements, and `brigadier-and-commands` names neither registry; the check row's one reader is `commands/synchronization/ArgumentUtils.java`:127 — pass 8, session B)*
-10. **`commands/brigadier-and-commands`** said `net/minecraft/server/commands`
+10. ~~**`commands/brigadier-and-commands`** said `net/minecraft/server/commands`
     is "a hundred classes and 12,800 lines" where the landing page and the
     atlas say 102. Both count files; 102 is the generated number, and the
     package has a `data/` subpackage that a flat `ls` misses. Now: "102 files",
-    naming the atlas as the population.
-11. **`commands/README`** said the part's traffic "is almost all server →
+    naming the atlas as the population.~~ *(wrong in 26.3: 111 files and 13,357 lines; the size is cut here and corrected this session on the landing page — pass 8, session N)*
+11. ~~**`commands/README`** said the part's traffic "is almost all server →
     client". Its own `game-tests` page names two serverbound packets and
     `advancements` a third, besides the two command packets. Now: the two
-    reporting systems are one-way and everything a player does comes back.
-12. **`commands/functions-and-macros`** called its caller list "short and
+    reporting systems are one-way and everything a player does comes back.~~ *(checked; the command block's settings added to what comes back (corrected this session) — pass 8, session N)*
+12. ~~**`commands/functions-and-macros`** called its caller list "short and
     exhaustive" while omitting `execute if function` and `/return run
     function`, both of which the engine page explains. Now: named, with the
-    link.
-13. **`commands/functions-and-macros`** cited `items/enchantments` for
+    link.~~ *(checked; the list lacked `/debug function`, corrected this session — pass 8, session N)*
+13. ~~**`commands/functions-and-macros`** cited `items/enchantments` for
     `RunFunction`, which that page never names. Now: `RunFunction` is named
     here as one of the `EnchantmentEntityEffect`s, with the link pointing at
-    the section that explains the effect families.
+    the section that explains the effect families.~~ *(checked (the linked section does not name `RunFunction`; kept as a pointer) — pass 8, session N)*
 
 ### Suspicions re-derived and found sound
 
-- `commands/permissions`' "ninety-one gates that name a level constant,
+- ~~`commands/permissions`' "ninety-one gates that name a level constant,
   sixty-six … sixteen … nine" against the same page's 95
   `Commands.hasPermission` call sites. Both right: the arguments to those 95
   calls are 66 gamemaster, 16 admin, 9 owner, two ternaries in `SeedCommand`
   and `VersionCommand`, `GameModeCommand.PERMISSION_CHECK` and
   `ClientPacketListener.RESTRICTED_COMMAND_CHECK`. **For pass 8:** whether the
-  two ternary gates "name a level constant" is left to the reader, and they do.
-- `commands/advancements`' "its only users are the six component predicates in
+  two ternary gates "name a level constant" is left to the reader, and they do.~~ *(overtaken by 26.3's ninety-three, confirmed — pass 8, session N)*
+- ~~`commands/advancements`' "its only users are the six component predicates in
   `core/component/predicates`". Exactly six of that package's classes
-  reference `CollectionPredicate`.
-- `commands/dialogs`' "thirty-one classes across four packages" — 35 files
-  less four `package-info.java`. Sound.
-- `commands/game-tests`' "forty-four classes" for `gametest/framework` — 45
+  reference `CollectionPredicate`.~~ *(overtaken by 26.3's seven (V2), confirmed — pass 8, session N)*
+- ~~`commands/dialogs`' "thirty-one classes across four packages" — 35 files
+  less four `package-info.java`. Sound.~~ *(checked: 35 files less four `package-info.java`; the size since cut (V10, corrected this session) — pass 8, session N)*
+- ~~`commands/game-tests`' "forty-four classes" for `gametest/framework` — 45
   files less one `package-info.java`. Sound. The 47 on
   `anatomy/what-this-book-skips` is the atlas's file convention over the whole
   `gametest` tree, not a disagreement. **For pass 8** (the two rules for the
-  word *classes*), not a correction.
-- `commands/game-tests`' `/test run *`. `TestCommand` registers `run`,
+  word *classes*), not a correction.~~ *(wrong in 26.3: forty-five; the size cut (V10, corrected this session) — pass 8, session N)*
+- ~~`commands/game-tests`' `/test run *`. `TestCommand` registers `run`,
   `runmultiple`, `runfailed`, `runthat`, `runthese` and `runclosest`; there is
-  no `runall`, and `run` takes a `ResourceSelectorArgument`.
-- `commands/permissions`' "three sources of belief". Sound as a taxonomy; the
+  no `runall`, and `run` takes a `ResourceSelectorArgument`.~~ *(checked — pass 8, session N)*
+- ~~`commands/permissions`' "three sources of belief". Sound as a taxonomy; the
   integrated server's direct write is a second route into the first source,
-  and is now a clause rather than a fourth entry.
+  and is now a clause rather than a fourth entry.~~ *(overtaken: four sources since pass 6, confirmed — pass 8, session N)*
 
 ### For pass 9's attention, found and not fixed
 
-- `commands/brigadier-and-commands` says the client's dispatcher is built
+- ~~`commands/brigadier-and-commands` says the client's dispatcher is built
   "from a tree the server sent you when you joined" and later that the tree's
   only sender is `PlayerList.sendPlayerPermissionLevel`. Both were checked in
-  pass 4; the join path reaching that method was not re-derived here.
-- `commands/scoreboard-and-data`'s *Where to look* calls
+  pass 4; the join path reaching that method was not re-derived here.~~ *(checked — pass 8, session N)*
+- ~~`commands/scoreboard-and-data`'s *Where to look* calls
   `NbtPathArgument.NbtPath` "the nicest ten lines in the area", and
   `commands/functions-and-macros` no longer says "three lines apart" — both
   are line-level claims about decompiled formatting, which is not the
   source's. The second is retired; the first is not, and is rule 2's problem
-  rather than a fact.
-- Two class-name collisions the book does not acknowledge:
+  rather than a fact.~~ *(unverifiable at that precision (rule 2): *the nicest ten lines* cut (corrected this session) — pass 8, session N)*
+- ~~Two class-name collisions the book does not acknowledge:
   `EntityDataAccessor` (`DataCommands`' accessor against the syncher key on
   `entities/synched-entity-data`) and `EntitySelector` (the compiled query
   against the predicate bag in `world/entity`, two pages apart in this part).
   `commands/entity-selectors` names the second in *Where to look*; nothing
-  names the first. The verifier lists both among its 25 ambiguous names.
-- `commands/scoreboard-and-data` is linked from `foundations/data-driven-types`
+  names the first. The verifier lists both among its 25 ambiguous names.~~ *(checked: the scoreboard page still names `/data`'s `EntityDataAccessor` without its synched-data namesake; no fact at stake — pass 8, session N)*
+- ~~`commands/scoreboard-and-data` is linked from `foundations/data-driven-types`
   for `BuiltInRegistries.NUMBER_FORMAT_TYPE` and names `NumberFormatTypes` but
   not `NumberFormatType`; the page states the three kinds without stating the
-  pattern. Left as it stands.
+  pattern. Left as it stands.~~ *(checked — pass 8, session N)*
 
 
 ## Pass 5, session L — Part XII · World generation *(2026-09-07)*
@@ -14472,14 +15034,14 @@ material.**
   only one of its four where a codec is run for its errors rather than its
   output, and that the persistent codec is used as a validator for the wire
   one. The trusted-pair enumeration and the three fences moved to Part IX.~~ *(checked except *the only one of its four*: the codec run for its errors is the creative slot's, which is none of the four columns, and the checksum path is serverbound too — see *Pass 8, session B*, correction 143 — pass 8, session B)*
-- `commands/permissions`: gains what the four chat atoms *do*
-  (`ChatAbilities.java`:71-83).
-- `commands/brigadier-and-commands`: the fourth telling of the chat Netty hop
+- ~~`commands/permissions`: gains what the four chat atoms *do*
+  (`ChatAbilities.java`:71-83).~~ *(checked — pass 8, session N)*
+- ~~`commands/brigadier-and-commands`: the fourth telling of the chat Netty hop
   cut to a citation of `server-tick` and `chat-and-signing`, keeping the claim
   that matters for a command — the validation that can disconnect you runs
-  before the parse.
-- `commands/dialogs`:8-9 repointed: `ClientboundShowDialogPacket`'s two
-  protocols are `packets-and-stream-codecs`', not `protocol-phases`'.
+  before the parse.~~ *(checked; the suggestion packet's own route was 26.2's and is corrected this session (session C's handoff) — pass 8, session N)*
+- ~~`commands/dialogs`:8-9 repointed: `ClientboundShowDialogPacket`'s two
+  protocols are `packets-and-stream-codecs`', not `protocol-phases`'.~~ *(checked — pass 8, session N)*
 - ~~`entities/entity-anatomy`:38's `ServerEntity` row repointed from gate 1 to
   gate 3, which is the section that answers it.~~ *(checked (`networking/what-the-client-is-told`'s gate 3 heading) — pass 8, session F)*
 - ~~`anatomy/anatomy`:128 now sends the memory channel to `the-connection` as
@@ -15868,10 +16430,10 @@ has exactly five dedicated-only rows.
   `GameRules.ADVANCE_TIME` is off", where only the first is a skip of the
   call and the second is a no-op inside it. Same shape as the *command
   functions* row, so the two are at least consistent.~~ *(checked: `server/MinecraftServer.java`:1194–1198; `world/clock/ServerClockManager.java`:62–69 — pass 8, session C)*
-- `commands/scoreboard-and-data`:277-278 says "a score set and a crash a tick
+- ~~`commands/scoreboard-and-data`:277-278 says "a score set and a crash a tick
   later is a score lost", which contradicts `how-a-server-dies`' hook (a
   tick-loop crash writes what `/stop` writes) unless it means a watchdog kill
-  or a *kill -9*. Session M's page, flagged in [pass5.md](pass5.md).
+  or a *kill -9*. Session M's page, flagged in [pass5.md](pass5.md).~~ *(checked — pass 8, session N)*
 
 ## Pass 5, session B — Parts I and II *(2026-09-05)*
 
@@ -16052,30 +16614,30 @@ whether it is true. The claims introduced:
 in Part IV. Nothing else moved; no URL changed (mdBook derives the path from
 the file, not the summary).
 
-**`src/systems/commands/README.md`** (the exemplar landing page)
+~~**`src/systems/commands/README.md`** (the exemplar landing page)~~ *((no claim: a label) — pass 8, session N)*
 
-- The size sentence is now `{{#include ../../generated/part-commands.md}}`
+- ~~The size sentence is now `{{#include ../../generated/part-commands.md}}`
   and reads **470 classes and 43,126 lines**, against the hand-count it
   replaced (473 / 43,900). The prose's population is now "the nine packages
   the atlas lists for this part", which is `map_source.PARTS` — check the
-  nine, and the `#where-each-part-lives` anchor.
-- New: "the command catalogue alone (`net/minecraft/server/commands`) is 102
+  nine, and the `#where-each-part-lives` anchor.~~ *(checked: 481 files, 44,083 lines — pass 8, session N)*
+- ~~New: "the command catalogue alone (`net/minecraft/server/commands`) is 102
   classes and 12,800 lines" — the old sentence said "a hundred command
   classes and 12,800 lines" without naming the package.
-  `src/generated/packages-depth4.md` gives 102 / 12,781.
-- New in the argument: "**None of those four needs any of the others.**" —
+  `src/generated/packages-depth4.md` gives 102 / 12,781.~~ *(wrong in 26.3: 111 files and 13,357 lines; corrected this session — pass 8, session N)*
+- ~~New in the argument: "**None of those four needs any of the others.**" —
   moved up from the shape section, which says "none of them needs another".
   The sentence after it ("a reader who has those two can explain any of the
-  four from them") is new and is a claim about the part, not about the game.
-- **Cut, not moved**: "one of only two parts of a save that go through the
+  four from them") is new and is a claim about the part, not about the game.~~ *(checked as a reading claim; *can explain any of the four from them* ignored the other parts they rest on and is corrected this session — pass 8, session N)*
+- ~~**Cut, not moved**: "one of only two parts of a save that go through the
   data fixer as JSON, the other being advancement progress".
-  `anatomy/what-this-book-skips`:252 owns it and this page links there.
-- Three *before you start* links now carry an anchor
+  `anatomy/what-this-book-skips`:252 owns it and this page links there.~~ *(checked — pass 8, session N)*
+- ~~Three *before you start* links now carry an anchor
   (`server-tick#what-minecraftservertickchildren-runs-and-in-what-order`,
   `data-driven-types#the-idea-stated-once`,
   `the-connection#the-threads-underneath-it`). The claim in an anchored link
   is that the named section is where the thing is explained; all three were
-  checked against the built heading ids.
+  checked against the built heading ids.~~ *(checked — pass 8, session N)*
 
 **`TEMPLATE.md`** — two new sections, *One home per mechanism* and *The
 landing page*. The only measured claim in them is the landing-page budget

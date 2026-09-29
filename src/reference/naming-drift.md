@@ -436,7 +436,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 | *LootContextParamSet* | `ContextKeySet` |
 | *@GameTest*, *@GameTestGenerator*, *@BeforeBatch*, *@AfterBatch* | gone — `GameTestInstance` in `Registries.TEST_INSTANCE` |
 | *GameTestRegistry* / *TestFunction* | gone — `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` |
-| a test's batch as a string | `GameTestInstance.batch` — the batch *is* a `TestEnvironmentDefinition` |
+| a test's batch as a string | `GameTestInstance.batch` — the batch *is* a `TestEnvironmentDefinition`, in one dimension |
 | the structure block as the test host | `TestInstanceBlock` / `TestInstanceBlockEntity` |
 | *ServerAdvancementManager* as a reload listener | `Registries.ADVANCEMENT`, read by `RegistryDataLoader`; the manager's constructor lays the tree out |
 | *AdvancementTree.Listener* | `ClientAdvancements.Listener` |

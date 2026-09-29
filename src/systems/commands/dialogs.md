@@ -1,6 +1,6 @@
 # Dialogs
 
-> Verified against **Minecraft 26.3** · Part XIII · You click a server in the multiplayer list and, before the world has loaded — before you are in a world at all — a form appears with text boxes on it, and no vanilla server will ever send it to you.
+> Verified against **Minecraft 26.3** · Part XIII · You click a server in the multiplayer list and, before the world has loaded — before you are in a world at all — a form appears with text boxes on it, and a vanilla server sends one only from a command it registers behind debug flags.
 
 A dialog is a data pack's form: a title, some body text, some inputs and
 some buttons, decoded from JSON and put on your screen. Nothing about that
@@ -19,12 +19,9 @@ second codec, and it explains itself. The configuration buffer is a plain
 byte buffer with **no registry access** ([packets and stream
 codecs](../networking/packets-and-stream-codecs.md#which-buffer-and-why-play-needs-its-own)),
 so the packet cannot carry a holder id. `Dialog.CONTEXT_FREE_STREAM_CODEC` therefore sends the whole dialog
-inline. What is "context-free" is the *buffer*, not the payload.
+inline. The dialog is encoded with no registry access at all, so a dialog it refers to goes inline too, and an element that can only be named by id — an enchantment on an item body's item, say — cannot be sent at all.
 
-A dialog is also one of this part's two clearest instances of a move Mojang
-has been making everywhere — [game tests](game-tests.md) is the other — take
-something that used to be a Java class and make it a registry element loaded
-from a data pack. That argument is made once, for
+A dialog is also one of this part's two clearest instances of a pattern found across the game — [game tests](game-tests.md) is the other — a thing made a registry element loaded from a data pack rather than a Java class. That argument is made once, for
 all its instances, in
 [the data-driven type pattern](../foundations/data-driven-types.md); this
 page assumes it. Four of the pattern's registries are dialog
@@ -38,20 +35,16 @@ it.
 
 | class | what it decides | side |
 |---|---|---|
-| `Dialog` | the registry element. `Dialog.DIRECT_CODEC` dispatches on `BuiltInRegistries.DIALOG_TYPE`; there are two stream codecs, and which one is used decides the whole page | server |
-| `CommonDialogData` | what every dialog embeds: titles, whether escape closes it, whether it **pauses the game**, the after-action, the body elements and the inputs. Its `MapCodec` is where the pause validation lives | server |
-| `DialogAction` | close, none, or wait-for-response — and `DialogAction.willUnpause` is what that validation tests | server |
-| `InputControl` | `TextInput`, `SingleOptionInput`, `BooleanInput`, `NumberRangeInput`. An `Input` is a key plus a control, and the key must be a valid **macro** variable name | server |
-| `Action` | produces an optional `ClickEvent` from the *live* input values, through `Action.ValueGetter` | server |
-| `ClickEvent` | extended with `ClickEvent.ShowDialog` and `ClickEvent.Custom`, which is how anything clickable can open a dialog | both |
+| `Dialog` | the registry element. `Dialog.DIRECT_CODEC` dispatches on `BuiltInRegistries.DIALOG_TYPE`; there are two stream codecs, and which one is used decides the whole page | both |
+| `CommonDialogData` | what every dialog embeds: titles, whether escape closes it, whether it **pauses the game**, the after-action, the body elements and the inputs. Its `MapCodec` is where the pause validation lives | both |
+| `DialogAction` | close, none, or wait-for-response — and `DialogAction.willUnpause` is what that validation tests | both |
+| `InputControl` | `TextInput`, `SingleOptionInput`, `BooleanInput`, `NumberRangeInput`. An `Input` is a key plus a control, and the key must be a valid **macro** variable name | both |
+| `Action` | produces an optional `ClickEvent` from the *live* input values, through `Action.ValueGetter` | client |
+| `ClickEvent` | extended with `ClickEvent.ShowDialog`, which is how a chat message, a book, a dialog or a sign can open a dialog, and `ClickEvent.Custom`, which carries a custom action | both |
 | `DialogScreens` | the codec-to-screen-factory map, with `DialogScreen` as the base and `DialogControlSet` owning the live getters | client |
 | `DialogConnectionAccess` | the phase-specific way back to the server — and the configuration-phase one refuses to run commands | client |
 
-`net/minecraft/server/dialog` is thirty-one classes across four packages,
-all in the server jar; the screens that render them are client-only in
-`net/minecraft/client/gui/screens/dialog`, one per dialog kind —
-`SimpleDialogScreen`, `MultiButtonDialogScreen`, `ButtonListDialogScreen`,
-`DialogListDialogScreen` and `ServerLinksDialogScreen` — which is the same
+`net/minecraft/server/dialog` spans four packages, all in the server jar; the screens that render them are client-only in `net/minecraft/client/gui/screens/dialog` — `SimpleDialogScreen` for both simple kinds, and `MultiButtonDialogScreen`, `DialogListDialogScreen` and `ServerLinksDialogScreen` over an abstract `ButtonListDialogScreen` — which is the same
 one-more-screen pattern [GUI and
 screens](../client/gui-and-screens.md) covers everywhere else. The five kinds
 `DialogTypes.bootstrap` registers are `NoticeDialog` and `ConfirmationDialog`
@@ -119,30 +112,25 @@ processor before touching the screen stack. Exactly one thing in this system
 ticks: `WaitingForResponseScreen`, counting ticks to reveal and then enable
 its Back button.
 
-## Four ways a dialog opens, and one of them is not a click
+## Four ways a dialog opens, and two of them never ask the server
 
-`ServerPlayer.openDialog` is the server-side entry point, and four things
-reach it.
+Four things open a dialog in play; the configuration-phase sender, `DebugConfigCommand`, sends its packet itself (below). Two of the four go through `ServerPlayer.openDialog`, the server-side entry point, and the other two open it on the client with no packet at all.
 
 **`/dialog show`** is the obvious one. **A click event dispatched on the
 client** is the interesting one, because "a component with a click event" is
-not the same as "a component whose click events are dispatched": there are
-exactly three places on the client where they actually are — chat, a book,
-and `DialogScreen` itself, which dispatches its own buttons and body text.
+not the same as "a component whose click events are dispatched": there are exactly three places on the client where a *show dialog* event actually is — chat, a book, and `DialogScreen` itself, which dispatches its own buttons and body text.
 An item's name or lore is tooltip text and dispatches nothing.
 
-**A sign** is the one that is not a click dispatch at all. `SignBlockEntity`
+**A sign** is clicked, but its click event is never dispatched on the client. `SignBlockEntity`
 reads the event **server-side** and calls `ServerPlayer.openDialog`
 directly — the same way it runs a *run command* event, and the reason a sign
 is the one clickable thing the client never gets to vet
 ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)).
 
 **A tag** is the fourth, and it needs no server at all in the moment.
-`DialogTags.PAUSE_SCREEN_ADDITIONS` and `DialogTags.QUICK_ACTIONS` let a data
-pack add buttons to the pause menu and to a hotkey, and `Dialogs` holds the
+`DialogTags.PAUSE_SCREEN_ADDITIONS` and `DialogTags.QUICK_ACTIONS` let a data pack put dialogs behind a pause-menu button and behind a hotkey (with the shipped tags empty, that button opens the server's links, when it sent any), and `Dialogs` holds the
 three the jar ships. Closing one from the server is
-`ClientboundClearDialogPacket`, and it is registered in both phases exactly
-as the two packets already on this page are —
+`ClientboundClearDialogPacket`, and it is registered in both phases, as the two packets already on this page are —
 `ClientboundShowDialogPacket` going out and
 `ServerboundCustomClickActionPacket` coming back. Three packets, both
 protocols, one system.
@@ -161,8 +149,7 @@ in code, `StaticAction` is the plain "do this fixed click event" action, and
 
 One of those parts reaches outside the system. An input's key is validated
 by `ParsedTemplate` against `StringTemplate.isValidVariableName` — the same
-rule a macro function's parameters obey — which is why `CommandTemplate` can
-substitute a dialog's inputs into a command at all, and the seam into
+rule a macro function's parameters obey — which is why every input can be named in a `CommandTemplate`, and the seam into
 [functions and macros](functions-and-macros.md).
 
 ## What a data pack cannot do
@@ -173,8 +160,7 @@ trap a player.
 
 **The exit is not optional.** `DialogScreen`'s initialisation is final: it
 *always* adds a warning button that opens a nested confirm screen offering
-to disconnect, and repositions it if a layout would push it off-screen. An
-action that waits for a response swaps in `WaitingForResponseScreen`, which
+to disconnect, and repositions it if a layout would push it off-screen. A dialog whose after-action waits for a response swaps in `WaitingForResponseScreen`, which
 reveals a Back button after a second and enables it after five.
 
 **Pausing is validated by the codec, wherever it decodes.** A dialog that
@@ -186,8 +172,7 @@ encodes *and* on the client as it decodes, which is what covers a dialog sent
 inline in the configuration phase.
 
 **A button that runs a command is not simply a chat command.** It goes
-through `ClientPacketListener.sendUnattendedCommand`, which parses it twice
-and, on three of its four outcomes, shows you a confirmation screen before
+through `ClientPacketListener.sendUnattendedCommand`, which parses it up to twice and, on three of its four outcomes, shows you a confirmation screen before
 sending anything ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)
 owns the four outcomes). What is this system's own is the phase: the
 configuration-phase `DialogConnectionAccess` refuses to run a command at all,
@@ -197,18 +182,12 @@ world can do everything except that.
 ## The extension point vanilla does not use
 
 `MinecraftServer.handleCustomClickAction` is one line, logging at debug.
-The entire custom-action mechanism — an arbitrary id plus an arbitrary NBT
-payload, sent by a screen the server described — exists for data packs and
+The entire custom-action mechanism — an arbitrary id plus an arbitrary NBT payload, sent from a dialog, a chat message or a book (a sign's is handed to it on the server) — exists for data packs and
 server software to build on. The game itself only defines the transport, and
 defends it with a 32 KB NBT accounter and a 64 KB cap on the payload's own length prefix.
 
 The same is true one level up: the only vanilla sender of a
-configuration-phase dialog is `DebugConfigCommand`, one of the commands a
-shipped game never registers ([Brigadier and
-commands](brigadier-and-commands.md#commands-that-are-a-door-to-somewhere-else)),
-and dedicated-server-only besides. A server
-really can put a form in front of you before you are in the world. Vanilla
-never does.
+configuration-phase dialog is `DebugConfigCommand`, which the game registers only in a dedicated server's command set, and only when started with its debug system properties ([Brigadier and commands](brigadier-and-commands.md#commands-that-are-a-door-to-somewhere-else)). A server really can put a form in front of you before you are in the world. Vanilla does it only there.
 
 ## Where to look
 

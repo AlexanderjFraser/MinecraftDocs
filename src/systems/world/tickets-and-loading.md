@@ -87,7 +87,7 @@ types, and every reason a chunk is ever loaded is one of them:
 |---|---:|---|---|---|---|---|
 | `TicketType.PLAYER_LOADING` | — | ✓ | | | | `DistanceManager.PlayerTicketTracker`, one per chunk within the server's view distance |
 | `TicketType.PLAYER_SIMULATION` | — | | ✓ | ✓ | | `DistanceManager.addPlayer`, the player's own chunk |
-| `TicketType.FORCED` | — | ✓ | ✓ | ✓ | ✓ | `/forceload` via `TicketStorage.updateChunkForced` |
+| `TicketType.FORCED` | — | ✓ | ✓ | ✓ | ✓ | `/forceload`, and a game test over its structure, via `TicketStorage.updateChunkForced` |
 | `TicketType.PORTAL` | 300 | ✓ | ✓ | ✓ | ✓ | `Entity` on portal travel, radius 3 |
 | `TicketType.ENDER_PEARL` | 40 | ✓ | ✓ | ✓ | | `ServerPlayer`, the pearl's chunk, radius 2 |
 | `TicketType.DRAGON` | — | ✓ | ✓ | | | `EnderDragonFight`, radius 9 |
@@ -401,7 +401,7 @@ explain.
 
 | the ticket | dies when |
 |---|---|
-| no timeout — player, forced, dragon | its source removes it: the player leaves the chunk, `/forceload remove`, the fight ends |
+| no timeout — player, forced, dragon | its source removes it: the player leaves the chunk, `/forceload remove` (or a game-test batch finishing, which unforces every forced chunk in its level), the fight ends |
 | timed and `TicketType.canExpireIfUnloaded` — only `TicketType.UNKNOWN` | the countdown runs every tick regardless, so it can expire before the chunk it asked for loads; `ServerChunkCache.addTicketAndLoadWithRadius` refuses such types for that reason |
 | timed, everything else — portal, pearl, spawn | the countdown runs only while there is **no holder at all** or the holder `ChunkHolder.isReadyForSaving`; a portal ticket never expires under a chunk still loading, and one over a chunk nothing tracks expires normally |
 | the server stops | every type but `TicketType.UNKNOWN` is parked; only the persisting types reach disk, and only they are replayed on the next start |

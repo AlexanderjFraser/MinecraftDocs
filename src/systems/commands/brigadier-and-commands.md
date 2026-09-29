@@ -12,12 +12,7 @@ on every keystroke, throws the parse away, and sends the string.
 
 Which raises the question this page exists to answer: if the client can
 parse the command, why is completing an item id instant and completing a
-loot table not? Because the tree the client rebuilt says, node by node, who
-is allowed to answer. Vanilla registers **459 argument nodes**, and only
-**62** of them serialise as *ask the server* — so the local path is the
-rule, not the exception. What makes the round trip feel ubiquitous is
-*which* nodes take it: they are the ones that complete over data the client
-was never sent.
+loot table not? Because a loot table is data the client was never sent. The tree the client rebuilt says, node by node, which nodes ask the server, and an argument over a registry the client lacks asks it too. Vanilla's command code declares **454 argument nodes**, and only **66** of them serialise as *ask the server* — so the local path is the rule, not the exception. What makes the round trip feel ubiquitous is *which* completions take it: they are mostly the ones over data the client was never sent.
 
 ## The cast
 
@@ -27,10 +22,10 @@ was never sent.
 | `CommandSourceStack` | *who is running this, from where* — position, rotation, level, entity, permissions, output sink. Immutable; a change returns a copy | server |
 | `CommandBuildContext` | the registries an argument type parses against, so a data pack's biome is completable with no code change | both |
 | `ArgumentTypeInfos` | the wire description of an argument type: a `ArgumentTypeInfo.Template` that can be written to a buffer and instantiated on the far side | both |
-| `SuggestionProviders` | the three providers that have a name on the wire — *ask_server*, *available_sounds* and *summonable_entities*. Everything else serialises as *ask_server* too | both |
-| `SharedSuggestionProvider` | the interface both sides' sources implement, so one argument type can complete on either. It extends `PermissionSetSupplier`, and its static `SharedSuggestionProvider.suggest` family is where most completion actually happens | both |
+| `SuggestionProviders` | the four providers that have a name on the wire — *ask_server*, *available_sounds*, *summonable_entities* and *post_effects*. Everything else serialises as *ask_server* too | both |
+| `SharedSuggestionProvider` | the interface both sides' sources implement, so one argument type can complete on either. It extends `PermissionSetSupplier`, and its static `SharedSuggestionProvider.suggest` family is where most completion happens | both |
 | `ClientSuggestionProvider` | the client's implementation of it: the tab list, the looked-at block and entity, and the one method that sends a packet | client |
-| `CommandSuggestions` | the 688-line widget over it — the highlighter, the usage hint, the popup and the parse cache | client |
+| `CommandSuggestions` | the widget over it — the highlighter, the usage hint, the popup and the parse cache | client |
 | `BrigadierExceptions` | installed once into Brigadier's global exception provider, which is why a parse error is a translatable `Component` | both |
 
 Brigadier itself — the dispatcher, the tree of literal and argument nodes,
@@ -55,7 +50,7 @@ sequenceDiagram
 
     CSug->>CPL: getCommands — the client's own dispatcher
     CSug->>CSug: updateCommandInfo — parse 1, every keystroke
-    opt a node that asks the server
+        opt a node, or a registry the client lacks, asks the server
         CSug->>CSP: customSuggestion
         CSP->>SGPL: ServerboundCommand<br/>SuggestionPacket
         SGPL-->>CPL: ClientboundCommand<br/>SuggestionsPacket
@@ -73,7 +68,7 @@ sequenceDiagram
     end
 ```
 
-*Three parses of one `/give` — two on the client whose answers are thrown away, and the server's, the only one that runs; the round trip in the frame is taken only by a node that asks the server, and `/give` has none.*
+*Three parses of one `/give` — two on the client whose answers are thrown away, and the server's, the only one that runs; the round trip in the frame is taken only when a node asks the server or an argument needs data the client lacks, and `/give` has neither.*
 
 The three parsers of the title are in there: the client's, running on every
 keystroke; the client's again, once, when you press Enter; and the server's,
@@ -83,17 +78,14 @@ which is the only one whose answer is used. Each arrow below is a decision.
 `CommandSuggestions.updateCommandInfo` runs the whole string through the
 client's dispatcher on every keystroke — the one
 `ClientPacketListener.getCommands` hands it, rebuilt from the tree the server
-sent — and that parse produces the red
-underline, Brigadier's smart-usage hint and the completion list. What is
+sent — and that parse produces the red tail, Brigadier's smart-usage hint and the completion list. What is
 sent is the string.
 
 **Item, block-state and component completion never leaves the machine
 either.** `ItemArgument` and `BlockStateArgument` are registered as
 **context-aware** singletons — meaning the wire form carries no data of its
 own and the far side builds the parser against its own
-`CommandBuildContext`, which is *The tree on the wire* below — so the client
-instantiated a real `ItemParser` and a real `BlockStateParser` against its
-own registries. Item ids, data
+`CommandBuildContext`, which is *The tree on the wire* below — so the client holds a real `ItemParser` and builds a real `BlockStateParser` against its own registries. Item ids, data
 components and block properties complete locally, and so does every argument
 type whose suggestion method reads a synced registry.
 
@@ -103,12 +95,8 @@ that the round trip is common, but that opting *in* to a provider is what
 costs you one. `SuggestionProviders.getName` returns the registered name for
 a `SuggestionProviders.RegisteredSuggestion` and *ask_server* **for
 everything else**, so any node whose suggestions come from a plain lambda
-serialises as a request. Of the **67** vanilla nodes that attach a provider
-at all, exactly five name one of the two providers that mean anything on the
-wire — three *available_sounds* and two *summonable_entities* — and the other
-**62** become *ask_server*. That is how `/function`, `/datapack`, `/bossbar`,
-`/scoreboard`, `/team`, `/schedule` and `/whitelist` complete. The other 392
-argument nodes attach nothing and fall back to their argument type's own
+serialises as a request. Of the **73** vanilla nodes that attach a provider at all, seven name one of the three providers that mean anything on the wire — three *available_sounds*, two *summonable_entities* and two *post_effects* — and the other **66** become *ask_server*. That is how `/function`, `/datapack`, `/bossbar`,
+`/scoreboard`, `/team`, `/schedule` and `/whitelist` complete. The other 381 argument nodes attach nothing and fall back to their argument type's own
 suggestions — which is why `/give`, the command in the line at the top of
 this page, never asks the server anything. A second route reaches the same packet:
 `ClientSuggestionProvider.suggestRegistryElements` failing to find a
@@ -117,13 +105,9 @@ through. Two mechanisms, one packet.
 
 **One interface is why an argument type never knows which side it is on.**
 `SharedSuggestionProvider` is implemented by `CommandSourceStack` on the
-server and by `ClientSuggestionProvider` on the client, and it is what every
-suggestion lambda is written against, so the same lambda runs on either. Most
-of its 355 lines are static helpers — the `SharedSuggestionProvider.suggest`
+server and by `ClientSuggestionProvider` on the client, and it is what an argument type's suggestions ask of the source, when they ask it anything, so the same code runs on either. Most of it is static helpers — the `SharedSuggestionProvider.suggest`
 and `SharedSuggestionProvider.suggestResource` families, and the coordinate
-suggesters that offer you the block you are looking at — and its handful of
-instance methods are exactly the questions the two sides answer differently:
-the tab list, the selected entities, the relevant coordinates, and
+suggesters that offer you the block you are looking at — and all but one of its instance methods are the questions the two sides answer differently, among them the tab list, the selected entities, the relevant coordinates, and
 `SharedSuggestionProvider.customSuggestion`, which is the packet on the client
 and a completed empty future on the server.
 
@@ -142,18 +126,11 @@ whether any argument is a `SignedArgument`. `/give` has none, so the plain
 packet — `ServerboundChatCommandPacket`, the string alone — goes; a `/msg` would take a timestamp, a salt and the last-seen
 message set, sign each signable argument and send the signed variant. A
 command the player did *not* type — a dialog button, a chat click event —
-goes through `ClientPacketListener.sendUnattendedCommand` instead and is
-parsed twice more before anything is sent
+goes through `ClientPacketListener.sendUnattendedCommand` instead and is parsed once or twice more before anything is sent
 ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)).
-A sign is the exception that proves the rule: its click command is never
-checked by the client, because it never reaches the client at all.
+A sign is the exception that proves the rule: its click command reaches the client only as the sign's text, and is never checked there, because the server runs it when the sign is used, and only if the sign's *allow_op_features* flag is set.
 
-**The two inbound packets cross the thread boundary differently, on
-purpose.** `ServerboundCommandSuggestionPacket` goes through
-`PacketUtils.ensureRunningOnSameThread`, so its parse happens on the main
-thread; the command packets are among the handful that do real work on the
-Netty thread first: `ServerGamePacketListenerImpl.tryHandleChat` refuses
-illegal characters there and only then hands the rest to the server thread.
+**The inbound packets cross the thread boundary differently, and neither takes the ordinary hop.** `ServerboundCommandSuggestionPacket` is handed, on the Netty thread, to a `ServerCommandSuggestionsProvider`, which keeps only the newest request and answers at most one a tick, parsing it on the Server thread; the command packets do real work on the Netty thread first: `ServerGamePacketListenerImpl.tryHandleChat` refuses illegal characters there and only then hands the rest to the Server thread.
 The hop the other packets take is
 [the connection](../networking/the-connection.md#one-packet-there-and-one-back)
 ([the server
@@ -178,26 +155,18 @@ parse into a context chain and hands it to
 hands over the `ItemInput` that was built during *parsing*,
 `ItemInput.createItemStack` validates it, and the stacks go through
 `Inventory.add` with anything that will not fit dropped on the floor
-([items and stacks](../items/items-and-stacks.md)). Success goes to
-`CommandSourceStack.sendSuccess` — which takes a *supplier*, so the message
+([items and stacks](../items/items-and-stacks.md)). Success goes, through `CommandResponseTracker.sendFeedback`, to `CommandSourceStack.sendSuccess` — which takes a *supplier*, so the message
 is never built when nobody will see it — and broadcasts to admins under two
 game rules.
 
 ## Where a command's output goes
 
-`CommandSourceStack` carries a `CommandSource` — four methods and no state —
-and its four implementations are the whole answer to why a command block does
-not spam chat. `MinecraftServer` (the console) and `RconConsoleSource` accept
+`CommandSourceStack` carries a `CommandSource` — a message sink, three questions and a fourth question with a default, and no state — and its implementations are the whole answer to why a command block does not spam chat. `MinecraftServer` (the console) and `RconConsoleSource` accept
 both success and failure, and `RconConsoleSource.shouldInformAdmins` defers to
 the *broadcast-rcon-to-ops* property. `BaseCommandBlock`'s source accepts
 success only under `GameRules.SEND_COMMAND_FEEDBACK` and informs admins only
-under `GameRules.COMMAND_BLOCK_OUTPUT`, which is what those two game rules
-*are*; a command block that has been broken accepts nothing at all.
-`CommandSource.NULL` refuses everything, and the game hands it to every source
-with nobody to talk to — a sign running its own click command, a text
-component being resolved. The command block is `BaseCommandBlock` plus the
-`CommandBlockEntity` that holds one: a `CommandSource`, a stored string and a
-redstone edge, and no machinery of its own beyond this page's.
+under `GameRules.COMMAND_BLOCK_OUTPUT`, which is what the second of those game rules is for; a command block with *Track Output* off gets no source of its own. Each player has one, and so does `/debug function`'s tracer.
+`CommandSource.NULL` refuses everything, and the game hands it to several sources with nobody to talk to — a sign running its own click command, a text component being resolved, that command block. The command block is `CommandBlock`, whose own redstone edge, tick and chain walk decide when it runs, and the `CommandBlockEntity` that holds a `BaseCommandBlock`: a stored string and a source built for each run.
 
 ## Arguments that are recipes, not values
 
@@ -218,8 +187,7 @@ depends on eye height — it is not itself an argument type, and both
 `Vec3Argument` and `BlockPosArgument` can produce one. `SwizzleArgument`
 parses an axis subset (*xz*), and `/execute align` is its only user.
 
-**`EntitySelector` is a compiled query, not a parse tree** — thirteen final
-fields with no reader and no grammar in them, assembled by
+**`EntitySelector` is a compiled query, not a parse tree** — thirteen final fields with no grammar in them, assembled by
 `EntitySelectorParser` from `EntitySelectorOptions` and resolved against a
 `CommandSourceStack` much later, which is why one parsed selector yields a
 different set at every link of a chain. `ScoreHolderArgument` and
@@ -275,16 +243,13 @@ parseable on the client for free.
 One family is worth naming because a reader meets it constantly and never
 under one name. `ResourceArgument`, `ResourceKeyArgument`,
 `ResourceOrIdArgument`, `ResourceOrTagArgument`, `ResourceOrTagKeyArgument`
-and `ResourceSelectorArgument` are six argument types over the same idea — an
-id resolved against a registry through the `CommandBuildContext` — differing
+and `ResourceSelectorArgument` are six argument types over the same idea — an id resolved against a registry, most of them through the `CommandBuildContext` — differing
 in what they hand back (a `Holder`, a bare `ResourceKey`, an inline literal,
 a tag as well as an element) and in whether they accept a glob. Only
 `ResourceSelectorArgument` does, which is why `/test run *` works and
 `/give @s *` does not. Beneath them, the five classes of
 `commands/synchronization/brigadier` are the wire descriptions of Brigadier's
-own primitive types — `StringArgumentSerializer` and the four
-`ArgumentTypeInfo`s for integer, long, float and double, the only argument
-types in the game the game did not write.
+own primitive types — `StringArgumentSerializer` and the four `ArgumentTypeInfo`s for integer, long, float and double; with the boolean, which needs no class of its own, they are the only argument types in the game the game did not write.
 
 ### What is registered, and what is on the wire
 
@@ -292,30 +257,26 @@ types in the game the game did not write.
 `Bootstrap` calls it under `SharedConstants.IS_RUNNING_IN_IDE` alone, so a
 shipped client never runs it. It throws if any registered argument type is
 missing from `ArgumentTypeInfos`. The two numbers a reader will want do not
-count the same thing: **thirty-eight** argument-type classes sit directly in
-`net/minecraft/commands/arguments`, with more in its *blocks*, *item*,
-*coordinates* and *selector* subpackages, while **fifty-seven** entries are
-registered in `ArgumentTypeInfos` — a class may register several (the six
-resource types above are six entries) and a nested one may register none.
+count the same thing: **forty** argument-type classes sit directly in `net/minecraft/commands/arguments`, with more in its *blocks*, *item*,
+*coordinates* and *selector* subpackages, while **sixty-two** entries are registered in `ArgumentTypeInfos` — a class may register several: the six resource types above are twelve entries, `ResourceOrIdArgument` registering seven through its nested subclasses.
 
 ### Two surprises, and what `/reload` does not send
 
 Two things about `ClientboundCommandsPacket` surprise people. It has exactly **one call
 site**, `PlayerList.sendPlayerPermissionLevel`, so the tree and the op-level
 entity event are always sent together — on join, respawn, a dimension
-*change*, op and deop, and the four LAN toggles, and **not** after `/reload`.
-And an **unknown argument type deletes the node, not its children**: a
+*change*, op and deop, and the singleplayer toggles for cheats and guest command access, and **not** after `/reload`.
+And an **unknown argument type deletes the node and everything under it**: a
 modded type reaching a vanilla client decodes to a null stub,
 `ClientboundCommandsPacket.NodeResolver` substitutes a bare
 `RootCommandNode`, the children are resolved and attached to that throwaway
 root, and the parent then skips any child that is a `RootCommandNode` — so
 the node and everything under it vanish from the tree the player can see.
-The packet is not rejected. What the *filtering* means, and the second
+The packet is not rejected, as long as the unknown type wrote no bytes of its own and its node names no suggestion provider. What the *filtering* means, and the second
 elision that rides the same packet, is [permissions](permissions.md).
 
 One more thing crosses the wire from here and belongs to nobody else:
-`ClientboundCustomChatCompletionsPacket`, a server pushing arbitrary
-non-command completions into the tab list, add / remove / set.
+`ClientboundCustomChatCompletionsPacket`, a server pushing arbitrary completions for ordinary chat messages into the chat box, add / remove / set.
 
 `/reload` builds a whole new `Commands` and a whole new dispatcher inside
 `ReloadableServerResources` and tells nobody. The consequence is narrower
@@ -330,9 +291,7 @@ owns the rest of what `/reload` does).
 
 ## Commands that are a door to somewhere else
 
-Most of `net/minecraft/server/commands` — 102 files and 12,800 lines, counted
-the way [the atlas](../../maps/packages.md#where-each-part-lives) counts
-everything — is a thin lambda over machinery another part of this book owns. A
+Most of `net/minecraft/server/commands` — [the atlas](../../maps/packages.md#the-table) has its size — is a thin lambda over machinery another page of this book owns. A
 reader looking for "how does `/locate` work" wants the mechanism page, so
 here is the index.
 
@@ -340,11 +299,11 @@ here is the index.
 |---|---|---|
 | `LocateCommand` | three barely related parts: `LocateCommand.locateStructure` can **drive world generation on the server thread**, because deciding whether a structure is at a chunk means asking the structure check; `LocateCommand.locateBiome` asks the biome source and never reads a stored palette; `LocateCommand.locatePoi` asks the POI index | [structure placement](../worldgen/structure-placement.md), [biomes](../worldgen/biomes.md) |
 | `FillBiomeCommand` | writes the biome palette of the affected sections and resends them — the only command that edits a chunk's biomes | [chunk anatomy](../world/chunk-anatomy.md) |
-| `PlaceCommand` | four doors: a configured feature with no placement layer, a whole structure, jigsaw assembly directly, and a structure template with rotation, mirror, integrity and a seed | [features and placement](../worldgen/features-and-placement.md), [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
-| `LootCommand`, `ItemCommands` | `ItemCommands.applyModifier` runs a loot *function* over an existing stack — `/item modify`, and the `from … <modifier>` form of `/item replace`. Both take a table or modifier through `ResourceOrIdArgument`, so an inline literal works where an id does | [contexts and predicates](../items/contexts-and-predicates.md#who-asks-and-with-which-set) for which set each runs in, [loot tables](../items/loot-tables.md) for the functions themselves |
+| `PlaceCommand` | four doors: a feature with no placement layer, by id or inline, a whole structure, jigsaw assembly directly, and a structure template with rotation, mirror, integrity and a seed | [features and placement](../worldgen/features-and-placement.md), [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
+| `LootCommand`, `ItemCommands` | `ItemCommands.applyModifier` runs a loot *function* over an existing stack — `/item modify`, and the `from … <modifier>` forms of `/item replace`, *fill* and *override*. A slot is named in the numbering [player anatomy](../player/player-anatomy.md#the-other-numbering-the-one-a-command-speaks) decodes, and `/item` also takes a range of them or a slot source by id or inline. Both take a table or modifier through `ResourceOrIdArgument`, so an inline literal works where an id does | [contexts and predicates](../items/contexts-and-predicates.md#who-asks-and-with-which-set) for which set each runs in, [loot tables](../items/loot-tables.md) for the functions themselves |
 | `EnchantCommand`, `ExperienceCommand` | thin faces over two systems | [enchanting](../items/enchanting.md), [hunger and experience](../player/hunger-and-experience.md) |
 | `ExecuteCommand`, `FunctionCommand` | not commands so much as the front end of the engine | [the execution engine](the-execution-engine.md#the-queue-four-moments-apart), and [functions and macros](functions-and-macros.md#then-queued-and-gone) for what `/function` hands it |
-| `ScoreboardCommand`, `TeamCommand`, `TriggerCommand`, `DataCommands` | the entire write surface of the scoreboard and of stored NBT | [scores, teams and stored data](scoreboard-and-data.md) |
+| `ScoreboardCommand`, `TeamCommand`, `TriggerCommand`, `DataCommands` | the commands that write the scoreboard and stored NBT, beside `execute store` | [scores, teams and stored data](scoreboard-and-data.md) |
 
 And one class of command a reader will look for in a shipped game and not
 find. `Commands` registers `DebugConfigCommand`, `RaidCommand`,
@@ -375,8 +334,7 @@ that does not match the parse breaks the player's whole message chain
 
 `Commands` for what exists and what a failed parse is called;
 `CommandSourceStack` for what a command knows; `ArgumentTypeInfos` for the
-catalogue of argument types and their wire forms; `EntitySelectorOptions`
-for the grammar players actually write; `CommandSuggestions` for everything
+catalogue of argument types and their wire forms; `EntitySelectorOptions` for the grammar players write; `CommandSuggestions` for everything
 that happens while you type; and `ClientboundCommandsPacket` for the one
 place the two sides agree on a shape.
 

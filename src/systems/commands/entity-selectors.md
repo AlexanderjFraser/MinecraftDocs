@@ -11,29 +11,25 @@ standing on the Nether roof directly "above" the block, at the Nether's own
 though the dimensions were stacked in the same coordinate space. (Type the
 same command yourself and you always win it — a player's own source sits at
 distance zero from a player's own position.) Nothing in a selector is confined to
-one level unless you write one of **seven** options that says so — and the
-cheapest of those seven, *distance*, is also the one that decides whether the
-game walks every entity in the level or asks the chunk sections for a box.
+one level unless you write one of **seven** options that says so — and four of those seven, *distance* and the three box deltas, are also what decides whether the game walks every entity in the level or asks the chunk sections for a box.
 
 That is the shape of the whole subject. A selector looks like a filter
-language, and it is one, but a handful of its twenty-one option names are not
-filters at all: they are the query plan. This page is about which is which.
+language, and it is one, but many of its twenty-one option names do more than filter: they write the query plan. This page is about which is which.
 
 ## The cast
 
 | class | what it decides | when it runs |
 |---|---|---|
-| `EntitySelectorParser` | the reader, the grammar and thirty-two half-built fields. It owns the selector's own syntax; the brace grammars of *scores* and *advancements* are read by the handlers themselves | parse time |
-| `EntitySelectorOptions` | the name-to-handler map — twenty-one entries, filled once by `Bootstrap.bootStrap` and never again | class init |
-| `InvertableSetOptionState` | the three-state machine behind *type=!zombie,!skeleton*: one positive assertion **or** any number of negations and tags, never both | parse time |
-| `SetOnceOptionState` | one boolean, for the four options with no parsed field to test for emptiness — *limit*, *sort*, *scores*, *advancements*. The other nine once-only options enforce it by checking their own field | parse time |
-| `EntitySelector` | the compiled query: thirteen final fields, no reader, no grammar, no string | built at parse time, run later |
+| `EntitySelectorParser` | the reader, the grammar and thirty-one half-built fields besides it. It owns the selector's own syntax; the brace grammars of *scores* and *advancements* are read by the handlers themselves | parse time |
+| `EntitySelectorOptions` | the name-to-handler map — twenty-one entries, filled once by `Bootstrap.bootStrap` and never again | bootstrap |
+| `InvertableSetOptionState` | the three-state machine behind *type=!zombie,type=!skeleton*: one positive assertion **or** any number of negations and tags, never both | parse time |
+| `SetOnceOptionState` | one boolean, for the four options with no parsed field to test for emptiness — *limit*, *sort*, *scores*, *advancements*. The other ten once-only options enforce it by checking their own field | parse time |
+| `EntitySelector` | the compiled query: thirteen final fields, and no grammar left in them | built at parse time, run later |
 | `EntityArgument` | four argument shapes (single or many, entities or players) and the parse-time rejections that enforce them | parse time and on the wire |
 | `CommandSourceStack` | the only thing a selector can be resolved against — origin, level, server, permission set | resolve time |
 | `LevelEntityGetterAdapter` | the fork in the road: an `EntityLookup` walk, or an `EntitySectionStorage` box query ([entity lifecycle](../entities/entity-lifecycle.md#findable-ticking-or-neither) owns both) | resolve time |
 
-`net/minecraft/commands/arguments/selector` is five classes and 1,717 lines,
-and every one of them is in the server jar *and* the client jar. That matters
+`net/minecraft/commands/arguments/selector` holds five classes, and every one of them is in the server jar *and* the client jar. That matters
 later.
 
 ## Three stages, and the last one is not on the parser's clock
@@ -64,7 +60,7 @@ flowchart LR
     C --> R
 ```
 
-*The three stages a selector passes through — the first two while Brigadier parses, once, and the third on the server thread each time a command asks for its argument; the three boxes under COMPILE are what it produces, not steps.*
+*The three stages a selector passes through — the first two while Brigadier parses, and the third on the Server thread each time a command asks for its argument; the three boxes under COMPILE are what it produces, not steps.*
 
 The first two stages happen while Brigadier walks the command tree; the third
 happens when the command's lambda asks for its argument. In between, the
@@ -91,9 +87,7 @@ switch throws.
 
 Only *@e* and *@n* add that test, and only `LivingEntity.isAlive` makes it
 mean anything — it is the override that adds "and has health left" to the
-base class's "and has not been removed". So a player sitting on the death
-screen is invisible to *@e* and *@n*, and still a target for *@a*, *@p* and
-*@r*.
+base class's "and has not been removed". So a player sitting on the death screen is invisible to *@e* and *@n*, and still a target for *@a*, *@p* and *@r* — though twenty ticks after death the body leaves the level's own player list, so a world-limited selector stops finding it.
 
 Then the bracket. `EntitySelectorParser.parseOptions` reads a name, looks it
 up through `EntitySelectorOptions.get`, and hands the reader to the handler it
@@ -108,7 +102,7 @@ finds. **Twenty-one** names are registered, counted by reading every
 | *type* | an id sets the `EntityTypeTest`; a tag only adds a test | one positive id, or many negatives and tags |
 | *tag* | reads `Entity.entityTags` — empty means *no tags at all* | freely |
 | *nbt* | serialises the candidate and compares with `NbtUtils.compareNbt` | freely |
-| *predicate* | runs a loot condition in `LootContextParamSets.SELECTOR` | freely |
+| *predicate* | runs a loot condition in `LootContextParamSets.SELECTOR` ([contexts and predicates](../items/contexts-and-predicates.md)) | freely |
 | *scores* | a brace map of objective to `MinMaxBounds.Ints` | once |
 | *advancements* | a brace map of advancement to done-ness, **players only** | once |
 | *limit* | sets the result cap, rejects anything below 1 | once, never on *@s* |
@@ -127,7 +121,7 @@ result: `InvertableSetOptionState` moves to a terminal state the moment a
 positive id is accepted, and `EntitySelectorOptions.get` then refuses the
 whole option by name before its handler ever runs. Its *other* terminal state
 is the permissive one — after a negation or a tag, more negations and more
-distinct tags are allowed, which is why *type=!zombie,!skeleton* works and why
+distinct tags are allowed, which is why *type=!zombie,type=!skeleton* works and why
 two entity tags can be written together and AND.
 
 ## Compile: what a box is, and where it comes from
@@ -147,9 +141,7 @@ distance entirely when choosing the box, because the delta branch wins.
 
 **The origin.** If any of *x*, *y* or *z* was written, the position becomes a
 function that overrides those axes of the source's position and keeps the
-rest. Otherwise it is the identity. This is applied per execution, which is
-what makes *x=0* mean the same thing everywhere and *@s* mean something
-different at each link of a chain.
+rest. Otherwise it is the identity. This is applied per execution, which is what makes *x=0* mean the same thing everywhere while every axis left unwritten follows the source at each link of a chain.
 
 Everything else that was written is already a test in a list, in written
 order — with exceptions appended afterwards whatever order they appeared in.
@@ -157,7 +149,7 @@ order — with exceptions appended afterwards whatever order they appeared in.
 experience-level test last, and `EntitySelector.getPredicate` then appends up
 to three more at resolve time: the feature-flag test, the exact box test and
 the range test. `Util.allOf` evaluates them in that order and short-circuits,
-so the range test — the cheapest thing in a selector — runs **after** an *nbt*
+so the range test, a few multiplications, runs **after** an *nbt*
 comparison that serialised the whole entity.
 
 ## Resolve: which levels, which structure, which order
@@ -165,10 +157,8 @@ comparison that serialised the whole entity.
 ```mermaid
 flowchart TD
     A["EntitySelector.findEntities"] --> C{"a bare name or a UUID?"}
-    C -- name --> N["PlayerList.getPlayerByName, either way"]
-    C -- UUID --> B1{"non-players in scope?"}
-    B1 -- yes --> UE["ServerLevel.getEntity, level by level"]
-    B1 -- no --> UP["PlayerList.getPlayer"]
+    C -- name --> N["PlayerList.getPlayerByName"]
+        C -- UUID --> UE["Level.getEntity, level by level"]
     C -- neither --> D{"is it the source itself?"}
     D -- yes --> S["the source's own entity, if it passes"]
     D -- no --> E{"world-limited?"}
@@ -176,7 +166,7 @@ flowchart TD
     E -- "no: every level" --> B2
     B2 -- no --> PL["a player list, walked"]
     B2 -- yes --> H{"is there a box?"}
-    H -- yes --> I["EntitySectionStorage — only the sections the box touches"]
+    H -- yes --> I["EntitySectionStorage — only the sections near the box"]
     H -- no --> J["EntityLookup — every visible entity, one by one"]
     I --> K["sort unless arbitrary, then cut to the limit"]
     J --> K
@@ -185,10 +175,7 @@ flowchart TD
 
 *How a compiled selector finds its entities — the players-only selector asks the same questions in the same order, so the figure asks whether non-players are in scope only where the two answers part; the three shortcuts at the top return at once, with no sort and no limit.*
 
-**Three shortcuts come first.** A bare player name goes to
-`PlayerList.getPlayerByName` whatever the selector's scope; a UUID is looked
-up with `ServerLevel.getEntity`, level by level, when non-players are in
-scope, and with `PlayerList.getPlayer` when they are not; and *@s* tests the
+**Three shortcuts come first.** A bare player name goes to `PlayerList.getPlayerByName`, since a name always takes non-players out of scope; a UUID is looked up with `Level.getEntity`, level by level, since a UUID always brings non-players into scope; and *@s* tests the
 source's own entity against the selector's tests. None of the three is sorted
 or cut.
 
@@ -199,15 +186,12 @@ option handlers call `EntitySelectorParser.setWorldLimited`: *distance*, *x*,
 @e[type=item]* is a three-dimension operation.
 
 **The two structures are genuinely different.** With a box,
-`Level.getEntities` goes through `EntitySectionStorage`, which visits only the
-accessible non-empty 16-cubes the box overlaps. Without one,
+`Level.getEntities` goes through `EntitySectionStorage`, which visits only the accessible non-empty 16-cubes the box overlaps once widened by two blocks sideways and four below. Without one,
 `ServerLevel.getEntities` goes through `EntityLookup`, which walks the level's
 entire visible-entity map and calls `EntityTypeTest.tryCast` on each —
-`EntityTypeTest` being the one-method "is this the type I asked for, and give
-it to me typed" the whole entity-fetching API is generic over. **There
+`EntityTypeTest` being the small "is this the type I asked for, and give it to me typed" interface the whole entity-fetching API is generic over. **There
 is no index by entity type.** *type=zombie* narrows nothing structurally; it
-is a cast applied one entity at a time, ahead of the tests. Only the seven
-box options narrow the search itself, and only when they add up to a box.
+is a cast applied one entity at a time, ahead of the tests. Of the seven, only *distance* and the three deltas narrow the entity walk within a level, and only when they add up to a box; *x*, *y* and *z* only confine it to one level and move the box.
 
 **And the box path finds things the walk cannot.** `Level.getEntities` also
 offers each ender dragon's eight `EnderDragonPart` sub-entities to the type
@@ -226,19 +210,14 @@ otherwise, because a sort has to see everything before it can know what comes
 first. When it is the parsed limit, it reaches the level query as an early
 abort. So *@e[limit=1]* stops at the first match, and *@e[limit=1,sort=nearest]*
 collects every match in range, sorts the list and throws all but one away.
-*@n* and *@p* live permanently in the second mode: their heads set the nearest
-order, so they always collect first and cut afterwards.
+*@n* and *@p* live in the second mode unless told otherwise: their heads set the nearest order, so they collect first and cut afterwards, and only an explicit *sort=arbitrary* puts them back in the first.
 
-**So the query plan is written by eight of the twenty-one names**: the seven
-above, which build the box and world-limit the search, and *sort*, which
-un-decides part of it by taking the limit away. The other thirteen only filter
-what the plan returns.
+**So the query plan is written by thirteen of the twenty-one names**: the seven above, which world-limit the search and build or place the box; *limit*, which aborts it early; *sort*, which un-decides part of it by taking the limit away; and the four that drop non-players, *level*, *gamemode*, *advancements* and a positive *type=player*, which send the whole search to a player list. The other eight only filter what the plan returns.
 
 ## One permission, checked in two places, for two different reasons
 
 The gate is a single atom, `Permissions.COMMANDS_ENTITY_SELECTORS`, granted by
-`LevelBasedPermissionSet` from gamemaster upward as the one hard-coded
-exception in that class
+`LevelBasedPermissionSet` from gamemaster upward as the one hard-coded exception in that interface
 ([permissions](permissions.md#a-question-an-answer-and-a-check)). It is the
 **only permission in the game checked in two different phases**, it is read in
 seven places, all of them under `commands/arguments`, and they divide cleanly
@@ -256,8 +235,7 @@ this atom is the only gate on those.
 `MessageArgument` alone treats a refusal as a formatting decision rather than
 an error: without the permission the message is taken as literal text, so an
 unopped */msg Bob @a* sends those two characters. With the permission, an *@*
-that is not a valid selector head is skipped and the scan continues — which is
-how an email address survives — but a *malformed* selector body throws, and
+that is not a valid selector head is skipped and the scan continues — which is how an address like *me@gmail.com* survives — but a *malformed* selector body throws, and
 the whole command fails to parse.
 
 **At resolve time**, `EntitySelector.checkPermissions` asks again, guarding on
@@ -268,8 +246,7 @@ never passed the first one: `EntitySelector.COMPILABLE_CODEC` compiles a
 selector out of a **text component** — the *selector* content type, the
 *score* name field and the *entity* NBT data source — and does so with
 selectors unconditionally allowed, because a codec has no source to ask. The
-resolve-time check is what decides whether a */tellraw* written by a data pack
-may actually enumerate entities, and it asks the source the component is being
+resolve-time check is what decides whether a */tellraw* written by a data pack may enumerate entities, and it asks the source the component is being
 resolved *against*, never whoever wrote it.
 
 ## Two more argument types write the same fork by hand
@@ -289,14 +266,11 @@ page that leaves the game's own data.
 `ScoreHolderArgument` resolves to `ScoreHolder`s, which need not be alive.
 Its literal side has four branches in order — `*` for every tracked holder,
 a `#`-prefixed name taken as a bare string, a UUID searched across every
-level, and an online player — with the last three falling back to a bare name
-and the wildcard alone throwing when there is nothing to return
+level, and an online player — with the UUID and player branches falling back to a bare name and the wildcard alone throwing when there is nothing to return
 ([scores, teams and stored data](scoreboard-and-data.md#names-that-belong-to-nobody-and-the--that-hides-them)
 for what those names are for).
 
-Both take the permission the same way this page's own parse does, and both
-enforce their single-or-many shape on the compiled selector rather than on
-the text, exactly as `EntityArgument` does.
+Both take the permission the same way this page's own parse does, and both check the compiled selector rather than the text, as `EntityArgument` does — `ScoreHolderArgument` for its single-or-many shape, `GameProfileArgument` for players only.
 
 ## Four argument shapes, enforced on the query and not on the text
 
@@ -362,16 +336,13 @@ distances against pre-squared bounds and so never takes a square root.
 > **For a 1.21-era reader.** The parser's crowd of *hasNameEquals* /
 > *hasNameNotEquals* / *hasGamemodeEquals* booleans is gone, replaced by
 > eight state objects — four `InvertableSetOptionState` and four
-> `SetOnceOptionState` — that enforce the same rules structurally. *ResourceLocation* is `Identifier`. And the check
-> that used to be an op-level comparison is now an atom,
-> `Permissions.COMMANDS_ENTITY_SELECTORS` ([permissions](permissions.md)).
+> `SetOnceOptionState` — that enforce the same rules structurally.
 
 ## Where to look
 
 `EntitySelector` first — thirteen fields and four find methods, and the design
 is in them. Then `EntitySelectorParser.getSelector` for the one place those
-thirteen are decided, and `EntitySelectorOptions.bootStrap` for the grammar
-players actually write. `LevelEntityGetterAdapter` is six methods long and is
+thirteen are decided, and `EntitySelectorOptions.bootStrap` for the grammar players write. `LevelEntityGetterAdapter` is six methods long and is
 where the cost of every selector is settled. Note that the name
 `EntitySelector` is used twice in the game: this one, and an unrelated bag of
 predicate constants in `world/entity` that the mob AI and the hoppers use.

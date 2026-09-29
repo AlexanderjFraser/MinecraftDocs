@@ -33,7 +33,7 @@ flowchart TD
     MF -- "2 · instantiate" --> X{"arguments given, parses?"}
     X -- yes --> R
     X -- no --> EX["FunctionInstantiationException"]
-    EX --> SW["/function reports it, a tag swallows it"]
+    EX --> SW["a command reports it,<br/>ServerFunctionManager swallows it"]
     R --> Q["3 · queued: CallFunction opens a frame"]
     Q --> E["the execution engine runs the lines"]
 ```
@@ -41,8 +41,7 @@ flowchart TD
 *A function's two steps and the hand-off — compiled once at reload, instantiated on every call, and only the macro branch can fail there; the failure is reported or swallowed depending on who made the call.*
 
 The two halves of that live in `net/minecraft/commands/functions` (the model)
-and `net/minecraft/server` (the two managers), and both are entirely
-server-side.
+and `net/minecraft/server` (the two managers), and both are server-side but for `StringTemplate`, which a dialog's command template also runs on the client ([dialogs](dialogs.md#from-a-json-file-to-a-click-the-server-reads)).
 
 ## The cast
 
@@ -55,7 +54,7 @@ server-side.
 | `MacroFunction` | the other case: parameters, an eight-entry LRU, and a re-parse per miss |
 | `StringTemplate` | the `$(name)` syntax and what a valid variable name is |
 | `InstantiatedFunction` | an id and an ordered list of `UnboundEntryAction`s. That is the entire runnable representation |
-| `FunctionInstantiationException` | carries a `Component`, which is why `/function` can render the failure and the tick loop can swallow it |
+| `FunctionInstantiationException` | carries a `Component`, which is what `/function` shows when it reports the failure |
 
 ## 1 · Compile, at reload
 
@@ -66,28 +65,24 @@ at all.
 next one (`CommandFunction.shouldConcatenateNextLine`), and a continuation
 at end of file is an error; blank lines and `#` comments are skipped; a
 leading `/` is a hard error with two different messages depending on whether
-you wrote one slash or two; a leading `$` is a macro line, kept as text; and
+you wrote one slash or two; a leading `$` is a macro line, kept as a template; and
 anything else goes through `CommandFunction.parseCommand`, which produces a
 `BuildContexts.Unbound`. So **a compiled function line is literally a parsed
 context chain plus its input string, waiting for a source.**
 `CommandFunction.checkCommandLineLength` caps a line at two million
 characters.
 
-A syntax error on any line fails the *whole file*, which is logged at error
+A syntax error on any plain line fails the *whole file*, which is logged at error
 and then simply absent from the map. There is no partial function.
 
 Two constraints make this stage unusual, and they are the same constraint
 seen twice. `ServerFunctionLibrary` parses every file **in parallel on the
 reload's background executor**, and it does so against a source built by
 `Commands.createCompilationContext` with a **null level and a null server**.
-Only the map swap happens on the main thread, and the maps are volatile
-because the library object is built on a background thread and read from
-several. An argument type that dereferenced the world during parsing would
-break a reload — which is exactly why `FunctionArgument` reads an id and
-defers the lookup. In 26.3 no argument type actually tests the constraint:
+Only the last stage — collecting the parses, logging the files that failed, resolving the function tags and swapping in the maps — runs on the thread that applies the reload, and the maps are volatile, the library object being built on a background thread. An argument type that dereferenced the world during parsing would fail every function that used it — which is exactly why `FunctionArgument` reads an id and
+defers the lookup. No argument type tests the constraint:
 the four argument types whose parse reads the source at all consult only
-its permissions, and those come from the *function-permission-level* server
-property, gamemaster by default.
+its permissions, and those come from the dedicated server's *function-permission-level* property, gamemaster by default, gamemaster always in singleplayer, and owner on the game test server.
 
 ## 2 · Instantiate, per call
 
@@ -114,9 +109,7 @@ Everything else — integers, compounds, lists — falls through to SNBT.
 Integers merely happen to render bare; byte, short and long need their own
 cases precisely because SNBT would suffix them.
 
-`StringTemplate` also decides what a parameter may be called, and the rule is
-the narrowest in the area: inside `$(…)`, letters, digits and underscore and
-nothing else, checked by `StringTemplate.isValidVariableName` at compile time.
+`StringTemplate` also decides what a parameter may be called: inside `$(…)`, letters, digits and underscore and nothing else — any letter or digit in Unicode's basic plane counts — checked by `StringTemplate.isValidVariableName` at compile time.
 That rule is borrowed — a dialog's input keys obey it too, which is what lets
 a dialog substitute its inputs into a command ([dialogs](dialogs.md#what-a-dialog-is-made-of)).
 
@@ -146,10 +139,9 @@ not yet materialised. Everything after this point is
 `MinecraftServer.tickChildren` opens — *commandFunctions*, with only the
 suspension of every player's packet flushing ahead of it — and so before the
 clocks, before the time sync, before any level ticks, and long before
-connections and players tick, which in 26.3 happen *after* the levels ([the
+connections and players tick, which happen *after* the levels ([the
 server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)). It no-ops entirely when the
-tick-rate manager is not running normally, so `/tick freeze` suspends data
-packs. `#minecraft:load` runs once after a reload or start, and
+tick-rate manager is not running normally, so `/tick freeze` suspends the tick and load tags. `#minecraft:load` runs once after a reload or start, and
 `#minecraft:tick` runs every tick from a list **snapshotted at reload** and
 never consulted again, so nothing can join or leave the tick loop between
 reloads.
@@ -159,12 +151,9 @@ That list is where the failure at the top of this page lives. Nothing in
 function on the tag can never be instantiated; the manager's one empty catch
 swallows the exception; and the snapshot means the function is tried again
 on the next tick and on every tick after it, for as long as the pack is
-loaded. There is no counter and no log line, and the only way to see it is
-to run the same function through `/function`, which reports what the tick
-tag does not.
+loaded. There is no counter and no log line, and the way to see it is to call the same function from a command — `/function`, `/debug function` or `execute if function` — each of which reports what the tick tag does not.
 
-Each function in a tag gets its **own** `ExecutionContext` — its own copy of
-the cost budget the engine spends, rather than one shared across the tag
+Each function in the tick or load tag gets its **own** `ExecutionContext` — its own copy of the budget the engine spends, rather than one shared across the tag
 ([the execution engine](the-execution-engine.md)).
 
 `/schedule` is the one way out of the current tick, and it books its callback
@@ -172,13 +161,9 @@ into the server-wide `TimerQueue` that only the overworld's clock advances
 ([the level tick](../server/server-level-tick.md#a-freeze-stops-the-clock-and-not-the-sleep-check)) —
 so a scheduled function fires once per tick, not once per dimension, and
 stands still while the world is frozen. What belongs to functions rather than
-to the clock is what `ScheduleCommand` refuses outright: a macro function, and
-a delay of zero.
+to the clock is what `ScheduleCommand` refuses outright: a delay of zero, and a macro function named on its own — a tag holding one is accepted, and fails when it fires as silently as the tick tag's.
 
-Everything else that runs a function is a short list: `/function` itself and
-the two constructs the engine builds on it, `execute if function` and
-`/return run function` ([the execution
-engine](the-execution-engine.md#the-two-commands-that-are-part-of-the-engine));
+Everything else that runs a function is a short list: `/function` itself, with `/return run function`; `execute if function` and `/debug function`, the two commands that are part of the engine ([the execution engine](the-execution-engine.md#the-two-commands-that-are-part-of-the-engine));
 `AdvancementRewards`, whose `CacheableFunction` holds the id and resolves it
 once ([advancements](advancements.md#from-a-slot-that-changed-to-a-toast)); `RunFunction`,
 one of the `EnchantmentEntityEffect`s
@@ -197,21 +182,16 @@ which is `LevelBasedPermissionSet.OWNER` — and calls
 `CommandSourceStack.withPermission` with gamemaster. That is a flat
 **replacement**: the tick and load tags run at gamemaster.
 
-`FunctionCommand` and `DebugCommand` instead call
-`CommandSourceStack.withMaximumPermission` at gamemaster, which is
-`PermissionSet.union` — and for the level-based sets a player or the console
-actually carries, that union returns the **lower** of the two rather than the
+`FunctionCommand` (for `/function` and `execute if function`) and `DebugCommand` instead call `CommandSourceStack.withMaximumPermission` at gamemaster, which is
+`PermissionSet.union` — and for the level-based sets a player or the console carries, that union returns the **lower** of the two rather than the
 higher ([permissions](permissions.md#a-question-an-answer-and-a-check)). So an
-owner's source comes out at gamemaster on this route as well. Both verbs land
-on the same rung: there is no way to reach a function body above gamemaster.
+owner's source comes out at gamemaster on this route as well. Both verbs land on the same rung, and no route runs a function body's source above gamemaster. Which commands the body's lines may run was settled earlier, when they were parsed against the compile-time permissions above: Brigadier does not ask a node's requirement again when it runs.
 
 ## Where to look
 
 `CommandFunction` for the compiler, and `MacroFunction` for the only part of
-it that runs per call. `ServerFunctionLibrary` for what a reload does off
-the main thread, `ServerFunctionManager` for the tick hook and the one empty
-catch, and `StringTemplate` for the substitution rules a pack author will
-actually trip over.
+it that runs per call. `ServerFunctionLibrary` for what a reload does off the thread that applies it, `ServerFunctionManager` for the tick hook and the one empty
+catch, and `StringTemplate` for the substitution rules a pack author will trip over.
 
 ---
 

@@ -50,7 +50,7 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, and K, L and M on 2026-09-29** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, and K, L, M and N on 2026-09-29** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
@@ -58,7 +58,7 @@ and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
 audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit; H found 241 on
 Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit; J found 314 on Part X, 131 of them by that
-audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit; L found 393 on Part XI, 113 of them by that audit; M found 421 on Part XII, 141 of them by that audit — and N onward have not. After it, nothing more is done here except a
+audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit; L found 393 on Part XI, 113 of them by that audit; M found 421 on Part XII, 141 of them by that audit; N found 334 on Part XIII, 83 of them by that audit — and O onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -603,3 +603,16 @@ understood; recording is after the release.
   1.21.11 tree. The 88 pass 5–7 ledger entries struck (23 wrong in whole or in part); the part's queue settled (37 struck,
   six shares). The record audited by one agent per page, which found **141 of the 421, 94 in sentences the session had just
   written** — about one in three. Items handed to O and P. Deployed.
+- **2026-09-29, pass 8, session N — Part XIII · Commands and data packs (Opus).** Ten fact-check agents, one per page,
+  while the session read the part whole; the prompts carried the pages' pass 5–7 ledger entries and, added by script, every
+  pass 8 entry naming them (V1's, V2's, J's) and the handoffs to N from C, E, G and H. **334 corrections**, every one
+  re-derived in the tree: `brigadier-and-commands`' hook answered by the wrong mechanism (a loot table round-trips because
+  its registry is never sent) and its suggestion packet on 26.2's hop (26.3 hands it to `ServerCommandSuggestionsProvider`,
+  C's handoff), with every count 26.2's; `permissions`' *two universes that overlap in one place* (the client runs the
+  server's rungs and the selector atom) and a sign's command that *never travels to the client* (its text does, to every
+  client that loads it); `game-tests`' passing test that leaves its chunks forced (a finished batch unforces every forced
+  chunk in the level, a `/forceload`'s included); five false headings. Both 1.21 blockquotes re-read against the 1.21.11
+  tree, and `server/players-and-sessions`' cut whole. The 119 pass 5–7 ledger entries struck; the part's queue settled (49
+  struck), so `pass5_queue.py --summary` has no Part XIII row. The record audited by one agent per page, which found **83
+  of the 334, 58 in sentences the session had just written** — about one in four. Items handed to O, P and the second
+  edition. Deployed.

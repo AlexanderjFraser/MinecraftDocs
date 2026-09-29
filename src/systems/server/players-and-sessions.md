@@ -504,12 +504,7 @@ the keep-alive alone asks
 on an integrated server, which allows flight and sets no idle timeout, so
 nobody there is kicked for either of the others.
 
-> **For a 1.21-era reader.** Stored identity is a `NameAndId` record, not a
-> `GameProfile` — the ban list, the op list, the whitelist, the save file and
-> the name cache all key on it. And a
-> permission is no longer an integer: `ServerOpListEntry` holds a
-> `LevelBasedPermissionSet`, and the number in *ops.json* is a spelling of
-> one.
+
 
 ## Where to look
 

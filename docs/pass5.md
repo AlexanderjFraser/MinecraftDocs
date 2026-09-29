@@ -237,13 +237,13 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
 
 **Left open, with a reason.**
 
-- **`Player.getSlot` has a reader in Part XIII and no link.** `player-anatomy`
+- ~~**`Player.getSlot` has a reader in Part XIII and no link.** `player-anatomy`
   explains the 200/499/500 decoding and says it is the map behind a slot
   argument; no Part XIII page names `Player.getSlot` or `SlotArgument`. Two
   sessions were asked and neither did it. It is one clause on
   `brigadier-and-commands` and a link back, and it is **pass 10's**, because
   Part XIII closed before this was checked and the clause is a claim about a
-  page nobody is reading this pass. [kind=book] **VIII's share checked, pass 8 session H**: `player-anatomy` explains the decoding and names a command's slot argument; the link from Part XIII is session N's.
+  page nobody is reading this pass. [kind=book] **VIII's share checked, pass 8 session H**: `player-anatomy` explains the decoding and names a command's slot argument; the link from Part XIII is session N's.~~ **done** (pass 8 session N) — `brigadier-and-commands`' door table now names the slot numbering and links `player-anatomy`'s section on it.
 - ~~**`codecs-nbt-json` explains five mechanisms other parts own** — the wire
   buffer, region compression, the `BlockEntity` save shells, the serverbound
   fence and the trusted-tag constants. Session B left them because each is one
@@ -1366,27 +1366,27 @@ drop the number.
   lines *between* the two declarations (`CommandSourceStack.java` 124 and 128),
   a delta of four.
   **Session M (pass 5): overtaken** — the heading is now *The two permission verbs*. A line delta is rule 2's problem, not a count's.
-- `commands/scoreboard-and-data.md:215` — `Player.canHarmPlayer` "**six** call
+- ~~`commands/scoreboard-and-data.md:215` — `Player.canHarmPlayer` "**six** call
   sites" is six counting `ServerPlayer`'s own `super.canHarmPlayer`, five
   counting external callers.
-  **Session M (pass 5): carried to pass 8**, with the rest of this page's counts; the population is the ambiguity, not the number. [kind=voice]
-- `commands/scoreboard-and-data.md:230` — death-message visibility has "a
+  **Session M (pass 5): carried to pass 8**, with the rest of this page's counts; the population is the ambiguity, not the number. [kind=voice]~~ **overtaken** (pass 8 session N) — 26.3's friendly-fire read is `Entity.doTeamsAllowDamage`, whose seven call sites the page now counts, `Player.canHarmPlayer` among them.
+- ~~`commands/scoreboard-and-data.md:230` — death-message visibility has "a
   **single** reader" in the behavioural sense (`ServerPlayer.die`, which calls
   the getter three times), plus `TeamCommand`'s unchanged-check: four call
   sites in all.
-  **Session M (pass 5): carried to pass 8.** [kind=voice]
-- `commands/scoreboard-and-data.md:245` — "All **five** go through
+  **Session M (pass 5): carried to pass 8.** [kind=voice]~~ **done** (pass 8 session N) — the page now says *a single reader in play*; `TeamCommand`'s no-op check is the other read.
+- ~~`commands/scoreboard-and-data.md:245` — "All **five** go through
   `PlayerList.broadcastAll`" is true of all five, and three of them also ship
   through explicit per-player loops
   (`ServerScoreboard.startTrackingObjective` / `stopTrackingObjective`,
   `PlayerList.updateEntireScoreboard`).
-  **Session M (pass 5): carried to pass 8.** [kind=voice]
-- `commands/permissions.md:224` — "only **one** of those checks is a constant
+  **Session M (pass 5): carried to pass 8.** [kind=voice]~~ **done** (pass 8 session N) — the page now says the five reach every player through `PlayerList.broadcastAll` or a loop over the player list.
+- ~~`commands/permissions.md:224` — "only **one** of those checks is a constant
   the server itself uses" is one under *shared `PermissionCheck` constant*, two
   if `Permissions.COMMANDS_GAMEMASTER` counts, which the server reads inside
-  `Commands.LEVEL_GAMEMASTERS`. [kind=voice]
-- `commands/scoreboard-and-data.md:371` — "the nicest **ten** lines" is not [kind=voice]
-  verifiable at that precision; decompiled formatting is not the source's.
+  `Commands.LEVEL_GAMEMASTERS`. [kind=voice]~~ **overtaken** (pass 8 session N) — the sentence is gone; the page counts the ninety-seven gates by what they name.
+- ~~`commands/scoreboard-and-data.md:371` — "the nicest **ten** lines" is not [kind=voice]
+  verifiable at that precision; decompiled formatting is not the source's.~~ **done** (pass 8 session N) — *the nicest ten lines* cut (rule 2).
 
   **Session M (pass 5): carried, and re-tagged** — "the nicest ten lines" is a claim about decompiled formatting, which is rule 2's line, not a count. Logged for pass 9 as well. [kind=voice]
 **Two same-page phrasings of one constant.** `world/points-of-interest.md:235`
@@ -1433,7 +1433,7 @@ states and four branches;
 `blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
 is four *named* steps over five statements. [kind=voice] **IV's share overtaken, pass 8 session D** — `chunk-generation-pipeline`'s *seven of the twelve* is V2's five of ten. **V's share done, pass 8 session E**: `block-interaction`'s *three outcomes* now says *besides leaving the state as it is*, and `block-entities` now lists all five of `LevelChunk.removeBlockEntity`'s steps. **VI's share done, pass 8 session F**: `entity-lifecycle` names three distances and a fourth apart from `NaturalSpawner.MAGIC_NUMBER`; `entity-anatomy` says nine overrides, seven handing the default back. **VIII's share done, pass 8 session H**: `the-spear`'s *the only item* is one definition across seven spears; `hunger-and-experience`'s cast counts the seed among the four fields; `player-anatomy`'s *five deep* and `status-effects`' *about four* were overtaken. **X's share done, pass 8 session J**: `options` says ten others, and `the-gui-render-tree` calls the layering rule short.~~ *Done: every part's share is settled — pass 8 session J.*
 
-**Two rules for the word *classes*, corpus-wide.** A package's class count is
+~~**Two rules for the word *classes*, corpus-wide.** A package's class count is
 one number under two rules — `package-info.java` counted, or not — and the
 corpus uses both without always saying which. `anatomy/what-this-book-skips.md`
 states the split it uses (tables count files, prose counts classes) and is the
@@ -1448,7 +1448,7 @@ rule ("one class per file … the way the atlas counts everything else"), so
 *classes* means the opposite there. Session A logged this as "two size claims,
 two rules"; session L settled the Part XII half by adopting the atlas rule; the
 corpus still has both. **Pass 5 (or session O) should pick one and say it once**
-— the natural rule is the one `what-this-book-skips` already states. **XII's share, pass 8 session M**: the landing page adopts the atlas rule and says so; the atlas's own count includes `package-info.java` (477 files, 445 classes), which is session O's to rule.
+— the natural rule is the one `what-this-book-skips` already states. **XII's share, pass 8 session M**: the landing page adopts the atlas rule and says so; the atlas's own count includes `package-info.java` (477 files, 445 classes), which is session O's to rule.~~ **ruled** (pass 8 session N) — `TEMPLATE.md`'s *Voice* (V10) settles it: a size in prose comes from a generated include or is dropped, and Part XIII's prose sizes are now gone or say *files*; the atlas's own count is session O's.
 
 ~~**One editorial number worth a look.**
 `world/environment-attributes-and-timelines.md:5` opens on "at tick 12542 … the
@@ -3116,11 +3116,11 @@ was cut or moved, and why)*
 
 ## Session N — Part XIII Commands and data packs *(2026-09-03)*
 
-**Cuts, with reasons.** Nine pages from five, and the reshapes dropped [kind=record]
+~~**Cuts, with reasons.** Nine pages from five, and the reshapes dropped [kind=record]
 material rather than moving it in these places. None of it is wrong; all of
-it lost a fight for space against the page's own story.
+it lost a fight for space against the page's own story.~~ **record** (pass 8 session N) — a lead-in to the cuts below; nothing to act on.
 
-- `brigadier-and-commands` lost: `CommandSource` as a named object (the [kind=record]
+- ~~`brigadier-and-commands` lost: `CommandSource` as a named object (the [kind=record]
   output end alone — `CommandSource.NULL`, `CommandSource.acceptsSuccess`,
   `CommandSource.shouldInformAdmins` — and the observation that a command
   block, RCON and the console differ *only* there);
@@ -3133,8 +3133,8 @@ it lost a fight for space against the page's own story.
   knows under another name, which `reference/naming-drift.md` owns anyway.
   The `CommandSource` row is the one worth restoring if the page ever has
   room — it is the whole answer to "why does a command block not spam chat".
-  **Session M (pass 5): the `CommandSource` row restored**, as the entry recommended, and widened — the four implementations are now the page's answer to why a command block does not spam chat, and they pay off `blocks/README`'s promise about the command block. The resource-argument family is restored as a paragraph too. `Commands.CommandSelection` and the fourteen-field inventory stay cut. **V's share, pass 8 session E**: `blocks/README` now sends the command block to *Where a command's output goes*, where the page teaches it.
-- `advancements` lost: the two `Advancement.validate` methods (a private [kind=record]
+  **Session M (pass 5): the `CommandSource` row restored**, as the entry recommended, and widened — the four implementations are now the page's answer to why a command block does not spam chat, and they pay off `blocks/README`'s promise about the command block. The resource-argument family is restored as a paragraph too. `Commands.CommandSelection` and the fourteen-field inventory stay cut. **V's share, pass 8 session E**: `blocks/README` now sends the command block to *Where a command's output goes*, where the page teaches it.~~ **record** (pass 8 session N) — the `CommandSource` row was restored by pass 5 and is corrected this session (five methods, six implementations).
+- ~~`advancements` lost: the two `Advancement.validate` methods (a private [kind=record]
   static one the codec runs, which cross-checks requirements against criteria
   and **fails the load**, and a public one that walks each trigger instance
   through a `ProblemReporter` and only *warns*); `AdvancementTree.remove` as
@@ -3147,26 +3147,26 @@ it lost a fight for space against the page's own story.
   ("seventy-nine gameplay sites across forty-nine files",
   "`AdvancementCommands` is 312 lines"). The reload-listener sentence is the
   loss that matters — the page now says the layout runs on the server without
-  saying *when*.
-- `the-execution-engine` lost `ExecutionControl` and the [kind=record]
+  saying *when*.~~ **record** (pass 8 session N) — a cut; the layout's timing it names is on the page again, V2's (the constructor, on a reload worker).
+- ~~`the-execution-engine` lost `ExecutionControl` and the [kind=record]
   `EntryAction` / `UnboundEntryAction` pair as named cast rows; both are now
-  only implied by `CommandQueueEntry`'s row.
-- `scoreboard-and-data` lost: `PlayerScores` (package-private, and the [kind=record]
+  only implied by `CommandQueueEntry`'s row.~~ **record** (pass 8 session N) — a cut; `ExecutionControl` is named in the prose again, corrected this session.
+- ~~`scoreboard-and-data` lost: `PlayerScores` (package-private, and the [kind=record]
   observation that `Scoreboard.resetSinglePlayerScore` deletes the whole row
   so the outer map never accumulates empties); `TeamColor`'s sixteen values
   and the unrelated second `TeamColor` in `client/color/item`;
   `DisplaySlot`'s nineteen enumerated; `ScoreHolder.fromGameProfile`; and the
   command-class sizes (`ScoreboardCommand` at 620 lines is the fourth-largest
-  command class in the game, which was a nice number).
-- `dialogs` and `game-tests` lost the individual names of six packets [kind=record]
+  command class in the game, which was a nice number).~~ **record** (pass 8 session N) — a cut; nothing to act on.
+- ~~`dialogs` and `game-tests` lost the individual names of six packets [kind=record]
   (`ClientboundClearDialogPacket` survives; `ClientboundTestInstanceBlockStatus`,
   `ServerboundSetTestBlockPacket` and `ServerboundTestInstanceBlockActionPacket`
-  are now described rather than named). `reference/packets.md` has them.
+  are now described rather than named). `reference/packets.md` has them.~~ **record** (pass 8 session N) — a cut; `reference/packets` has the names.
 
-  **Session M (pass 5): struck as overtaken** — `reference/packets` owns the list, both pages name the packets their scenario needs, and `dialogs` names all three of its own.
-**Wording debt.**
+~~  **Session M (pass 5): struck as overtaken** — `reference/packets` owns the list, both pages name the packets their scenario needs, and `dialogs` names all three of its own.
+**Wording debt.**~~ **overtaken** (pass 8 session N) — struck by pass 5 session M, as its own text says.
 
-- **Second person is now five parts wide and past arguing about.** Every one
+- ~~**Second person is now five parts wide and past arguing about.** Every one
   of this part's eight content pages opens in it — *type a slash*, *op
   yourself to four*, *write a data pack*, *put a `$`-prefixed line*, *mine a
   stone block*, *look at the sidebar*, *you click a server*, *run
@@ -3174,7 +3174,7 @@ it lost a fight for space against the page's own story.
   session N used it deliberately on every page because the shape of the
   opening paragraph the template asks for (*start inside the scenario*)
   pulls hard towards it. Pass 5 should ratify it or reverse it corpus-wide,
-  not page by page.
+  not page by page.~~ **ruled** (pass 8 session N) — the second person stands (pass 8 A, V14: A1).
 - ~~**The *questions players ask* device is on three more pages** —
   `advancements`, `scoreboard-and-data`, and `the-execution-engine` where it
   is called *questions a data-pack author asks*. That is session K's warning
@@ -3189,20 +3189,20 @@ it lost a fight for space against the page's own story.
   (the two game rules, the depth answer, the per-context budget) and its
   spelling; `scoreboard-and-data` gave up two. Part XIII now has one
   spelling and four closers, all of them the last content section.
-- **"The one sentence a player would recognise" is gone from all five old [kind=lecture]
+- ~~**"The one sentence a player would recognise" is gone from all five old [kind=lecture]
   pages** and was not replaced by anything with a fixed position — the
   recognisable thing is now inside the opening paragraph where it belongs.
-  Worth checking the earlier parts still do the same.
-- `the-execution-engine` and `functions-and-macros` both explain
+  Worth checking the earlier parts still do the same.~~ **ruled** (pass 8 session N) — the recognisable thing sits inside each opening paragraph by design; checked on every Part XIII page.
+- ~~`the-execution-engine` and `functions-and-macros` both explain
   `ContinuationTask.schedule`. The engine page owns the arithmetic and the
   functions page owns the consequence ("a hundred-line function and a
   hundred-player fork are the same shape"), which is one sentence of overlap
   and deliberate — but it is exactly the kind of duplication pass 5 hunts.
-  **Session M (pass 5): checked, and the overlap is smaller than it looked.** The engine owns the arithmetic and the *discard is cheap* consequence; `functions-and-macros` states only the identity — a function body and a fork are the same queue shape — which the engine page does not. Left as a pair of one sentence each. The larger find beside it was the opposite direction: the two pages disagreed about whether a nested execution gets its own budget, and the reconciling fact was on neither. It is now on the engine page.
-- `permissions` and `brigadier-and-commands` both describe the command-tree
+  **Session M (pass 5): checked, and the overlap is smaller than it looked.** The engine owns the arithmetic and the *discard is cheap* consequence; `functions-and-macros` states only the identity — a function body and a fork are the same queue shape — which the engine page does not. Left as a pair of one sentence each. The larger find beside it was the opposite direction: the two pages disagreed about whether a nested execution gets its own budget, and the reconciling fact was on neither. It is now on the engine page.~~ **done** (pass 8 session N) — settled by pass 5 session M; the engine owns the arithmetic and the functions page one sentence of identity.
+- ~~`permissions` and `brigadier-and-commands` both describe the command-tree
   packet, deliberately from two sides (shape versus gating). Read them
   together once for a seam that reads as a repetition.
-  **Session M (pass 5): read together, and the split is sound** — `brigadier-and-commands` owns the shape and `permissions` owns the gating, and each hands off. What was missing was the link: `permissions` now cites `#the-tree-on-the-wire`. Struck.
+  **Session M (pass 5): read together, and the split is sound** — `brigadier-and-commands` owns the shape and `permissions` owns the gating, and each hands off. What was missing was the link: `permissions` now cites `#the-tree-on-the-wire`. Struck.~~ **done** (pass 8 session N) — settled by pass 5 session M; `permissions` cites `#the-tree-on-the-wire`.
 
 ## Session O — Reference *(2026-09-03)*
 
@@ -3274,7 +3274,7 @@ page exists to say there are two of. Split at the tick, one lane each, boxed by
 machine. **All three of pass 5's secondary-state-diagram questions and the
 vocabulary-page question are now answered; nothing here is open.** [kind=record]~~ *Record: its own last line says nothing here is open — pass 8, session A.*
 
-**The closing device did not hold.** Sixty-three of ninety-eight pages end
+~~**The closing device did not hold.** Sixty-three of ninety-eight pages end
 on a questions section (sixty *Questions players ask* verbatim, three
 *Questions a reader asks*, one *Questions the pattern raises*, one
 *Questions a data-pack author asks*) and four more carry one that is not
@@ -3296,7 +3296,7 @@ pass 5: at most half the pages in a part end on it**, and on the others
 the same question-and-answer material either dissolves into the section
 where the answer happens (session G's precedent — *Three things about the
 id*, *Why mobs look stupid*) or takes a heading that says what the section
-says. **IX checked, pass 8 session I**: two of the five pages end on one (`the-connection`, `chat-and-signing`). **X checked, pass 8 session J**: five of the twelve end on one (`prediction-and-acks`, `input-and-keybinds`, `options`, `hud`, `sound-engine`).
+says. **IX checked, pass 8 session I**: two of the five pages end on one (`the-connection`, `chat-and-signing`). **X checked, pass 8 session J**: five of the twelve end on one (`prediction-and-acks`, `input-and-keybinds`, `options`, `hud`, `sound-engine`).~~ **record** (pass 8 session N) — XIII checked: four of the nine content pages end on one (`advancements`, `entity-selectors`, `scoreboard-and-data`, `the-execution-engine`), all spelled *Questions players ask*; the rule of thumb holds in every part checked.
 
 **Seven pairs of pages share a skeleton**, which the charter says means
 neither is done. Within one part: `server-tick` / `server-level-tick`
@@ -3399,7 +3399,7 @@ spine with any other, in the part or out of it.
   four rulings now perturb the tool that measures them, which is worth one line
   in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands. **XI's share, pass 8 session L**: second edition — a page's skeleton is structure, which pass 8 does not change (R9). **XII's share, pass 8 session M**: second edition — a page's skeleton is structure (R9).
 
-**The literal heading `## The trace: …` is on twelve pages** in four
+~~**The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
 `the-sword-swing`, `the-two-phase-tick`, `biomes`,
 `features-and-placement`, `hand-built-structures`, `jigsaw-and-templates`,
@@ -3425,7 +3425,7 @@ was an artefact of that, and was broken at H2 level on the merits anyway.
   was carrying three citations for three different subjects. Renaming both to
   what their sections are *about* sorted the citations by itself, and one of
   `biomes`' four was repointed to a different section entirely. Part XIII is all
-  that is left. [kind=lecture] **VIII checked, pass 8 session H**: no Part VIII heading begins *The trace*. **XII's share, pass 8 session M**: overtaken — no Part XII heading reads *The trace:* now.
+  that is left. [kind=lecture] **VIII checked, pass 8 session H**: no Part VIII heading begins *The trace*. **XII's share, pass 8 session M**: overtaken — no Part XII heading reads *The trace:* now.~~ **overtaken** (pass 8 session N) — no Part XIII heading begins *The trace* now; with VIII's and XII's shares, none in the book does.
 
 ~~**Two structural outliers**, for the same sweep: `functions-and-macros`
 has no cast table (it opens on *The pipeline*), and ~~`hand-built-structures`
@@ -3442,7 +3442,7 @@ like the one page in the book with no cast when it simply had no cast
 *heading*. It has one now, after the figure, which is where a pipeline page
 wants it.~~ **ruled** (pass 8 session M) — both halves were settled by pass 6 (sessions L and M).
 
-**Wording debt from the four session-P pages.** All four were drafted by
+~~**Wording debt from the four session-P pages.** All four were drafted by
 Opus agents against the shared brief and accepted after the session
 re-derived their sharpest claims; none was cut. `block-entity-rendering`
 (332 lines) is a comparison whose three-column table is the figure and
@@ -3465,7 +3465,7 @@ the paragraph after the sequence diagram ("Three details in that order are
 worth stopping on") is a list in prose clothing and could be three
 bold-led paragraphs. All four use the *For a 1.21-era reader* blockquote;
 none uses the myth table; three carry a *Questions* closer, so the
-session's own pages score 3 of 4 on the device it just flagged. **XI's share, pass 8 session L**: `block-entity-rendering`'s *why* column stays, its numbers checked and its reasons readings; the second edition decides whether a table cell may carry an inferred reason. **XII's share, pass 8 session M**: `blending` has no closer now and its 193 sits in *Two maps*; `creating-a-world`'s three details stay one paragraph (second edition, R9).
+session's own pages score 3 of 4 on the device it just flagged. **XI's share, pass 8 session L**: `block-entity-rendering`'s *why* column stays, its numbers checked and its reasons readings; the second edition decides whether a table cell may carry an inferred reason. **XII's share, pass 8 session M**: `blending` has no closer now and its 193 sits in *Two maps*; `creating-a-world`'s three details stay one paragraph (second edition, R9).~~ **overtaken** (pass 8 session N) — XIII's share: `entity-selectors` ends on *Questions players ask*, the one spelling; XI's and XII's shares were settled by sessions L and M.
 
 ## From pass-4 session H — Part VIII The player *(2026-09-04)*
 
@@ -3771,32 +3771,32 @@ it made are in [pass9.md](pass9.md).*
 
 ### Part XIII, after session M of pass 4 *(2026-09-05)*
 
-Wording debt, all of it created by a fact fix: [kind=record]
+~~Wording debt, all of it created by a fact fix: [kind=record]~~ **record** (pass 8 session N) — a lead-in; its items are settled one by one.
 
-- `brigadier-and-commands.md` — the **hook and the whole round-trip section
+- ~~`brigadier-and-commands.md` — the **hook and the whole round-trip section
   were rewritten**, because the page's central claim ("the round trip is not
   the fallback, it is the default") was backwards and its verified-line
   scenario asks the server nothing. The replacement carries three numbers —
   359, 64, 59 — where the old one carried two, and the "why they feel like
   all of them" turn is doing a lot of work in one clause. Pass 5 should read
   the opening and the *A node that asks for suggestions by hand* section
-  together and decide whether the argument now takes one paragraph too many. [kind=voice]
-- `entity-selectors.md` — the **opening scenario was replaced** (a command [kind=voice]
+  together and decide whether the argument now takes one paragraph too many. [kind=voice]~~ **ruled** (pass 8 session N) — the hook was rewritten again this session, for the loot-table route and 26.3's counts; the argument takes the paragraphs it has.
+- ~~`entity-selectors.md` — the **opening scenario was replaced** (a command [kind=voice]
   block, because a player typing `/tp @p` always selects themselves) and now
   carries a parenthetical explaining why the obvious version does not work.
   The parenthetical is a correction in the voice of a correction; pass 5
-  should either fold it into the paragraph or cut it.
-- `entity-selectors.md` — the orphaned "**Four** —" paragraph is now a
+  should either fold it into the paragraph or cut it.~~ **ruled** (pass 8 session N) — the parenthetical states why the scenario needs a command block, the page's own premise; kept.
+- ~~`entity-selectors.md` — the orphaned "**Four** —" paragraph is now a
   four-line "the query plan is written by eight of the twenty-one names"
   paragraph. It is accurate and it is the third place on the page that
   enumerates the box options. Pass 5 should decide which of the three keeps
   the enumeration.
-  **Session M (pass 5): done** — the closing paragraph keeps the count and *sort* and no longer re-lists the seven; the world-limited paragraph keeps the enumeration. [kind=book]
-- `functions-and-macros.md` / `permissions.md` — the union paragraph on both
+  **Session M (pass 5): done** — the closing paragraph keeps the count and *sort* and no longer re-lists the seven; the world-limited paragraph keeps the enumeration. [kind=book]~~ **done** (pass 8 session N) — settled by pass 5 session M.
+- ~~`functions-and-macros.md` / `permissions.md` — the union paragraph on both
   pages grew to hold the level-based-versus-not distinction, which is a real
   and necessary qualifier and reads like a footnote promoted into the body.
   The fact belongs on `permissions`; `functions-and-macros` may be able to
-  cite it in a clause.
+  cite it in a clause.~~ **ruled** (pass 8 session N) — `functions-and-macros` keeps one clause and links `permissions`' anchor for the rest.
 - ~~`permissions.md` — *Asking a question the client cannot answer* now says
   three things the section did not previously have to say (the sign is not on
   this path; `NO_ISSUES` sends silently; the client checks permissions in
@@ -3812,11 +3812,11 @@ Wording debt, all of it created by a fact fix: [kind=record]
   serverbound packets that belong to other pages. True, and long. Pass 5
   should consider cutting it back to the narrow claim.
   **Session M (pass 5): done** — cut back to the narrow claim, and the tail replaced by naming `TestInstanceBlock`, which no page had.
-- `commands/README.md` — the *before you start* server-tick entry is now the
+- ~~`commands/README.md` — the *before you start* server-tick entry is now the
   longest of the five and names three classes, because the short version was
-  wrong about which phase. It may be shortenable now that it is right. [kind=voice]
+  wrong about which phase. It may be shortenable now that it is right. [kind=voice]~~ **overtaken** (pass 8 session N) — the entry is three lines and names one class now.
 
-Structural findings, not acted on:
+~~Structural findings, not acted on:~~ **record** (pass 8 session N) — a lead-in; its items are settled below it.
 
 - ~~`entity-selectors.md` — the page is one of the longest in the part and its
   *Resolve* section carries five bolded claims in a row, three of which are
@@ -3836,8 +3836,8 @@ Structural findings, not acted on:
   it belongs to whoever revisits `map_source.py`.~~
   **Session O's audit (pass 5's close): settled and never struck** — the planning session did it: `map_source.py`'s `PARTS` writes `part-<dir>.md` and every landing page includes it.
 
----
-  **Session M (pass 5): fully discharged.** The include has been there since session A; the prose now names all nine packages, which is the half the entry asked for and the template requires. [kind=record]
+~~---
+  **Session M (pass 5): fully discharged.** The include has been there since session A; the prose now names all nine packages, which is the half the entry asked for and the template requires. [kind=record]~~ **record** (pass 8 session N) — discharged by pass 5 session M, as it says.
 
 ## From pass 5, session F (Part VI · Entities), 2026-09-05
 
@@ -4315,11 +4315,11 @@ corrections it made are in [pass9.md](pass9.md).*
   ~~`contexts-and-predicates`:233-234. The row's `/item modify` claim is~~ **Struck by the pass-6 planning session (2026-09-07):** settled with the entry above.
   `loot-tables`', so the row wants two destinations.
   **Session M (pass 5): done** — repointed at `contexts-and-predicates#who-asks-and-with-which-set`, which names both, with `loot-tables` kept for the functions themselves.
-- **Session M (XIII) — `advancements`:7-10 opens on [kind=book]
+- ~~**Session M (XIII) — `advancements`:7-10 opens on [kind=book]
   `AbstractContainerMenu.broadcastChanges` and links `containers-and-menus`
   nowhere**, and `entity-selectors`:118 and `advancements`:146-150 are each
   half of a fact whose other half is on `contexts-and-predicates`. Four
-  inbound links from Part XIII, none anchored. **VII's share, pass 8 session G**: nothing to change on this part's pages; the missing links are Part XIII's (N).
+  inbound links from Part XIII, none anchored. **VII's share, pass 8 session G**: nothing to change on this part's pages; the missing links are Part XIII's (N).~~ **done** (pass 8 session N) — `advancements` links `containers-and-menus`, and `entity-selectors`' *predicate* row and `advancements`' conditions section link `contexts-and-predicates`.
 - ~~**Session M (XIII) — the predicate shape library, ruled.** §7 asks whether
   `MinMaxBounds`, `CollectionPredicate`, `EntitySubPredicate` and
   `DataComponentMatchers` belong here or in a Reference page. Session G's
@@ -4955,12 +4955,12 @@ these are new.*
 
 ### For pass 6 (the lecture)
 
-- **The part uses the *Questions* closer on four of its ten pages under three
+- ~~**The part uses the *Questions* closer on four of its ten pages under three
   spellings** — *Questions players ask* (advancements, scoreboard),
   *Questions a command author asks* (selectors), *Questions a data-pack author
   asks* (the engine) — and the other five system pages close on prose. Four of
   ten is inside session P's rule of thumb; the three spellings are not one
-  device. Pick one, or say why the audience differs per page. [kind=lecture]
+  device. Pick one, or say why the audience differs per page. [kind=lecture]~~ **overtaken** (pass 8 session N) — one spelling now, on four of nine pages.
 - ~~**`brigadier-and-commands` is the part's largest page and this session made
   it larger**, by two paragraphs it had lost in pass 3 and two coverage
   sentences. Pass 3's question — whether the page splits — was answered *no*
@@ -5025,31 +5025,31 @@ these are new.*
   `Commands.executeCommandInContext` really does go through
   `context.getLevel().getGameRules()` — and the label is the reason the
   parenthesis has to exist. Reword the node, not the prose. [kind=figure]~~ **done, pass 7 session M** — the node is gone; the trace now shows `ServerGamePacketListenerImpl.parseCommand` then `Commands.performCommand` with no claim about limits, so the engine page's parenthesis stands on its own.
-- **Part XIII's figures are flowcharts where the part's argument is a
+- ~~**Part XIII's figures are flowcharts where the part's argument is a
   sequence.** Eight of its thirteen diagrams are `flowchart`s, including three that
   draw a thing happening in order (the permission model, the unattended-command
   decision, the selector's three stages). Pass 7 should judge whether the
-  stack-of-boxes shape is doing the work a lane diagram would. [kind=figure]
+  stack-of-boxes shape is doing the work a lane diagram would. [kind=figure]~~ **overtaken** (pass 8 session N) — pass 7 session M redrew them: the permission model a class diagram, the unattended check a decision flowchart, the selector's stages a pipeline.
 
 ### For pass 8 (the voice)
 
-- **Three counts on three conventions inside one part.**
+- ~~**Three counts on three conventions inside one part.**
   `commands/README` and `brigadier-and-commands` say 102 *files* for
   `net/minecraft/server/commands` (the atlas's rule), `game-tests` says
   forty-four *classes* for `gametest/framework` (files less `package-info`),
   and `dialogs` says thirty-one *classes* for `server/dialog` (the same rule
   again, over four packages). All three are right; the word does two jobs.
   This is the standing *two rules for the word classes* item, and Part XIII is
-  where all three readings sit within nine pages of each other. [kind=voice]
-- **`permissions`' "ninety-one gates that name a level constant"** excludes two
+  where all three readings sit within nine pages of each other. [kind=voice]~~ **done** (pass 8 session N) — the sizes on `game-tests`, `dialogs`, `permissions` and `scoreboard-and-data` are cut (V10); the landing page's is counted as the atlas counts, in files.
+- ~~**`permissions`' "ninety-one gates that name a level constant"** excludes two
   ternary gates that also name one, and the sentence that follows explains the
   ternaries without saying they were excluded. Re-derived and sound; the
-  population is the ambiguity. [kind=voice]
-- **`entity-selectors` and `scoreboard-and-data` both explain a `#`-prefixed
+  population is the ambiguity. [kind=voice]~~ **overtaken** (pass 8 session N) — the page counts ninety-three that name a level outright and the two ternaries apart.
+- ~~**`entity-selectors` and `scoreboard-and-data` both explain a `#`-prefixed
   name**, in different words, for different reasons — the argument type's
   literal branch and the sidebar's hidden-row filter. Neither is wrong and the
   pair is deliberate after this session; check the two do not drift.
-  [kind=voice]
+  [kind=voice]~~ **done** (pass 8 session N) — both pages now say the `#` branch is the bare name and the UUID and player branches fall back; they agree.
 
 ## Session A — the standard (pass 6) *(2026-09-10)*
 
@@ -6413,39 +6413,39 @@ it logged. The corrections it made are in [pass9.md](pass9.md).*
 
 **For pass 8 — the voice.**
 
-- `the-execution-engine` calls one counter *the quota*, *the budget*, *the
+- ~~`the-execution-engine` calls one counter *the quota*, *the budget*, *the
   cost budget*, *one cost unit* and *the two limits*, and never joins them;
   session M named the budget in the opening and gave the bounds their own
   section, but the five words are still five words. It also has
   `CustomModifierExecutor`, `CustomCommandExecutor` and the bare phrase
-  *custom modifier* within ninety lines. [kind=voice]
-- `entity-selectors` uses *level* for a dimension throughout and *level* for
+  *custom modifier* within ninety lines. [kind=voice]~~ **done** (pass 8 session N) — one word, *budget*, on both pages; a *unit* is what it counts.
+- ~~`entity-selectors` uses *level* for a dimension throughout and *level* for
   the experience-level option in its table, which is the page's central noun
-  colliding with one of its twenty-one names. [kind=voice]
-- `scoreboard-and-data`: "Nothing here is ticked, either" opens a paragraph
-  whose predecessor is about handles, not about ticking. [kind=voice]
-- `the-execution-engine`'s *Two corrections worth carrying* corrects beliefs
+  colliding with one of its twenty-one names. [kind=voice]~~ **ruled** (pass 8 session N) — the option's name stays in italics as a literal; the page's *level* is the dimension.
+- ~~`scoreboard-and-data`: "Nothing here is ticked, either" opens a paragraph
+  whose predecessor is about handles, not about ticking. [kind=voice]~~ **done** (pass 8 session N) — *either* cut.
+- ~~`the-execution-engine`'s *Two corrections worth carrying* corrects beliefs
   the page never invites, in the voice of a note left for an editor — the
-  tic pass 8's charter already names. [kind=voice]
-- `permissions` says `LevelBasedPermissionSet.ALL` is "deprecated in place"
-  and never unpacks it, in the middle of a cascade. [kind=voice]
-- `advancements` calls `InventoryChangeTrigger` "the most expensive trigger
+  tic pass 8's charter already names. [kind=voice]~~ **done** (pass 8 session N) — *Two corrections worth carrying* is now *two details settle it*.
+- ~~`permissions` says `LevelBasedPermissionSet.ALL` is "deprecated in place"
+  and never unpacks it, in the middle of a cascade. [kind=voice]~~ **done** (pass 8 session N) — the page now says the constant is marked deprecated where it is declared.
+- ~~`advancements` calls `InventoryChangeTrigger` "the most expensive trigger
   per fire" and offers `CriteriaTriggers.TICK` as the most frequent in the
   next clause; two superlatives in adjacent sentences, and a reader cannot
-  tell which cost to carry. [kind=voice]
+  tell which cost to carry. [kind=voice]~~ **done** (pass 8 session N) — *the most expensive trigger per fire*, which no measure in the tree supports, cut; `CriteriaTriggers.TICK` is the one fired unconditionally.
 
-**The cut this session logged.** `the-execution-engine`'s six-class roll-call
+~~**The cut this session logged.** `the-execution-engine`'s six-class roll-call
 under *A result is a flag and a number* listed six fully-qualified nested
 class names in one eleven-line sentence. Cut to the shape — six classes,
 three commands — with the two that extend
 `CustomCommandExecutor.WithErrorHandling` still named, because
 `scoreboard-and-data` cites that clause by anchor. What is gone is four class
 names a reader could not use; the class index still has them.
-[kind=record]
+[kind=record]~~ **record** (pass 8 session N) — the engine's anchor that `scoreboard-and-data` cites was renamed this session with its link.
 
 **Two notes for session O.**
 
-- **The spine tool now reads `advancements` and `brigadier-and-commands` as
+- ~~**The spine tool now reads `advancements` and `brigadier-and-commands` as
   one edit apart** [kind=lecture], within the part, which is an A7 finding the session is
   declining. It is an artefact of this session's own work: moving
   `advancements`' closer to last turned `cast seq p p p p q p look` into
@@ -6454,8 +6454,8 @@ names a reader could not use; the class index still has them.
   anatomy with four H3s under a heading three pages cite, the other a trace
   whose closer holds four player consequences — and on a nine-token alphabet
   two pages of similar length will collide. Recorded rather than churned. This
-  is the third of A2, A4 and A7 to perturb `pass6_shape.py`'s own numbers.
-- **Part XIII's closers are author-facing under a player-facing name.** [kind=lecture] A2(a)
+  is the third of A2, A4 and A7 to perturb `pass6_shape.py`'s own numbers.~~ **record** (pass 8 session N) — an artefact of the shape tool; nothing to act on.
+- ~~**Part XIII's closers are author-facing under a player-facing name.** [kind=lecture] A2(a)
   ratified one spelling, *Questions players ask*, and session M applied it to
   the part's three — including `the-execution-engine`'s *Questions a data-pack
   author asks* and `entity-selectors`' *Questions a command author asks*. The
@@ -6463,7 +6463,7 @@ names a reader could not use; the class index still has them.
   rather than the page's own mechanism), but on two of the four pages the
   somebody is a pack author, not a player. The ruling is right for the corpus
   and the register of the heading is pass 8's; session O should decide
-  whether the book wants one spelling or two.
+  whether the book wants one spelling or two.~~ **ruled** (pass 8 session N) — one spelling, as A2(a) ratified: a pack author meets these consequences as a player does.
 
 ## Session N — the frame and Reference *(2026-09-14, pass 6)*
 
@@ -7048,7 +7048,7 @@ Part 3; these are the pieces of work that ruling created.
 
 ~~**From pass 7, session M — Part XIII.** [kind=book]~~ *Record: a lead-in; Part XIII's units under it route there by their pages — pass 8 session J.*
 
-- **Part XIII's sections that wanted a figure and did not get one**, as the
+- ~~**Part XIII's sections that wanted a figure and did not get one**, as the
   viewers asked: `functions-and-macros`' *What calls a function, and when* —
   the densest order-and-cycle section in the part, the tick's first zone, the
   reload snapshot and the schedule's one clock; `the-execution-engine`'s
@@ -7059,22 +7059,22 @@ Part 3; these are the pieces of work that ruling created.
   `brigadier-and-commands`' pruning of unknown argument types on the wire;
   `advancements`' place of `PlayerAdvancements.flushDirty` in a player's two
   tick brackets, which is where the one-tick `LOCATION` delay lives. None was
-  drawn: each is a new claim. [kind=book]
-- **`game-tests`' four reporting places are a list the prose reads aloud**
+  drawn: each is a new claim. [kind=book]~~ **second edition** (pass 8 session N) — each figure would be a new claim (R10).
+- ~~**`game-tests`' four reporting places are a list the prose reads aloud**
   (chat, block, progress bar, report — with the report in two formats); a
   two-column table would stop the count being carried by a sentence.
-  [kind=book]
+  [kind=book]~~ **second edition** (pass 8 session N) — a table is a restructure (R9).
 
 **For pass 8, from pass 7 session M.**
 
-- `brigadier-and-commands`' *Three parsers see one string* is the heading,
+- ~~`brigadier-and-commands`' *Three parsers see one string* is the heading,
   and the page now draws them as *parse 1*, *parse 2*, *parse 3* while the
   prose says *parsers*; the three are one dispatcher type run three times,
-  so whether the word is *parsers* or *parses* is voice. [kind=voice]
-- Two captions in this part say how to read an arrow in their own figure
+  so whether the word is *parsers* or *parses* is voice. [kind=voice]~~ **ruled** (pass 8 session N) — the heading's *parsers* is an anchor and the prose follows it; the figure's *parse 1, 2, 3* count runs of the one dispatcher type.
+- ~~Two captions in this part say how to read an arrow in their own figure
   (`permissions`' class diagram, `the-execution-engine`'s queue) — pass 8
   should settle whether a caption's *how to read it* clause has one form
-  across the book. [kind=voice]
+  across the book. [kind=voice]~~ **ruled** (pass 8 session N) — a caption's second sentence says what to look for, and a how-to-read clause is that (V12); the `permissions` clause's ambiguous *dotted one* is corrected.
 
 ~~**For session O, from pass 7 session M.** [kind=figure]~~ *Record: a lead-in; its unit was settled by pass 7 session O — pass 8 session J.*
 
@@ -7205,10 +7205,10 @@ saying the closer assumes nothing above it while linking three pages above it,
 `client`'s *one exception* beside two, and `worldgen`'s argument ending on its
 symptom list. Left, with the reason: [kind=record]
 
-- **`commands/README`'s arrows point down**, the only landing figure where
+- ~~**`commands/README`'s arrows point down**, the only landing figure where
   they do, because reversing them under `TD` draws the parse floor on top of
   the stack the part is named for. Ruled an exception; its caption says so.
-  [kind=record]
+  [kind=record]~~ **record** (pass 8 session N) — the caption's *the one landing figure where they point down* was false (ten others do); it now says the arrows run from a floor to the one it is built on.
 - ~~**`blocks/README` keeps three crossings.** Two spokes both feed two pages, so
   one crossing is unavoidable, and reordering the declarations moved nothing:
   mermaid ranks this figure by its edges. It reads at 12px. [kind=record]~~ *Record: pass 7 session O's note on the landing figure's crossings — pass 8, session E.*

@@ -58,9 +58,7 @@ a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-an
 
 ## B
 
-**Batch** (game tests) — a group of game tests that share an environment,
-and the key they are grouped by *is* that environment rather than a name or
-a class of its own. The renderer's
+**Batch** (game tests) — a group of game tests that share an environment and a dimension, and the key they are grouped by *is* that pair rather than a name. The renderer's
 *batch* is a different word: quads grouped by render state, which belongs to [section
 meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes) and
 [entity rendering](../systems/rendering/entity-rendering.md).
@@ -183,7 +181,7 @@ position, rotation, level, entity, a `PermissionSet` and an output sink,
 immutable, so every `with…` returns a copy. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
 
 **Compiled query** — the immutable `EntitySelector` a parse produces:
-thirteen fields, no reader and no grammar, resolvable any number of times
+thirteen fields and no grammar, resolvable any number of times
 against different sources. → [entity selectors](../systems/commands/entity-selectors.md#compile-what-a-box-is-and-where-it-comes-from)
 
 **Component** — two different things the corpus keeps apart: a *data
@@ -469,8 +467,7 @@ final classes, read and written through `NbtIo` and reached by codecs through
 
 **NBT path** — a compiled query over a tag, six node kinds deep — a named
 child, an index, all elements, and three kinds of match — that `/data` uses to
-read and write, and which materialises the structure it walks through on a
-write. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#the-path-language-and-the-accessor-that-is-coarser-than-it-looks)
+read and write, and which materialises the compounds and lists it walks through on a write, though an index never creates the element it names. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#the-path-language-and-the-accessor-that-is-coarser-than-it-looks)
 
 **Neighbour update** — the server-only notification a block sends its six
 neighbours after a change; distinct from a *shape update*, which runs on
@@ -741,7 +738,7 @@ the word belongs to [NBT](../systems/foundations/codecs-nbt-json.md).) → [tags
 
 **Team** — a named set of score holders carrying a colour, a friendly-fire
 flag, a collision rule and a nametag rule — so a class in the scores package
-is read by collision and by rendering. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#teams-which-five-systems-read-and-none-of-them-are-scores)
+is read by collision and by rendering. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#teams-which-systems-far-from-scores-read)
 
 **Tick** — one step of the server's simulation, 50 ms at the default rate
 that `/tick rate` can change, or one step of the client's; a client behind
@@ -768,7 +765,7 @@ stored data](../systems/commands/scoreboard-and-data.md#what-a-criterion-can-be-
 **Unattended command** — a command the player did not type: a dialog button
 or a chat click event, sent through `ClientPacketListener.sendUnattendedCommand`.
 The client re-parses it and asks first if it fails to parse, needs a signature,
-or needs a permission the client believes it lacks; a clean one goes without a
+or needs any permission at all; a clean one goes without a
 prompt. A sign's command is not one of these — it runs on the server at
 gamemaster level, only on a sign whose *allow_op_features* flag is set, and
 the client is never asked. → [permissions](../systems/commands/permissions.md#asking-a-question-the-client-cannot-answer)
