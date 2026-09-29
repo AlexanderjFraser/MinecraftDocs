@@ -7,7 +7,7 @@ introduction or the lecture map — or named inside one of its figures (a lane, 
 message; `tools/check_figure_names.py` reads those), and the pages that name it. Outside it:
 the generated views, whose backticks are registry and packet ids rather than class names.
 
-3164 names across 132 pages. A row is a
+3163 names across 132 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -53,7 +53,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `AbstractTexture` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `AbstractTickableSoundInstance` | [sound-engine](../systems/client/sound-engine.md) |
 | `AbstractVillager` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
-| `AbstractWidget` | [glossary](../reference/glossary.md), [gui-and-screens](../systems/client/gui-and-screens.md) |
+| `AbstractWidget` | [glossary](../reference/glossary.md), [gui-and-screens](../systems/client/gui-and-screens.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md) |
 | `AbstractZombieRenderer` | [entity-rendering](../systems/rendering/entity-rendering.md) |
 | `AcaciaFoliagePlacer` | [trees](../systems/worldgen/trees.md) |
 | `AccountProfileKeyPairManager` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
@@ -202,7 +202,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BiomeResolver` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [biomes](../systems/worldgen/biomes.md), [blending](../systems/worldgen/blending.md) |
 | `BiomeSource` | [data-driven-types](../systems/foundations/data-driven-types.md), [biomes](../systems/worldgen/biomes.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `BiomeSources` | [biomes](../systems/worldgen/biomes.md) |
-| `BiomeSpecialEffects` | [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [biomes](../systems/worldgen/biomes.md) |
+| `BiomeSpecialEffects` | [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [biomes](../systems/worldgen/biomes.md) |
 | `BiomeTags` | [tags](../systems/foundations/tags.md) |
 | `BitmapProvider` | [text-and-fonts](../systems/client/text-and-fonts.md) |
 | `BitRandomSource` | [math-and-primitives](../reference/math-and-primitives.md) |
@@ -408,7 +408,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ChatReportContextBuilder` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `ChatRestriction` | [permissions](../systems/commands/permissions.md) |
 | `ChatScreen` | [gui-and-screens](../systems/client/gui-and-screens.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [chat-and-signing](../systems/networking/chat-and-signing.md) |
-| `ChatTrustLevel` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
+| `ChatTrustLevel` | [hud](../systems/client/hud.md), [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `ChatType` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `ChatTypeDecoration` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `ChatVisiblity` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
@@ -601,7 +601,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundUpdateMobEffectPacket` | [synched-entity-data](../systems/entities/synched-entity-data.md), [status-effects](../systems/player/status-effects.md) |
 | `ClientboundUpdateRecipesPacket` | [resource-system](../systems/foundations/resource-system.md), [recipes](../systems/items/recipes.md) |
 | `ClientboundUpdateTagsPacket` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [resource-system](../systems/foundations/resource-system.md), [tags](../systems/foundations/tags.md), [enchantments](../systems/items/enchantments.md), [protocol-phases](../systems/networking/protocol-phases.md) |
-| `ClientChunkCache` | [naming-drift](../reference/naming-drift.md), [the-client-level](../systems/client/the-client-level.md), [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [lighting](../systems/world/lighting.md) |
+| `ClientChunkCache` | [the-client-level](../systems/client/the-client-level.md), [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [lighting](../systems/world/lighting.md) |
 | `ClientClockManager` | [the-client-level](../systems/client/the-client-level.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ClientCommonPacketListener` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `ClientCommonPacketListenerImpl` | [biggest](../maps/biggest.md), [threads](../reference/threads.md), [the-client-loop](../systems/client/the-client-loop.md), [dialogs](../systems/commands/dialogs.md), [protocol-phases](../systems/networking/protocol-phases.md), [the-connection](../systems/networking/the-connection.md) |
@@ -895,7 +895,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `DebugPathCommand` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `DebugPathInfo` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `DebugPoiInfo` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
-| `DebugQueryHandler` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
+| `DebugQueryHandler` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [input-and-keybinds](../systems/client/input-and-keybinds.md) |
 | `DebugRenderer` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `DebugScreenDisplayer` | [hud](../systems/client/hud.md) |
 | `DebugScreenEntries` | [hud](../systems/client/hud.md) |
@@ -1691,13 +1691,13 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LivingEntityRenderState` | [entity-rendering](../systems/rendering/entity-rendering.md) |
 | `Llama` | [pathfinding](../systems/entities/pathfinding.md) |
 | `LoadingChunkTracker` | [tickets-and-loading](../systems/world/tickets-and-loading.md) |
-| `LoadingOverlay` | [anatomy](../systems/anatomy/anatomy.md), [gui-and-screens](../systems/client/gui-and-screens.md), [resource-system](../systems/foundations/resource-system.md) |
+| `LoadingOverlay` | [hud-elements](../reference/hud-elements.md), [anatomy](../systems/anatomy/anatomy.md), [gui-and-screens](../systems/client/gui-and-screens.md), [resource-system](../systems/foundations/resource-system.md) |
 | `LocalChatSession` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `LocalCoordinates` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `LocalFrameDecoder` | [the-connection](../systems/networking/the-connection.md) |
 | `LocalFrameEncoder` | [the-connection](../systems/networking/the-connection.md) |
 | `LocalMobCapCalculator` | [entity-lifecycle](../systems/entities/entity-lifecycle.md), [server-level-tick](../systems/server/server-level-tick.md) |
-| `LocalPlayer` | [biggest](../maps/biggest.md), [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [block-interaction](../systems/blocks/block-interaction.md), [gui-and-screens](../systems/client/gui-and-screens.md), [hud](../systems/client/hud.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [prediction-and-acks](../systems/client/prediction-and-acks.md), [the-client-loop](../systems/client/the-client-loop.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [permissions](../systems/commands/permissions.md), [authority](../systems/entities/authority.md), [damage-and-death](../systems/entities/damage-and-death.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [text-components](../systems/foundations/text-components.md), [using-an-item](../systems/items/using-an-item.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [input-to-movement](../systems/player/input-to-movement.md), [player-anatomy](../systems/player/player-anatomy.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md), [the-two-phase-tick](../systems/player/the-two-phase-tick.md), [post-processing](../systems/rendering/post-processing.md) |
+| `LocalPlayer` | [biggest](../maps/biggest.md), [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [block-interaction](../systems/blocks/block-interaction.md), [gui-and-screens](../systems/client/gui-and-screens.md), [hud](../systems/client/hud.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [prediction-and-acks](../systems/client/prediction-and-acks.md), [the-client-level](../systems/client/the-client-level.md), [the-client-loop](../systems/client/the-client-loop.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [permissions](../systems/commands/permissions.md), [authority](../systems/entities/authority.md), [damage-and-death](../systems/entities/damage-and-death.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [text-components](../systems/foundations/text-components.md), [using-an-item](../systems/items/using-an-item.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [input-to-movement](../systems/player/input-to-movement.md), [player-anatomy](../systems/player/player-anatomy.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md), [the-two-phase-tick](../systems/player/the-two-phase-tick.md), [post-processing](../systems/rendering/post-processing.md) |
 | `LocalPlayerResolver` | [player-anatomy](../systems/player/player-anatomy.md) |
 | `LocalSampleLogger` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `LocalTime` | [text-and-fonts](../systems/client/text-and-fonts.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md), [models-and-atlases](../systems/rendering/models-and-atlases.md) |
@@ -1853,7 +1853,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `MultiNoiseBiomeSourceParameterLists` | [biomes](../systems/worldgen/biomes.md) |
 | `MultiPackResourceManager` | [resource-system](../systems/foundations/resource-system.md) |
 | `MultiPartModel` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
-| `MultiPlayerGameMode` | [naming-drift](../reference/naming-drift.md), [anatomy](../systems/anatomy/anatomy.md), [block-breaking](../systems/blocks/block-breaking.md), [block-interaction](../systems/blocks/block-interaction.md), [gui-and-screens](../systems/client/gui-and-screens.md), [prediction-and-acks](../systems/client/prediction-and-acks.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [containers-and-menus](../systems/items/containers-and-menus.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md), [the-connection](../systems/networking/the-connection.md), [VIII · The player](../systems/player/README.md), [player-anatomy](../systems/player/player-anatomy.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md), [particles](../systems/rendering/particles.md), [section-meshing](../systems/rendering/section-meshing.md), [fluids](../systems/world/fluids.md), [lighting](../systems/world/lighting.md) |
+| `MultiPlayerGameMode` | [naming-drift](../reference/naming-drift.md), [anatomy](../systems/anatomy/anatomy.md), [block-breaking](../systems/blocks/block-breaking.md), [block-interaction](../systems/blocks/block-interaction.md), [gui-and-screens](../systems/client/gui-and-screens.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [prediction-and-acks](../systems/client/prediction-and-acks.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [containers-and-menus](../systems/items/containers-and-menus.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md), [the-connection](../systems/networking/the-connection.md), [VIII · The player](../systems/player/README.md), [player-anatomy](../systems/player/player-anatomy.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md), [particles](../systems/rendering/particles.md), [section-meshing](../systems/rendering/section-meshing.md), [fluids](../systems/world/fluids.md), [lighting](../systems/world/lighting.md) |
 | `MultipleTestTracker` | [game-tests](../systems/commands/game-tests.md) |
 | `MultiplyValue` | [enchantments](../systems/items/enchantments.md) |
 | `MultiVariant` | [naming-drift](../reference/naming-drift.md) |
@@ -1949,7 +1949,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `OminousItemSpawner` | [non-living-damage](../reference/non-living-damage.md) |
 | `OneShot` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `OptionInstance` | [options](../systems/client/options.md), [the-client-loop](../systems/client/the-client-loop.md) |
-| `Options` | [biggest](../maps/biggest.md), [packages](../maps/packages.md), [hud-elements](../reference/hud-elements.md), [naming-drift](../reference/naming-drift.md), [anatomy](../systems/anatomy/anatomy.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [options](../systems/client/options.md), [sound-engine](../systems/client/sound-engine.md), [the-client-level](../systems/client/the-client-level.md), [the-client-loop](../systems/client/the-client-loop.md), [resource-system](../systems/foundations/resource-system.md), [chat-and-signing](../systems/networking/chat-and-signing.md), [input-to-movement](../systems/player/input-to-movement.md), [the-sword-swing](../systems/player/the-sword-swing.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [models-and-atlases](../systems/rendering/models-and-atlases.md), [post-processing](../systems/rendering/post-processing.md), [section-meshing](../systems/rendering/section-meshing.md), [the-window](../systems/rendering/the-window.md), [chunk-storage](../systems/world/chunk-storage.md) |
+| `Options` | [biggest](../maps/biggest.md), [packages](../maps/packages.md), [hud-elements](../reference/hud-elements.md), [anatomy](../systems/anatomy/anatomy.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [options](../systems/client/options.md), [sound-engine](../systems/client/sound-engine.md), [the-client-level](../systems/client/the-client-level.md), [the-client-loop](../systems/client/the-client-loop.md), [resource-system](../systems/foundations/resource-system.md), [chat-and-signing](../systems/networking/chat-and-signing.md), [input-to-movement](../systems/player/input-to-movement.md), [the-sword-swing](../systems/player/the-sword-swing.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [models-and-atlases](../systems/rendering/models-and-atlases.md), [post-processing](../systems/rendering/post-processing.md), [section-meshing](../systems/rendering/section-meshing.md), [the-window](../systems/rendering/the-window.md), [chunk-storage](../systems/world/chunk-storage.md) |
 | `OptionsList` | [gui-and-screens](../systems/client/gui-and-screens.md) |
 | `OptionsRenderState` | [post-processing](../systems/rendering/post-processing.md) |
 | `OptionsScreen` | [gui-and-screens](../systems/client/gui-and-screens.md) |
@@ -2107,7 +2107,6 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `PlayerTabOverlay` | [hud-elements](../reference/hud-elements.md) |
 | `PlayerTeam` | [scoreboard-and-data](../systems/commands/scoreboard-and-data.md), [text-components](../systems/foundations/text-components.md) |
 | `PlayerTrigger` | [advancements](../systems/commands/advancements.md) |
-| `PlaySoundCommand` | [what-makes-a-sound](../systems/client/what-makes-a-sound.md) |
 | `PlaySoundConsumeEffect` | [using-an-item](../systems/items/using-an-item.md) |
 | `PlaySoundEffect` | [enchantments](../systems/items/enchantments.md) |
 | `PoiCompetitorScan` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [points-of-interest](../systems/world/points-of-interest.md) |
@@ -2494,7 +2493,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ServerboundPlayerCommandPacket` | [input-to-movement](../systems/player/input-to-movement.md) |
 | `ServerboundPlayerInputPacket` | [naming-drift](../reference/naming-drift.md), [input-to-movement](../systems/player/input-to-movement.md) |
 | `ServerboundPlayerLoadedPacket` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
-| `ServerboundPunchPacket` | [naming-drift](../reference/naming-drift.md), [block-breaking](../systems/blocks/block-breaking.md), [the-connection](../systems/networking/the-connection.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
+| `ServerboundPunchPacket` | [naming-drift](../reference/naming-drift.md), [block-breaking](../systems/blocks/block-breaking.md), [input-and-keybinds](../systems/client/input-and-keybinds.md), [the-connection](../systems/networking/the-connection.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
 | `ServerboundResourcePackPacket` | [resource-system](../systems/foundations/resource-system.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `ServerboundSeenAdvancementsPacket` | [advancements](../systems/commands/advancements.md) |
 | `ServerboundSelectKnownPacks` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
@@ -2946,7 +2945,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `TitleScreen` | [gui-and-screens](../systems/client/gui-and-screens.md) |
 | `TlsfAllocator` | [section-meshing](../systems/rendering/section-meshing.md) |
 | `Toast` | [hud](../systems/client/hud.md) |
-| `ToastManager` | [hud-elements](../reference/hud-elements.md), [hud](../systems/client/hud.md) |
+| `ToastManager` | [hud-elements](../reference/hud-elements.md), [hud](../systems/client/hud.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md) |
 | `ToggleKeyMapping` | [input-and-keybinds](../systems/client/input-and-keybinds.md) |
 | `Tool` | [block-breaking](../systems/blocks/block-breaking.md), [data-components](../systems/foundations/data-components.md), [items-and-stacks](../systems/items/items-and-stacks.md) |
 | `ToolMaterial` | [block-breaking](../systems/blocks/block-breaking.md), [the-spear](../systems/player/the-spear.md) |

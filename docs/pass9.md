@@ -457,6 +457,8 @@ Each item names the sentence as the session left it, at its line after the sessi
 313. `reference/glossary`:225–227 — *most kinds* the server polls and diffs — eight of the sixteen: brains, goal selectors, paths, bees, hives, breezes, structures and raids — `world/entity/Mob.java`:1581–1596; `world/level/chunk/LevelChunk.java`:737, :760
 314. `commands/game-tests`:242–243 — the no-op collector cited to *The exceptions* — it is in *A renderer does not draw a gizmo; it appends one* — *(page-internal to the book)*
 
+After the deploy, the class index showed two names gone from the book. `DynamicAtlasAllocator`, which the correction at 101 had dropped from the sentence it still belongs in, is named there again: the fit a later frame's models make is the allocator's, asked by `GuiItemAtlas.tryPrepareFor`, which reclaims slots of models the frame does not draw — `client/gui/render/GuiItemAtlas.java`:68–70; `client/gui/render/DynamicAtlasAllocator.java`. `PlaySoundCommand`, whose one mention was the wrong one at 169, stays out; the table names `/playsound` by its command.
+
 ### Figures changed
 
 - `client/README` f1 — the edge into prediction relabelled *per action, a window per try* (a right-click tries each hand, and each try opens its own window). No arrow reordered.
