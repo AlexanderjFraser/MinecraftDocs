@@ -232,8 +232,7 @@ If the chunk's entity file is still being read,
 whole thing is retried next tick, so a half-loaded set never clobbers the
 file. Otherwise each entity `EntityAccess.shouldBeSaved` accepts is serialised
 with `Entity.save` **on the Server thread**, its passengers inside it, the tag
-goes to the *entities* lane, and those entities and their passengers are
-removed with `Entity.RemovalReason.UNLOADED_TO_CHUNK`. The filter runs before
+goes to the *entities* lane, and those entities and their passengers are removed with `Entity.RemovalReason.UNLOADED_TO_CHUNK`. The three types besides `Player` built never to be saved — a leash knot, a lightning bolt, a fishing bobber — pass the filter, write nothing in `Entity.save`, and are removed with the rest. The filter runs before
 the removal, not after it, so what it turns away on its own account — a
 `Player`, a vehicle carrying exactly one player — is neither written nor
 removed. The last of those is not an oddity: `ServerPlayer` writes its own

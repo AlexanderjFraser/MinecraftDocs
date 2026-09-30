@@ -206,8 +206,7 @@ holders already new and others still old. Which thread applies depends on the
 occasion: at world load the Server thread does not
 exist yet, so the apply runs on whichever thread is driving the load — the
 launching thread on a dedicated server, through `Util.blockUntilDone`, and
-the Render thread on the client. Only `/reload` applies on the Server
-thread.
+the Render thread on the client. Only a reload of a running server — `/reload`, or `/datapack enable` or `/datapack disable` — applies on the Server thread.
 
 ### The client gets integers
 

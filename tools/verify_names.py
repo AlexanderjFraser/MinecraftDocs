@@ -34,8 +34,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mc_version  # noqa: E402  (the one place the version is written)
 
-# A reference page whose header carries this was written by tools/gen_reference.py and is not
-# checked (its backticked cells are registry ids and packet ids). Every other page under
+# A reference page whose header carries this was written by a tool and is not checked: gen_reference.py's
+# views (their rows read off the decompile; the paragraph above each table is typed and unchecked) and the
+# two --index pages (names already checked). Every other page under
 # src/reference/ is hand-kept and is checked like a system page (pass-3 session O).
 GENERATED_MARK = "Do not edit by hand"
 
@@ -183,7 +184,7 @@ def main() -> int:
             with open(page, encoding="utf-8") as fh:
                 text = fh.read()
             if rel.startswith("reference/") and GENERATED_MARK in text[:400]:
-                continue  # a generated view or index: its backticks are ids, or names already checked
+                continue  # a generated view or index: its rows are read off the decompile, or its names are already checked
             version = trees.version_of(text)
             if version not in ("*", mc_version.VERSION):
                 behind.setdefault(version, []).append(rel)
@@ -358,7 +359,8 @@ def write_index(path: str, mentions: dict[str, set[str]]) -> None:
         "Every class **backticked** on a page — a system page, a Reference page, the atlas, the",
         "introduction or the lecture map — or named inside one of its figures (a lane, a node, a",
         "message; `tools/check_figure_names.py` reads those), and the pages that name it. Outside it:",
-        "the generated views, whose backticks are registry and packet ids rather than class names.",
+        "the generated pages: the eleven views, whose rows are read off the decompile, and the lane index, read off "
+        "the page template's key.",
         "",
         f"{len(mentions)} names across {len({p for ps in mentions.values() for p in ps})} pages. A row is a",
         "simple name, not a class: a few names belong to more than one class (there are five",

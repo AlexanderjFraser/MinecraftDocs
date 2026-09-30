@@ -1,6 +1,6 @@
 # XII · World generation
 
-> Verified against **Minecraft 26.3** · Part XII · the one system in the game built to be reproducible from a world's settings and its data packs alone, where it frays, and the single deliberate exception to it.
+> Verified against **Minecraft 26.3** · Part XII · The one system in the game built to be reproducible from a world's settings and its data packs alone, where it frays, and the single deliberate exception to it.
 
 What a player recognises the part by is the seam: the flat shelf of ground
 under a village that was not there before, the cave that is flooded the
@@ -16,8 +16,7 @@ cave ([terrain](terrain.md#carving-and-who-chooses-the-block)) — but because *
 
 Counting `world/level/levelgen` and `world/level/biome` together, the way
 [the atlas](../../maps/README.md) counts everything else, that is
-{{#include ../../generated/part-worldgen.md}} — and two of those classes are
-the standing counter-example to the paragraph above. `PatrolSpawner` and
+{{#include ../../generated/part-worldgen.md}} — and two of them are the standing counter-example to the paragraph above. `PatrolSpawner` and
 `PhantomSpawner` sit in these packages, run on the server tick, and belong to
 Parts III and VI.
 
@@ -170,7 +169,7 @@ registries a data pack writes into;
 [level data and rules](../../reference/level-data-and-rules.md#dimensions-and-the-seed)
 for which file the seed, the dimensions and the rules end up in, which lecture
 ten links to rather than restates; and
-[math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither)
+[math and primitives](../../reference/math-and-primitives.md#two-random-families-a-saved-table-and-a-mixer)
 for the two random families the determinism this page opens on lives in. [Diagram lanes](../../reference/lanes.md) and the twenty-five rows [naming drift](../../reference/naming-drift.md) keeps for this part are the two every part can use. And
 [the glossary](../../reference/glossary.md) holds this part's twenty-five headwords,
 which is where to go first if a page above spends one before you have met it.

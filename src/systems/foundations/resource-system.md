@@ -286,9 +286,7 @@ Registration order is apply order. The client registers, in order,
 client `ReloadableResourceManager.createReload` is called with
 `Util.backgroundExecutor` (named *resourceLoad*) and `Minecraft` itself as
 the main-thread executor, so apply runs on the Render thread, interleaved
-with frames. On the server `ReloadableServerResources.loadResources` is
-called with `Util.backgroundExecutor` and `MinecraftServer`, so apply runs
-on the Server thread.
+with frames. On the server a `/reload` calls `ReloadableServerResources.loadResources` with `Util.backgroundExecutor` and `MinecraftServer`, so apply runs on the Server thread; the first load, before any server runs, is handed the thread that waits for it — *ServerMain*, draining `Util.blockUntilDone`'s queue, on a dedicated server, and the Render thread when singleplayer opens a world.
 
 The counters `SimpleReloadInstance` wrapped the executors in are where the
 progress bar's numbers come from: its `ReloadInstance.getActualProgress`

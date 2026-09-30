@@ -346,7 +346,7 @@ def membership_failures(dependents: dict[str, set[int]], table_pages: set[str]) 
         n = len(dependents.get(k, ()))
         if k in UNIVERSAL_PAGES:
             if k in table_pages:
-                out.append(f"lectures.md: {k} is a dependency every part shares — the paragraph above the "
+                out.append(f"lectures.md: {k} is a dependency the whole book leans on — the paragraph above the "
                            f"figure says so and the figure draws it without edges — so it does not take a table row")
             continue
         if n >= 2 and k not in table_pages:
@@ -539,7 +539,7 @@ def main() -> int:
 
     # 1. landing before-you-start ↔ figure arrows. Parts I and II keep their boxes and the spine
     # I → II → III, but the rest of their arrows are left off on purpose (lectures.md: "the two
-    # dependencies every part shares"), so arrows out of them are not expected.
+    # dependencies the whole book leans on"), so arrows out of them are not expected.
     UNIVERSAL = {1, 2}
     landing_solid, landing_dashed = set(), set()
     landing_by_edge: dict[tuple, list[str]] = {}

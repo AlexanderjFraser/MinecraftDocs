@@ -166,7 +166,7 @@ sequenceDiagram
     Note over SL,CPL: tick N, chunk-source phase: the broadcast drain runs now, with nothing yet to send
     Note over SL,CPL: tick N, entities phase: the players' menus, with nothing new yet
     Note over SL,CPL: tick N, block-entities phase, the level's last content phase
-    SL->>LC: LevelChunk.<br/>BoundTickingBlock<br/>Entity.tick
+    SL->>LC: LevelChunk.<br/>BoundTickingBlockEntity.tick
     LC->>AFBE: serverTick, quickCheck finds the smelting recipe
     Note over AFBE: fuel consumed, both lit fields take 1600, the cooking timer at one
     AFBE->>SL: setBlock, LIT true under flags 3
@@ -177,7 +177,7 @@ sequenceDiagram
     CH->>CPL: ClientboundBlockUpdatePacket, the fire appears
     Note over CH: BlockEntity.<br/>getUpdatePacket<br/>answers nothing
     Note over SL,CPL: tick N plus 1, entities phase, the players tick
-    Note over CH,FM: AbstractContainerMenu.broadcastChanges<br/>checks the four data slots
+    Note over CH,FM: AbstractContainerMenu.<br/>broadcastChanges checks the four data slots
     FM->>CPL: ClientboundContainerSet<br/>DataPacket per changed slot
 ```
 

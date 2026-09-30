@@ -142,7 +142,7 @@ Every knob on the entity's side is a syncable attribute
 `Attributes.FALL_DAMAGE_MULTIPLIER`, `Attributes.MOVEMENT_EFFICIENCY`,
 `Attributes.WATER_MOVEMENT_EFFICIENCY`, `Attributes.AIR_DRAG_MODIFIER`,
 `Attributes.FRICTION_MODIFIER`, `Attributes.BOUNCINESS`. The world's half is
-five block properties ([blocks and states](../blocks/blocks-and-states.md#four-decisions-four-lookups)):
+five values each block copies out of its `BlockBehaviour.Properties` ([blocks and states](../blocks/blocks-and-states.md#the-kind-three-classes-deep)) and returns from a getter:
 
 | property | default | who changes it |
 |---|---|---|

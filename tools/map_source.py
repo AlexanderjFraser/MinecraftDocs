@@ -14,9 +14,9 @@ What is written (nothing under src/generated/ is hand-edited):
     fanin.md                                 the most-imported classes (the hubs), libraries included
     hierarchy-classes.md, hierarchy-interfaces.md   the widest inheritance trees, by root kind
     parts.md                                 the thirteen parts as package sets (PARTS below), with their totals
-    part-<dir>.md                            one phrase per part, "**N classes and M lines**", no trailing
+    part-<dir>.md                            one phrase per part, "**N files and M lines**", no trailing
                                              newline, for a landing page to {{#include}} mid-sentence
-    packages-treemap.svg                     the jar as a treemap: area = lines, colour = jar, hatch = skipped
+    packages-treemap.svg                     the jar as a treemap: area = lines, colour = jar, hatch = toured in what this book skips
     biggest.svg, fanin.svg                   the two tables above as bars
     tree-<Root>.svg                          the class hierarchy under each root in TREE_ROOTS, with counts
 
@@ -49,7 +49,8 @@ ROOT = mc_version.source()
 VERSION = mc_version.VERSION
 GEN = os.path.join(HERE, "..", "src", "generated")
 
-# The packages the book skips (Part I, *what this book skips*); hatched on the treemap.
+# The packages Part I's *what this book skips* tours, hatched on the treemap where its depth-four boxes reach them (chat/report is not); no part counts them, and they are not all that no part counts: most are
+# skipped, and the recipe book in `stats`, `gizmos` and `blaze3d/audio` are taught all the same.
 SKIPPED = (
     "net/minecraft/util/datafix", "net/minecraft/util/filefix", "net/minecraft/util/profiling",
     "net/minecraft/client/telemetry", "net/minecraft/client/data", "net/minecraft/data",
@@ -73,7 +74,7 @@ TREE_MAX_W = 1092  # the site's reading column: a tree wider than this is shrunk
 # sub-package another part owns. SKIPPED packages are never counted. A package two
 # parts share (server/level is Parts III and IV; client/multiplayer is IX and X)
 # is counted in both, and parts.md says so. From this one mapping the atlas writes
-# parts.md (the table) and part-<dir>.md (one phrase per part, "N classes and M
+# parts.md (the table) and part-<dir>.md (one phrase per part, "N files and M
 # lines", for a landing page to {{#include}} inside its size sentence), and
 # tools/pass5_coverage.py reads the same mapping for the coverage question, so a
 # landing page's count and the coverage population cover the same packages.
@@ -406,8 +407,9 @@ def md_parts(files):
 
 
 def part_phrase(n: int, l: int) -> str:
-    """The size sentence's payload, for a landing page to include: `**473 classes and 43,896 lines**`."""
-    return f"**{fmt(n)} classes and {fmt(l)} lines**"
+    """The size sentence's payload, for a landing page to include: `**473 files and 43,896 lines**`. Files, not
+    classes: the count includes each package's package-info.java, which no reader counts as a class (session O)."""
+    return f"**{fmt(n)} files and {fmt(l)} lines**"
 
 
 # ----------------------------------------------------------------------------
@@ -501,7 +503,7 @@ def svg_treemap(files, W=1000, H=600):
     gvals = [sum(x[3] for x in groups[g]) for g in gorder]
 
     TITLE, PAD, LEGEND = 15, 2, 28
-    out = svg_open(W, H + LEGEND, f"The {VERSION} jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching marks what this book skips")
+    out = svg_open(W, H + LEGEND, f"The {VERSION} jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching marks the packages what this book skips tours")
     out.append('<defs><pattern id="mapfig-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">'
                '<line class="hatch" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>')
     for (gx, gy, gw, gh), g in zip(squarify(gvals, 0, 0, W, H), gorder):
@@ -516,7 +518,7 @@ def svg_treemap(files, W=1000, H=600):
                 short = leaf[len(g) + 1:] if leaf != g else "(itself)"
                 lside = "client-only" if c == n else ("shared" if c == 0 else f"{c} of {n} client-only")
                 out.append(f'<g class="cell"><title>{esc(leaf)} — {n} classes, {fmt(l)} lines, {lside}'
-                           f'{" — skipped by this book" if is_skipped(leaf) else ""}</title>')
+                           f'{" — toured in what this book skips" if is_skipped(leaf) else ""}</title>')
                 out.append(f'<rect class="{cls}" x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}"/>')
                 if is_skipped(leaf):
                     out.append(f'<rect class="skip" x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}"/>')
@@ -550,7 +552,7 @@ def svg_treemap(files, W=1000, H=600):
     out.append(f'<rect class="client" x="130" y="{y - 10}" width="14" height="14"/>'
                f'<text x="150" y="{y + 1}" font-size="12">client only</text>')
     out.append(f'<rect class="shared" x="250" y="{y - 10}" width="14" height="14"/><rect class="skip" x="250" y="{y - 10}" width="14" height="14"/>'
-               f'<text x="270" y="{y + 1}" font-size="12">hatched: what this book skips</text>')
+               f'<text x="270" y="{y + 1}" font-size="12">hatched: toured in what this book skips</text>')
     out.append(f'<text class="muted" x="{W}" y="{y + 1}" text-anchor="end" font-size="11">{fmt(total)} lines, {sum(v[0] for v in leaves.values())} classes — area is lines of decompiled source</text>')
     out.append("</svg>")
     return "\n".join(out)

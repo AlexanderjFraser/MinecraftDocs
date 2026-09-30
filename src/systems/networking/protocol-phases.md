@@ -410,8 +410,7 @@ tags, feature flags or brand are re-sent, and none need to be. The player
 parks in configuration with an empty queue until
 `ServerConfigurationPacketListenerImpl.returnToWorld` re-queues the spawn
 and join tasks. Both directions are reachable in vanilla only from
-`DebugConfigCommand`, which only a dedicated server started with its debug
-system properties registers.
+`DebugConfigCommand`, which the game registers only in a dedicated server's command set, and only when started with its debug system properties.
 
 ## Cookies, transfers and the chat reset are proxy hooks
 

@@ -311,7 +311,7 @@ find. `Commands` registers `DebugConfigCommand`, `RaidCommand`,
 `SpawnArmorTrimsCommand` and `ServerPackCommand` only when
 `SharedConstants.DEBUG_DEV_COMMANDS` or `SharedConstants.IS_RUNNING_IN_IDE`
 is set, and `ChaseCommand` behind a flag of its own. `DebugConfigCommand` is
-additionally dedicated-server-only, which matters: it is the only vanilla
+additionally registered only in a dedicated server's command set, which matters: it is the only vanilla
 caller of the play-to-configuration transition and back
 ([protocol phases](../networking/protocol-phases.md)).
 

@@ -89,7 +89,7 @@ interest](../world/points-of-interest.md#a-ticket-is-a-claim-nothing-enforces),
 because a villager's whole day is claims on them and [goals and
 brains](ai-goals-and-brains.md) leans on `PoiManager` rather than explaining
 it. [Blocks and
-states](../blocks/blocks-and-states.md#four-decisions-four-lookups) for the
+states](../blocks/blocks-and-states.md#the-state-a-leaf) for the
 shapes that entities collide with. Part IV's *scheduled ticks* is a page of the
 world part you can skip before this one: entities keep no appointment book.
 

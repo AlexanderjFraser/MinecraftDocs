@@ -318,8 +318,7 @@ The custom spawners come last inside this step.
 which in practice means the overworld's ([the other ways
 in](../entities/entity-lifecycle.md#the-other-ways-in) names them). Three of
 the five carry a game rule of their own (`GameRules.SPAWN_PHANTOMS`,
-`GameRules.SPAWN_PATROLS`, `GameRules.SPAWN_WANDERING_TRADERS`); the other two
-answer only to `GameRules.SPAWN_MOBS`, which gates the whole call.
+`GameRules.SPAWN_PATROLS`, `GameRules.SPAWN_WANDERING_TRADERS`); the other two carry none, and `GameRules.SPAWN_MOBS` gates the whole call — though `VillageSiege`, like the phantom and patrol spawners, also stops when `GameRules.SPAWN_MONSTERS` is off.
 
 ### The broadcast, which is why entities are a tick behind
 
@@ -422,7 +421,7 @@ update raised inside the tick from one raised outside it.
 
 `ServerChunkCache.hasActiveTickets` — really
 `TicketStorage.shouldKeepDimensionActive`, which is the players' *simulation*
-tickets and the forced, portal and ender-pearl tickets — resets `ServerLevel.emptyTime`. Otherwise
+tickets and the forced, portal and ender-pearl tickets — resets `ServerLevel.emptyTime` at this point in the tick, and two other calls reset it: `Entity.teleportCrossDimension` for the level a non-player entity arrives in, and `ServerPlayer.registerAndUpdateEnderPearlTicket`, from a thrown pearl's own tick in the entity loop, for the pearl's level. Otherwise
 the counter rises, and it rises only while running, so a frozen dimension
 never falls asleep. Past `ServerLevel.EMPTY_TIME_NO_TICK`, 300 ticks, the
 level skips the dragon fight, the entity loop and the block entities. That
@@ -481,8 +480,7 @@ rest.
 ## After the entities: the manager's drain and the debug feed
 
 `PersistentEntitySectionManager.tick` drains
-`PersistentEntitySectionManager.loadingInbox`, a concurrent queue that chunk
-storage fills from IO threads — entities from freshly loaded chunks join the
+`PersistentEntitySectionManager.loadingInbox`, a concurrent queue that chunk storage fills on the Server thread once an IO read returns — entities from freshly loaded chunks join the
 world here — and then processes
 `PersistentEntitySectionManager.chunksToUnload`. The
 `ServerLevel.EntityCallbacks` it fires

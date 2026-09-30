@@ -3,11 +3,9 @@
 > Verified against **Minecraft 26.3** · Reference · Hand-kept from
 > `Hud.extractRenderState` and `Gui.extractRenderState`.
 
-The HUD is one ordered sweep down two methods — twenty-seven slots in
-`Hud.extractRenderState` and then four more in `Gui.extractRenderState`,
+The HUD is one ordered sweep down two methods — the rows numbered 1 to 27 in `Hud.extractRenderState` and then four more in `Gui.extractRenderState`,
 which is the split the second table below is about — and almost every element
-in it is behind a condition. *Slots*, because one of the twenty-seven holds
-two alternative elements and is numbered 17 and 17b below. The contextual bar is the exception, recorded
+in it is behind a condition. Four places in it record one element or another: the spyglass or the equipment overlay (rows 2 and 3), the portal or the nausea overlay (5 and 6), the hotbar or a spectator's (8), and the item name or a spectator's action (17 and 17b); food and the mount's health (11 and 13) exclude each other too, though each is decided in its own method. The contextual bar is the exception, recorded
 unconditionally and made to draw nothing by an empty state object instead.
 The lecture that frames this is [the HUD](../systems/client/hud.md); this is
 the table it is built on, in **record order** — which is also the order
@@ -36,7 +34,7 @@ second one.
 | 6 | nausea overlay | `Hud.extractConfusionOverlay` | yes | *else*: no portal effect, a nausea blend above zero, and `Options.screenEffectScale` below one |
 | 7 | crosshair | `Hud.extractCrosshair` | yes | first-person; either not a spectator or a hit result a spectator may see; **and** the F3 three-dimensional-crosshair entry is off |
 | — | *new stratum* | `GuiGraphicsExtractor.nextStratum` | — | a hard layering barrier — everything below is above everything above. `Hud` calls it ten times in all; this is the one that separates the overlays from the rest, and there is another inside the crosshair |
-| 8 | hotbar | `Hud.extractItemHotbar` | yes | a camera player exists — replaced by `SpectatorGui.extractHotbar` in spectator mode |
+| 8 | hotbar | `Hud.extractItemHotbar` | yes | a camera player exists — replaced in spectator mode by `SpectatorGui.extractHotbar`, which records only while a spectator menu is open |
 | 9 | armour | `Hud.extractArmor` | yes | inside the health block, and `LivingEntity.getArmorValue` above zero |
 | 10 | hearts | `Hud.extractHearts` | yes | inside the health block |
 | 11 | food | `Hud.extractFood` | yes | inside the health block, **and** the vehicle contributes no hearts |
@@ -46,7 +44,7 @@ second one.
 | 15 | experience level | `ContextualBar.extractExperienceLevel` | yes | the game mode has experience **and** the level is above zero — recorded between the bar's two passes, so it survives whichever bar wins |
 | 16 | contextual bar, foreground | `ContextualBar.extractRenderState` | yes | always recorded; empty in `ContextualBar.EMPTY`, `ExperienceBar` and `JumpableVehicleBar`, so `LocatorBar` is the only one of the four states that draws anything here |
 | 17 | selected item name | `Hud.extractSelectedItemName` | yes | not a spectator, `Hud.toolHighlightTimer` above zero, and the stack is not empty |
-| 17b | spectator action name | `SpectatorGui.extractAction` | yes | *else*: the game mode is spectator **and** the player is one — the same slot as row 17, and the second of the two places `SpectatorGui` replaces a `Hud` element |
+| 17b | spectator action name | `SpectatorGui.extractAction` | yes | *else*: the game mode is spectator **and** the player is one, and a spectator menu is open — the same slot as row 17, and the second of the two places `SpectatorGui` replaces a `Hud` element |
 | 18 | status effects | `Hud.extractEffects` | yes | the player has effects, no screen is showing them itself, and the instance sets `MobEffectInstance.showIcon` |
 | 19 | boss bars | `BossHealthOverlay` | yes | the overlay has events |
 | 20 | **sleep fade** | `Hud.extractSleepOverlay` | **no** | `Player.getSleepTimer` above zero — the one element between the two hidden-gated blocks |
@@ -72,8 +70,8 @@ The row with no number is the overlay-or-screen slot rather than an element:
 | — | *the overlay, or else the screen* | `Gui.overlay` if there is one — the loading overlay is the one you will have seen; otherwise, and only once resources are loaded, `Gui.screen` through `Screen.extractRenderStateWithTooltipAndSubtitles`. `Gui` never records both, though `LoadingOverlay` itself records the screen beneath its fill while it fades in and out; this is the whole of what a screen contributes to the record | — |
 | 28 | saving indicator | `Options.showAutosaveIndicator` is on, the frame is drawing a level, and a save is still animating | **no** |
 | 29 | toasts | resources are loaded | checks the flag itself |
-| 30 | debug overlay | resources are loaded, and the current screen is not `DebugOptionsScreen` | checks the flag itself |
-| 31 | deferred subtitles | row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, and this call then finds nothing left | — |
+| 30 | debug overlay | resources are loaded, the current screen is not `DebugOptionsScreen`, and some debug entry is on — one set to show always, or, while F3 is open, one set to show in the overlay | checks the flag itself |
+| 31 | deferred subtitles | row 27 deferred them — but only when neither a screen nor the loading overlay is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, `LoadingOverlay` draws them itself, and this call then finds nothing left | — |
 
 ---
 

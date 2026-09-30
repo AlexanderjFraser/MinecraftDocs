@@ -20,7 +20,7 @@ That is a small system to know so much about. Counting the four packages
 — `net/minecraft/server` itself, and `server/level`, `server/players` and
 `server/dedicated` under it — the way it counts everything else, it is
 {{#include ../../generated/part-server.md}}. Over half of those lines are
-`server/level`'s forty-two classes at nearly three hundred lines apiece,
+`server/level`'s forty-two files at nearly three hundred lines apiece,
 because the objects that own a world are few and enormous. The other landmark
 is one file: `MinecraftServer`, the largest of the ninety-five and most of
 this part's first page and its last two. Part I counts it too, because it is where the
@@ -53,7 +53,7 @@ order the program runs them; an arrow is a hand-off at run time, not a
 dependency between lectures.*
 
 The two numbered first are the loop itself. Seven later parts (IV, V, VI, VII, VIII, IX and
-XIII: every part that runs on the Server thread except world generation) assume
+XIII: every later part on the server's side of the game except world generation) assume
 one of those two or the other, which makes them the most load-bearing pair in
 the book after *Anatomy*. The beginning and the end are numbered last because
 there has to be something for them to start and stop.

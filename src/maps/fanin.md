@@ -41,7 +41,7 @@ are not one part's worth.
 | a shape on disk | `Codec`, `MapCodec`, `RecordCodecBuilder` | [Codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md), and for `MapCodec` [the data-driven type pattern](../systems/foundations/data-driven-types.md) |
 | a shape on the wire | `StreamCodec`, `ByteBufCodecs`, `RegistryFriendlyByteBuf`, `Packet`, `PacketType` | [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md) |
 | text | `Component` | [Text components](../systems/foundations/text-components.md) |
-| chance | `RandomSource` | [Math and primitives](../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither) |
+| chance | `RandomSource` | [Math and primitives](../reference/math-and-primitives.md#two-random-families-a-saved-table-and-a-mixer) |
 | the world's nouns | `Level`, `ServerLevel`, `BlockState`, `Block`, `Blocks`, `Entity`, `LivingEntity`, `Player`, `EntityType`, `ItemStack`, `SoundEvents`, `SoundEvent`, `DataComponents` | Parts II to X |
 
 Two of the thirty belong to no family and get no row above, and neither

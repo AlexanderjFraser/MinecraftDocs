@@ -28,7 +28,7 @@ ownership.
 | `PoiRecord` | one position's type and its `PoiRecord.freeTickets` counter | Server |
 | `PoiSection` | the records in one 16³ section, by section-relative position and by type, plus the *Valid* flag that decides whether the section is rebuilt on load | Server |
 | `PoiManager` | the index: a `SectionStorage` over the *poi/* region files, the whole query family, and the village distance graph | Server |
-| `ServerLevel` | that a block change happened at all — `ServerLevel.updatePOIOnBlockStateChange` is the door every ordinary write goes through | Server, or a worldgen worker |
+| `ServerLevel` | that a block change happened at all — `ServerLevel.updatePOIOnBlockStateChange` is the door every ordinary write goes through | Server, or the worldgen executor |
 | `AcquirePoi` | which POI a mob claims, and when to stop asking about one it cannot reach | Server |
 | `ValidateNearbyPoi` · `SleepInBed` | whether a remembered POI is still real, and what to do on arrival | Server |
 
@@ -177,8 +177,7 @@ happens — exactly the bed case, since a bed head that gains
 `PoiManager.remove` for the old and a `PoiManager.add` for the new, each
 wrapped in a `BlockableEventLoop.execute` on the server.
 
-That wrapper exists because `WorldGenRegion.setBlock` calls the same hook from
-worldgen workers and the index is Server-thread-only. What it does *not* do is
+That wrapper exists because `WorldGenRegion.setBlock` calls the same hook from the worldgen executor and the index is Server-thread-only. What it does *not* do is
 defer the ordinary case: `MinecraftServer.scheduleExecutables` is false when
 the caller is already the Server thread and not inside a task the loop is
 running (`ReentrantBlockableEventLoop.runningTask`), so a block placed by a

@@ -1,6 +1,6 @@
 # XI · Rendering
 
-> Verified against **Minecraft 26.3** · Part XI · one thread, a hundred-odd times a second, turning a world nobody can see into a picture — and two layers of machinery underneath that never touch the world at all.
+> Verified against **Minecraft 26.3** · Part XI · One thread, a hundred-odd times a second, turning a world nobody can see into a picture — and two layers of machinery underneath that never touch the world at all.
 
 **The renderer is not allowed to look at the world.** A frame is one call to
 [`Minecraft.renderFrame`](the-frame.md), on the same thread that ticked the
@@ -26,10 +26,7 @@ reload](models-and-atlases.md) and animated before each frame.
 It is also the largest thing on the client. `client/renderer`,
 `client/model`, `client/particle`, `com/mojang/blaze3d` and
 `com/mojang/renderpearl` together come to
-{{#include ../../generated/part-rendering.md}} — counted the way [the
-atlas](../../maps/README.md) counts everything, and against 432 classes and
-54,000 lines for the whole of `net/minecraft/server`. `net/minecraft/server` has a
-third as many classes as the client's renderer, and a little over half its lines.
+{{#include ../../generated/part-rendering.md}} — counted the way [the atlas](../../maps/README.md) counts a part, leaving out the hatched packages — against 358 files and 48,834 lines for `net/minecraft/server` counted the same way. `net/minecraft/server` has a little over a quarter as many files as the client's renderer, and about half its lines.
 
 ## The shape of the part
 

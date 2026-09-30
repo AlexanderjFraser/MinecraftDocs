@@ -9,12 +9,13 @@ thread, the process, the wire, the disk, a service or the game's own code rather
 one class.
 
 273 lanes are classes and 10 are not. A lane is normally the initials of
-the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
-rules make about a third of them: a short one-word class is its own lane (`Player`,
+the class's CamelCase words, a trailing *Impl* dropped (`ServerGamePacketListenerImpl` is `SGPL`),
+but about a third are not: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
 takes a fixed prefix (`Connection` is `Conn`, `Enchantment` is `Ench`), and a collision is
 resolved by lengthening the **later** claimant, never by reassigning a row — which is why
-`ChestMenu` is `ChestM` and not `CM` (`ChunkMap` had it first). Derive nothing from a lane;
+`ChestMenu` is `ChestM` and not `CM` (`ChunkMap` had it first); and a class a page draws twice, as two
+copies, has a second lane. Derive nothing from a lane;
 read it off this table.
 
 | lane | class |

@@ -50,7 +50,7 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, and K, L, M and N on 2026-09-29** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A, B and C ran on 2026-09-26, D, E and F on 2026-09-27, G, H, I and J on 2026-09-28, K, L, M and N on 2026-09-29, and O on 2026-09-30** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
 reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
@@ -58,7 +58,7 @@ and the atlas, sixteen pages two fact-checks had passed; C found 176 on Part III
 record 38 more; D found 284 on Part IV, 76 of them by the audit of its own record; E found 237 on Part V, 73 of them by that
 audit; F found 307 on Part VI, 80 of them by that audit; G found 255 on Part VII, 71 of them by that audit; H found 241 on
 Part VIII, 50 of them by that audit; I found 220 on Part IX, 71 of them by that audit; J found 314 on Part X, 131 of them by that
-audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit; L found 393 on Part XI, 113 of them by that audit; M found 421 on Part XII, 141 of them by that audit; N found 334 on Part XIII, 83 of them by that audit — and O onward have not. After it, nothing more is done here except a
+audit; K redrew and captioned Part XI's figures, with 110 corrections, 59 of them by that audit; L found 393 on Part XI, 113 of them by that audit; M found 421 on Part XII, 141 of them by that audit; N found 334 on Part XIII, 83 of them by that audit; O found 503 on the Reference tier and the frame, 173 of them by that audit, closed the pass-5 queue to zero and struck the last pass 5–7 ledger entries — and P onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -616,3 +616,15 @@ understood; recording is after the release.
   struck), so `pass5_queue.py --summary` has no Part XIII row. The record audited by one agent per page, which found **83
   of the 334, 58 in sentences the session had just written** — about one in four. Items handed to O, P and the second
   edition. Deployed.
+- **2026-09-30, pass 8, session O — Reference and the frame (Opus).** Nineteen fact-check agents — one a page, two
+  each for the glossary and `naming-drift`, three for the generated views' typed prose, one for the skips page against
+  §7 — and every handoff to O from B to N. **503 corrections on 51 pages, four tools and `TEMPLATE.md`**, every one
+  re-derived in the tree (the drift table's in the 1.21.11 tree too): `naming-drift` read against a 1.21 tree for the
+  first time (most rows record drift 1.21.11 already had, eight named 26.2's names, thirteen rows of Part X rendered as
+  text); `non-living-damage`'s *three never reached* wrong three ways, and its rewrite wrong again; the hatching called
+  what the book skips though three hatched packages are taught, and this session's own fix wrong as an identity; one
+  false heading. Two rulings: the drift table keeps its older 1.21 rows and says so, and the atlas's counts are files.
+  The 132 pass 5–7 ledger entries struck, so none before pass 8 is open; the 81 queue units settled, so
+  `pass5_queue.py --summary` is zero and the queue is closed; four §7 entries, two gaps declared on the skips page. The
+  record audited by seventeen agents, which found **173 of the 503, 106 in sentences the session had just written** —
+  about one in three. Items handed to P, Q and the second edition. Deployed.

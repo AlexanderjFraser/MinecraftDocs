@@ -100,8 +100,7 @@ thing on the client by a distance; Part XII is a system with no entity and
 no tick in it). The number is never hand-counted: it comes from
 `{{#include ../../generated/part-<dir>.md}}`, which `tools/map_source.py`
 writes from the same `PARTS` mapping the atlas prints and
-`tools/pass5_coverage.py` reads, so a landing page's count and the coverage
-population cannot disagree; the prose names the packages the way
+`tools/pass5_coverage.py` reads, so a landing page's count and the coverage population cover the same packages; the prose names the packages the way
 `src/generated/parts.md` does. A part whose size is not part of its argument
 says nothing and leaves the number to the atlas.
 
@@ -666,7 +665,7 @@ Lane *order* is the order of first use, left to right, so the first message
 reads left to right.
 
 **How a lane is derived** when it is not yet in the key: the initials of
-the class's CamelCase words (`ServerGamePacketListenerImpl` → `SGPL`),
+the class's CamelCase words, a trailing *Impl* dropped (`ServerGamePacketListenerImpl` → `SGPL`),
 never fewer than two letters; a one-word class of up to eight letters is
 its own lane (`Player`, `Entity`, `Window`), a longer one takes a fixed
 prefix recorded here (`Connection` → `Conn`); a nested class takes the
@@ -994,14 +993,12 @@ Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
 `CM` is `ChunkMap` (the menus take their own initials); `CH` is `ChunkHolder`
 (the client handshake listener is `CHPL`); `GR` is `GameRenderer`
 (`GuiRenderer` lengthens to `GuiR`); `TD` is retired in favour of `CTD` /
-`TCTD` — and `TreeDecorator` itself is `TDec`. Three classes have two lanes on
-purpose: `RCPL` is also `ClientPacketListener`, because the chat diagram shows
+`TCTD` — and `TreeDecorator` itself is `TDec`. Four classes have two lanes on purpose: `RCPL` is also `ClientPacketListener`, because the chat diagram shows
 the sender's client and the recipient's at once, and the connection diagram the
 swinger's and a watcher's, and a `box` per machine says which is which, and `SAB` is also `AbstractBoat` and `CSED` also
 `SynchedEntityData`, because [authority](systems/entities/authority.md)'s boat
 and [synched entity data](systems/entities/synched-entity-data.md)'s container
-are each a page's one picture of two copies of one object, and a `box` per
-machine says which is which. Part V (session F) lengthened four later claimants rather than
+are each a page's one picture of two copies of one object, and `CEM` is also `EnchantmentMenu`, because [enchanting](systems/items/enchanting.md)'s second figure draws the client's menu beside the server's; a `box` per machine says which is which. Part V (session F) lengthened four later claimants rather than
 reassigning a row: `LeverBlock` is `LevB` because `LB` is `LiquidBlock`,
 `BlockItem` would be `BItem` because `BI` is `BucketItem`,
 `BlockPlaceContext` would be `BPC` because `PC` is `ProtoChunk`, and

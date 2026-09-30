@@ -36,11 +36,11 @@ blocks — `ObserverBlock`, `TargetBlock`, `LightningRodBlock`, `TripWireBlock`,
 | `ScheduledTick` | the appointment itself — type, position, trigger tick, `TickPriority`, sub-order — and the comparisons the system sorts and dedups by | a record, no thread |
 | `LevelChunkTicks` | one chunk's queue and its dedup set: whether a booking is new, and which of its ticks is next | Server |
 | `LevelTicks` | the per-level scheduler: which chunks are due, which ticks run this level tick, and where the budget falls | Server |
-| `ScheduledTickAccess` | the write side every block sees, so no block knows which container it is booking into | any — worldgen workers book through it |
+| `ScheduledTickAccess` | the write side every block sees, so no block knows which container it is booking into | any — the worldgen executor books through it |
 | `ServerLevel` | when the drain runs, the per-chunk gate it runs under, and the type re-check that makes a tick cancellable | Server |
 | `SavedTick` | the disk form: a *relative* delay in place of an absolute time | Server, written by the IO worker |
-| `ProtoChunkTicks` | a generating chunk's bookings, all at delay zero | worldgen workers |
-| `BlackholeTickAccess` | accept every booking and run nothing — the client's answer to the whole system, and also an `ImposterProtoChunk`'s | Render, and worldgen workers |
+| `ProtoChunkTicks` | a generating chunk's bookings, all at delay zero | the worldgen executor |
+| `BlackholeTickAccess` | accept every booking and run nothing — the client's answer to the whole system, and also an `ImposterProtoChunk`'s | Render, and the worldgen executor |
 
 Those containers implement one small interface stack — `TickAccess`
 (schedule, ask, count), `TickContainerAccess` per chunk, `LevelTickAccess` per
@@ -53,7 +53,7 @@ will.
 ## The pipeline, end to end
 
 The pipeline has a seam in it, booking and the drain, so it is two figures. This
-is booking into a live level; the worker pool books into a generating chunk's
+is booking into a live level; the worldgen executor books into a generating chunk's
 own list instead ([below](#appointments-that-survive-a-restart)).
 
 ```mermaid
@@ -128,7 +128,7 @@ priority, and it carries the one threading fact of this page.
 `Level.subTickCount` is a plain counter incremented by
 `Level.nextSubTickCount`, because a level's scheduler is touched only from the
 Server thread; `WorldGenRegion.subTickCount` is an atomic one, because
-generation books ticks from the worker pool. **The drain is server-thread
+generation books ticks off the Server thread, on the worldgen executor. **The drain is server-thread
 only. Booking is not.**
 
 `TickPriority` runs `TickPriority.EXTREMELY_HIGH` (−3) through

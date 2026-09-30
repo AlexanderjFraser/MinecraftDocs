@@ -1,7 +1,7 @@
 # Naming drift
 
 > Verified against **Minecraft 26.3** · Reference · The translation
-> layer: every name a 1.21-era reader will reach for that 26.3 does not have,
+> layer: the names a 1.21-era reader will reach for that 26.3 dropped, moved or repurposed,
 > and what it is called now.
 
 Rule three of this corpus is *newest version only*: no page says "in 1.21
@@ -12,10 +12,7 @@ where the cost is paid back once. Every page assumes you are reading the
 names you learned somewhere else.
 
 Two audiences. A reader coming from **1.21** — the version most public
-writing, most tutorials and most model weights are anchored to — needs the
-first table: the old name on the left, what to grep for on the right. A
-reader coming from **Yarn** (Fabric's community mappings) needs the last
-one: not a version difference at all, just a different name for the same
+writing, most tutorials and most model weights are anchored to — needs the version tables: the old name on the left, what to grep for on the right. A reader coming from **Yarn** (Fabric's community mappings) needs the last table: not a version difference at all, just a different name for the same
 class in the same version.
 
 The one sentence: *if a name in your head does not appear in the tree, it
@@ -26,20 +23,13 @@ is probably on this page.*
 The left column is **italic, not backticked**. Most of these names do not
 exist in 26.3, and `tools/verify_names.py` — which checks every backticked
 identifier on every page against the decompile — would reject the page if
-they were. Italics is the corpus's mark for *a name, but not a 26.3 name*.
-The right column is backticked and therefore verified: those names are in
-the tree.
+they were. Italics is the corpus's mark for *a name, but not a 26.3 name*. The right column's class and member names are backticked and therefore verified: those names are in the tree; its italics are file paths, save-file keys and old names. The left column is a name a 1.21-era reader may remember, and 1.21.11 — the last of them, and the only one this project can open — is the one the rows are checked against: most rows record drift that had already happened by 1.21.11, so a reader coming from 1.21.11 will find those left names missing from their own tree too.
 
-"gone" in the right column means exactly that: there is no replacement
-class, the responsibility moved into something structurally different, and
-the entry names where it went. Those are the interesting rows — a rename is
+"gone" in the right column means no class replaced the name one for one: the responsibility moved into something structurally different or was dropped, and the entry names where it went when it went somewhere. Those are the interesting rows — a rename is
 a nuisance, a disappearance is a design change, and the page named beside
 each part explains it.
 
-Every row here was found the same way: a fact-sheet agent reading the
-decompile went looking for a name it expected and did not find it. The
-table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. Three hundred and eleven rows, and the distribution is
+The rows are the names the corpus's own pages needed, so the table is *not* exhaustive — not even over the corpus: a few names the *For a 1.21-era reader* notes use, such as *ItemBlockRenderTypes* and *LootItemFunctionType*, have no row. Three hundred and nine rows, and the distribution is
 itself a finding: the three biggest tables are **commands** (41),
 **rendering** (39) and **items** (38), and the fourth is **the server** (31). The
 client was rewritten around extract-then-render, which is why almost nothing
@@ -113,10 +103,10 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *doFireTick* + *allowFireTicksAwayFromPlayer* (two booleans) | one integer, `GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER` (0 none, 128 near players only, −1 everywhere) |
 | *spawnChunkRadius*, *entitiesWithPassengersCanUsePortals*, *gameLoopFunction* | gone with no replacement — the fix simply deletes them |
 | day time on *ServerLevel* | `ServerClockManager` (`world/clock`) |
-| per-level weather | server-global `WeatherData` |
+| weather on the overworld's level data | server-global `WeatherData` |
 | *GameProfile* on the player lists | `NameAndId` (a record of UUID and name) — `PlayerList.canPlayerLogin`, `PlayerList.isWhiteListed`, `PlayerList.op`, the ban/op/whitelist files |
 | *ServerPlayer.sendAllPlayerInfo* / *sendActivePlayerEffects* | `PlayerList.sendAllPlayerInfo` / `PlayerList.sendActivePlayerEffects` |
-| *MinecraftServer.getScheduledEvents* returning a per-level queue | the same name, returning a server-wide `TimerQueue` saved data, advanced only by the overworld's `ServerLevel.tickTime` |
+| *ServerLevelData.getScheduledEvents*, the overworld's level data holding the queue | `MinecraftServer.getScheduledEvents`, returning a server-wide `TimerQueue` saved data, advanced only by the overworld's `ServerLevel.tickTime` |
 | *ServerLevel.updateSkyBrightness* reading day time | the method survives, declared on `Level`, and now reads `EnvironmentAttributes.SKY_LIGHT_LEVEL` through `EnvironmentAttributeSystem` |
 | *ChunkMap.forEachBlockTickingChunk* meaning block-ticking | it walks the **entity**-ticking set; the name did not follow the split |
 
@@ -126,13 +116,13 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 |---|---|
 | *ChunkStorage* | gone — `ChunkMap extends SimpleRegionStorage` |
 | *ChunkSerializer* | `SerializableChunkData`, a record with its own parse and write halves — and a *blending_data* component |
-| *DimensionDataStorage* | `SavedDataStorage` (two of them) |
+| *DimensionDataStorage* | `SavedDataStorage` (one for the server, one per level) |
 | *getLightBlock* | `BlockBehaviour.BlockStateBase.getLightDampening` |
 | *PalettedContainer.Strategy* | top-level `Strategy` + `Configuration` |
 | *ForcedChunksSavedData* | `TicketStorage` |
 | *TicketType&lt;T&gt;* | a registry record with flag bits |
 | *DimensionType* booleans | `EnvironmentAttributeMap` |
-| *DimensionType.ultraWarm* | split four ways: `EnvironmentAttributes.FAST_LAVA`, `EnvironmentAttributes.WATER_EVAPORATES`, `EnvironmentAttributes.INCREASED_FIRE_BURNOUT`, `EnvironmentAttributes.SNOW_GOLEM_MELTS` |
+| *DimensionType.ultraWarm* | attributes the Nether sets, `EnvironmentAttributes.FAST_LAVA` and `EnvironmentAttributes.WATER_EVAPORATES` chief among them |
 | *DimensionType.piglinSafe* | `EnvironmentAttributes.PIGLINS_ZOMBIFY` — **inverted** |
 | *DimensionType.bedWorks* | `EnvironmentAttributes.BED_RULE`, a `BedRule` record, not a boolean |
 | *DimensionType.hasRaids* | `EnvironmentAttributes.CAN_START_RAID` |
@@ -140,8 +130,8 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *DimensionType.fixedTime* | `DimensionType.hasFixedTime`, a bare boolean — the time itself moved to `WorldClock` and `Timelines.OVERWORLD_DAY` |
 | *DimensionType.ambientLight* | unchanged; one of the three visual fields that did not become an attribute, with `DimensionType.skybox` and `DimensionType.cardinalLightType` |
 | *Schedule* (the villager's) | `EnvironmentAttributes.VILLAGER_ACTIVITY` on `Timelines.VILLAGER_SCHEDULE` |
-| *Level.dayTime* | `ServerClockManager`, keyed by `WorldClock` |
-| *data/&lt;id&gt;.dat* | *data/&lt;namespace&gt;/&lt;id&gt;.dat* — every saved-data file gained a namespace folder |
+| *Level.getDayTime* / *ServerLevel.setDayTime* | `ServerClockManager`, keyed by `WorldClock` |
+| *data/&lt;id&gt;.dat* | *data/&lt;namespace&gt;/&lt;path&gt;.dat* — every saved-data file gained a namespace folder |
 | *ChunkStatus.NOISE* / *SURFACE* / *CARVERS* | `ChunkStatus.TERRAIN`, one task doing all three |
 | *ProtoChunk.carvingMask* (saved with the chunk) | gone — the `CarvingMask` lives for one terrain run |
 | *BiomeManager.NoiseBiomeSource* | `BiomeResolver`, which `ChunkAccess` implements |
@@ -180,7 +170,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *LivingEntity.isDamageSourceBlocked* | gone — `DataComponents.BLOCKS_ATTACKS` |
 | *Schedule* / *ScheduleBuilder* | gone — `Timeline` + `EnvironmentAttribute` |
 | *BlockPathTypes* | `PathType` |
-| *Mob.brainProvider* | `LivingEntity.makeBrain(Brain.Packed)` |
+| *LivingEntity.brainProvider* | `LivingEntity.makeBrain(Brain.Packed)` |
 | *Entity.moveTo* / *absMoveTo* | `Entity.snapTo` / `Entity.absSnapTo` |
 | *Entity.maxUpStep* (field) | `Attributes.STEP_HEIGHT` |
 | *Entity.updateFluidHeightAndDoFluidPushing* | `EntityFluidInteraction` |
@@ -230,9 +220,9 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *AxeItem* / *ShovelItem* / *HoeItem* | gone — `DataComponents.BLOCK_TRANSFORMER` on a plain `Item` |
 | *RecipeManager* as a reload listener | `Registries.RECIPE`, read by `RegistryDataLoader`; the `RecipeManager` constructor builds the `RecipeMap` |
 | *LootPoolSingletonContainer* | `UniformContainerBase` |
-| *LootItemFunctions.compose*, lists of *functions* and *conditions* | one optional *modifier* and one optional *condition* per level; several functions are one `SequenceFunction` |
+| *LootItemFunctions.compose*, lists of *functions* and *conditions* | one optional *modifier* per level, and one optional *condition* on a pool, an entry or a conditional function; several functions are one `SequenceFunction` |
 | *LootItemConditions* | `LootItemConditionTypes` |
-| *NumberProvider* / *NumberProviders* | `ContextFloatProvider` / `ContextIntProvider` |
+| *NumberProvider* | split in two: `ContextFloatProvider` and `ContextIntProvider` |
 | *ContextAwarePredicate* / *ConditionReference* | gone — a `Holder` of a `LootItemCondition` |
 | *LootContext.getParameter* / *getOptionalParameter* | `LootContext.getOptional` |
 
@@ -240,18 +230,18 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 | the name you remember | 26.3 |
 |---|---|
-| *Inventory.armor* / *offhand* / *compartments* | one 36-slot `Inventory.items` + `Inventory.EQUIPMENT_SLOT_MAPPING` |
+| *Inventory.armor* / *offhand* / *compartments* | one 36-slot `Inventory.items`, and the armour and offhand in the entity's `EntityEquipment` through `Inventory.EQUIPMENT_SLOT_MAPPING` |
 | *Inventory.setPickedItem* | `Inventory.addAndPickItem` / `Inventory.pickSlot` |
 | *Entity.moveTo* | `Entity.absSnapTo` / `Entity.snapTo` |
 | *GameRenderer.pick* | `Minecraft.pick` → `LocalPlayer.raycastHitResult` |
-| *ServerboundInteractPacket.Action.ATTACK* | `ServerboundAttackPacket` (a record of one int) |
+| *ServerboundInteractPacket.ActionType.ATTACK* | `ServerboundAttackPacket` (a record of one int) |
 | *GameRules.NATURAL_REGENERATION* | `GameRules.NATURAL_HEALTH_REGENERATION` |
 | *isCritArrow* / *Player.sweepAttack* | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack`, all three private. *isCritArrow* was never a `Player` method and is still live on `AbstractArrow` |
 | *LivingEntity.eat* / *Player.eat* | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` |
 | *MobEffect.createModifier* | `MobEffect.createModifiers` (plural) |
 | *ServerboundSwingPacket* | `ServerboundPunchPacket` up, with no fields; `ClientboundSwingAnimationPacket` down |
 | *ServerGamePacketListenerImpl.handleAnimate* | `ServerGamePacketListenerImpl.handlePunch` |
-| *LocalPlayer.swing* | gone — `Minecraft.startAttack` sends the punch |
+| *LocalPlayer.swing* | gone — `Minecraft.startAttack` and `Minecraft.continueAttack` send the punch |
 | *LivingEntity.swinging* / *swingingArm* / *swingTime* / *attackAnim* | `LivingEntity.SwingState` |
 | *ItemStack.getSwingAnimation*, *DataComponents.SWING_ANIMATION* | `ItemStack.getAttackAnimation` + `ItemStack.getInteractAnimation`, `DataComponents.ATTACK_ANIMATION` + `DataComponents.INTERACT_ANIMATION` |
 
@@ -299,11 +289,9 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Minecraft.getPartialTick*, *Timer* | `DeltaTracker.Timer` and its three questions |
 | *Minecraft.destroy* | gone — `Minecraft.stop`, then `Minecraft.exitWorldAndClose` and `Minecraft.close` |
 | key-mapping categories as strings | `KeyMapping.Category` is a registrable record, not a string |
-
 | *MouseHandler.lastMouseEventTime* | gone |
 | raw *(key, scancode, modifiers, action)* on every `Screen` method | the `client/input` records: `KeyEvent`, `MouseButtonEvent`, `CharacterEvent`, `PreeditEvent` |
-
-| *Font.drawInBatch* and every *drawString* variant | `Font.prepareText` → `Font.PreparedText`; the drawing verbs are on `GuiGraphicsExtractor` |
+| *Font.drawInBatch* and every *drawString* variant | `Font.prepareText` → `Font.PreparedText`; the drawing verbs are on `GuiGraphicsExtractor`, *drawString*'s as `GuiGraphicsExtractor.text` |
 | *Font.StringRenderOutput* | `Font.PreparedText` plus `Font.GlyphVisitor` |
 | *BakedGlyph* (a class) | an interface; the sheet implementation is `BakedSheetGlyph`, effects are `EffectGlyph` |
 | *RawGlyph* / *SheetGlyphInfo* | `UnbakedGlyph` (info and bake) and `GlyphBitmap` (pixels and upload) |
@@ -317,9 +305,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part XI — Rendering
 
-Thirty-nine rows. Most are one refactor, extract then render; the rest are
-the GPU layer's move into `com/mojang/renderpearl`, the window's move to SDL,
-and order-independent transparency.
+Thirty-nine rows. Four refactors account for more than half of them — extract then render, the GPU layer's move into `com/mojang/renderpearl`, the window's move to SDL, and order-independent transparency — and the rest are the renames and moves around them — models, particles, sections, the camera, and the sky and fog.
 
 | the name you remember | 26.3 |
 |---|---|
@@ -336,22 +322,22 @@ and order-independent transparency.
 | *LevelRenderer.renderLevel* / *renderSky* / *renderChunkLayer* | `LevelRenderer.render` and the `LevelRenderer.addSkyPass` family of frame-graph passes |
 | *LevelRenderer.blockChanged* / *setSectionDirty* / *allChanged* | the same names on `LevelExtractor` |
 | *ChunkRenderDispatcher*, *RenderChunk*, *CompiledChunk* | `SectionRenderDispatcher`, its `SectionRenderDispatcher.RenderSection`, `CompiledSectionMesh` |
-| *RenderType.chunkBufferLayers* (five layers) | `ChunkSectionLayer` — three layers |
+| *RenderType.chunkBufferLayers*, *ChunkSectionLayer.TRIPWIRE* | `ChunkSectionLayer`, with three layers — the tripwire layer is gone |
 | *BakedModel*, *ModelResourceLocation* | `BlockStateModel` / `ItemModel`; block models keyed by `BlockState` |
-| *BlockModelShaper*, *ItemModelShaper*, *BlockRenderDispatcher*, *ItemRenderer* | `BlockStateModelSet`, `ItemModelResolver`, `ModelBlockRenderer` |
+| *BlockModelShaper*, *ItemModelShaper*, *BlockRenderDispatcher*, *ItemRenderer* | `BlockStateModelSet`, `ItemModelResolver`, `ModelBlockRenderer`, and for the item draw `ItemFeatureRenderer` |
 | *BlockElement* / *BlockElementFace*, *AtlasSet*, *ItemColors* | `CuboidModelElement` / `CuboidFace`, `AtlasManager`, `ItemTintSource` |
 | *EntityRenderer.render*, *RenderLayer.render* | `EntityRenderer.extractRenderState` + `EntityRenderer.submit` |
 | *TextureSheetParticle*, sheet *ParticleRenderType*s | `SingleQuadParticle` + `SingleQuadParticle.Layer` |
 | *ParticleGroup* (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket |
 | *Camera.setup* | `Camera.update` + `Camera.extractRenderState` |
-| *Camera.getPosition*, *getEntity*, *getRotation*, *getLookVector* | `Camera.position`, `Camera.entity`, `Camera.rotation`, `Camera.forwardVector` — the *get* prefix dropped, though `Camera.getCullFrustum`, `Camera.getFov` and `Camera.getCameraEntityPartialTicks` kept theirs |
-| *RenderStateShard* composition (the texture/target/layering half) | `RenderType` over a `RenderPipeline`, catalogued in `RenderTypes`, built by `RenderSetup` |
-| *BakedQuad* as four vertices | a ten-component record, with a `BakedQuad.MaterialInfo` of six |
+| *Camera.getPosition*, *getEntity*, *getRotation*, *getLookVector* | `Camera.position`, `Camera.entity`, `Camera.rotation`, `Camera.forwardVector` — the *get* prefix dropped from these four, though `Camera.getNearPlane` and `Camera.getFluidInCamera` kept theirs and new getters such as `Camera.getCullFrustum` and `Camera.getFov` carry one |
+| *RenderStateShard* composition (the texture and layering half) | `RenderType` over a `RenderPipeline`, catalogued in `RenderTypes`, built by `RenderSetup` |
+| *BakedQuad* as four vertices | a ten-component record, with a `BakedQuad.MaterialInfo` of eight |
 | *LiquidBlockRenderer* | `FluidRenderer`, over a `FluidModel` |
 | *ItemOverrides* / *getPropertyOverride* | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` |
 | *ScreenManager* (the Blaze3D monitor manager) | `MonitorManager`, with `Monitor` and `VideoMode` — same package, now fed by SDL's display events |
-| *Window.setVsync* | a `GpuSurface.PresentMode` in the surface configuration |
-| *GpuDevice*, *CommandEncoder*, *RenderPass* as classes in *com/mojang/blaze3d* | interfaces in `com/mojang/renderpearl/api`, implemented by `FrontendGpuDevice` and its siblings over the backends in `com/mojang/renderpearl/backend/opengl` and `/vulkan` |
+| *Window.updateVsync* | a `GpuSurface.PresentMode` in the surface configuration |
+| *GpuDevice*, *CommandEncoder*, *RenderPass* in *com/mojang/blaze3d* | still interfaces, reworked and moved to `com/mojang/renderpearl/api`, implemented by `FrontendGpuDevice` and its siblings over the backends in `com/mojang/renderpearl/backend/opengl` and `/vulkan` |
 | *GLX* | gone — `RenderSystem.initBackendSystem` starts SDL, and a backend that fails throws `BackendCreationException` |
 | *Window.isMinimized* / *Monitor.getPreferredVidMode* | `Window.isIconified` / `Monitor.getPreferredVideoMode` |
 | *ItemInHandRenderer* | `FirstPersonHandsAndItems` (the tick state and the extract) + `FirstPersonHandsAndItemsRenderer` (the pose) |
@@ -386,8 +372,8 @@ and order-independent transparency.
 | *ConfiguredWorldCarver* / *CarverConfiguration* / *NetherWorldCarver* | gone — `WorldCarver` instances in `Registries.CARVER`; the nether carver is a cave carver |
 | *SurfaceRules* / *SurfaceSystem* | `MaterialRule` / `MaterialCondition` / `MaterialSystem` |
 | *OreVeinifier* | `OreVeinRule` |
-| *NoiseChunk.forChunk* / *NoiseChunk.wrapNew* and the six cache markers | gone — `DensityFunctionCompiler` compiles once per dimension; one *cache* node; a `SamplerContext` per run |
-| *DensityFunctions.Marker* / *Mapped* / *Ap2* / *MulOrAdd* | `SimpleDensityFunction`, `UnaryFunction`, `BinaryFunction` in `world/level/levelgen/densityfunction` |
+| *NoiseChunk.forChunk* / *NoiseChunk.wrapNew* and the four cache markers | gone — `DensityFunctionCompiler` compiles once per dimension; one *cache* node; a `SamplerContext` per run |
+| *DensityFunctions.Marker* / *BlendAlpha* / *BlendOffset* / *BeardifierMarker* / *Mapped* / *Ap2* / *MulOrAdd* | `CacheFunction` and `InterpolatedFunction`, `SimpleDensityFunction`, `UnaryFunction` and `BinaryFunction`, under `world/level/levelgen/densityfunction` |
 | *TreeConfiguration* | `TreeFeature`, a record holding the fields |
 | *Climate.findSpawnPosition* | `NoiseSpawnFinder.findSpawnPosition` |
 | *Biome.getMobSettings* | `EnvironmentAttributes.NATURAL_MOB_SPAWNS` |
@@ -417,7 +403,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 | *ColorArgument* | `TeamColorArgument`, yielding a `TeamColor` rather than a `ChatFormatting` |
 | *PlayerTeam.getColor* returning a *ChatFormatting* | returns an optional `TeamColor`, its own enum carrying a `TextColor` |
 | *TestFunctionArgument* / *TestClassNameArgument* | gone — `/test` addresses tests as registry ids through `ResourceSelectorArgument` and `TestFinder` |
-| *net.minecraft.advancements.Criterion* / *CriterionTrigger* / *SimpleCriterionTrigger* | all moved to `net/minecraft/advancements/triggers`; `CriterionTriggerInstance` is the one that stayed behind in `net/minecraft/advancements` |
+| *net.minecraft.advancements.Criterion* / *CriterionTrigger* / *SimpleCriterionTrigger* | all moved to `net/minecraft/advancements/triggers`; `CriterionTriggerInstance` and `CriterionProgress` stayed behind in `net/minecraft/advancements` |
 | *ServerOpListEntry.getLevel* | `ServerOpListEntry.permissions` |
 | *ParserUtils.parseJson* | gone — `SnbtGrammar` plus `ParserBasedArgument` |
 | *ItemInput.createItemStack(int, boolean)* | `ItemInput.createItemStack` with one argument; the guard is `GiveCommand.MAX_ALLOWED_ITEMSTACKS` |
@@ -425,11 +411,11 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 | *CommandFunction.Entry* / *CommandEntry* / *FunctionEntry* | gone — a line is a `BuildContexts.Unbound`, a macro line a `MacroFunction.MacroEntry` |
 | *CommandFunction.CacheableFunction* (nested) | top-level `CacheableFunction`, codec-backed |
 | *Commands.performCommand* returning a success count | returns nothing; results are a `CommandResultCallback` pair |
-| `data/<ns>/functions/`, `data/<ns>/tags/functions/` | singular — *function/* and *tags/function/* |
+| *data/&lt;ns&gt;/functions/*, *data/&lt;ns&gt;/tags/functions/* | singular — *function/* and *tags/function/* |
 | *maxCommandChainLength* | `GameRules.MAX_COMMAND_SEQUENCE_LENGTH` |
 | *maxCommandForkCount* | `GameRules.MAX_COMMAND_FORKS` |
 | *announceAdvancements* | `GameRules.SHOW_ADVANCEMENT_MESSAGES` |
-| *net.minecraft.advancements.critereon* | split **three** ways: `net/minecraft/advancements/triggers`, `net/minecraft/advancements/predicates`, and `advancements/predicates/entity` for the entity half |
+| *net.minecraft.advancements.critereon* / *criterion* | split **three** ways: `net/minecraft/advancements/triggers`, `net/minecraft/advancements/predicates`, and `advancements/predicates/entity` for the entity half |
 | *AdvancementList* | `AdvancementTree` (+ `AdvancementNode`, `AdvancementHolder`) |
 | *FrameType* | `AdvancementType` |
 | *CriterionTrigger.addPlayerListener* / *removePlayerListener* | gone — triggers are stateless; subscriptions live in `PlayerAdvancements` |
@@ -446,8 +432,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 
 ## The shape changes, not just the names
 
-A rename table flatters the reader: it suggests that if you learn the three
-hundred and eleven rows above you can read the tree. You cannot, because
+A rename table flatters the reader: it suggests that if you learn the three hundred and nine rows above you can read the tree. You cannot, because
 many of those rows are one of **seven** design changes, and the change is what
 the corresponding page is about:
 
@@ -456,8 +441,7 @@ the corresponding page is about:
   `PatchedDataComponentMap` and every former tag key is a
   `DataComponentType` in `DataComponents` — [data components](../systems/foundations/data-components.md),
   [items and stacks](../systems/items/items-and-stacks.md).
-- **Hand-written serialisation became codecs.** *Packet.write* is gone: a
-  packet is a record with a `StreamCodec` the protocol table reads.
+- **Hand-written serialisation became codecs.** *Packet.write* is gone: every packet but the bundle carries a `StreamCodec` the protocol table reads, and most packets are records.
   *ItemStack.save* is gone: there is `ItemStack.CODEC` and, for saved data,
   the `ValueOutput` façade — [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md),
   [codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md).
@@ -469,14 +453,11 @@ the corresponding page is about:
   [entity rendering](../systems/rendering/entity-rendering.md).
 - **Per-dimension and per-biome constants became one attribute system.**
   *DimensionSpecialEffects* and most of *BiomeSpecialEffects* are gone;
-  fog, sky, water colour, ambient sound and music are
+  fog, sky, water fog colour, ambient sound and music are
   `EnvironmentAttribute`s resolved through an `EnvironmentAttributeProbe`
   over a stack of layers — [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md),
   [biomes](../systems/worldgen/biomes.md).
-- **Enums of behaviour became registries of data.** *EnchantmentCategory*,
-  *MobSpawnType*, *BlockPathTypes*, *GenerationStep.Carving* and
-  *Biome.BiomeCategory* are all gone, replaced by item sets, registry
-  records, `HolderSet`s or nothing at all.
+- **Enums of behaviour became registries of data.** *EnchantmentCategory*, *GenerationStep.Carving* and *Biome.BiomeCategory* are all gone, replaced by item sets, registry records, `HolderSet`s or nothing at all; *MobSpawnType* and *BlockPathTypes* stayed enums under new names.
 - **UUIDs became identifiers.** An `AttributeModifier` is keyed by
   `Identifier`, not a UUID, which is why a data pack can now name one —
   [attributes](../systems/entities/attributes.md).
@@ -494,8 +475,7 @@ the corresponding page is about:
 
 Yarn is Fabric's community mapping set. It is not a different version of
 the game and nothing on this list is a *change*: it is the same 26.3 class
-under the name a Fabric modder has in their head. Only the ones that
-actually trip people are listed — where the Yarn and Mojang names differ
+under the name a Fabric modder has in their head. Only the ones that trip people are listed — where the Yarn and Mojang names differ
 enough that grep fails.
 
 Both columns are italic here, because Yarn names are not in the decompile
@@ -545,17 +525,13 @@ Fabric code now compiles against a Mojang-named class with the Yarn name.
 
 - **A verified name is not a correct claim.** `verify_names.py` proves the
   right-hand column exists; it cannot prove the left-hand column ever did.
-  The 1.21 side of this table is the only unverifiable content in the
-  corpus, which is why it is confined to one page.
-- **The names did not move where you would guess.** Rendering is the
-  fourth-largest table, behind commands, the server and items. Two rewrites
+  The 1.21 side of this table, like the Yarn column above and the italic names in the pages' *For a 1.21-era reader* notes, is what the corpus cannot verify, and 1.21.11 is the only 1.21 it can check a name against.
+- **The names did not move where you would guess.** Rendering is only the second-largest table, behind commands. Two rewrites
   nobody advertised — permissions ceasing to be integers, and game rules
   becoming a registry — renamed more identifiers than the render-stack
   refactor did, and the render one is the famous half only because its
   classes are the ones tutorials name.
-- **Renames cluster with rewrites.** No part of the tree renamed a class
-  and kept its design; where the name changed, the responsibility usually
-  moved too. Reading the row is not enough, which is what the linked page
+- **Renames cluster with rewrites.** Where a name changed, the responsibility often moved too — though not always: *ClickType* is `ContainerInput` with the same constants, and *RedStoneWireBlock* is `RedstoneWireBlock` with the same methods. Reading the row is not enough, which is what the linked page
   is for.
 - **Two subsystems have no rows at all, and that is the answer.** Dialogs
   (`net/minecraft/server/dialog` and its client screens) and the JSON-RPC
@@ -581,8 +557,7 @@ Fabric code now compiles against a Mojang-named class with the Yarn name.
 
 ## Where to look
 
-`Identifier`, then `Holder` and `HolderSet` (`net/minecraft/core`), then `DataComponents`
-— those three carry more of the drift than any others. After that, pick the
+`Identifier`, then `Holder` and `HolderSet` (`net/minecraft/core`), then `DataComponents`. After that, pick the
 part you are lost in and read its page rather than its rows.
 
 ---

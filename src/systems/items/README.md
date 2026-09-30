@@ -103,7 +103,7 @@ Three ordering facts matter more than they look. [The server
 tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain) drains the packet queue before any level ticks, and a click is answered inside
 that drain; [the level
 tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates) decides
-*when* a menu's other changes are broadcast, which is what makes a hopper's delivery visibly late; and [block
+*when* a menu's other changes are broadcast (a pickup's excepted, which the connection phase sends), which is what makes a hopper's delivery visibly late; and [block
 interaction](../blocks/block-interaction.md#block-then-empty-hand-then-item) is
 how a chest gets opened in the first place, which is where two of these
 pages start.
@@ -172,11 +172,10 @@ Three were written for it. [The weapon
 helpers](../../reference/weapon-helpers.md) — the seven `Item.Properties`
 methods that make a weapon and the forty-two items built by one; [enchantment
 hooks](../../reference/enchantment-hooks.md) — every `EnchantmentHelper`
-entry point with the classes that call it, which is the enchantment
-system's real interface. [Loot context parameter
+entry point with the classes that call it, which is where most of the game meets the enchantment system. [Loot context parameter
 sets](../../reference/loot-context-params.md) — all thirty-one, with the
 keys each one requires and allows. Then the catalogue behind the part's hard prerequisite, [data
-components](../../reference/components.md) — every component type with what it holds; [packets](../../reference/packets.md) for the container and recipe
+components](../../reference/components.md) — every component type in `DataComponents` with what it holds; [packets](../../reference/packets.md) for the container and recipe
 traffic; [registries](../../reference/registries.md) for where each engine's elements live; [naming
 drift](../../reference/naming-drift.md) for the predicate library's move out of
 *critereon*; and [diagram lanes](../../reference/lanes.md).

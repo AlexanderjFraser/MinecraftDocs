@@ -115,11 +115,9 @@ hits later.
 
 ## Seven families of moment
 
-Everything above does nothing until something calls `EnchantmentHelper`. The enchantment package calls out little and is called from everywhere, so the
-artefact worth keeping is a table of who calls what: every entry point with
+Everything above does nothing until something calls `EnchantmentHelper`. The enchantment package is called from all over the game, so the artefact worth keeping is a table of who calls what: every entry point with
 its callers is [the enchantment hook
-table](../../reference/enchantment-hooks.md), and these are the seven kinds
-of moment it falls into.
+table](../../reference/enchantment-hooks.md), and these are the seven kinds of moment its effect hooks fall into; the rest of the table stores, looks up or chooses enchantments.
 
 | family | a representative hook or two | who makes it real |
 |---|---|---|

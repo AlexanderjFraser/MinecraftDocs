@@ -2,7 +2,7 @@
 
 > Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. None of the six needs a class of its own: `axe`, `hoe` and `shovel` add `DataComponents.BLOCK_TRANSFORMER`, which the base `Item.useOn` runs on a right-click, so every item a helper builds is a plain `Item`. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).
+The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. The *components* column names what a helper sets by name; through `Item.Properties.durability`, `Item.Properties.repairable`, `Item.Properties.enchantable` and `Item.Properties.attributes` every one also sets the durability components and a stack size of one, and the repair, enchantability and attribute-modifier components. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. None of the six needs a class of its own: `axe`, `hoe` and `shovel` add `DataComponents.BLOCK_TRANSFORMER`, which the base `Item.useOn` runs on a right-click, so every item a helper builds is a plain `Item`. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).
 
 | helper | delegates to | components it sets | attributes |
 |---|---|---|---|
@@ -16,7 +16,7 @@ The seven `Item.Properties` methods that turn a bare item into something you can
 
 ## The 42 items built by one
 
-*damage* and *speed* are the two baselines the call passes; the material adds its own attack-damage bonus on top.
+*damage* and *speed* are the two baselines a tool or sword call passes; the material adds its own attack-damage bonus on top. A spear's call passes an attack duration and a damage multiplier instead, so its row leaves both cells empty.
 
 | item | helper | material | damage baseline | speed baseline |
 |---|---|---|---:|---:|
@@ -55,10 +55,10 @@ The seven `Item.Properties` methods that turn a bare item into something you can
 | `Items.NETHERITE_PICKAXE` | `Item.Properties.pickaxe` | `ToolMaterial.NETHERITE` | 1.0 | -2.8 |
 | `Items.NETHERITE_AXE` | `Item.Properties.axe` | `ToolMaterial.NETHERITE` | 5.0 | -3.0 |
 | `Items.NETHERITE_HOE` | `Item.Properties.hoe` | `ToolMaterial.NETHERITE` | -4.0 | 0.0 |
-| `Items.WOODEN_SPEAR` | `Item.Properties.spear` | `ToolMaterial.WOOD` | 0.65 | 0.7 |
-| `Items.STONE_SPEAR` | `Item.Properties.spear` | `ToolMaterial.STONE` | 0.75 | 0.82 |
-| `Items.COPPER_SPEAR` | `Item.Properties.spear` | `ToolMaterial.COPPER` | 0.85 | 0.82 |
-| `Items.IRON_SPEAR` | `Item.Properties.spear` | `ToolMaterial.IRON` | 0.95 | 0.95 |
-| `Items.GOLDEN_SPEAR` | `Item.Properties.spear` | `ToolMaterial.GOLD` | 0.95 | 0.7 |
-| `Items.DIAMOND_SPEAR` | `Item.Properties.spear` | `ToolMaterial.DIAMOND` | 1.05 | 1.075 |
-| `Items.NETHERITE_SPEAR` | `Item.Properties.spear` | `ToolMaterial.NETHERITE` | 1.15 | 1.2 |
+| `Items.WOODEN_SPEAR` | `Item.Properties.spear` | `ToolMaterial.WOOD` | — | — |
+| `Items.STONE_SPEAR` | `Item.Properties.spear` | `ToolMaterial.STONE` | — | — |
+| `Items.COPPER_SPEAR` | `Item.Properties.spear` | `ToolMaterial.COPPER` | — | — |
+| `Items.IRON_SPEAR` | `Item.Properties.spear` | `ToolMaterial.IRON` | — | — |
+| `Items.GOLDEN_SPEAR` | `Item.Properties.spear` | `ToolMaterial.GOLD` | — | — |
+| `Items.DIAMOND_SPEAR` | `Item.Properties.spear` | `ToolMaterial.DIAMOND` | — | — |
+| `Items.NETHERITE_SPEAR` | `Item.Properties.spear` | `ToolMaterial.NETHERITE` | — | — |

@@ -2,7 +2,7 @@
 
 > Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every `ContextKeySet` registered in `LootContextParamSets`, with the keys its `ContextKeySet.Builder` declared. The set belongs to the **caller**, not to the loot table: `ContextMap.Builder.buildAndValidate` throws both on a required key that is absent and on a key the set does not declare at all, so this table is the contract each call site has to satisfy. Every key is read the same way, with `LootContext.getOptional`, which answers null for a key that is not there. Seventeen of these thirty-one sets never roll a `LootTable` at all — the engine is older and wider than the loot package. See [Contexts and predicates](../systems/items/contexts-and-predicates.md).
+Every `ContextKeySet` registered in `LootContextParamSets`, with the keys its `ContextKeySet.Builder` declared. The set a roll is checked against belongs to the **caller**: `ContextMap.Builder.buildAndValidate` throws both on a required key that is absent and on a key the set does not declare at all, so this table is the contract each call site has to satisfy. A loot table names a set of its own, its *type*, but that one is checked only when the table loads. A loot element reads a key with `LootContext.getOptional`, which answers null for a key that is not there, or asks only whether it is there, with `LootContext.hasParameter`. Seventeen of these thirty-one sets never roll a `LootTable` at all — the engine is wider than the loot package. See [Contexts and predicates](../systems/items/contexts-and-predicates.md).
 
 31 parameter sets
 

@@ -14,7 +14,7 @@ each system to record it, so the work is in passes (the owner is the "meat
 proxy": starts sessions, approves nothing technical, judges what lands by
 reading the live site). Nothing is recorded that the owner hasn't understood.
 
-**Where the work is (2026-09-29).** Seven passes are done: **1** the rough
+**Where the work is (2026-09-30).** Seven passes are done: **1** the rough
 draft from the decompile; **2** every claim adversarially fact-checked;
 **3** the restructuring into a book of thirteen parts and eight page shapes;
 **4** the second fact-check; **5** the book, read across pages (171
@@ -32,7 +32,7 @@ wording done after the check and read again by a session that changed
 nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
 the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
 (sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
-that file's Part 6; **V1, V2, A, B, C, D, E, F, G, H, I, J, K, L, M and N have run** (the tools read 26.3 and every
+that file's Part 6; **V1, V2, A, B, C, D, E, F, G, H, I, J, K, L, M, N and O have run** (the tools read 26.3 and every
 page says 26.3; V2 rewrote the 42 pages whose systems 26.3 reshaped; A ruled the
 voice into `TEMPLATE.md` and found the book's *constant nobody reads* asides to
 be javac's inlining, not the game; B made 293 corrections on Parts I and II and
@@ -44,7 +44,7 @@ audit, 45 in its own new sentences; H made 241 on Part VIII, 50 found by that au
 own new sentences; I made 220 on Part IX, 71 found by that audit, 52 in its own new sentences; J made 314 on
 Part X, 131 found by that audit, 74 in its own new sentences; K redrew and captioned Part XI's figures, 110 corrections,
 59 found by that audit, 55 in its own new labels, captions and sentences; L made 393 on Part XI, 113 found by that
-audit, 86 in its own new sentences; M made 421 on Part XII, 141 found by that audit, 94 in its own new sentences; N made 334 on Part XIII, 83 found by that audit, 58 in its own new sentences), and session O is next. After the pass the
+audit, 86 in its own new sentences; M made 421 on Part XII, 141 found by that audit, 94 in its own new sentences; N made 334 on Part XIII, 83 found by that audit, 58 in its own new sentences; O made 503 on the Reference tier and the frame, 173 found by that audit, 106 in its own new sentences, ruled the drift table's baseline and the atlas's counting, struck the last pass 5–7 ledger entries and closed the pass-5 queue), and session P is next. After the pass the
 production process is rebuilt from first
 principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
 returns here with what it learned; until then only a version pass the owner
@@ -125,7 +125,8 @@ options (without them every `@Override` is dropped and every line count shrinks)
 strict superset of the server jar, so a tree is the client decompile plus
 `server-classes.txt`, the list of classes the dedicated server also ships —
 the oracle for "is this class server-side or client-only". 26.2: 7,055
-classes, 719k lines, Java 25; 26.3: 7,301 classes, 741k lines, 271 removed and
+files, 719k lines, Java 25; 26.3: 7,301 files (565 of them `package-info.java`, which the atlas counts
+as classes and says so), 741k lines, 271 removed and
 517 added, 5,037 server classes, protocol 777.
 
 Beside the Java in each tree: **`data/` and `assets/`** — the jar's data

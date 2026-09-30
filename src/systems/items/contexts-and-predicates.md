@@ -318,7 +318,7 @@ sequenceDiagram
 
     Note over ExecC: the argument already holds a Holder, resolved at parse time
     ExecC->>LootP: LootParams.Builder on the level, ORIGIN required, THIS_ENTITY optional
-    LootP->>CMap: ContextMap.Builder.buildAndValidate against LootContextParamSets.COMMAND
+    LootP->>CMap: ContextMap.Builder.<br/>buildAndValidate against LootContextParamSets.COMMAND
     CMap-->>LootP: the checked map, or a throw on a bad key
     ExecC->>LootC: LootContext.Builder.create with no random sequence
     Note over LootC: the random source is Level.getRandom, the resolver is the reloadable registries

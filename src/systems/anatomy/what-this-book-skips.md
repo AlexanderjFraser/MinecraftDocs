@@ -1,17 +1,16 @@
 # What this book skips
 
-> Verified against **Minecraft 26.3** · Part I · A reader opens the atlas, sees fourteen packages hatched, and asks what is in them and why they are not taught.
+> Verified against **Minecraft 26.3** · Part I · A reader opens the atlas, sees fourteen packages hatched, and asks what is in them and why no part counts them.
 
 Open the atlas and part of the jar is drawn hatched. That hatching is this
-page. Java Minecraft is 7,301 classes and 741,069 lines, and the parts do
+page. Java Minecraft is 7,301 source files and 741,069 lines, and the parts do
 not reach all of it. Some of what is left out is excluded on purpose by the
 [newest-version-only rule](../../introduction.md#the-rules-the-book-keeps) —
 save migration is version-difference code, and a book that documents only
 the current version has nothing to say about it. Some is out of scope because it is a client for a service this
 book cannot read. And one hatched box is not skipped code so much as skipped
 *ground*: `net/minecraft/data` is the program that writes vanilla's own
-content as a data pack, it ships in the dedicated server jar — all 174
-classes of it — and the running game compiles against it and calls into it.
+content as a data pack, it ships in the dedicated server jar — all 174 files of it — and the running game compiles against it and calls into it.
 `Blocks` names `TreeFeatures` keys while it constructs mushroom blocks;
 `MinecraftServer` reaches for a `MiscOverworldFeatures` key for the bonus
 chest; the F3 screen's biome-builder line runs through
@@ -30,14 +29,12 @@ dedicated server ships it, one fact worth knowing, and where to start
 reading. The treemap deliberately does not hatch `net/minecraft/gametest`:
 Part XIII covers it, so it is a gap that closed rather than a skip. It cannot
 hatch player reporting either, which is why the table has fifteen top-level
-rows against the map's fourteen hatched boxes: the map's smallest box is a
+rows against the map's fourteen hatched packages: the map's smallest box is a
 package four levels deep, and `net/minecraft/client/multiplayer/chat/report`
-is six, sitting inside a package Parts IX and X between them own. The
-counts in the table are files, so a *package-info.java* counts as a class
-there and wherever the prose quotes the table; a sentence that counts a
+is six, sitting inside a package Parts IX and X between them own. The counts in the tables are files unless a cell says *classes*, so a *package-info.java* counts as one there and wherever the prose quotes the tables; a cell or a sentence that counts a
 package's working classes leaves it out.
 
-| package | classes | lines | side |
+| package | files | lines | side |
 |---|---:|---:|---|
 | `net/minecraft/util/datafix` | 411 | 27,048 | both |
 | `net/minecraft/util/filefix` | 57 | 3,553 | both |
@@ -214,7 +211,7 @@ socket code on its own threads. `RconThread` accepts the connections and
 accumulates output into a string rather than a chat feed
 ([Brigadier and commands](../commands/brigadier-and-commands.md)).
 `QueryThreadGs4` speaks the GameSpy4 UDP query protocol with a
-challenge-token handshake and a five-second response cache.
+challenge-token handshake and a five-second cache on its full-status reply.
 
 The **pre-1.7 ping is not in that package**. `LegacyQueryHandler` sits in
 the server's network package and is installed into the Netty pipeline
@@ -228,7 +225,7 @@ client-side so the server list can still ping ancient servers.
 
 ## Realms is a client for a server nobody here can read
 
-**`com/mojang/realmsclient`**, client-only, 137 classes and 14,701 lines —
+**`com/mojang/realmsclient`**, client-only, 137 files and 14,701 lines —
 more lines than the whole packet catalogue in `network/protocol`. Roughly
 sixty per cent is screens and the records behind them — subscriptions, world
 slots, templates, invites, backups, minigames, upload and download — and the
@@ -332,8 +329,7 @@ change it without a data pack" is *nearly* true — which is the more useful
 statement, because the exceptions are load-bearing and a reader who believes
 the absolute version will misread three other pages.
 
-**The package is not build-time only, and the dedicated server ships all 174
-classes of it.** Three kinds of exception:
+**The package is not build-time only, and the dedicated server ships all 174 files of it.** Three kinds of exception:
 
 - **Plain id tables.** `AtlasIds` is read at runtime by the model manager,
   the atlas manager, the map, sky, painting and particle renderers, and by a
@@ -426,12 +422,12 @@ miss it, not a shrug.
 
 | what | size | why | what carries it instead |
 |---|---|---|---|
-| `com/mojang/renderpearl/backend/vulkan` | 33 classes, 7,387 lines | a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
-| `net/minecraft/client/data` | 28 classes, 6,189 lines | build-time model, atlas, equipment and waypoint generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and in the list of *main* methods on [anatomy](anatomy.md#from-main-to-a-world) |
+| `com/mojang/renderpearl/backend/vulkan` | 33 files, 7,387 lines | a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
+| `net/minecraft/client/data` | 28 files, 6,189 lines | build-time model, atlas, equipment and waypoint generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and in the list of *main* methods on [anatomy](anatomy.md#from-main-to-a-world) |
 | the catalogues | ~140 entity models, ~80 particles, 102 render states, 50 render layers, 16 animation definitions, 56 of 58 worldgen features, 57 tree kits, the entity sub-predicates | each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
-| `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | a few classes each | no mechanism a lecture needs | — |
-| `net/minecraft/data/worldgen` as content | 64 classes, 6,016 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
-| `net/minecraft/client/animation`'s keyframe definitions | 16 of its 23 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 509 lines and 674 KB, one file's longest line thirty thousand characters, because the decompiler renders each animation as one builder chain | [entity rendering](../rendering/entity-rendering.md) has the framework |
+| `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | one or two classes each | no mechanism a lecture needs | — |
+| `net/minecraft/data/worldgen` as content | 64 files, 6,016 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
+| `net/minecraft/client/animation`'s keyframe definitions | 16 of its 21 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 266 lines and 665 KB, one file's longest line thirty thousand characters, because the decompiler renders each animation as one builder chain | [entity rendering](../rendering/entity-rendering.md) has the framework |
 
 Two things inside `com/mojang/renderpearl/backend/vulkan` are named before
 the decline rather than after it: `DestructionQueue`, the deferred-free
@@ -451,8 +447,7 @@ fight (`EnderDragonFight`); `client/multiplayer`'s joining-a-server tail; and
 two corners of the pack system that
 [the resource system](../foundations/resource-system.md) names without teaching — the
 server-resource-pack prompt and download flow in `client/resources/server`,
-and the *linkfs* synthetic file system that presents the launcher's hash-named
-asset files as the one tree their index describes. They are
+and the *linkfs* synthetic file system that presents the launcher's hash-named asset files as the one tree their index describes. Beside them sit the maps' saved data and the wandering trader's timer, which the [level data](../../reference/level-data-and-rules.md) table names and no page teaches, four Part V mechanisms its landing page does not list: rails, the shelf, the beehive and fire spread; local difficulty (`DifficultyInstance`), which only that table's page explains; and four things a player carries that Part VIII lists and does not teach — the attack's visual effects, the damage statistics, the warden-spawn tracker and the spectator camera behind */spectate*. They are
 named here so that a reader who wants one knows the book knows it is
 missing, and knows where to start.
 

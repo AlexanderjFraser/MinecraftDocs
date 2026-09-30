@@ -231,7 +231,7 @@ the server started is a daemon — the console reader, the Netty groups, the
 management server's group, the watchdog — except the RCON and query threads,
 which `GenericThread.stop` joins here in one-second slices, and the IO
 pool's workers, which went a step earlier with `Util.shutdownExecutors`, and the
-chat filter's pool, whose workers the text filter's close shuts down. So
+chat filter's pool, whose workers the text filter's close shuts down, and, with the GUI up, Swing's event dispatch thread, which ends once `MinecraftServerGui.close` disposes the frame. So
 when `MinecraftServer.runServer` returns, the Server thread is the last one
 left, and the JVM ends because there is nothing to keep it
 ([the thread reference](../../reference/threads.md#the-threads-a-lecture-leans-on)).

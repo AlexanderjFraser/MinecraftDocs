@@ -2,7 +2,7 @@
 
 > Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their bounds and any feature gate after the default. Values live in a `GameRuleMap` — a `SavedData` at *data/minecraft/game_rules.dat*, one set for the whole server rather than one per level. See [Level data and rules](level-data-and-rules.md).
+Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list the bounds they declare after the default — a minimum always, a maximum only where one is not `Integer.MAX_VALUE` — and any feature gate. Values live in a `GameRuleMap` — a `SavedData` at *data/minecraft/game_rules.dat*, one set for the whole server rather than one per level. See [Level data and rules](level-data-and-rules.md).
 
 59 rules
 

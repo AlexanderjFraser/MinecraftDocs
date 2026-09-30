@@ -114,8 +114,7 @@ at another entry, which is how a graph references a graph.
 Two things a reader of the JSON cannot see happen at the compile; construction
 keeps every node as the file wrote it. The compiler **folds**:
 `BinaryFunction.compileSampler` turns a two-argument node with one constant
-argument into a sampler that carries the constant, such as
-`BinaryFunction.ConstAddSampler`, so a node type in the file is not
+argument into a sampler that carries the constant, such as `BinaryFunction.ConstAddSampler`, unless a *min* or *max* has already been settled from its bounds, so a node type in the file is not
 necessarily the sampler that runs. And it **reads the bounds**, a static analysis of the data pack: `DensityFunction.range` answers from a node's children without
 a position — one that talks back, because compiling a *min* or a *max* over
 two ranges that cannot possibly overlap logs a warning naming both arguments,
@@ -131,7 +130,7 @@ which recognises it and emits the id string it came from.
 `RandomState.create` forks the seed into one positional factory — from which
 `RandomState.getOrCreateRandomFactory` hands out named ones, *aquifer* and
 *ore* among them, each a factory of `XoroshiroRandomSource`s unless the settings ask for the legacy family
-([math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither))
+([math and primitives](../../reference/math-and-primitives.md#two-random-families-a-saved-table-and-a-mixer))
 — and builds a `DensityFunctionCompiler`, rewriting nothing: the first
 `RandomState.getSampler` for a function rewrites and compiles it, once for the
 dimension.
@@ -161,7 +160,7 @@ and the nodes are records: two separately parsed but structurally identical
 cache requests are equal, and so are merged into one object with one cache.
 
 The compiled form is the only one anything ever samples, and away from the
-fill it is sampled in production: the biome step, the structure starts and checks, the height queries behind `ChunkGenerator.getBaseHeight`, the spawn search and the F3 noise readout, which
+fill it is sampled in production: the biome step, the biome searches, the structure starts and checks, the height queries behind `ChunkGenerator.getBaseHeight`, the spawn search and the F3 noise readout, which
 `NoiseBasedChunkGenerator.addDebugScreenInfo` fills from the settings' own
 *debug_functions* list, all run the dimension's compiled samplers against
 contexts of their own. That is the whole reason a compiled sampler has to stay

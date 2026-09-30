@@ -1,6 +1,6 @@
 # XIII · Commands and data packs
 
-> Verified against **Minecraft 26.3** · Part XIII · a string typed into a chat box becomes a call with typed arguments, on a queue, with a permission attached — and four whole systems are built on top of that.
+> Verified against **Minecraft 26.3** · Part XIII · A string typed into a chat box becomes a call with typed arguments, on a queue, with a permission attached — and four whole systems are built on top of that.
 
 Type a slash. The text turns grey and aqua and red as you type, a hint
 appears behind the cursor, and pressing Enter sends the *string* — the
@@ -111,9 +111,8 @@ machine — as it owns `/execute if predicate`, whose test a selector's own *pre
 ## Where the part stops
 
 {{#include ../../generated/coverage-commands.md}}, over two-fifths of them in the catalogue — itself not quite a third of this part by line — and most of the rest in the advancement triggers and predicates. Nearly all of that is one more instance of something
-a page above already draws. The **fifty-odd commands** nobody names —
-`SpreadPlayersCommand`, `FillCommand`, `TeleportCommand`,
-`WorldBorderCommand` and their neighbours — are each one more row for the
+a page above already draws. The **nearly fifty commands** nobody names —
+`TeleportCommand`, `WorldBorderCommand`, `WeatherCommand` and their neighbours — are each one more row for the
 door table on [Brigadier and
 commands](brigadier-and-commands.md#commands-that-are-a-door-to-somewhere-else):
 a registration and a call into another part. The **forty advancement triggers** the advancements page does not explain and the **concrete predicates** beside them are instances of the shapes [advancements](advancements.md#what-the-package-holds-that-this-page-does-not-name) states and declines to enumerate. The **argument types** are the same again:

@@ -224,8 +224,7 @@ the deferrable work and the flush bracket around outbound packets.
 **Both are event loops first and game loops second.** `Minecraft` and
 `MinecraftServer` both extend `ReentrantBlockableEventLoop` — the same base
 class, not an analogy — so each is an `Executor` whose queue drains on its own
-thread, and any other thread that wants to touch that half's state submits a
-task. `BlockableEventLoop.managedBlock` is the blocking form, and
+thread, and another thread that wants to touch that half's state submits a task, or leaves its work in one of the queues beside the loop's own that the owning thread drains — a packet in the `PacketProcessor` (below), a dedicated server's console line in a list `DedicatedServer.tickConnection` drains, a level's chunk work in its `ServerChunkCache.MainThreadExecutor` (below). `BlockableEventLoop.managedBlock` is the blocking form, and
 the reason the owning thread can wait for a future without deadlocking: it
 keeps draining its own queue while it waits.
 

@@ -227,12 +227,11 @@ block, a thrown eye of ender, a firework rocket and any arrow outside
 the hook by which a thing claims the swing for itself — an `Interaction`
 entity uses it to record
 who hit it, and a `BlockAttachedEntity` to re-enter through
-`Entity.hurtOrSimulate` with zero damage. Either answer ends the swing
+`Entity.hurtOrSimulate` with zero damage. A *no* from the first or a *yes* from the second ends the swing
 ([damage outside `LivingEntity`](../../reference/non-living-damage.md) has
 the per-class table). Then **`Player.deflectProjectile`**, which is why a
 ghast fireball can be batted back: anything in
-`EntityTypeTags.REDIRECTABLE_PROJECTILE` is turned around here rather than
-damaged, and the attack ends.
+`EntityTypeTags.REDIRECTABLE_PROJECTILE` is turned around here rather than damaged, and the attack ends — all but a player's wind charge in its first five ticks, which `WindCharge` will not let be deflected.
 
 Then three tests that are not gates but switches, each deciding what *kind*
 of hit this is. **Sprint knockback** needs the scale above 0.9, plays a

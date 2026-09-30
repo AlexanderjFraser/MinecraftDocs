@@ -3,8 +3,8 @@
 
 Usage:
     python tools/gen_reference.py packets     # every packet: phase group, direction, class
-    python tools/gen_reference.py registries  # every registry key: built-in / data-pack / synced
-    python tools/gen_reference.py components  # every DataComponentType, persistent / synced
+    python tools/gen_reference.py registries  # every registry key but the root's: built-in / data-pack / synced
+    python tools/gen_reference.py components  # every DataComponentType in DataComponents, persistent / on the wire
     python tools/gen_reference.py gamerules   # every game rule, type, category, default
     python tools/gen_reference.py entity-data-serializers   # every EntityDataSerializer, in wire-id order
     python tools/gen_reference.py attributes                # every attribute: default, range, syncable
@@ -21,8 +21,8 @@ back to the console codepage, the em dashes in the blurbs come out as mojibake,
 and mdbook then refuses the chapter with "stream did not contain valid UTF-8".
 
 MC_SOURCE points at the extracted decompile (default reference/<version>, tools/mc_version.py). Nothing
-here reproduces source: each catalogue is names plus the facts a declaration
-line states about them.
+here reproduces source: each catalogue is names plus the facts the tree states about them — a declaration line,
+a call site, a data file.
 """
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ def packets() -> str:
                 rows = PACKET.findall(read("network", "protocol", sub, f))
                 groups.append((sub, f[:-5], rows))
     shared = {"common", "cookie", "ping"}
-    out = header("Packets", "Every packet the game defines, by the `PacketTypes` class that declares it. `common`, `cookie` and `ping` packets are shared by more than one protocol phase; the exact phase→packet bindings are in the `*Protocols` classes next to each `PacketTypes` class (`GameProtocols`, `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols`, `HandshakeProtocols`). See [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md).")
+    out = header("Packets", "Every packet the game defines, by the `PacketTypes` class that declares it. `common`, `cookie` and `ping` packets are shared by more than one protocol phase; the exact phase→packet bindings are in the five `*Protocols` classes (`GameProtocols`, `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols`, `HandshakeProtocols`), which bind the shared groups too. See [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md).")
     c_total = s_total = 0
     out += "| group | clientbound | serverbound |\n|---|---:|---:|\n"
     for sub, cls, rows in groups:
@@ -133,9 +133,9 @@ def registries() -> str:
     more = words.get(len(owners), str(len(owners)))
     reload_note = (f", and the **reloadable** ones by the same loader on every data-pack reload (`RELOADABLE_REGISTRIES`, "
                    f"read by `ReloadableServerRegistries`)" if reloadable else "")
-    out = header("Registries", f"Every registry key in the game. **{in_registries} of them are declared in `Registries`**; {more} more are declared by the class that owns them ({', '.join(f'`{o}`' for o in owners)}) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the {in_registries} [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`{world_list}`, or `DIMENSION_REGISTRIES` for level stems){reload_note}; **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).")
-    out += (f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension)} data-pack"
-            + (f" · {len(reloadable)} reloadable" if reloadable else "") + f" · {len(synced)} synced\n\n")
+    out = header("Registries", f"Every registry key in the game but the root registry\'s own. **{in_registries} of them are declared in `Registries`**; {more} more are declared by the class that owns them ({', '.join(f'`{o}`' for o in owners)}) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the {in_registries} [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are created empty when `BuiltInRegistries` loads, filled during `Bootstrap.bootStrap` — most by `BuiltInRegistries.bootStrap` through their owners' own `bootstrap` methods, the block, item and entity-type registries earlier, by their owner classes' static initialisers, which `Bootstrap.bootStrap` reaches first — and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`{world_list}`, or `DIMENSION_REGISTRIES` for level stems){reload_note}; **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).")
+    out += (f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension | reloadable)} data-pack"
+            + (f", {len(reloadable)} of them reloadable" if reloadable else "") + f" · {len(synced)} synced\n\n")
     out += "| key | element type | kind | synced |\n|---|---|---|---|\n"
     for elem, const, key, owner in sorted(keys, key=lambda k: k[2]):
         kind = ("built-in" if const in builtin else "data-pack" if const in worldgen else "data-pack (dimension)" if const in dimension
@@ -154,12 +154,12 @@ COMP = re.compile(r"DataComponentType<(.+?)>\s+(\w+)\s*=\s*register\(\"([\w/]+)\
 def components() -> str:
     src = read("core", "component", "DataComponents.java")
     rows = COMP.findall(src)
-    out = header("Data components", "Every `DataComponentType` registered in `DataComponents`. *Persistent* components have a `Codec` and are written to disk; *synced* ones have a `StreamCodec` and are sent to the client; *cache-encoded* ones use the shared `EncoderCache`. A type that is neither persistent nor synced is transient and lives only in memory. See [Data components](../systems/foundations/data-components.md).")
-    out += f"{len(rows)} components\n\n| id | value type | persistent | synced |\n|---|---|---|---|\n"
+    out = header("Data components", "Every `DataComponentType` registered in `DataComponents`. *Persistent* types have a `Codec` and are written to disk; a type without one is *transient* (`DataComponentType.isTransient`), never saved but sent like the rest. Every type crosses the wire: the *on the wire* column says whether it declares its own `StreamCodec` or is sent as NBT through the one `DataComponentType.Builder.build` derives from its `Codec`, and a type with neither cannot be built. *Cached* persistent codecs share one `EncoderCache`. See [Data components](../systems/foundations/data-components.md).")
+    out += f"{len(rows)} components\n\n| id | value type | persistent | on the wire |\n|---|---|---|---|\n"
     for typ, const, cid, body in rows:
         typ = re.sub(r"<.*", "<…>", typ)
         p = "yes" if "persistent(" in body else ""
-        s = "yes" if "networkSynchronized(" in body else ""
+        s = "its own `StreamCodec`" if "networkSynchronized(" in body else "NBT, through its `Codec`"
         if "cacheEncoding(" in body:
             p += " (cached)"
         out += f"| `{cid}` (`DataComponents.{const}`) | `{typ}` | {p} | {s} |\n"
@@ -176,7 +176,7 @@ DEFAULT_NOTE = {"!SharedConstants.DEBUG_WORLD_RECREATE": "true"}
 
 def gamerules() -> str:
     rows = RULE.findall(read("world", "level", "gamerules", "GameRules.java"))
-    out = header("Game rules", "Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their bounds and any feature gate after the default. Values live in a `GameRuleMap` — a `SavedData` at *data/minecraft/game_rules.dat*, one set for the whole server rather than one per level. See [Level data and rules](level-data-and-rules.md).")
+    out = header("Game rules", "Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list the bounds they declare after the default — a minimum always, a maximum only where one is not `Integer.MAX_VALUE` — and any feature gate. Values live in a `GameRuleMap` — a `SavedData` at *data/minecraft/game_rules.dat*, one set for the whole server rather than one per level. See [Level data and rules](level-data-and-rules.md).")
     out += f"{len(rows)} rules\n\n| rule | type | category | default |\n|---|---|---|---|\n"
     for typ, const, _kind, rid, cat, default, lo, hi, flag in sorted(rows, key=lambda r: (r[4], r[3])):
         default = DEFAULT_NOTE.get(default.strip(), default.strip())
@@ -274,12 +274,13 @@ def loot_context_params() -> str:
     out = header(
         "Loot context parameter sets",
         "Every `ContextKeySet` registered in `LootContextParamSets`, with the keys its "
-        "`ContextKeySet.Builder` declared. The set belongs to the **caller**, not to the loot table: "
+        "`ContextKeySet.Builder` declared. The set a roll is checked against belongs to the **caller**: "
         "`ContextMap.Builder.buildAndValidate` throws both on a required key that is absent and on a key the "
-        "set does not declare at all, so this table is the contract each call site has to satisfy. Every key "
-        "is read the same way, with `LootContext.getOptional`, which answers null for a key that is not "
-        "there. Seventeen of these thirty-one sets never roll a `LootTable` at "
-        "all — the engine is older and wider than the loot package. See "
+        "set does not declare at all, so this table is the contract each call site has to satisfy. A loot "
+        "table names a set of its own, its *type*, but that one is checked only when the table loads. A loot "
+        "element reads a key with `LootContext.getOptional`, which answers null for a key that is not there, "
+        "or asks only whether it is there, with `LootContext.hasParameter`. Seventeen of these thirty-one sets "
+        "never roll a `LootTable` at all — the engine is wider than the loot package. See "
         "[Contexts and predicates](../systems/items/contexts-and-predicates.md).",
     )
     out += f"{len(sets)} parameter sets\n\n"
@@ -332,9 +333,9 @@ def enchantment_hooks() -> str:
     out = header(
         "Enchantment hooks",
         "Every public entry point of `EnchantmentHelper`, with the classes that call it. "
-        "The enchantment package barely calls anything and everything calls it, so this table is the "
-        "system's real interface: each row is a moment at which some other system asks whether an "
-        "enchantment wants to change what happens. Callers are the declaring files, one per class, "
+        f"{len(set().union(*callers.values()))} classes call it, so this table is where most of the rest of the game "
+        "meets the enchantment system: most rows are a moment at which some other system asks whether an "
+        "enchantment wants to change what happens, and the rest store, look up or choose enchantments. Callers are the declaring files, one per class, "
         "excluding `EnchantmentHelper` itself. See "
         "[Enchantments](../systems/items/enchantments.md) for what an enchantment is and "
         "[Enchanting](../systems/items/enchanting.md) for the selection half.",
@@ -407,7 +408,7 @@ def spawn_reasons() -> str:
                 where = (cls, _enclosing_method(text, m.start()))
                 if where not in tests[const]:
                     tests[const].append(where)
-            else:
+            elif cls != "EntitySpawnReason":
                 passes[const].add(cls)
         if helper_call and cls != "EntitySpawnReason":
             for m in helper_call.finditer(text):
@@ -415,7 +416,7 @@ def spawn_reasons() -> str:
                     where = (cls, _enclosing_method(text, m.start()), m.group(1))
                     if where not in tests[const]:
                         tests[const].append(where)
-    out = header("Entity spawn reasons", "Every `EntitySpawnReason` constant, in declaration order, with **what each one gates** — the classes that compare against it and so behave differently for that reason — and how many other classes pass it. A reason with an empty *gates* column changes nothing by itself: it is a label the spawn path carries for other code to read. `EntitySpawnReason.isSpawner` folds `SPAWNER` and `TRIAL_SPAWNER` together and `EntitySpawnReason.ignoresLightRequirements` is true of `TRIAL_SPAWNER` alone. See [entity lifecycle](../systems/entities/entity-lifecycle.md#the-other-ways-in).")
+    out = header("Entity spawn reasons", "Every `EntitySpawnReason` constant, in declaration order, with **what each one gates** — the classes that compare against it and so behave differently for that reason — and how many classes pass it. A reason with an empty *gates* column changes nothing by itself: it is a label the spawn path carries for other code to read. `EntitySpawnReason.isSpawner` folds `SPAWNER` and `TRIAL_SPAWNER` together and `EntitySpawnReason.ignoresLightRequirements` is true of `TRIAL_SPAWNER` alone. See [entity lifecycle](../systems/entities/entity-lifecycle.md#the-other-ways-in).")
     gated = sum(1 for c in order if tests[c])
     out += f"{len(order)} reasons · {gated} of them tested somewhere · {sum(len(v) for v in tests.values())} test sites\n\n"
     out += "| # | reason | what it gates | classes that pass it |\n|---:|---|---|---:|\n"
@@ -473,7 +474,7 @@ def weapon_helpers() -> str:
         if w and w.group(1) in wrappers:
             rows.append((m.group(1), wrappers[w.group(1)] + f" (`{w.group(1)}`)", w.group(2), w.group(3), w.group(4)))
 
-    out = header("The weapon helpers on `Item.Properties`", "The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. None of the six needs a class of its own: `axe`, `hoe` and `shovel` add `DataComponents.BLOCK_TRANSFORMER`, which the base `Item.useOn` runs on a right-click, so every item a helper builds is a plain `Item`. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).")
+    out = header("The weapon helpers on `Item.Properties`", "The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. The *components* column names what a helper sets by name; through `Item.Properties.durability`, `Item.Properties.repairable`, `Item.Properties.enchantable` and `Item.Properties.attributes` every one also sets the durability components and a stack size of one, and the repair, enchantability and attribute-modifier components. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. None of the six needs a class of its own: `axe`, `hoe` and `shovel` add `DataComponents.BLOCK_TRANSFORMER`, which the base `Item.useOn` runs on a right-click, so every item a helper builds is a plain `Item`. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).")
     out += "| helper | delegates to | components it sets | attributes |\n|---|---|---|---|\n"
     for name in ("tool", "pickaxe", "axe", "hoe", "shovel", "sword", "spear"):
         args, body = bodies[name]
@@ -482,10 +483,12 @@ def weapon_helpers() -> str:
         attrs = ", ".join(f"`Attributes.{a}`" for a in dict.fromkeys(re.findall(r"Attributes\.(\w+)", body))) or \
             ("`Attributes.ATTACK_DAMAGE`, `Attributes.ATTACK_SPEED` (through `ToolMaterial`)" if deleg else "—")
         out += f"| `Item.Properties.{name}` | {', '.join(f'`{d}`' for d in deleg) or '—'} | {comps} | {attrs} |\n"
-    out += f"\n## The {len(rows)} items built by one\n\n*damage* and *speed* are the two baselines the call passes; the material adds its own attack-damage bonus on top.\n\n"
+    out += f"\n## The {len(rows)} items built by one\n\n*damage* and *speed* are the two baselines a tool or sword call passes; the material adds its own attack-damage bonus on top. A spear's call passes an attack duration and a damage multiplier instead, so its row leaves both cells empty.\n\n"
     out += "| item | helper | material | damage baseline | speed baseline |\n|---|---|---|---:|---:|\n"
     for name, helper, mat, dmg, spd in rows:
         h = helper if "`" in helper else f"`Item.Properties.{helper}`"
+        if helper == "spear":
+            dmg = spd = "—"
         out += f"| `Items.{name}` | {h} | `ToolMaterial.{mat}` | {dmg.rstrip('F')} | {spd.rstrip('F')} |\n"
     return out
 
@@ -523,13 +526,13 @@ def spawn_overrides() -> str:
                 or "**nothing** — the category is suppressed inside the box"
             rows.append((f[:-5], cat, v.get("bounding_box", "?"), what))
     structures = sorted({r[0] for r in rows})
-    out = header("Structure spawn overrides", "Which structures replace a biome's spawn list, for which mob category, and with what. A structure JSON's `spawn_overrides` map is read into `Structure.spawnOverrides`; `NaturalSpawner` asks the first structure at the position that declares an override for the category, and if one answers, the biome's list is not consulted at all. An override with an **empty** spawn list is therefore a *ban*, not a no-op. *box* is `piece` (only inside a piece's own bounding box) or `full` (anywhere in the structure's). The mechanism is on [entity lifecycle](../systems/entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation); the nether fortress has a second, hard-coded list in front of this one.")
+    out = header("Structure spawn overrides", "Which structures replace a biome's spawn list, for which mob category, and with what. A structure JSON's `spawn_overrides` map is read into `Structure.spawnOverrides`; when `NaturalSpawner` builds a spawn list, `ChunkGenerator.getMobsAt` walks the structures that chunk references, in no fixed order, and the first that declares an override for the category and whose box contains the position answers; the biome's list is then not consulted. An override with an **empty** spawn list is therefore a *ban*, not a no-op. The one exception is the creatures a chunk gets while it generates: `NaturalSpawner.spawnMobsForChunkGeneration` draws the *creature* category from the biome's list and reads no override. *box* is `piece` (only inside a piece's own bounding box) or `full` (anywhere in the structure's box, which for a structure that adapts the terrain around it is grown by twelve blocks on every side). The mechanism is on [entity lifecycle](../systems/entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation); the nether fortress has a second, hard-coded list in front of this one.")
     out += f"{declared} structures carry the field · **{len(structures)}** declare an override · {len(rows)} overrides in all\n\n"
     out += "| structure | category | box | what spawns instead (weight, min–max) |\n|---|---|---|---|\n"
     for name, cat, box, what in rows:
         out += f"| `{name}` | {cat} | {box} | {what} |\n"
-    out += (f"\nThe other {declared - len(structures)} structures that carry the field carry it empty, "
-            "which is the same as not carrying it: the biome's list stands.\n")
+    out += (f"\nThe other {declared - len(structures)} structures carry the field empty "
+            "— the field is required — and the biome's list stands.\n")
     return out
 
 

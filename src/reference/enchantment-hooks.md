@@ -2,7 +2,7 @@
 
 > Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every public entry point of `EnchantmentHelper`, with the classes that call it. The enchantment package barely calls anything and everything calls it, so this table is the system's real interface: each row is a moment at which some other system asks whether an enchantment wants to change what happens. Callers are the declaring files, one per class, excluding `EnchantmentHelper` itself. See [Enchantments](../systems/items/enchantments.md) for what an enchantment is and [Enchanting](../systems/items/enchanting.md) for the selection half.
+Every public entry point of `EnchantmentHelper`, with the classes that call it. 60 classes call it, so this table is where most of the rest of the game meets the enchantment system: most rows are a moment at which some other system asks whether an enchantment wants to change what happens, and the rest store, look up or choose enchantments. Callers are the declaring files, one per class, excluding `EnchantmentHelper` itself. See [Enchantments](../systems/items/enchantments.md) for what an enchantment is and [Enchanting](../systems/items/enchanting.md) for the selection half.
 
 50 entry points, 47 of them called from outside the class
 

@@ -28,7 +28,7 @@ behaviours endlessly and never add a new one.
 |---|---|---|
 | `MapCodec` (DataFixerUpper) | how to read one kind's fields out of a JSON object that also carries a type key; the registry element in the bare spelling | — |
 | `Registry` | `Registry.byNameCodec`: a string to an element, with the error *Unknown registry key* and the element's registration lifecycle attached | — |
-| `BuiltInRegistries` | the registries of kinds — filled at `BuiltInRegistries.bootStrap`, frozen, identical on client and server | main thread, at `Bootstrap` |
+| `BuiltInRegistries` | the registries of kinds — filled during `Bootstrap.bootStrap`, frozen, identical on client and server | main thread, at `Bootstrap` |
 | `ReloadableServerRegistries` | the eight registries of `RegistryDataLoader.RELOADABLE_REGISTRIES`, loot tables among them, rebuilt on every reload, and the six with a `LootDataType` validated | the background executor |
 | `RegistryOps` | the ops that let a codec resolve a `Holder` to another data-pack element while it decodes | wherever the codec runs |
 | `LootItemFunctions` | `LootItemFunctions.TYPED_CODEC`, the dispatch codec for one instance of the pattern; `LootItemFunctions.CODEC`, which takes an item modifier's id, one function or a list of them | — |

@@ -23,8 +23,7 @@ the surprises in this part are that sentence in another costume.
 
 Counting the two packages [the atlas](../../maps/packages.md#where-each-part-lives)
 lists for this part, that is {{#include ../../generated/part-blocks.md}} — and
-seven lectures is the fewest of any part with as many lines, on purpose. Most
-of those classes are one `Block` subclass each, filling in a few of the hooks
+seven lectures is the fewest of any part with as many lines, on purpose. Most of those files are one `Block` subclass each, filling in a few of the hooks
 `BlockBehaviour` and `Block` declare ([blocks and states](blocks-and-states.md)).
 
 Part V is a hub and six spokes. The hub is `blocks-and-states`, and what each

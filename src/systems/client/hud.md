@@ -56,7 +56,7 @@ on a title screen, on a loading screen and under F1.
 |---|---|---|
 | the saving indicator | only on a frame that renders a level | **drawn** — the one element that ignores the flag |
 | the toasts | whenever resources are loaded, level or not | hidden |
-| the debug overlay | whenever resources are loaded, unless the debug-options screen is the one open | hidden, *unless* some screen is open |
+| the debug overlay | whenever resources are loaded and some debug entry is on, unless the debug-options screen is the one open | hidden, *unless* some screen is open |
 | the deferred subtitles | always | whatever `Hud`'s second block decided |
 
 Two structural facts follow from the shape. The hidden flag is published
@@ -218,7 +218,7 @@ by `Identifier`, each a `DebugScreenEntry` writing lines through a
 `DebugScreenDisplayer`. `DebugScreenEntryList`, reachable as
 `Minecraft.debugEntries`, stores a `DebugScreenEntryStatus` per entry, applies the `DebugScreenProfile` presets `DebugScreenEntries` defines and persists to its own file with its own
 data-fixer type — so an entry set to always-on renders with F3 never pressed,
-and the game remembers that you set it. The screen that edits it is suppressed by `Gui` rather than by the overlay, and the overlay's own test asks about screens too: under F1 it still records whenever a screen is open.
+and the game remembers that you set it. The screen that edits it is suppressed by `Gui` rather than by the overlay, and the overlay's own test asks about screens too: under F1 it still records, given an entry to show, whenever a screen is open.
 
 The charts hanging off it are `FpsDebugChart`, `TpsDebugChart`,
 `PingDebugChart` and `BandwidthDebugChart` over `AbstractDebugChart`, plus
@@ -233,7 +233,7 @@ the FPS charts are what turn its tick-time subscription on.
 
 ## Questions players ask
 
-**Why do subtitles appear under an open chest?** They are deferred to the screen's background pass, beneath its widgets, whereas the tooltip and the pre-edit overlay the extractor holds are deferred past the widgets. The deferral happens when there is no screen at all *or* the screen declares itself in-game UI — the common case, not the rare one — and with no screen `Gui` makes the deferred call itself.
+**Why do subtitles appear under an open chest?** They are deferred to the screen's background pass, beneath its widgets, whereas the tooltip and the pre-edit overlay the extractor holds are deferred past the widgets. The deferral happens when there is no screen at all *or* the screen declares itself in-game UI — the common case, not the rare one — and with no screen `Gui` makes the deferred call itself — or, while the loading overlay fades in or out, `LoadingOverlay` does.
 
 **Is the pumpkin blur hardcoded?** No. The camera overlay list is
 data-driven: every equipment slot is asked whether its item declares a camera
@@ -254,7 +254,7 @@ better definition of "HUD state" than any list of fields.
 
 ## Where to look
 
-`Hud.extractRenderState` — the whole HUD is one ordered method, and the two
+`Hud.extractRenderState` — all but the last four of the HUD's elements in one ordered method, and the two
 hidden-gated blocks are visible at a glance. Then `Hud.extractPlayerHealth`
 for the most-loved method in the client,
 `Hud.nextContextualInfoState` for the bar arbitration, `Gui.extractRenderState`

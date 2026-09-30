@@ -107,8 +107,7 @@ in full).
 [Math and primitives](../../reference/math-and-primitives.md) — the
 coordinate spaces, packings, shapes and random sources every page assumes;
 it was a Part II page and is now looked up, not watched.
-[Registries](../../reference/registries.md) — every registry key: built-in,
-data-pack, synced. [Data components](../../reference/components.md) — every
+[Registries](../../reference/registries.md) — every registry key but the root's: built-in, data-pack, synced. [Data components](../../reference/components.md) — every
 `DataComponentType` in `DataComponents`. [Naming drift](../../reference/naming-drift.md) —
 `Identifier` was *ResourceLocation*. [Diagram lanes](../../reference/lanes.md)
 — the abbreviations every sequence diagram's lanes are written with.

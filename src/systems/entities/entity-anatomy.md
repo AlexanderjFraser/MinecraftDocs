@@ -34,9 +34,9 @@ save file.
 
 | class | what it decides | thread |
 |---|---|---|
-| `EntityType` | one registered kind: its factory, category, frozen dimensions, feature flags, and the two numbers that decide how it reaches clients | built in a class initialiser, read from both game threads and the worldgen worker after |
+| `EntityType` | one registered kind: its factory, category, frozen dimensions, feature flags, and the two numbers that decide how it reaches clients | built in a class initialiser, read from both game threads and the worldgen executor after |
 | `EntityTypes` | which 161 kinds exist and what every one of them is *sized* like — the most useful single table in the package | class initialiser, once |
-| `Entity` | position, box, network id, synched values, vehicle, removal reason. Deliberately thin on behaviour | the tick thread of whichever level owns it, or the worldgen worker before its chunk is live |
+| `Entity` | position, box, network id, synched values, vehicle, removal reason. Deliberately thin on behaviour | the tick thread of whichever level owns it, or the worldgen executor before its chunk is live |
 | `EntityDimensions` | width, height, eye height, attachment points, and whether `Attributes.SCALE` may touch them | immutable record; the type's is shared by every entity of the type |
 | `SynchedEntityData` | which of the entity's fields the other side is told about ([synched entity data](synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from)) | one container per side; only the server's writes travel |
 | `EntityInLevelCallback` | whether the object is *in* a world or merely on the heap | installed by the level's entity manager |

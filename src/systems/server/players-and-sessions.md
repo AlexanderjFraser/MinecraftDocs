@@ -82,8 +82,7 @@ runs it again when the client says configuration is over, because a ban or a
 newly full server can land in the seconds a configuration takes. Duplicate
 logins differ between the two. At login the newcomer wins:
 `PlayerList.disconnectAllPlayersWithProfile` kicks every player holding
-that UUID with `PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE`, and the
-login parks until the old connection is really gone. At the second check the
+that UUID with `PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE`, and the login parks until the old player has left the player list. At the second check the
 newcomer loses — an existing player with that id is a flat rejection, since
 by then there is a prepared spawn to throw away rather than a session to
 evict.

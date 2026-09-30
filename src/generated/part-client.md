@@ -1,1 +1,1 @@
-**689 classes and 94,527 lines**
+**689 files and 94,527 lines**

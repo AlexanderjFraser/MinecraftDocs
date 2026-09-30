@@ -211,7 +211,7 @@ reader of an attribute needs from a clock is behind that method, which is why
 `MinecraftServer` calls `ServerClockManager.tick` once per server tick,
 inside the *clocks* profiler zone and only while the tick-rate manager runs
 normally; the `GameRules.ADVANCE_TIME` check sits inside the method itself,
-and gates every clock at once where `ServerClockManager.setPaused` gates one.
+and gates every clock at once, whereas `ServerClockManager.setPaused` gates one.
 Each unpaused instance then gains its rate, accumulating the fraction, so a
 clock at rate 0.5 gains a tick every other server tick and one at rate 1000
 gains a thousand — `/time rate` accepts anything from 0.00001 to 1000.
@@ -287,13 +287,9 @@ the client's stack is shorter than the server's, and identical everywhere else
 the client looks.
 
 Clock *state* rides
-`ClientboundSetTimePacket`: a game time plus a `ClockNetworkState` — total
+`ClientboundSetTimePacket`: a game time — the world's own tick count, which no clock owns — plus a `ClockNetworkState` — total
 ticks, partial tick, rate — per clock in its map.
-`ServerClockManager.createFullSyncPacket` fills that map on join, respawn
-and a change of dimension, and on a `GameRules.ADVANCE_TIME` change and every mutator broadcasts a one-clock
-update, but the routine broadcast from
-`MinecraftServer.forceGameTimeSynchronization`, once every twenty ticks,
-sends an *empty* map and nothing but the game time.
+`ServerClockManager.createFullSyncPacket` fills that map on join, respawn and a change of dimension, and on a `GameRules.ADVANCE_TIME` change. Every mutator broadcasts a one-clock update. The routine broadcast from `MinecraftServer.forceGameTimeSynchronization`, once every twenty ticks, sends an *empty* map and nothing but the game time.
 `ClientClockManager.handleUpdates` adopts what arrives and
 `ClientClockManager.tick` free-runs the rest — which is why a paused clock
 travels as rate 0: the client has no paused flag to receive.
@@ -480,8 +476,8 @@ comes round again.
 > **For a 1.21-era reader.** Three sets of names moved. The gameplay booleans
 > on `DimensionType` — *ultrawarm*, *bed_works*, *piglin_safe*,
 > *respawn_anchor_works* — are entries in `DimensionType.attributes` now, and
-> *ultrawarm* has become two of them, `EnvironmentAttributes.FAST_LAVA` and
-> `EnvironmentAttributes.WATER_EVAPORATES`. `BiomeSpecialEffects` keeps only
+> *ultrawarm* has become several, `EnvironmentAttributes.FAST_LAVA` and
+> `EnvironmentAttributes.WATER_EVAPORATES` chief among them. `BiomeSpecialEffects` keeps only
 > the water, foliage and grass tints: sky and fog are `Biome.getAttributes`.
 > And the villager *Schedule* class is `Timelines.VILLAGER_SCHEDULE`, a
 > data-pack `Timeline` like any other.

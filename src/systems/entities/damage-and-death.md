@@ -473,8 +473,8 @@ any hit over four damage breaks a minecart at once and smaller ones must land
 close together, and `MinecartTNT`
 inherits that accumulator after its own override has looked at the arrow rather
 than the number. For the other
-eighteen the answer is a yes or a no: ten do nothing whatever, two flinch,
-five are destroyed by one hit of any size — an `EndCrystal` among them, and it
+eighteen the answer is a yes or a no: ten do nothing whatever, two resend their motion and nothing else,
+five are destroyed by one hit of any size (an unfixed frame holding something loses only its item to the first) — an `EndCrystal` among them, and it
 is **immune to the `EnderDragon` that eats it** — and `EnderDragonPart` reads
 nothing, forwarding the whole call, number included, to its parent. Which class
 does which is [the non-living damage

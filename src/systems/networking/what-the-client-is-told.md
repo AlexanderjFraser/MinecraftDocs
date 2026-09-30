@@ -340,7 +340,7 @@ What is being measured is narrower than it looks.
 `ClientPacketListener.handleChunkBatchStart` and
 `ClientPacketListener.handleChunkBatchFinished` are two of the nine handlers on
 the client's play listener that never hop off the network thread, so the
-loop is timing packet decode, not mesh building (the nine are listed in
+loop is timing the batch's arrival and decode on Netty, not mesh building (the nine are listed in
 [threads](../../reference/threads.md#the-handlers-that-never-hop)).
 
 ### What a chunk packet carries

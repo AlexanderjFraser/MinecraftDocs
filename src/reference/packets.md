@@ -2,7 +2,7 @@
 
 > Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every packet the game defines, by the `PacketTypes` class that declares it. `common`, `cookie` and `ping` packets are shared by more than one protocol phase; the exact phase→packet bindings are in the `*Protocols` classes next to each `PacketTypes` class (`GameProtocols`, `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols`, `HandshakeProtocols`). See [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md).
+Every packet the game defines, by the `PacketTypes` class that declares it. `common`, `cookie` and `ping` packets are shared by more than one protocol phase; the exact phase→packet bindings are in the five `*Protocols` classes (`GameProtocols`, `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols`, `HandshakeProtocols`), which bind the shared groups too. See [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md).
 
 | group | clientbound | serverbound |
 |---|---:|---:|

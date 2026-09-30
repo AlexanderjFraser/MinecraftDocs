@@ -5,16 +5,14 @@
 Every system in the game speaks in a handful of value types: an integer
 block position, a chunk column, a 16³ section, a double-precision world
 position, a direction, a box, a collision shape, a random source. They are
-the types the codebase reaches for most — `BlockPos` alone has 1,221
-importers, more than any other Minecraft class — and most of what is confusing
+the types the codebase reaches for most — `BlockPos` alone has 1,229 importers, more than any other Minecraft class — and most of what is confusing
 about "which coordinate is this"
 is answered by knowing which type a method takes.
 
 ## The coordinate spaces
 
 Six integer spaces and one double one, and every conversion is a named method.
-The figure is the spaces from the finest to the coarsest, each arrow the
-arithmetic of one step coarser; the table under it names the method for each
+The figure is the spaces from the finest to the coarsest, and the one that adds a dimension, each arrow the arithmetic of one step; the table under it names the method for each
 arrow and, for all but `GlobalPos`, the way back, and the three that also pack to a long key are
 the next section's.
 
@@ -33,22 +31,21 @@ flowchart TD
 
 | space | unit | type | owner / notes | conversions |
 |---|---|---|---|---|
-| **block** | 1 block, int | `BlockPos` (extends `Vec3i`) | immutable; `BlockPos.MutableBlockPos` for loops | `BlockPos.containing` floors a double position; `BlockPos.asLong` packs to a long and `BlockPos.of` unpacks one |
+| **block** | 1 block, int | `BlockPos` (extends `Vec3i`) | immutable unless it is a `BlockPos.MutableBlockPos`, the loop subclass | `BlockPos.containing` floors a double position; `BlockPos.asLong` packs to a long and `BlockPos.of` unpacks one |
 | **world position** | 1 block, double | `Vec3` (implements `Position`) | entity positions, ray casts, velocities | `Vec3.atCenterOf`, `Vec3.atLowerCornerOf`, `Vec3.atBottomCenterOf` from a `Vec3i`; `Vec3.directionFromRotation` from pitch/yaw |
-| **chunk column** | 16 blocks | `ChunkPos` — a **record** of x and z | the key of every chunk map | `ChunkPos.containing` from a `BlockPos`; `ChunkPos.pack` / `ChunkPos.unpack`; `ChunkPos.getMinBlockX`, `ChunkPos.getWorldPosition` |
-| **section** | 16³ cube | `SectionPos` (extends `Vec3i`) | lighting, entity sections, render sections | `SectionPos.of` from block/chunk/entity; `SectionPos.blockToSectionCoord` (shift 4), `SectionPos.sectionToBlockCoord`, `SectionPos.sectionRelative` (mask 15); `SectionPos.asLong` |
+| **chunk column** | 16 blocks | `ChunkPos` — a **record** of x and z | packed to a long, the key of the chunk maps in `ChunkMap` and the ticket system | `ChunkPos.containing` from a `BlockPos`; `ChunkPos.pack` / `ChunkPos.unpack`; `ChunkPos.getMinBlockX`, `ChunkPos.getWorldPosition` |
+| **section** | 16³ cube | `SectionPos` (extends `Vec3i`) | lighting, entity sections, render sections | `SectionPos.of` from block/chunk/entity; `SectionPos.blockToSectionCoord` (shift 4), `SectionPos.sectionToBlockCoord`, `SectionPos.sectionRelative` (mask 15); `SectionPos.chunk` drops y; `SectionPos.asLong` |
 | **quart / biome** | 4 blocks | `QuartPos` (static only) | biome sampling | `QuartPos.fromBlock` (shift 2), `QuartPos.toBlock`, `QuartPos.fromSection`, `QuartPos.toSection` |
 | **region** | 32 chunks | none — methods on `ChunkPos` | the `.mca` file grid | `ChunkPos.getRegionX`, `ChunkPos.getRegionLocalX`, `ChunkPos.minFromRegion`; `ChunkPos.REGION_SIZE` |
-| **dimension-qualified block** | — | `GlobalPos` — record of a `Level` key and a `BlockPos` | compass targets, beds, portals | `GlobalPos.of` |
+| **dimension-qualified block** | — | `GlobalPos` — record of a `Level` key and a `BlockPos` | compass targets, beds, a player's last death location | `GlobalPos.of` |
 | **integer box** | blocks | `BoundingBox` for structures; `BlockBox` is a newer record that nothing yet uses | structure bounds, piece placement | `BoundingBox.intersects`, `BoundingBox.encapsulate`; `BlockBox.aabb`, `BlockBox.contains` |
 | **double box** | blocks | `AABB` (a class of six public final doubles) | entity bounding boxes, block shapes' bounds | `AABB.move`, `AABB.inflate`, `AABB.intersects`, `AABB.clip` |
-| **pitch / yaw** | degrees, float | `Vec2` | look direction, as (xRot, yRot) — except the *Rotation* NBT tag, which stores it the other way round | `Direction.fromYRot`, `Direction.toYRot`; `Vec3.xRot`, `Vec3.yRot` |
+| **pitch / yaw** | degrees, float | `Vec2` | look direction, as (xRot, yRot) — except the *Rotation* NBT tag, which stores it the other way round | `Direction.fromYRot`, `Direction.toYRot` |
 | **pose rotation** | degrees, float ×3 | `Rotations` | `ArmorStand` poses, and nothing else | — |
 | **model / render space** | float | JOML `Vector3f`, `Matrix4f`, `Quaternionf` (external) | everything under `client/renderer` | `Vec3.toVector3f`; `Direction.step`, `Direction.getRotation`; `com/mojang/math` `Axis` builds quaternions |
 
 `Position` is the three-double interface `Vec3` implements. `Vec3i` is the
-int triple with the arithmetic — immutable to every caller, though not
-quite immutable underneath, which the closer takes up — (`Vec3i.offset`,
+int triple with the arithmetic — immutable to every caller that does not hold a `BlockPos.MutableBlockPos`, which the closer takes up — (`Vec3i.offset`,
 `Vec3i.relative`, `Vec3i.distSqr`, `Vec3i.distManhattan`); `BlockPos` adds
 the iteration helpers (`BlockPos.betweenClosed`, `BlockPos.withinManhattan`,
 `BlockPos.spiralAround`), each of which walks a single reused
@@ -71,8 +68,7 @@ value and `Brightness` for the packed block/sky light pair.
 Three long-packings appear everywhere as map keys.
 
 - **`BlockPos.asLong`** — 26 bits X, 26 bits Z, 12 bits Y, high to low.
-  `BlockPos.PACKED_HORIZONTAL_LENGTH` is literally derived from the world
-  border's 30,000,000, which is why it is 26
+  `BlockPos.PACKED_HORIZONTAL_LENGTH` is derived from 30,000,000, the level's hard horizontal bound (`Level.MAX_LEVEL_SIZE`), which is why it is 26
   (`BlockPos.MAX_HORIZONTAL_COORDINATE` is 33,554,431); the remaining
   `BlockPos.PACKED_Y_LENGTH` is 12, giving −2048 to 2047. The *usable*
   range is narrower: `DimensionType` reserves a 32-block margin, so
@@ -110,7 +106,7 @@ declares one shape and is handed the rest — three more from
 `Shapes.rotateAttachFace`, which is `Shapes.rotateHorizontal` run once per
 `AttachFace`. `Transformation` wraps a JOML
 matrix and lazily decomposes it into translation, left rotation, scale and
-right rotation for model JSON.
+right rotation for model JSON and a display entity's transformation.
 
 There are two things called `Axis` in scope: `Direction.Axis` and the
 quaternion factory in `com/mojang/math`. They are unrelated, and a grep finds a
@@ -122,22 +118,18 @@ A `VoxelShape` is a set of boxes on a per-axis coordinate grid, backed by a
 `DiscreteVoxelShape` bit grid (`BitSetDiscreteVoxelShape`). `Shapes` is the
 factory and algebra: `Shapes.block`, `Shapes.empty`, `Shapes.box`,
 `Shapes.or`, `Shapes.join` with a `BooleanOp`, `Shapes.joinIsNotEmpty`,
-`Shapes.collide`, `Shapes.blockOccludes`, with `Shapes.EPSILON` and
-`Shapes.BIG_EPSILON` the tolerances every comparison uses. Implementations
+`Shapes.collide`, `Shapes.blockOccludes`, with `Shapes.EPSILON` (1.0E-7) the tolerance the shape algebra's own comparisons use and `Shapes.BIG_EPSILON` a coarser 1.0E-6; a collision context's *is above* test uses a looser 1.0E-5. Implementations
 differ by how the grid is stored — `CubeVoxelShape` (even divisions),
 `ArrayVoxelShape` (explicit coordinate lists), `SliceShape` (a
-one-cell-thick view, used for face culling and occlusion) — and `Shapes.join`
-picks an `IndexMerger` strategy per axis, returning a `CubeVoxelShape` only
-when all three merge evenly.
+one-cell-thick view, used for face culling and occlusion) — and `Shapes.joinUnoptimized` picks an `IndexMerger` strategy per axis, building a `CubeVoxelShape` only when all three merge evenly; `Shapes.join` is that followed by `VoxelShape.optimize`.
 
-Shape queries are cheap because they are mostly not computed:
+Context-free collision and face-sturdiness queries are cheap because they are mostly not computed (the outline, interaction and support shapes are asked of the block every time):
 `BlockBehaviour.BlockStateBase.initCache` builds a
 `BlockBehaviour.BlockStateBase.Cache` per block state holding the collision
-shape, the large-collision shape, whether the collision shape is a full block,
+shape, whether the collision shape reaches outside its cell, whether the collision shape is a full block,
 and a per-face sturdiness array — but **only for a block whose shape is not
 dynamic**, and the occlusion shape is not in it. That one is a field on
-`BlockBehaviour.BlockStateBase` itself, built whether the cache is or not, and
-a dynamic-shape block answers every collision query live.
+`BlockBehaviour.BlockStateBase` itself, built whether the cache is or not. Without a cache a block answers those queries live, and says it has a large collision shape whatever it has; and the query an entity's movement makes, with its `CollisionContext`, is never cached — it asks the block every time.
 
 `CollisionContext` is what a shape query knows about who is asking:
 `CollisionContext.of` an entity (`EntityCollisionContext` — descending,
@@ -150,7 +142,7 @@ flag. The one case that is neither is `PositionCollisionContext`, from
 return a `HitResult`: `BlockHitResult` (position, face, inside,
 world-border) or `EntityHitResult`.
 
-## Two random families, and two that are neither
+## Two random families, a saved table, and a mixer
 
 `RandomSource` (`net/minecraft/util`) is the interface. Most implementations
 live in `world/level/levelgen`, and the legacy family shares `BitRandomSource`,
@@ -168,16 +160,13 @@ process:
   `SingleThreadedRandomSource` and is what `ClientLevel.animateTick` uses for
   block animation, and `LevelRenderer` for the block-destroy overlay.
 - **Xoroshiro** — `XoroshiroRandomSource` (128-bit state via
-  `RandomSupport.Seed128bit`), the newer of the two and the one a noise
-  settings file gets unless it asks otherwise:
+  `RandomSupport.Seed128bit`), the one a noise settings file gets unless its required *legacy_random_source* flag asks for legacy:
   `NoiseGeneratorSettings.getRandomSource` returns
   `WorldgenRandom.Algorithm.XOROSHIRO` unless the settings opt into legacy.
   **Four of the seven shipped noise settings do opt in** — *nether*, *end*,
   *caves* and *floating_islands* — and the overworld is not one of them, nor
-  are *amplified* and *large_biomes*. So an ordinary world runs both families
-  at once: its overworld is Xoroshiro, and the two dimensions you walk into
-  through a portal are legacy.
-  `RandomState` forks it positionally (`PositionalRandomFactory.at`,
+  are *amplified* and *large_biomes*. So an ordinary world runs both families at once: its overworld's noise is Xoroshiro and the noise of the two dimensions you walk into through a portal is legacy, while every dimension carves, and chooses where its structures go, with a legacy source, and decorates with a Xoroshiro one.
+  `RandomState` forks the chosen algorithm positionally (`PositionalRandomFactory.at`,
   `PositionalRandomFactory.fromHashOf`) for the named noise consumers — the
   aquifer and the ore placer each get their own deterministic stream from
   the seed and position.
@@ -188,26 +177,22 @@ process:
 that make a structure land in the same place for the same seed. Features go
 through *those*, not through `RandomState`.
 
-There is a third randomness path that is neither: `RandomSequence` and
-`RandomSequences`, a saved, `Identifier`-keyed table of `XoroshiroRandomSource`
+There is a third randomness path, on the Xoroshiro family: `RandomSequence` and `RandomSequences`, a saved, `Identifier`-keyed table of `XoroshiroRandomSource`
 streams derived from the world seed, which is what makes a loot table and
-`/random` reproducible across sessions. And a fourth that is not a
-`RandomSource` at all: `LinearCongruentialGenerator`, the bare mixer
-`BiomeManager` uses for biome fuzzing.
+`/random` reproducible across sessions. And two that are not a `RandomSource` at all: `LinearCongruentialGenerator`, the bare mixer `BiomeManager` uses for biome fuzzing, and `Level.randValue`, the integer `Level.getBlockRandomPos` steps for random-tick positions.
 
-`RandomSource.nextGaussian` is produced by `MarsagliaPolarGaussian`, which
-caches a spare value — which is why reseeding a source must reset it.
+`RandomSource.nextGaussian` is produced by `MarsagliaPolarGaussian`, which caches a spare value — which is why reseeding a source resets it, in every implementation but the deprecated `ThreadSafeLegacyRandomSource` and `WorldgenRandom`, whose `WorldgenRandom.setSeed` reseeds only its delegate.
 
 ## `Mth` and `Util`
 
-`Mth` is the maths grab-bag (677 importers): `Mth.floor`, `Mth.clamp`,
+`Mth` is the maths grab-bag (703 importers): `Mth.floor`, `Mth.clamp`,
 `Mth.lerp`, `Mth.wrapDegrees`, `Mth.rotLerp`, `Mth.smallestEncompassingPowerOfTwo`,
 `Mth.log2`, `Mth.positiveModulo`, `Mth.hsvToRgb`. `Mth.sin` and `Mth.cos`
 are lookups in a 65,536-entry table (`Mth.cos` is the same table with a
 quarter-turn phase shift), and the table is filled from the JDK's ordinary
 sine rather than its strict one — so the platform-dependent step, if
 you are chasing animation determinism, is the table's construction and not
-the lookup. `Util` (in `net/minecraft/util`, 454 importers) is where the
+the lookup. `Util` (in `net/minecraft/util`, 457 importers) is where the
 executors live — `Util.backgroundExecutor`, `Util.ioPool`,
 `Util.nonCriticalIoPool` — along with time sources and collection helpers;
 `Unit` is the single-valued "void" type codecs and futures use. The other
@@ -222,29 +207,21 @@ and `ChunkPos.unpack`; construction from a block is `ChunkPos.containing`;
 the components are accessed as x() and z().
 
 **`Vec3i.toMutable` returns a JOML `Vector3i`,** not a
-`BlockPos.MutableBlockPos`; the mutable block position is constructed
-directly and its `BlockPos.MutableBlockPos.set` /
+`BlockPos.MutableBlockPos`; the mutable block position comes from `BlockPos.mutable` or its constructor, and its `BlockPos.MutableBlockPos.set` /
 `BlockPos.MutableBlockPos.move` are the loop idiom.
 
-**`BlockPos` is immutable, `Vec3i` only pretends to be.** `Vec3i` keeps
-protected setters that `BlockPos.MutableBlockPos` uses; every other subclass
-treats them as final. `BlockPos.immutable` is the copy to call before
+**A `BlockPos` may be mutable.** `Vec3i` keeps protected setters that `BlockPos.MutableBlockPos`, a subclass of `BlockPos`, makes public; every other subclass treats them as final, so a `BlockPos` reference can hold a position that moves. `BlockPos.immutable` is the copy to call before
 storing a mutable one.
 
-**`Level.random` deliberately crashes on cross-thread use.**
+**`Level.random` crashes when two threads draw at once.**
 `LegacyRandomSource` holds an atomic seed not for safety but as a
-*detector*: any concurrent use fails the compare-and-set and raises a
-`ThreadingDetector` exception — both the reseed and every draw test it. The genuinely safe variant,
+*detector*: a draw or a reseed whose compare-and-set loses to another thread's write raises a `ThreadingDetector` exception, so concurrent use is caught when two uses collide and not otherwise. The genuinely safe variant,
 `ThreadSafeLegacyRandomSource`, and `RandomSource.createThreadSafe` are both
-deprecated. Touching a level's random from a worker is meant to be loud.
+deprecated. Touching a level's random from a worker is loud only when it collides.
 
-**Tick randomness and worldgen randomness are different generators.** The
-LCG drives every `Level` and `Entity`; the saved `RandomSequences` behind loot
-and `/random` are Xoroshiro, and so is terrain wherever the noise settings have
-not opted into legacy, which is the overworld and nothing else a player
-normally visits.
+**Tick randomness and worldgen randomness do not divide by family.** The LCG drives every `Level` and `Entity`, the Nether's and the End's noise, and every dimension's carvers and structure placement; the saved `RandomSequences` behind loot and `/random` are Xoroshiro, and so are the overworld's noise and every dimension's features.
 `PositionalRandomFactory.parityConfigString` is implemented by **both**
-families, so the parity dumps cover whichever one a dimension is on.
+families, so the parity dumps cover whichever one a dimension's noise settings choose.
 
 **`BlockBox` is declared and unused.** It is a tidy `BlockPos`-pair record
 in `net/minecraft/core`, and in 26.3 nothing calls it; structure bounds are

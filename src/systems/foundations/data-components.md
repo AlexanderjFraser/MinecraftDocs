@@ -108,7 +108,7 @@ the prototype (below) and `CustomData`, which carries arbitrary NBT for
 them to use.
 
 Two more flags live on the builder. `DataComponentType.Builder.cacheEncoding`
-routes a type's encodes through `EncoderCache` (`DataComponents.ENCODER_CACHE`).
+routes a type's `Codec` encodes — disk and JSON, not the wire — through `EncoderCache` (`DataComponents.ENCODER_CACHE`).
 `DataComponentType.Builder.ignoreSwapAnimation` is set on exactly one type,
 `DataComponents.DAMAGE`, and the first-person hand that reads it belongs to
 [items and stacks](../items/items-and-stacks.md#when-two-stacks-are-the-same-stack). Underneath, `DataComponentType.PERSISTENT_CODEC`
@@ -402,7 +402,7 @@ with `BlockEntity.removeComponentsFromTag` de-duplicating what was
 promoted; `BlockItem.setBlockEntityData` is the write path for the opaque
 blob.
 
-**Entities, read-only.** `Entity` implements `DataComponentGetter` with no
+**Entities, a view with a narrow write path.** `Entity` implements `DataComponentGetter` with no
 patch of its own: `Entity.get` answers `DataComponents.CUSTOM_NAME` and
 `DataComponents.CUSTOM_DATA` by hand, lets subclass overrides (`Sheep`,
 `Wolf`, `Villager` …) answer the variant-shaped types, and otherwise falls

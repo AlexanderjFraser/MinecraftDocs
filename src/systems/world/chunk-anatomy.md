@@ -23,7 +23,7 @@ re-encodes all 4,096 entries into a wider storage before it can be written.**
 | `ChunkAccess` | everything a chunk has whatever its shape: position, height, sections, heightmaps, block entities, structures, the two volatile flags | abstract — whichever thread owns the shape below |
 | `ProtoChunk` | a chunk under construction: status, entities as NBT, the light engine it reports to | written on the worker pool, one writer at a time |
 | `LevelChunk` | a chunk that is part of a `Level`: block entities, tickers, tick containers, the full-status supplier | the Server thread — on the client, the Render thread |
-| `ImposterProtoChunk` | what a still-generating neighbour sees when the chunk it asked for is already live | built on the Server thread, read by a neighbour's step on the worldgen worker |
+| `ImposterProtoChunk` | what a still-generating neighbour sees when the chunk it asked for is already live | built on the Server thread; read on the worker pool — by a neighbour's step on the worldgen executor or in the *buildTerrain* fork, and by the light engine on the light executor |
 | `LevelChunkSection` | 16×16×16: two palette containers and four counters that let a whole section be skipped | whichever thread holds its permit |
 | `PalettedContainer` | the mapping from 4,096 (or 64) entries to values, and when to widen it | one writer at a time — a second is detected, blocks, and both threads die; reads are lock-free |
 | `Strategy` | which palette and which bit width each entry count deserves, for block states and for biomes | immutable, shared by every container in the level |

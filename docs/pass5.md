@@ -61,25 +61,25 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 - ~~The "not X but Y" construction — pass 2's most common register error,
   Part XIII its worst offender. [kind=voice]~~ *Ruled: V2 in `docs/pass8-brief.md` Part 4 and `TEMPLATE.md`'s *Voice* — a contrast earns its place where the reader would otherwise believe X — pass 8, session A.*
-- The named-qualifier hedge ("with two exceptions", "five of the seven") —
-  right precision, repetitive phrasing.
+- ~~The named-qualifier hedge ("with two exceptions", "five of the seven") —
+  right precision, repetitive phrasing.~~ **ruled** (pass 8 session O) — `TEMPLATE.md`'s *Voice* (session A): a hedge names its population, and a count that names one is the precision this entry praises; the phrasing is each page's.
 - ~~One voice sweep against the best page, chosen in pass 5's first session. [kind=voice]~~ *Ruled: V1 — the sweep's page is `entities/entity-lifecycle`, and the voice it set is `TEMPLATE.md`'s *Voice* — pass 8, session A.*
-- The glossary as the terminology checklist.
+- ~~The glossary as the terminology checklist.~~ **done** (pass 8 session O) — the glossary was read entry by entry against every owner page this session, by two fact-check agents and an audit of every entry it changed, which is the checklist this entry asked for.
 
 ## Entries
 
 ## Session O — the close (pass 5) *(2026-09-07)*
 
-What pass 5's closing session found and did **not** act on, because it belongs
+~~What pass 5's closing session found and did **not** act on, because it belongs
 to a later pass's lens. Everything it acted on is struck in place above or
 logged in [pass9.md](pass9.md). The four reads behind this list were the
 introduction, `lectures.md`, **the thirteen landing pages read as one set** —
 the reading no session in the project had done, because every landing page was
-rewritten by its own part's session — and the glossary entry by entry. [kind=record]
+rewritten by its own part's session — and the glossary entry by entry. [kind=record]~~ **record** (pass 8 session O) — the lead-in of pass 5's close's list; its entries are settled one by one below.
 
 **Page-shape findings — pass 6, the lecture.**
 
-- **The recognition sentence is a slot.** *A player recognises the part by
+- ~~**The recognition sentence is a slot.** *A player recognises the part by
   &lt;noun&gt;: four symptoms*, on nine of the thirteen landing pages
   (`anatomy/README`:9, `foundations/README`:7, `server/README`:9,
   `world/README`:10, `items/README`:11, `player/README`:11,
@@ -111,8 +111,8 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   client falling behind is one thread deciding what to spend a frame on — which
   is the fourth time the reversal has produced the part's argument in one
   sentence. The remaining three are their own sessions' and session O's.
-  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone. **X checked, pass 8 session J** — `client/README`'s symptoms open the argument and the paragraph ends on its claim. **XII checked, pass 8 session M** — `worldgen/README`'s symptoms open the page, and the argument paragraph ends on its claim.
-- **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
+  [kind=lecture] **III checked and left, pass 8 session C** — `server/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VII checked, pass 8 session G** — `items/README`'s recognition sentence sits mid-paragraph and the argument paragraph ends on its claim. **VIII checked, pass 8 session H** — `player/README`'s symptoms open the argument and the paragraph ends on its claim, now that the server may be right about neither the player nor what it steers. **IX checked, pass 8 session I** — `networking/README`'s symptoms open the argument and the paragraph ends on its claim, now the server's alone. **X checked, pass 8 session J** — `client/README`'s symptoms open the argument and the paragraph ends on its claim. **XII checked, pass 8 session M** — `worldgen/README`'s symptoms open the page, and the argument paragraph ends on its claim.~~ **done** (pass 8 session O) — each of the nine landing pages settled by its part's session (I, II, IV, VII, VIII, IX and X in pass 6; III, VII, VIII, IX, X and XII re-checked in pass 8): every argument now ends on its claim.
+- ~~**Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
   write, or being a block that answers one"~~ — **done, pass 6 session E**: V's
@@ -123,27 +123,27 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   it had never named, and ends on the claim that every surprise in the part is
   one of five mechanisms answering a question the reader thought another had
   settled). The strongest four are III, IV, XI and XIII, and XI is the model: a
-  claim, three consequences, then the hook. [kind=lecture] **V's share confirmed, pass 8 session E.** **VI's share confirmed, pass 8 session F.**
-- **A seventh, unlisted section exists on twelve of the thirteen**, in five
+  claim, three consequences, then the hook. [kind=lecture] **V's share confirmed, pass 8 session E.** **VI's share confirmed, pass 8 session F.**~~ **done** (pass 8 session O) — II, VII, VIII, IX and X are settled under the entry above, V and VI by sessions E and F.
+- ~~**A seventh, unlisted section exists on twelve of the thirteen**, in five
   positions and three forms: after Reference (I, VIII, IX, XII), before
   Reference (III, XIII), before the shape (V, VI, VII), inside the Reference
   section (X, XI), inside the shape section (IV), absent (II). It carries the
   part's size on four and not on five. It is the coverage answer pass 5 asked
   every part for, it is now a real part of the shape, and it belongs in
-  `TEMPLATE.md` with a fixed position. [kind=lecture]
-- **The landing pages grew through pass 5.** `TEMPLATE.md` budgets "about a
+  `TEMPLATE.md` with a fixed position. [kind=lecture]~~ **done** (pass 8 session O) — *Where the part stops* is a landing-page slot in `TEMPLATE.md` with a fixed place (pass 6's session A), and all thirteen landing pages carry it under that heading.
+- ~~**The landing pages grew through pass 5.** `TEMPLATE.md` budgets "about a
   hundred lines" outside the watch order; measured at the close, only I (55),
   II (68) and IV (93) are inside it, and the median has moved from the 90 the
   planning session measured to **127**: VI 141, IX 137, XI 135, XIII 132, VII
   131, VIII 127, X 125, V 123, III 106, XII **178**. Almost all of the growth is
   the unlisted section above. The fix `TEMPLATE.md` prescribes is the argument
-  rather than the trim, which makes it pass 6's and not a sweep. [kind=lecture]
-- **Other grown slots**, each a phrase now used as a label: *the part's closer*
+  rather than the trim, which makes it pass 6's and not a sweep. [kind=lecture]~~ **second edition** (pass 8 session O) — the budget's measure is ruled at pass5.md:6234; most landing pages are still over it, and the template's fix is the argument, a rewrite pass 8 does not make (R10).
+- ~~**Other grown slots**, each a phrase now used as a label: *the part's closer*
   (V, VI, VIII, IX, XI), *the part's policy page* (IX, X twice, XI, XII), *and
   not optionally* (IX, X, XI, XII), *the vocabulary page* (IV twice, VIII, XI).
-  [kind=voice]
-- **The verified line changes register at Part XI**: I to X capitalise the
-  scenario clause, XI, XII and XIII do not. [kind=voice]
+  [kind=voice]~~ **ruled** (pass 8 session O) — *one word, one sense* (`TEMPLATE.md`'s *Voice*): each phrase names one kind of page wherever it stands, so it stays a label.
+- ~~**The verified line changes register at Part XI**: I to X capitalise the
+  scenario clause, XI, XII and XIII do not. [kind=voice]~~ **done** (pass 8 session O) — XI, XII and XIII now capitalise the scenario clause, like I to X (this session).
 - ~~**One sentence is verbatim on two landing pages** — "A second edition should
   take them; this one names them and says so." (`entities/README`:35,
   `items/README`:33). [kind=voice]~~ *Overtaken: neither landing page carries the sentence now — pass 8, session F.*
@@ -195,10 +195,10 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
   way the other twelve are. [kind=figure]~~ — **ruled, pass 7 session O**: a range node is allowed for pages watched together, and Part X's caption now says so.
 - ~~**Part V says *a hub and six spokes* and draws five spoke-to-spoke edges**,
   which makes it a hub with a mesh. [kind=figure]~~ — **ruled, pass 7 session O**: the caption names both kinds of arrow, and every spoke-to-spoke arrow runs from an earlier lecture to a later one.
-- **Two metaphor collisions**: Part V and Part X are both *a hub and its
+- ~~**Two metaphor collisions**: Part V and Part X are both *a hub and its
   spokes*, for different systems; Part XI is *a substrate under a pipeline* and
   Part XII, read straight after it, is *a substrate, a pipeline, and a wing*.
-  [kind=voice] *(retagged by pass 7 session O: a metaphor is wording)*
+  [kind=voice] *(retagged by pass 7 session O: a metaphor is wording)*~~ **second edition** (pass 8 session O) — V's landing page no longer says *hub and spokes*; XI's *substrate under a pipeline* and XII's *substrate, a pipeline, and a wing* describe two parts built the same way, and a new image for one is wording for the owner's read.
 - ~~**The introduction's figure draws three threads** (Render, Server,
   Worker-Main-n, with the wire as a box) under a paragraph that promises four.
   Whether the Netty loop should be a box or stay inside `Connection` is the
@@ -206,34 +206,34 @@ rewritten by its own part's session — and the glossary entry by entry. [kind=r
 
 **Wording debt — pass 8.**
 
-- **Three superlatives whose population is unstated**, all corrected this
+- ~~**Three superlatives whose population is unstated**, all corrected this
   session to name the population and all worth re-reading as sentences:
   Part VI "the largest part of the book" (by lines) against Part XI "the
   largest thing on the client" (by classes); Part VIII "the smallest part of
   the book" (now, with a system in it). A rule for the book: a superlative
-  names what it counts. [kind=voice]
+  names what it counts. [kind=voice]~~ **done** (pass 8 session O) — each now names what it counts: VI *by lines*, XI followed by its own count of files and lines, VIII *with a system in it*.
 - ~~**Three landing pages each claim the cleanest statement of the server/client
   split** (`player/README`:99, `entities/README`:9, `blocks/README`:8), and the
   reader meets Part V's first. [kind=voice] **V's share ruled, pass 8 session E**: Part V's statement is the first a reader meets and stays; the other two are VI's and VIII's. **VI's share ruled, pass 8 session F**: Part VI's opening asks its question as its own argument and claims to be nobody's cleanest statement; nothing to change.~~ *VIII's share done, pass 8 session H: `player/README` now calls status effects *its* cleanest statement, so Part V's stands alone — all three shares settled.*
-- **The size is generated and the coverage fraction never is.** Six landing
+- ~~**The size is generated and the coverage fraction never is.** Six landing
   pages `{{#include}}` the size correctly and then hand-count a percentage in
   the next clause (VI, VII, VIII, IX, XI, XII, XIII). If the coverage answer is
   a standing section, its number wants a generator; `pass5_coverage.py` already
   reads the same mapping. [kind=book] — a tool, so it is the pass-6 planning
-  session's if it is anyone's.
-- **`lectures.md` counts one dependency two ways in one page**: environment
+  session's if it is anyone's.~~ **done** (pass 8 session O) — `pass5_coverage.py --write` writes `coverage-<dir>.md`, and a landing page's coverage number is that include; none hand-counts a percentage.
+- ~~**`lectures.md` counts one dependency two ways in one page**: environment
   attributes by *page* at :67 ("nine pages in six other parts") and by *landing
   page* in the table's row ("III, VI, XI, XII"). Both right, and they read as a
-  contradiction. [kind=voice]
-- **Glossary headwords the corpus leans on and the page still lacks**, after
+  contradiction. [kind=voice]~~ **done** (pass 8 session O) — `lectures.md` now says nine pages in six parts cite the page and four of those parts' landing pages list it, which is the table's row (this session).
+- ~~**Glossary headwords the corpus leans on and the page still lacks**, after
   this session added eight: *Vibration*, *Gizmo*, *Sprite*, *Palette*, `Mob`,
   `ServerPlayerGameMode`, `EnchantmentHelper`, and the three long keys
   `BlockPos` / `ChunkPos` / `SectionPos`. Each has an owner page and a section.
-  [kind=voice]
-- **One headword the corpus never writes**: *Section mesh*; the owner page says
+  [kind=voice]~~ **second edition** (pass 8 session O) — none of the ten headwords was added; pass 8 adds nothing (R10), and they are the glossary's second edition.
+- ~~**One headword the corpus never writes**: *Section mesh*; the owner page says
   `CompiledSectionMesh` throughout. Either rename the headword or accept it as
   coined and say so. *Globally-rendered block entity* and *Prediction ledger*
-  are the same shape and are defensible. [kind=voice]
+  are the same shape and are defensible. [kind=voice]~~ **done** (pass 8 session O) — the entry names `CompiledSectionMesh` in its first clause, which says the headword is the coined phrase for that class.
 
 **Left open, with a reason.**
 
@@ -282,14 +282,14 @@ it. Everything it acted on itself is struck in place above, or logged in
   diagram, untouched. The cut also turned up a **correction**: the deleted copy
   had `DiodeBlock.shouldPrioritize`'s condition inverted (logged in
   [pass9.md](pass9.md)).
-- **Session F (VI) — local difficulty has no lecture.**
+- ~~**Session F (VI) — local difficulty has no lecture.**
   `reference/level-data-and-rules`:283-289 is the book's **only** explanation of [kind=book] *(pass-6 planning session: still open at pass 6's planning — `DifficultyInstance` is explained on the Reference page alone; Parts IV and VI are closed, so this is pass 10's.)*
   `DifficultyInstance` and `ServerLevel.getCurrentDifficultyAt`, built from
   `ChunkAccess.getInhabitedTime`, the overworld clock and the moon phase. That
   is a mechanism on the shelf, which A1's Reference rule forbids, and its
   consumers are Part VI's mobs. Part IV names `ChunkAccess.inhabitedTime` and
   cites the level tick for it; Part VI should take the explanation, or say why
-  not.
+  not.~~ **second edition** (pass 8 session O) — `DifficultyInstance` is still explained on the Reference page alone — no system page names it — so local difficulty is a mechanism with no lecture, entered in pass3.md §7 this session.
 - ~~**Session I (IX) — the send table is now half a table.**~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session I, as the entry's own last lines say.
   `tickets-and-loading`'s *What the player is sent, and when* restated the batch
   pacing, the acknowledgement limit and four `PlayerChunkSender` constants that
@@ -979,7 +979,7 @@ create, routed by kind.*
 
 ### For the part sessions (pass 5)
 
-- **The ordering paragraph is on two pages, and the two have drifted.** Every
+- ~~**The ordering paragraph is on two pages, and the two have drifted.** Every
   part states its internal order twice — in its landing page's closing
   ordering paragraph and in its section of `lectures.md` — and neither is a
   copy of the other. The landing page has pairs the map lacks (Part X's ten
@@ -989,14 +989,14 @@ create, routed by kind.*
   data*). Under the ownership rule the landing page owns the ordering claim,
   so a claim the map has and the page lacks **moves to the page**, and the map
   keeps the shorter copy. Each part session re-syncs its own; session O checks
-  the thirteen. [kind=book]
-- **The citation form is a link's worth of work per page.** The eight
+  the thirteen. [kind=book]~~ **done** (pass 8 session O) — each part's section of `lectures.md` was read against its landing page this session, and the order claims that disagreed (Parts II, V, VIII, IX and XI) corrected (pass9.md, session O).
+- ~~**The citation form is a link's worth of work per page.** The eight
   through-line owner pages take **169 inbound links, and three carried an
   anchor** before session A (`check_links.py --inbound` prints them; the
   exemplar added three more). A part session's cheapest structural win is to
   put the owner's anchor on the through-line links out of its own pages —
   `server-tick#what-minecraftservertickchildren-runs-and-in-what-order` and
-  the rest are tabulated in the brief's A3. [kind=book]
+  the rest are tabulated in the brief's A3. [kind=book]~~ **overtaken** (pass 8 session O) — the part sessions of passes 5 to 8 put the owner's anchor on their own through-line links, and `TEMPLATE.md`'s citation form carries it; nothing is left for the frame.
 - ~~**Two landing pages hand-count a size the atlas now generates**, and one of
   them counts a different population: `worldgen/README`:27 says *451 classes
   and 45,700 lines* against the generated 451 / 45,749 (the same packages,
@@ -1045,17 +1045,17 @@ create, routed by kind.*
   published page naming a pass number a reader cannot resolve; the same
   sentence in `lectures.md` was fixed this session ("two pages that were
   one"). [kind=voice]~~ **overtaken** (pass 8 session L) — the sentence is gone; the landing page says *Four and five are a pair*.
-- **The data-driven type pattern's terms are ordinary words**, so
+- ~~**The data-driven type pattern's terms are ordinary words**, so
   `pass5_dups.py --terms` gives it 11 pages where the other six through-lines
   get 18 to 72. Eleven is a floor, not a count, and no session should quote it
-  as one. [kind=voice]
+  as one. [kind=voice]~~ **record** (pass 8 session O) — a caution about a floor, not a finding; no page quotes the number.
 
 ## Session O — the close (pass 4) *(2026-09-05)*
 
-The glossary sweep, the four unactioned Reference catalogues and the tool
+~~The glossary sweep, the four unactioned Reference catalogues and the tool
 re-read each produced material the close verified and deliberately did not act
 on. Nothing here is a wrong fact; everything here is a page that is thinner,
-looser or more repetitive than it should be.
+looser or more repetitive than it should be.~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
 ### The generators' blind spots, now measured
 
@@ -1071,13 +1071,13 @@ looser or more repetitive than it should be.
   read them too. It will fail on lane ids and nested simple names, so it wants a
   pass over the first run's output, which is why it is pass-5 work and not a
   gate change.~~ — **overtaken** by pass 7's planning session: `check_figure_names.py` is that parser, and it feeds `verify_names.py --index`.
-- **23 simple names are shared by two files**, so a `Class.member` backtick [kind=voice]
+- ~~**23 simple names are shared by two files**, so a `Class.member` backtick [kind=voice]
   resolves against the union of both — `Connection` (99 corpus backticks,
   `network/` against `server/jsonrpc/`), `AttributeModifier` (13, and the two
   classes have genuinely different member sets), `EntitySelector`,
   `StructureCheck`, `Input`. The verifier now prints the list on every run. Pass
   5 should either disambiguate the pages or teach the resolver which file a page
-  means.
+  means.~~ **second edition** (pass 8 session O) — `verify_names.py` prints the shared simple names on every run (thirty now); teaching it which file a page means is a tool change past this pass.
 - ~~**`map_source.py`'s line counts are 18.4% blank lines** — 132,608 of 719,302
   — and neither the tool's docstring nor `src/maps/README.md` says so. "719k
   lines" is 587k non-blank. One clause on the atlas's counting rule fixes it. [kind=voice]~~ *Done: the atlas's counting table now says a line is one line of the decompiled file, blank lines included (`tools/map_source.py` counts newlines) — pass 8, session B.*
@@ -1090,9 +1090,9 @@ looser or more repetitive than it should be.
 
 ### Completeness, verified and not acted on
 
-Pass 4 does not add material, so these are the classes and mechanisms an
+~~Pass 4 does not add material, so these are the classes and mechanisms an
 agent's completeness sweep found in a page's scope that the page never
-mentions.
+mentions.~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
 - ~~**`reference/non-living-damage.md` wants a `hurtClient` column.** Seven of
   the twenty-one declare one, two return an unconditional `true`, and
@@ -1105,7 +1105,7 @@ mentions.
   duplicate this session was removing; `Entity.isPickable` is named in the
   `AbstractHurtingProjectile` row, and the general *defaults to false* fact is
   the swing's, not the catalogue's. **Session H** should take both.
-- **`reference/submit-phases.md`** is missing three things its own sentences
+- ~~**`reference/submit-phases.md`** is missing three things its own sentences
   depend on: `SubmitNodeStorage` (the *order bucket* the page names with no
   antecedent — it is the outer loop of every sweep), `TranslucentSubmit` (the
   marker five of the thirteen records implement, which is why the phase can sort
@@ -1117,7 +1117,7 @@ mentions.
   re-derived as an interface declaring one method,
   `TranslucentSubmit.distanceToCameraSq`, implemented by exactly five of the
   thirteen renderers' nested *Submit* records, which is what a translucent phase
-  can order and a simple one cannot ask.
+  can order and a simple one cannot ask.~~ **done** (pass 8 session O) — K took `SubmitNodeStorage` and the merging gate, N `TranslucentSubmit`; the page names all three.
 - ~~**`reference/hud-elements.md`** has no row for `SpectatorGui.extractAction`
   (the *else* branch of row 17), and never names `Gui.overlay`/`Gui.screen`, the
   two things recorded between the HUD and rows 28–31, nor the three or four
@@ -1151,29 +1151,29 @@ mentions.
 
 ### The glossary's headwords
 
-Five entries are titled with a phrase the corpus does not use, against the
+~~Five entries are titled with a phrase the corpus does not use, against the
 page's own rule that "where a term is a class name, the class name is the
-entry": [kind=voice]
+entry": [kind=voice]~~ **record** (pass 8 session O) — the lead-in of the headword finding, which pass 5's session N closed below.
 
-- **Blend alpha** — the corpus writes plain "alpha" or the JSON name [kind=record]
-  *blend_alpha*.
-- **Staging buffer** — used once outside the glossary, on its owner page, and [kind=voice]
+- ~~**Blend alpha** — the corpus writes plain "alpha" or the JSON name [kind=record]
+  *blend_alpha*.~~ **record** (pass 8 session O) — closed by pass 5's session N below: the four headwords stand.
+- ~~**Staging buffer** — used once outside the glossary, on its owner page, and [kind=voice]
   once elsewhere for an unrelated thing (`section-meshing`'s worker buffer).
-  The class-shaped headword is `ExecutionContext.newTopCommands`. **XI's share, pass 8 session L**: `section-meshing`'s staging buffer is the class `StagingBuffer`, named in code; the glossary's headword is session O's.
-- **Flat level generator preset** — the lowercase phrase appears nowhere; the [kind=record]
-  corpus names only the plural bootstrap class, twice, on one page.
-- **Batch** — claimed for the game-test meaning, while a reader is likelier to [kind=voice]
-  have met *chunk batching* in Part IX. Retitle, or add the chunk one beside it.
-- **Permission atom** — the two-word phrase appears nowhere; the corpus writes [kind=record]
-  "an atom", "the chat atoms", "the entity-selector atom".
+  The class-shaped headword is `ExecutionContext.newTopCommands`. **XI's share, pass 8 session L**: `section-meshing`'s staging buffer is the class `StagingBuffer`, named in code; the glossary's headword is session O's.~~ **done** (pass 8 session O) — the glossary's *Staging buffer* names its sense, the command engine's, and says the renderer's `StagingBuffer` is another thing (this session).
+- ~~**Flat level generator preset** — the lowercase phrase appears nowhere; the [kind=record]
+  corpus names only the plural bootstrap class, twice, on one page.~~ **record** (pass 8 session O) — closed by pass 5's session N below: the four headwords stand.
+- ~~**Batch** — claimed for the game-test meaning, while a reader is likelier to [kind=voice]
+  have met *chunk batching* in Part IX. Retitle, or add the chunk one beside it.~~ **ruled** (pass 8 session O) — *Batch* carries its sense marker, *(game tests)*, which is the glossary's rule for a word the corpus uses in more than one sense; a chunk-batch headword would be new material, the second edition's.
+- ~~**Permission atom** — the two-word phrase appears nowhere; the corpus writes [kind=record]
+  "an atom", "the chat atoms", "the entity-selector atom".~~ **record** (pass 8 session O) — closed by pass 5's session N below: the four headwords stand.
 
-Beside them: **Blending data** should be `BlendingData` by the same rule, and
+~~Beside them: **Blending data** should be `BlendingData` by the same rule, and
 *Occlusion* is a word the corpus uses for four unrelated things across nine
 pages with no page owning it — the session left it out rather than write a
 five-way pointer, and pass 5 should decide whether the glossary does
-disambiguation at all.
+disambiguation at all.~~ **overtaken** (pass 8 session O) — pass 5's session N settled both below: `BlendingData` carries its class name, and *Occlusion* is written with four senses.
 
-**Session N (pass 5) — the headword finding is mostly an artefact, and is
+~~**Session N (pass 5) — the headword finding is mostly an artefact, and is
 struck.** Re-measured with whitespace normalised (the corpus wraps a two-word
 headword across a line break, which is what the original search missed) and with
 hyphen and space treated alike, **four** headwords are phrases the corpus never
@@ -1188,39 +1188,39 @@ pass 8, tagged there. What was done: **`BlendingData`** now carries the class
 name by the page's own rule, and ***Occlusion* is written** — four senses, four
 links, and the sentence that says the word is the only thing they share.
 Disambiguation is therefore what the glossary does, for a word the corpus itself
-uses in more than one sense, which is A5's rule applied. [kind=book]
+uses in more than one sense, which is A5's rule applied. [kind=book]~~ **record** (pass 8 session O) — pass 5's session N's close of the entries above.
 
 ### Two counts in this file that were wrong
 
-Session P's own pass-5 notes carry two numbers the close re-derived: [kind=record]
+~~Session P's own pass-5 notes carry two numbers the close re-derived: [kind=record]~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
-- **The literal `## The trace: …` heading is on twenty pages in eight parts**, [kind=record]
+- ~~**The literal `## The trace: …` heading is on twenty pages in eight parts**, [kind=record]
   not "twelve pages in four parts" — and session P's own list named three
   parts while saying four. Both numbers were already true at pass 3's close
   (`git grep -c` at `0255661` gives 20), so pass 4 changed nothing here; the
-  note was simply wrong. Parts II, IV, VI, VII, VIII, XI, XII and XIII.
-- **The closer device is on 69 of the 102 system pages**, 65 of them as the
+  note was simply wrong. Parts II, IV, VI, VII, VIII, XI, XII and XIII.~~ **record** (pass 8 session O) — a count re-derived, not a finding.
+- ~~**The closer device is on 69 of the 102 system pages**, 65 of them as the
   last content section. By part: I 1/2 · II 6/7 · III 2/5 · IV 10/10 · V 7/7 ·
   VI 3/9 · VII 2/8 · VIII 7/7 · IX 3/5 · X 7/12 · XI 6/11 · XII 9/10 ·
-  XIII 2/9. Four parts still use it on every page.
+  XIII 2/9. Four parts still use it on every page.~~ **record** (pass 8 session O) — a measurement; the closer's one spelling and its test are in `TEMPLATE.md` since pass 6's session A.
 
 ### Wording the close rewrote and pass 5 should re-read
 
-Every entry the glossary sweep corrected is a sentence written to be true
+~~Every entry the glossary sweep corrected is a sentence written to be true
 rather than to read well, and the five long ones are worth a second pass:
 *Packet*, *Permission set*, *Prediction ledger*, *Unattended command* and
 *World clock*. The same is true of `math-and-primitives`' coordinate-spaces
 paragraph, which lost its thesis and has not yet gained a replacement idea, and
 of `submit-phases`' merging paragraph, which is now correct and three sentences
-long where it was two.
+long where it was two.~~ **done** (pass 8 session O) — the five entries were checked by the glossary's two fact-check agents this session and *Packet* rewritten; `math-and-primitives`' coordinate-spaces paragraph was corrected in place; the merging paragraph moved to `entity-rendering` with session K.
 
 ## Session N — the corpus-wide count sweep (pass 4) *(2026-09-05)*
 
-The sweep's job was numbers, and what it turned up beside them is one tic with
+~~The sweep's job was numbers, and what it turned up beside them is one tic with
 many faces: **a count that is right under one reading of its population and
 wrong under another, with the page never saying which**. None of these is a
 wrong number, so none was fixed. Pass 5 should pick the reading, say it, or
-drop the number.
+drop the number.~~ **ruled** (pass 8 session O) — `TEMPLATE.md`'s *Voice* (session A): a hedge names its population, and sizes rot where populations do not.
 
 **A count of one thing described as a count of another.**
 
@@ -2267,19 +2267,19 @@ correction):~~ *Done: every item under it is settled on its own line — pass 8,
 
 ## Session A — The frame (pass 4) *(2026-09-04)*
 
-Wording debt and structural findings from the frame's fact-check. Nothing
-here was acted on; every factual fix is in `docs/pass4.md`. [kind=record]
+~~Wording debt and structural findings from the frame's fact-check. Nothing
+here was acted on; every factual fix is in `docs/pass4.md`. [kind=record]~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
-**Wording to re-read** (a hook or an argument was rewritten around a
-correction):
+~~**Wording to re-read** (a hook or an argument was rewritten around a
+correction):~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
-- `src/introduction.md` — the figure paragraph and the skip-list sentence were
+- ~~`src/introduction.md` — the figure paragraph and the skip-list sentence were
   both rewritten mid-sentence; the skip list is now a longer list and reads
-  like one.
-- `src/lectures.md` — the Part III "watch the environment page first"
+  like one.~~ **overtaken** (pass 8 session O) — the introduction's figure paragraph and skip list were rewritten by pass 6's and pass 7's session N and again this session.
+- ~~`src/lectures.md` — the Part III "watch the environment page first"
   paragraph lost its superlative ("the page with the most dependants in the
   book") and gained a cost argument. It is true now; it is not as good a
-  sentence. [kind=voice]
+  sentence. [kind=voice]~~ **overtaken** (pass 8 session O) — the Part III paragraph is gone; the environment page's place is a clause in Part IV's section.
 - ~~`src/systems/server/README.md` — the *before you start* section grew a long
   second paragraph~~ **— done by session C of pass 5, in the rewrite to the
   landing-page role. The environment-attributes paragraph is cut from three
@@ -2293,7 +2293,7 @@ correction):
   session N** — it says what session A did, and the aside still reads and still
   resolves.
 
-**Structural findings** (not acted on, per the charter):
+~~**Structural findings** (not acted on, per the charter):~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
 - ~~**The nine-page dependency table's membership rule is unstated and
   inconsistent.** By its own criterion — a page two or more landing pages
@@ -3223,9 +3223,9 @@ it lost a fight for space against the page's own story.~~ **record** (pass 8 ses
   page.~~ **Done, session N:** `naming-drift` has the row, and
   `math-and-primitives` keeps the package fact it needs (which *Block\** classes
   are in `core`) with a citation. The bold-led shape is still pass 8's.
-- `naming-drift` keeps its second-person "the name in your head" voice,
+- ~~`naming-drift` keeps its second-person "the name in your head" voice,
   which is now the only page in Reference that talks to the reader; keep or
-  level in the voice sweep.
+  level in the voice sweep.~~ **ruled** (pass 8 session O) — kept: the page is written to a reader with an old name in mind, and *Voice* rules nothing against address; `naming-drift` stays the one Reference page that talks to the reader.
 - ~~`reference/README.md`'s table has a *parts* column written by hand from~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session N — `check_deps.py` derives the column from the landing pages and fails on a disagreement.
   the landing pages; if a tool ever writes it, the column goes generated.
 - ~~The glossary's owner links are one page each except *Component*,~~ **Struck by the pass-6 planning session (2026-09-07):** settled by sessions A and N — one owner per *sense*; *Quart* and *Render state* carry one link each.
@@ -3234,13 +3234,13 @@ it lost a fight for space against the page's own story.~~ **record** (pass 8 ses
 
 ## Session P — The lecture order and the close *(2026-09-03)*
 
-The charter asked session P to check the distribution of page shapes ("if
+~~The charter asked session P to check the distribution of page shapes ("if
 half the corpus chose the trace, the menu failed") and the *Questions
 players ask* device's spread (sessions J and M each flagged it in their
 part). Two agents classified all ninety-eight system pages by the menu's
 rubric — primary shape from the spine, secondary from the borrowed section,
 first figure's type, and whether the page ends on a questions section — and
-the session read their evidence lines against the pages' headings.
+the session read their evidence lines against the pages' headings.~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
 ~~**The menu held.** Primary shapes over ninety-eight pages: **trace 31 ·
 vocabulary 25 · pipeline 17 · comparison 10 · policy 7 · pattern 6 · state
@@ -3298,7 +3298,7 @@ where the answer happens (session G's precedent — *Three things about the
 id*, *Why mobs look stupid*) or takes a heading that says what the section
 says. **IX checked, pass 8 session I**: two of the five pages end on one (`the-connection`, `chat-and-signing`). **X checked, pass 8 session J**: five of the twelve end on one (`prediction-and-acks`, `input-and-keybinds`, `options`, `hud`, `sound-engine`).~~ **record** (pass 8 session N) — XIII checked: four of the nine content pages end on one (`advancements`, `entity-selectors`, `scoreboard-and-data`, `the-execution-engine`), all spelled *Questions players ask*; the rule of thumb holds in every part checked.
 
-**Seven pairs of pages share a skeleton**, which the charter says means
+~~**Seven pairs of pages share a skeleton**, which the charter says means
 neither is done. Within one part: `server-tick` / `server-level-tick`
 (deliberate mirroring — the outer and inner loop — but the tables of
 contents are hard to tell apart); `starting-a-server` / `how-a-server-dies`
@@ -3397,7 +3397,7 @@ spine with any other, in the part or out of it.
   policy page of nine decisions and a substrate page of three rewrites do not
   read alike whatever their token strings say. **For session O**: two of the
   four rulings now perturb the tool that measures them, which is worth one line
-  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands. **XI's share, pass 8 session L**: second edition — a page's skeleton is structure, which pass 8 does not change (R9). **XII's share, pass 8 session M**: second edition — a page's skeleton is structure (R9).
+  in the pass's own audit rather than another variation. **IV's three, second edition, pass 8 session D** — `chunk-generation-pipeline`, `chunk-storage` and `scheduled-ticks` keep their shared skeleton; reshaping them is not the polish's. **V's pair ruled, pass 8 session E**: `block-breaking` and `block-interaction` share a skeleton on purpose, one lecture in two halves (pass5.md:2541). **VI's share settled, pass 8 session F**: pass 6 session F's variation of `authority` stands. **VII's pair, second edition, pass 8 session G** — `enchanting` and `using-an-item` keep their shared skeleton; reshaping is not the polish's. **VIII checked, pass 8 session H**: nothing left of Part VIII's. **X checked, pass 8 session J**: nothing to change; pass 6's variation of the four-page group stands. **XI's share, pass 8 session L**: second edition — a page's skeleton is structure, which pass 8 does not change (R9). **XII's share, pass 8 session M**: second edition — a page's skeleton is structure (R9).~~ **ruled** (pass 8 session O) — every part's share is settled by its own session, above and in pass 8; the note to session O — that two rulings perturb the tool that measures them — is recorded here and asks nothing of a page.
 
 ~~**The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4305,11 +4305,11 @@ corrections it made are in [pass9.md](pass9.md).*
   which the click page describes without naming: a move, not a cut. The framing
   claim (*exactly one packet lets a client hand the server an item*) is the
   packet page's and `containers-and-menus` now keeps the handler only. **VII's share, pass 8 session G**: nothing to change on `containers-and-menus`, which keeps the handler; the packet page's half is IX's.~~ *Done, pass 8 session I: the packet page says what a `HashedStack` holds (an item, a count and a hash per component) and cites `containers-and-menus` for the shape; every share settled.*
-- **Session J (X) — `client/gui-and-screens` and `containers-and-menus` are
+- ~~**Session J (X) — `client/gui-and-screens` and `containers-and-menus` are
   unlinked in both directions on three shared mechanisms**: the null `MenuType`
   (its hook), `AbstractContainerScreen`'s click resolution, and
   `CreativeModeInventoryScreen`. The glossary's **Menu** entry (`glossary`:391)
-  describes only the server's object, where the page insists there are two. **VII's share ruled, pass 8 session G**: the missing links are `client/gui-and-screens`' to add (J), and the glossary's *Menu* entry is O's. **X's share done, pass 8 session J**: `gui-and-screens` links the null `MenuType` and the creative screen to `containers-and-menus`, which it already linked for the click; the glossary's *Menu* is session O's.
+  describes only the server's object, where the page insists there are two. **VII's share ruled, pass 8 session G**: the missing links are `client/gui-and-screens`' to add (J), and the glossary's *Menu* entry is O's. **X's share done, pass 8 session J**: `gui-and-screens` links the null `MenuType` and the creative screen to `containers-and-menus`, which it already linked for the click; the glossary's *Menu* is session O's.~~ **done** (pass 8 session O) — the glossary's *Menu* says there is one copy on each side, the server's with the synchroniser (this session).
 - ~~**Session M (XIII) — `brigadier-and-commands`:255 routes `LootCommand` and~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M, as the entry's own last line says.
   `ItemCommands` to `loot-tables`, which names neither**; both are on
   ~~`contexts-and-predicates`:233-234. The row's `/item modify` claim is~~ **Struck by the pass-6 planning session (2026-09-07):** settled with the entry above.
@@ -4386,7 +4386,7 @@ corrections it made are in [pass9.md](pass9.md).*
   grindstone is the *who pays* half — but the section carried three subjects in
   42 lines, so it got two H3s inside its anchor and the reader's complaint goes
   away with them. [kind=lecture]
-- **`using-an-item`'s cast says "client main" where the book says Render
+- ~~**`using-an-item`'s cast says "client main" where the book says Render
   thread** (`anatomy`:61, `reference/threads`:61, and both adjacent pages).
   **Re-routed to pass 8, session G**: not a fact — `reference/threads` says the
   Render thread *is* the JVM main thread renamed — and not one page's problem.
@@ -4395,7 +4395,7 @@ corrections it made are in [pass9.md](pass9.md).*
   `using-an-item` 2, `the-connection` 2, and one each on `attributes`,
   `authority`, `movement-and-collision`, `synched-entity-data`, `the-spear`,
   `the-two-phase-tick`). Fixing two of the nineteen would make the corpus less
-  consistent, not more; this is the terminology sweep's. [kind=voice] **VI's share done, pass 8 session F**: Part VI's cast columns say *Server thread* and *Render thread*. **VII's share done, pass 8 session G**: Part VII's casts say *Server* and *Render*. **VIII's share done, pass 8 session H**: Part VIII's casts say *Server*, *Render* and *both*. **IX's share done, pass 8 session I**: Part IX's casts and prose say *Server* and *Render*.
+  consistent, not more; this is the terminology sweep's. [kind=voice] **VI's share done, pass 8 session F**: Part VI's cast columns say *Server thread* and *Render thread*. **VII's share done, pass 8 session G**: Part VII's casts say *Server* and *Render*. **VIII's share done, pass 8 session H**: Part VIII's casts say *Server*, *Render* and *both*. **IX's share done, pass 8 session I**: Part IX's casts and prose say *Server* and *Render*.~~ **done** (pass 8 session O) — *client main* is on no page now; sessions F, G, H and I settled their parts' shares.
 - ~~**`recipes` says the `CraftingInput` constructor's accounting twice**, 170
   lines apart in different vocabulary (L152-153 and L324-326).~~ **Done, pass 6
   session G**: the two halves were one idea told from opposite ends — the
@@ -4705,11 +4705,11 @@ that takes it. Everything session I did act on is struck above or logged in
 - ~~`chat-and-signing` says a message "has expired" in one section and gives the
   five- and seven-minute numbers in another; one vocabulary, one place.
   [kind=voice]~~ *Done, pass 8 session I: the Q&A now says the server calls the message *expired* after five minutes.*
-- `reference/glossary`'s **Packet** entry said "roughly half the
+- ~~`reference/glossary`'s **Packet** entry said "roughly half the
   implementations are records", which no page supports; session I replaced it
   with "three shapes", which the owner page supports but does not count.
   Either the page states the proportion or the glossary keeps the shapes.
-  [kind=voice]
+  [kind=voice]~~ **done** (pass 8 session O) — the glossary keeps the three shapes, which the owner page supports.
 - ~~The word *phase* means two unrelated things inside Part IX — a
   `ConnectionProtocol` and a step of the server tick — and `the-connection`
   uses both, one of them inside a figure note where no link can go.
@@ -5065,12 +5065,12 @@ for other passes and the cuts it logged.*
   hold and nothing later on the page needed more than three of; the sentence
   now names the four families and their sizes. The names live in the class
   index. [kind=record]~~ *Record: a cut pass 6 session A made (the count is fifteen now) — pass 8, session D.*
-- **The modifier-library roll call** — same page: `BooleanModifier`'s six
+- ~~**The modifier-library roll call** — same page: `BooleanModifier`'s six
   gates, `FloatModifier`'s six operations, `ColorModifier`'s four (with
   `ColorModifier.BlendToGray` and `FloatWithAlpha`) and `IntegerModifier`, all
   inside one paragraph whose point was `AttributeType.checkAllowedModifier`
   at the far end of it. The counts survive per type family; the four class
-  names and the two helper types do not. [kind=record]
+  names and the two helper types do not. [kind=record]~~ **record** (pass 8 session O) — a cut log.
 - ~~**The six `EnvironmentAttributeProbe` consumers by class name** — same
   page. `SkyRenderer` stays (it is a lane in the figure);
   `LightmapRenderStateExtractor`, `AtmosphericFogEnvironment`,
@@ -5078,22 +5078,22 @@ for other passes and the cuts it logged.*
   fog environments, the clouds"*, with the link to
   [lightmap, fog and sky](../src/systems/rendering/lightmap-fog-and-sky.md)
   in the same sentence. [kind=record]~~ **record** (pass 8 session L) — nothing to act on.
-- **`TimeCommand`'s subtree shape** — same page: that the whole subtree is
+- ~~**`TimeCommand`'s subtree shape** — same page: that the whole subtree is
   registered twice, the six subcommand names, and `/time query gametime`
   sitting outside the clock nodes. What survives is that everything is
   offered twice and why. A reference detail with no bearing on dusk falling;
-  the reader skipped it. [kind=record]
+  the reader skipped it. [kind=record]~~ **record** (pass 8 session O) — a cut log.
 
 ### For the part sessions (pass 6)
 
-- **The trace that arrives 55% of the way down.** The exemplar promised a
+- ~~**The trace that arrives 55% of the way down.** The exemplar promised a
   trace in its verified line and delivered a vocabulary tour for 230 lines
   first; the reader "had stopped expecting a trace". The fix that worked was
   not a restructure but a **two-sentence signpost in the cast** saying what
   the page does and in what order, plus a verified line that stops naming a
   slot. Any page whose figure kinds disagree with its verified line is the
-  same case. [kind=lecture]
-- ***Where to look* is where the field inventory came back.** Measured over
+  same case. [kind=lecture]~~ **overtaken** (pass 8 session O) — the exemplar's signpost was written in pass 5, and the general case was each page's in pass 6's lecture read.
+- ~~***Where to look* is where the field inventory came back.** Measured over
   the 102 system pages: the median is 18 names, 61 pages carry more than 15,
   and **82 pages carry at least one name that appears nowhere else on the
   page — 513 names in all**, led by `contexts-and-predicates` (26),
@@ -5141,7 +5141,7 @@ for other passes and the cuts it logged.*
   eye:** eleven of the fifteen were *members* of classes the pages still name
   (`NormalNoise.create`, `Climate.Sampler.sample`, `PoolElementStructurePiece.place`),
   which is what A12 is for — a list of a class's methods is the field inventory,
-  and the class is the door. [kind=lecture] **VI's share confirmed, pass 8 session F.** **VII's share confirmed, pass 8 session G.** **XII's share, pass 8 session M**: second edition — Part XII's *Where to look* sections are prose reading routes, and a door the page names is allowed (A12).
+  and the class is the door. [kind=lecture] **VI's share confirmed, pass 8 session F.** **VII's share confirmed, pass 8 session G.** **XII's share, pass 8 session M**: second edition — Part XII's *Where to look* sections are prose reading routes, and a door the page names is allowed (A12).~~ **done** (pass 8 session O) — every part's *Where to look* was settled by its own session under A12; none is the frame's.
 
 ### For pass 7 (the figures)
 
@@ -5168,27 +5168,27 @@ for other passes and the cuts it logged.*
   counts twice"* packs two blends and a subtraction into one clause, and the
   subtraction reads as applying to the value rather than to the rain layer's
   weight. Re-derived and true; the sentence is the problem. [kind=voice]~~ *Done: the subtraction is its own sentence — pass 8, session D.*
-- **Same page, the `ClientboundSetTimePacket` paragraph** — one sentence
+- ~~**Same page, the `ClientboundSetTimePacket` paragraph** — one sentence
   carrying the full sync, the per-mutator broadcast and the routine empty-map
   broadcast, joined by *and … and … but*; the reader lost the subject.
-  [kind=voice]
-- **Same page, *"where"* for *"whereas"*** — *"gates every clock at once
-  where `ServerClockManager.setPaused` gates one"*. [kind=voice]
-- **Same page, the sun-angle passage (L302-307 as it stood)** — four steps of
+  [kind=voice]~~ **done** (pass 8 session O) — split into three sentences, one for each broadcast (this session).
+- ~~**Same page, *"where"* for *"whereas"*** — *"gates every clock at once
+  where `ServerClockManager.setPaused` gates one"*. [kind=voice]~~ **done** (pass 8 session O) — *whereas* (this session).
+- ~~**Same page, the sun-angle passage (L302-307 as it stood)** — four steps of
   reasoning in three sentences, each depending on the wrap-segment idea two
   sentences earlier. The reader called it the best passage on the page and
   the one they read most slowly; it is a pacing problem, not a content one,
   and the arithmetic checks out (13,563.7 above the horizon against 10,436.3,
-  the slope 0.666 of linear at noon and 1.190 at midnight). [kind=voice]
+  the slope 0.666 of linear at noon and 1.190 at midnight). [kind=voice]~~ **second edition** (pass 8 session O) — a pacing note on the passage the reader called the page's best; the arithmetic checks, and re-pacing it is a rewrite.
 - ~~**`Registries.X` against `BuiltInRegistries.X`** — the exemplar names the
   same registry both ways, two hundred lines apart, and the book never says
   what the difference is. Corpus-wide: this is a glossary headword or a
   sentence in `identifiers-and-registries`, and pass 8's terminology sweep
   should decide which. [kind=voice]~~ *Done: `identifiers-and-registries` says it in its first paragraph and again at the keys — `Registries.ITEM` is the registry's `ResourceKey`, `BuiltInRegistries.ITEM` the table the key finds — pass 8, session B.*
-- **"game time" against a clock's total ticks** — the exemplar's wire section
+- ~~**"game time" against a clock's total ticks** — the exemplar's wire section
   carries both in one packet and never distinguishes them, after a page spent
   arguing that day time lives in a clock. Two names for two things, one of
-  them unexplained. [kind=voice]
+  them unexplained. [kind=voice]~~ **done** (pass 8 session O) — the packet's game time is now glossed as the world's own tick count, which no clock owns (this session; `PrimaryLevelData.java`:45, :74).
 
 ## Session B — Parts I · Anatomy and II · Foundations (pass 6) *(2026-09-10)*
 
@@ -6108,11 +6108,11 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 **Notes.**
 
-- Three readers asked what the *extract pass* is and were not told; the term [kind=record]
+- ~~Three readers asked what the *extract pass* is and were not told; the term [kind=record]
   is used unglossed on `options`, `hud`, `gui-and-screens` and
   `the-gui-render-tree`, and its owner is `the-frame` in Part XI. It is the
   clearest case in the part of a term the book allows and no page in the part
-  introduces. For session O, against the glossary. **X's share, pass 8 session J**: nothing on Part X's pages; the glossary's *extract* is session O's. **XI's share, pass 8 session L**: `the-frame` introduces the *extract* zone and the wall; the glossary's line is session O's.
+  introduces. For session O, against the glossary. **X's share, pass 8 session J**: nothing on Part X's pages; the glossary's *extract* is session O's. **XI's share, pass 8 session L**: `the-frame` introduces the *extract* zone and the wall; the glossary's line is session O's.~~ **done** (pass 8 session O) — the glossary's *Extract* entry names the pass and points at `the-frame`.
 - ~~`client/README`'s *before you start* opens on Part IX *"and not [kind=record]
   optionally"* and the reader skipped the three per-page prerequisites as
   something to read later. That is probably right and probably fine; noting it
@@ -6231,7 +6231,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
 
 ### Notes for session O
 
-- **A6 makes a landing page longer, not shorter, when the seventh section was
+- ~~**A6 makes a landing page longer, not shorter, when the seventh section was
   hiding.** Part XI's went from 137 lines outside the watch order to 140 even
   after two real cuts to the argument, because *Where the part stops* moved
   from four unheaded lines inside the Reference paragraph to a sixteen-line
@@ -6239,7 +6239,7 @@ the only way to see it is to rename the heading and read what breaks.~~ *Record,
   shape. The budget in `TEMPLATE.md` was written before A6 existed and session
   O should decide whether *about a hundred* still means what it meant.
   **[Pass 6's session O did not run; this is pass 7's session O, which reads the
-  thirteen landing pages' figures as a set, or pass 10's.]** [kind=book] **XI's share, pass 8 session L**: judged in pass5.md:1018 (closed); `TEMPLATE.md`'s budget is session O's.
+  thirteen landing pages' figures as a set, or pass 10's.]** [kind=book] **XI's share, pass 8 session L**: judged in pass5.md:1018 (closed); `TEMPLATE.md`'s budget is session O's.~~ **ruled** (pass 8 session O) — `TEMPLATE.md` has answered it since pass 7: about a hundred lines of prose, the figure's source and caption not counted and *Where the part stops* inside it; a page over it is arguing twice, and the fix is the argument (second edition, at pass5.md:134 and :7215).
 - ~~**A2's inbound-link clause fired four times in this part and all four links
   were within it** — `lightmap` → `the-frame`'s closer, `the-window` →
   `the-frame`'s closer, `visibility` → `section-meshing`'s closer, `the-frame`
@@ -6467,7 +6467,7 @@ names a reader could not use; the class index still has them.
 
 ## Session N — the frame and Reference *(2026-09-14, pass 6)*
 
-**The class this session found, and the reason it lives here.** Eighteen
+~~**The class this session found, and the reason it lives here.** Eighteen
 readers turned up **twenty-one sentences that count the text beside them and
 get the count wrong** — a rate no part session has come near. It is session
 I's finding (*a lead-in that names a number is a claim about the page, and the
@@ -6478,7 +6478,7 @@ say except how many rows there are and how they group. Nothing in the book can
 see one: `verify_names.py` checks the names in the sentence, `check_links.py`
 checks where it points, and neither counts the table underneath it. The twenty-one
 are logged as corrections in [pass9.md](pass9.md); what is here is what the
-class implies for later passes.
+class implies for later passes.~~ **ruled** (pass 8 session O) — the rule this class implies is `TEMPLATE.md`'s *Voice* (session A): a count names its population, and sizes rot where populations do not; this session's own count-sentence corrections are in pass9.md.
 
 **For pass 7, the figures.**
 
@@ -6508,26 +6508,26 @@ class implies for later passes.
 
 **For pass 8, the voice.**
 
-- **The Reference tier's opening sentences are orientation, not hooks.** On
+- ~~**The Reference tier's opening sentences are orientation, not hooks.** On
   `block-update-flags`, `submit-phases`, `math-and-primitives`,
   `maps/README` and `maps/biggest` the reader found the page's surprising true
   thing in its bottom third and said so unprompted. This session moved two
   (`block-update-flags`' two misnamed constants; `hud-elements`' two methods);
-  the rest are wording, not structure. [kind=voice]
-- `level-data-and-rules` mixes digits and words for the same kind of count,
+  the rest are wording, not structure. [kind=voice]~~ **second edition** (pass 8 session O) — a Reference page opens on what it lists; moving the surprise up on `submit-phases`, `math-and-primitives` and the two map pages is a rewrite of openings pass 8 does not make.
+- ~~`level-data-and-rules` mixes digits and words for the same kind of count,
   and so does `reference/README` (*the 43 entity-data serializers* beside
-  *all twenty-six*). [kind=voice]
-- *Gone* on `naming-drift` is defined at L33 as "the responsibility moved into
+  *all twenty-six*). [kind=voice]~~ **second edition** (pass 8 session O) — no ruling sets digits against words, and `reference/README`'s *the 44 entity-data serializers* beside *the ten bits* is a register choice, not an error.
+- ~~*Gone* on `naming-drift` is defined at L33 as "the responsibility moved into
   something structurally different, and the entry names where it went", and
   used at L106 for "gone with no replacement". Two meanings, one word, and
-  four rows say only *gone*. [kind=voice]
-- `naming-drift`'s stated column convention (left italic, right backticked) is
+  four rows say only *gone*. [kind=voice]~~ **done** (pass 8 session O) — *gone* is defined as no class replacing the name one for one, the entry naming where the responsibility went *where it can*, which covers the rows with no replacement.
+- ~~`naming-drift`'s stated column convention (left italic, right backticked) is
   inverted in one row and doubled in another, so the right column is not
-  always the verified one the paragraph says it always is. [kind=voice]
-- `threads`' *may touch* column is a permission in two rows, a description in
-  four and neither in the watchdog's. [kind=voice]
-- `glossary`'s *parameter set* entry says "two of the three ways a parameter
-  can be missing" and never gives the third. [kind=voice]
+  always the verified one the paragraph says it always is. [kind=voice]~~ **done** (pass 8 session O) — every left-column cell is italic and the right column carries the verified names.
+- ~~`threads`' *may touch* column is a permission in two rows, a description in
+  four and neither in the watchdog's. [kind=voice]~~ **second edition** (pass 8 session O) — the column's register is uneven, and making it one is wording for the second edition.
+- ~~`glossary`'s *parameter set* entry says "two of the three ways a parameter
+  can be missing" and never gives the third. [kind=voice]~~ **done** (pass 8 session O) — the entry names the third, the report when a table loads (this session).
 
 **Two notes for session O.**
 
@@ -6541,19 +6541,19 @@ class implies for later passes.
   a catalogue deserves) rather than by adding a routing section. Session O
   should decide whether the two front doors want a stated role in
   `TEMPLATE.md` the way the thirteen got one. [kind=lecture]~~ *Overtaken: ruled by pass 7 session O (pass5.md:7231) — the front doors get no role in `TEMPLATE.md`, and saying so in the opening is the role, which `maps/README`'s opening does (take them in any order) — pass 8, session B.*
-- **`introduction` never said there is a video series.** It says *watched*,
+- ~~**`introduction` never said there is a video series.** It says *watched*,
   *viewer*, *the video* and *lecture's notes* throughout and never once states
   the premise; the reader named it the page's largest unstated assumption and
   the one that decides what the whole site is. Fixed here in two sentences at
   the head of *How the book is read*. Worth session O checking whether the
   thirteen landing pages assume it too — they were written after the
-  introduction and inherit its vocabulary. [kind=lecture]
+  introduction and inherit its vocabulary. [kind=lecture]~~ **second edition** (pass 8 session O) — the introduction states the premise; a sentence on each of thirteen landing pages is new material (R10), and is pass5.md:7222's too.
 
 ## Pass 7, session A — the standard, the theme and the exemplar *(2026-09-15)*
 
-What adopting the theme and rewriting one page left for the part sessions and
+~~What adopting the theme and rewriting one page left for the part sessions and
 for session O. The rulings themselves are [pass7-brief.md](pass7-brief.md)
-Part 3; these are the pieces of work that ruling created.
+Part 3; these are the pieces of work that ruling created.~~ **record** (pass 8 session O) — a section's lead-in; its entries are settled one by one.
 
 - ~~**109 names are still hyphen-broken mid-word, in messages and notes** (97
   messages, 12 notes). The theme wraps at 180px so the lanes stay close enough
@@ -6596,14 +6596,14 @@ Part 3; these are the pieces of work that ruling created.
   (*what the picture shows and what to look for in it*) and pass 8 should read
   them as a set once there are two hundred. The first four are on
   `entities/entity-lifecycle`. [kind=voice]~~ *Ruled: V12 — the captions read as a set (204, 63 of one sentence, 102 of two), and a caption is at most two sentences; the exemplar's four now are — pass 8, session A.*
-- **mdBook's floating chapter chevrons sat on top of the prose at 1440px** and
+- ~~**mdBook's floating chapter chevrons sat on top of the prose at 1440px** and
   had done since pass 3 widened the column: the left chevron is painted twelve
   pixels inside the text. Fixed here in `custom.css` by moving mdBook's own
   sidebar-open breakpoint from 1380px to 1660px, which is where the column
   clears them. Recorded because of how it was found — nobody had looked at a
   rendered page at a laptop width, which is this pass's whole method, and it is
-  worth session O checking the other frame chrome the same way. [kind=record]
-- **The figure-name gate did not read a `<br/>` inside a message the way it
+  worth session O checking the other frame chrome the same way. [kind=record]~~ **record** (pass 8 session O) — recorded; the frame chrome was not re-rendered at a laptop width this session, and the release render is session Q's.
+- ~~**The figure-name gate did not read a `<br/>` inside a message the way it
   reads one inside a lane.** F17 ruled the break "display, never a name" and
   taught `check_figure_names.py` and `check_lanes.py` to close it up in a lane
   expansion; F18 then sent the part sessions to break a *message's* name the
@@ -6614,7 +6614,7 @@ Part 3; these are the pieces of work that ruling created.
   on the same pages, so about five of the 119 were never page errors at all.
   **Session O should re-read the remaining count with this in mind** and decide
   whether `check_lanes.py` wants the same rule for its note and message text.
-  [kind=record] **Re-read, pass 7 session O**: the count is 0 of 2,561 under the strict gate; `check_lanes.py` checks only lane expansions and needs no note or message rule.
+  [kind=record] **Re-read, pass 7 session O**: the count is 0 of 2,561 under the strict gate; `check_lanes.py` checks only lane expansions and needs no note or message rule.~~ **record** (pass 8 session O) — re-read by pass 7's session O; the strict gate reports 0 of 2,578 names unresolved now.
 - ~~**The renderer counts a `par` block's own headers as labels outside their
   container.** `anatomy`'s start-up sequence gained a two-branch `par` for the
   one genuine concurrency in the book — the Render thread drawing while
@@ -7127,18 +7127,18 @@ Part 3; these are the pieces of work that ruling created.
 
 **For pass 10, from pass 7 session N.**
 
-- `math-and-primitives`' *Two random families* is a comparison written as
+- ~~`math-and-primitives`' *Two random families* is a comparison written as
   prose — family, implementations, users, seeding — and wants the table
-  F10 says a comparison is. [kind=book]
-- `threads`' *The handlers that never hop* sorts the server's nine handlers
+  F10 says a comparison is. [kind=book]~~ **second edition** (pass 8 session O) — a table for the comparison is a restructure; the section was corrected in place this session.
+- ~~`threads`' *The handlers that never hop* sorts the server's nine handlers
   into four kinds in a sentence while its table has no column for the kind;
   pass 6's lesson, a count in a sentence beside a table that could carry it.
-  [kind=book]
-- `lectures.md`'s Part V entry says *Block entities* "reaches forward once, to
+  [kind=book]~~ **ruled** (pass 8 session O) — the table runs in the sentence's order, kind by kind — two, four, two and two — so a column of four values would repeat the sentence.
+- ~~`lectures.md`'s Part V entry says *Block entities* "reaches forward once, to
   Part VII"; the figure has no arc for it because Part V's landing page does
   not list it, which is right for a hand-forward — but the phrase reads like
   a third backward dependency to a reader who has just been told there are
-  two. [kind=book]
+  two. [kind=book]~~ **done** (pass 8 session O) — `lectures.md` now says the page reaches forward into Parts VI, VII and XI, which reads as a hand forward, not a dependency.
 
 ## Pass 7, session O — the close *(2026-09-16)*
 
@@ -7158,9 +7158,9 @@ pass 4's close found.~~ *Record: pass 7 session O's strike audit; the entry it l
 
 **For session K — Part XI, which runs after the close.**
 
-- **The gate is strict now**, and Part XI is clean under it only because this
+- ~~**The gate is strict now**, and Part XI is clean under it only because this
   session made ten small repairs there (listed in [pass9.md](pass9.md)); K
-  re-reads them with the rest of its figures rather than taking them. [kind=figure]
+  re-reads them with the rest of its figures rather than taking them. [kind=figure]~~ **overtaken** (pass 8 session O) — session K re-read Part XI's figures in pass 8.
 - ~~**`rendering/README`'s figure is the one landing figure that fails the set's
   grammar** (`TEMPLATE.md`, *The landing page*): no numbers, no caption, two
   subgraph titles hidden under their first node, `direction TB`, and a
@@ -7191,7 +7191,7 @@ pass 4's close found.~~ *Record: pass 7 session O's strike audit; the entry it l
   (`signal-and-dust`:47), `PistonBaseBlock` (a lane, `signal-and-dust`:227) and
   `shapeUpdate` (`block-interaction`:47). F6 again. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: the three names are the figures' own, and naming them in prose would add sentences (R10) — pass 8, session E.*
 
-**The landing pages read as one set** — pass 6's carried job, done here with
+~~**The landing pages read as one set** — pass 6's carried job, done here with
 the figures. Every number matches its watch order. The set's grammar is now
 `TEMPLATE.md`'s (*The landing page*, the shape), and this session fixed what
 contradicted it on I–XIII except XI: five captions made to say *numbered to
@@ -7203,7 +7203,7 @@ never touches the substrate, `world`'s *sixth arrow* on a five-arrow ring,
 `server`'s *those two* pointing at the wrong pair, `entities`' watch line
 saying the closer assumes nothing above it while linking three pages above it,
 `client`'s *one exception* beside two, and `worldgen`'s argument ending on its
-symptom list. Left, with the reason: [kind=record]
+symptom list. Left, with the reason: [kind=record]~~ **record** (pass 8 session O) — the landing pages' set read, done.
 
 - ~~**`commands/README`'s arrows point down**, the only landing figure where
   they do, because reversing them under `TD` draws the parse floor on top of
@@ -7212,42 +7212,42 @@ symptom list. Left, with the reason: [kind=record]
 - ~~**`blocks/README` keeps three crossings.** Two spokes both feed two pages, so
   one crossing is unavoidable, and reordering the declarations moved nothing:
   mermaid ranks this figure by its edges. It reads at 12px. [kind=record]~~ *Record: pass 7 session O's note on the landing figure's crossings — pass 8, session E.*
-- **Eleven of the thirteen are over the template's *about a hundred lines***,
+- ~~**Eleven of the thirteen are over the template's *about a hundred lines***,
   counted with the figure. `TEMPLATE.md` now counts prose only, which the
   budget always meant and which predates the figure's caption; measured that
   way the worst are still `worldgen` (about 130), `entities`, `items`,
   `player` and `blocks`. The template's own fix is the argument, not a trim,
   which is pass 10's reading, not this pass's. Nine *Where the part stops*
-  sections are over fifteen lines, `player`'s at forty. [kind=book]
-- **None of the thirteen says the book is notes for a video series**, and
+  sections are over fifteen lines, `player`'s at forty. [kind=book]~~ **second edition** (pass 8 session O) — the pages over the budget are over by argument; the fix is the argument, a rewrite.
+- ~~**None of the thirteen says the book is notes for a video series**, and
   twelve say *lecture*, *watch* or *viewer* as if the reader knew; only the
   introduction states the premise. A reader arriving at a part from a search
   meets *Watch in this order* with no antecedent. One clause per landing page,
   or one shared sentence under every *Watch in this order*, is a set-wide
-  wording decision. [kind=book]
-- **Five landing pages point at "the lanes in the figures above"** in their
+  wording decision. [kind=book]~~ **second edition** (pass 8 session O) — the introduction states the premise; a clause on thirteen landing pages is new material (R10).
+- ~~**Five landing pages point at "the lanes in the figures above"** in their
   Reference line (`server`, `blocks`, `client`, `rendering`, `commands`),
-  where the landing figure has no lanes; the part's pages do. [kind=voice]
+  where the landing figure has no lanes; the part's pages do. [kind=voice]~~ **done** (pass 8 session O) — no landing page says *the lanes in the figures above* now.
 - ~~**The tier front doors** (`reference/README`, `maps/README`) get no stated
   role in `TEMPLATE.md`: neither is entered by walking it, and session N's
   answer — say so in the opening — is the role. Ruled; pass 6's question
   closed. [kind=record]~~ *Record: a ruling, and `maps/README` keeps it — pass 8, session B.*
-- **The closer's one spelling** (*Questions players ask*) stands on the two
+- ~~**The closer's one spelling** (*Questions players ask*) stands on the two
   Part XIII pages whose askers are pack authors; the register is pass 8's.
-  [kind=voice]
+  [kind=voice]~~ **ruled** (pass 8 session O) — the closer's one spelling stands on every page (`TEMPLATE.md`, pass 6's session A); a pack author is a player asking too.
 
 **For pass 8 — the wording debt the figures raised, counted afresh.**
 
-- **193 captions** (and nine generated figures' figcaptions), written by
+- ~~**193 captions** (and nine generated figures' figcaptions), written by
   thirteen sessions in at least three registers — *what the picture shows*,
   *what to look for*, and the figure's own furniture (*the band*, *the box*).
   `python tools/pass7/captions.py` lists every one with its page and line;
-  read them as one set. [kind=voice]
-- **69 labels on 48 figures are still sentences** (over twelve words, or a
+  read them as one set. [kind=voice]~~ **ruled** (pass 8 session O) — session A's caption rule — one italic run, at most two sentences — is the register, and every part session of pass 8 read its captions against it.
+- ~~**69 labels on 48 figures are still sentences** (over twelve words, or a
   full stop inside); 17 are Part XI's. `pass7_figures.py --part` lists them.
-  [kind=voice]
-- **62 notes in the figure gate** are bare-verb message heads and qualified
+  [kind=voice]~~ **overtaken** (pass 8 session O) — every part session of pass 8 read its figures' labels against the figure standard, and K redrew Part XI's.
+- ~~**62 notes in the figure gate** are bare-verb message heads and qualified
   heads on a lane that does not own them; the first kind is a register
   question (*reseed*, *pick*, *measure*), which session L asked pass 8 to
-  settle. [kind=voice]
-- **Thirteen voice entries** from pass 7's part sessions, above. [kind=record]
+  settle. [kind=voice]~~ **ruled** (pass 8 session O) — the strict gate reports 55 notes now; a bare verb as a message head where no member exists is a note and not a failure, which is the register the part sessions kept.
+- ~~**Thirteen voice entries** from pass 7's part sessions, above. [kind=record]~~ **record** (pass 8 session O) — the lead-in of pass 7's voice entries, each settled in its own part.

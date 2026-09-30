@@ -74,6 +74,881 @@ listed claim names that session. Quote no source: say what the code does.
 
 ## Entries
 
+## Pass 8, session O — Reference and the frame *(2026-09-30)*
+
+The tier and the frame, read after the parts: the introduction, `lectures.md`, the atlas's prose, `reference/README`
+and the ten hand-kept Reference pages, the glossary against every owner page, `what-this-book-skips` and the thirteen
+*Where the part stops* against [pass3.md](pass3.md) §7, and the eleven generated views, whose typed prose in
+`tools/gen_reference.py` no other session reads. Nineteen fact-check agents under Part 2 — one a page, two each for the
+glossary and `naming-drift`, three for the generated views, one for the skips page and the landing pages' stops — and
+every handoff to O from sessions B to N, which are the first seventeen corrections below, most of them on pages outside
+the tier. **503 corrections on 51 hand-written pages, 4 tools and `TEMPLATE.md`**, and 10 generated views
+regenerated, every one re-derived in `reference/26.3` (or, for the drift table, in the 1.21.11 tree) before it was
+made: 330 from the reports and the handoffs, and **173 from the record's audit** — seventeen agents re-deriving every
+changed sentence — **106 of them in sentences this session had just written**. The audit's share is about one in
+three, inside the range every session since C has found. The 132 pass 5–7 ledger entries routed to the tier struck,
+so `pass8_queue.py --unstruck` shows none before pass 8; the tier's 81 queue units settled, so `pass5_queue.py
+--summary` is **zero in every row**, the queue closed (R8). Four §7 entries written and ten annotated, seven of them stale against 26.3.
+
+**The three worst.** `naming-drift` had never been read against a 1.21 tree: most of its 309 rows record drift that
+had already happened by 1.21.11, eight rows named 26.2-era names 1.21.11 never had, session J's row deletions had left
+thirteen rows of the Part X table rendering as pipe-text, and its total said 311 twice. `non-living-damage`'s *exactly
+three of the ten are never reached* was wrong three ways — `Entity.isAttackable` is false for six more classes, most
+rows are never picked at all (`EntitySelector.CAN_BE_PICKED`), and `Interaction` is refused only while its response
+flag is off — and the audit found the rewrite's *`PrimedTnt` is the one* wrong again (`Interaction` with the flag on,
+and a player's wind charge in its first five ticks, which will not be deflected). And the introduction, the atlas and
+`map_source.py` called the hatched boxes the packages this book skips, though three are taught (gizmos, the audio
+backend, the recipe book); this session's first fix, *the packages no part counts*, was wrong too, as an identity —
+309 files in 35 directories are in no part and not hatched — and the audit caught it. The hatching is now what it is:
+the packages Part I's *what this book skips* tours.
+
+**Two rulings the owner should know.** *The drift table's baseline.* The table serves a reader of any 1.21 release,
+so the rows that record drift 1.21.11 already had are kept, and the page now says so and says that 1.21.11 is the only
+1.21 this project can open; the eight 26.2-era rows take 1.21.11's names; the thirty-odd 1.21.11 → 26.3 moves the
+table lacks are not added (R10) and go to §7. *Counting.* A class is one `.java` file in the atlas, so its counts carry
+the 565 `package-info.java` files, one per package; the convention stands and is declared on `maps/README` and the
+skips page, the generated part phrase now says **files**, and the hand counts with no pointer to the atlas say files
+(the introduction's 7,301 source files, the skips page's sizes).
+
+**One heading corrected**, its three inbound links repointed (`maps/fanin`, `worldgen/density-functions`,
+`worldgen/README`): `math-and-primitives`' *Two random families, and two that are neither* is *Two random families, a
+saved table, and a mixer* — `RandomSequences`' streams are `XoroshiroRandomSource`, so only the mixer is neither.
+
+**Two gaps declared** on `what-this-book-skips`' *Named, and not yet written*, which R10 requires of a gap: local
+difficulty (`DifficultyInstance`, explained on the level-data page alone) and Part VIII's four listed and untaught
+names; the maps' saved data and Part V's four mechanisms were declared there in round one.
+
+### Figures changed
+
+- **`reference/threads` figure 1** — the query listener moved out of the listeners' box and into the watchdog's, on
+  the *reads, unsynchronised* edge: it posts nothing and reads `PlayerList` live (`QueryThreadGs4.java`:117, :181 →
+  `MinecraftServer.java`:1324-1329). The caption follows. Rendered at the reading column: legible.
+- **`blocks/block-entities` figure 1** — `AbstractContainerMenu.broadcastChanges` and
+  `LevelChunk.BoundTickingBlockEntity.tick` broken at the dot, not inside the class name (K's handoff named the first;
+  the second was found in the render). **`items/contexts-and-predicates` figure 2** — `ContextMap.Builder.buildAndValidate`
+  likewise. Rendered: both labels read as names.
+- **`maps/README` figure 1** — the sentences' edge is *read and typed by a session*, and the caption *typed by a
+  session*, where both said a person.
+- **The treemap** (`map_source.py`, generated) — the legend and every hatched cell's hover title say *toured in what
+  this book skips*, where they said *counted in no part*.
+
+**Captions changed.** The introduction's first (*and talk through the connection*, where it said *in play, talk only
+through*: the integrated server reads the client directly every tick, `IntegratedServer.java`:139, :157, :164);
+`threads`' and `maps/README`'s, above.
+
+### Polished
+
+Five, under `TEMPLATE.md`'s *Voice*, meaning unmoved: three *actually* (V5) on `lectures.md`, the glossary and
+`naming-drift`; the possessive hung on a link on `submit-phases` (V8); and the number device on
+`density-function-nodes` (V9, *Forty-four node types*).
+
+### For later sessions
+
+- **Session P** reads this session's sentences as it reads every session's. Three places the audit reached and this
+  session did not change, because the finding was not a wrong fact: `ai-goals-and-brains`:339 counts *twenty mobs*
+  where twenty-one entity types run a brain (`CamelHusk` inherits `Camel`'s); `entity-lifecycle`:481 has every saved
+  entity take `UNLOADED_TO_CHUNK` beside the no-save types; `server-tick`:492-495 names the tickets that keep a
+  dimension awake and not a non-player entity's arrival.
+- **Session Q.** The introduction's *Verified means tested* is narrower than it was and still not every gate's truth:
+  `verify_names.py` passes allow-listed names without a lookup and skips a span its pattern cannot match
+  (`submit-phases`' `.executeSolid` and its siblings). The repository `README.md` still says *every page says what it
+  was verified against* and *every claim is fact-checked*; the generated views say *generated from*, and three
+  Reference views have had one check, not three.
+- **The second edition**, all in §7 or ruled there: the thirty-odd drift rows; the glossary's ten missing headwords
+  (*Vibration*, *Gizmo*, *Sprite* …); local difficulty's lecture; the landing pages over the template's budget, whose
+  fix is the argument; a sentence on every landing page saying the book is a lecture series; the Reference pages'
+  openings as hooks. And two of the part sessions' notes this session was handed and did not take: J's stale
+  `LevelDebugSynchronizers` subscribers and I's chat-window drift, worth a look; B's `ContainerEventHandler` and
+  `NarrationSupplier` descendant counts in `map_source.py`, quoted nowhere.
+
+### Corrections
+
+Round one: the handoffs, the reports, the ledger's neighbours and the queue's small edits, in page order of first
+touch. The reason after each is the edit script's own comment, which carries the evidence.
+
+#### `entities/entity-anatomy`
+
+1. `entities/entity-anatomy`:37 — was “read from both game threads and the worldgen worker after |” — now “read from both game threads and the worldgen executor after |” — M's handoff. The worldgen executor is ChunkMap's ConsecutiveExecutor named "worldgen" over the worker pool (server/level/ChunkMap.java:185, :190); Part XII and chunk-generation-pipeline call it that. A chunk's first mobs…
+2. `entities/entity-anatomy`:39 — was “or the worldgen worker before its chunk is live |” — now “or the worldgen executor before its chunk is live |” — M's handoff. The worldgen executor is ChunkMap's ConsecutiveExecutor named "worldgen" over the worker pool (server/level/ChunkMap.java:185, :190); Part XII and chunk-generation-pipeline call it that. A chunk's first mobs…
+
+#### `world/chunk-anatomy`
+
+3. `world/chunk-anatomy` (since revised) — was “read by a neighbour's step on the worldgen worker |” — now “read by a neighbour's step on the worldgen executor |” — ImposterProtoChunk is built on the Server thread (ChunkStatusTasks.java:177 in FULL; SerializableChunkData.java:285 from ChunkMap.scheduleChunkLoad's mainThreadExecutor stage, ChunkMap.java:599, :606); a neighbour's step…
+
+#### `world/scheduled-ticks`
+
+4. `world/scheduled-ticks`:39 — was “| any — worldgen workers book through it |” — now “| any — the worldgen executor books through it |” — Generation's bookings come from features and structure pieces at FEATURES (GeodeFeature, LakeFeature, SimpleBlockFeature, SpringFeature, StructurePiece, NetherFortressPieces call scheduleTick), inline on the worldgen exe…
+5. `world/scheduled-ticks`:42 — was “| a generating chunk's bookings, all at delay zero | worldgen workers |” — now “| a generating chunk's bookings, all at delay zero | the worldgen executor |” — Generation's bookings come from features and structure pieces at FEATURES (GeodeFeature, LakeFeature, SimpleBlockFeature, SpringFeature, StructurePiece, NetherFortressPieces call scheduleTick), inline on the worldgen exe…
+6. `world/scheduled-ticks`:43 — was “| Render, and worldgen workers |” — now “| Render, and the worldgen executor |” — Generation's bookings come from features and structure pieces at FEATURES (GeodeFeature, LakeFeature, SimpleBlockFeature, SpringFeature, StructurePiece, NetherFortressPieces call scheduleTick), inline on the worldgen exe…
+
+#### `world/points-of-interest`
+
+7. `world/points-of-interest`:31 — was “is the door every ordinary write goes through | Server, or a worldgen worker |” — now “is the door every ordinary write goes through | Server, or the worldgen executor |” — WorldGenRegion.setBlock calls ServerLevel.updatePOIOnBlockStateChange (server/level/WorldGenRegion.java:340); it is reached at FEATURES, on the worldgen executor.
+8. `world/points-of-interest`:180 — was “calls the same hook from worldgen workers and the index is Server-thread-only.” — now “calls the same hook from the worldgen executor and the index is Server-thread-only.” — WorldGenRegion.setBlock calls ServerLevel.updatePOIOnBlockStateChange (server/level/WorldGenRegion.java:340); it is reached at FEATURES, on the worldgen executor.
+
+#### `networking/protocol-phases`
+
+9. `networking/protocol-phases`:413 — was “`DebugConfigCommand`, which only a dedicated server started with its debug system properties registers.” — now “`DebugConfigCommand`, which the game registers only in a dedicated server's command set, and only when started with its debug system properties.” — N's handoff. DebugConfigCommand registers when SharedConstants.DEBUG_DEV_COMMANDS (a debug system property; IS_RUNNING_IN_IDE is never assigned in the shipped tree) and commandSelection.includeDedicated (commands/Command…
+
+#### `server/players-and-sessions`
+
+10. `server/players-and-sessions`:85 — was “and the login parks until the old connection is really gone.” — now “and the login parks until the old player has left the player list.” — I's handoff. WAITING_FOR_DUPE_DISCONNECT ends when isPlayerAlreadyInWorld is false, a player-list test (server/network/ServerLoginPacketListenerImpl.java:81); protocol-phases:251 says the same.
+
+#### `world/chunk-storage`
+
+11. `world/chunk-storage`:235 — was “those entities and their passengers are removed with `Entity.RemovalReason.UNLOADED_TO_CHUNK`. The filter runs” — now “those entities and their passengers are removed with `Entity.RemovalReason.UNLOADED_TO_CHUNK`. A type built never to be saved — a leash knot, a lightn…” — F's handoff. storeChunkSections filters by EntityAccess::shouldBeSaved (PersistentEntitySectionManager.java:208-210), which does not test the type; a noSave type (EntityTypes: LEASH_KNOT :252, LIGHTNING_BOLT :253, FISHIN…
+
+#### `server/server-level-tick`
+
+12. `server/server-level-tick`:424 — was “tickets and the forced, portal and ender-pearl tickets — resets `ServerLevel.emptyTime`. Otherwise” — now “tickets and the forced, portal and ender-pearl tickets — resets `ServerLevel.emptyTime` in the tick, and two calls reset it from outside: `Entity.tele…” — F's handoff. Two more resets outside the tick: Entity.teleportCrossDimension calls newLevel.resetEmptyTime (world/entity/Entity.java:3425), and ServerPlayer.registerAndUpdateEnderPearlTicket the pearl's level's (server/l…
+
+#### `entities/movement-and-collision`
+
+13. `entities/movement-and-collision`:145 — was “five block properties ([blocks and states](../blocks/blocks-and-states.md#four-decisions-four-lookups)):” — now “five values each block copies out of its `BlockBehaviour.Properties` ([blocks and states](../blocks/blocks-and-states.md#the-kind-three-classes-deep))…” — F's handoff. The cited section is stair placement; the five are BlockBehaviour.Properties values the constructor copies out (block/state/BlockBehaviour.java:95-96, :113-114) and Block returns (block/Block.java:476-494);…
+
+#### `foundations/resource-system`
+
+14. `foundations/resource-system`:289 — was “On the server `ReloadableServerResources.loadResources` is called with `Util.backgroundExecutor` and `MinecraftServer`, so apply runs on the Server th…” — now “On the server a `/reload` calls `ReloadableServerResources.loadResources` with `Util.backgroundExecutor` and `MinecraftServer`, so apply runs on the S…” — C's handoff. /reload: MinecraftServer.reloadResources passes this (server/MinecraftServer.java:1669). The first load goes through WorldLoader.load with the waiting thread's executor: Util.blockUntilDone's queue on Server…
+
+#### `anatomy/anatomy`
+
+15. `anatomy/anatomy`:227 — was “and any other thread that wants to touch that half's state submits a task.” — now “and another thread that wants to touch that half's state submits a task — except a packet, which has a queue of its own (below), and a dedicated serve…” — C's handoff. Packets are queued on the PacketProcessor (network/protocol/PacketUtils.java ensureRunningOnSameThread), and console lines go into DedicatedServer.consoleInput, drained by DedicatedServer.tickConnection (ser…
+
+#### `blocks/block-entities`
+
+16. `blocks/block-entities`:180 — was “Note over CH,FM: AbstractContainerMenu.broadcastChanges<br/>checks the four data slots” — now “Note over CH,FM: AbstractContainerMenu.<br/>broadcastChanges checks the four data slots” — K's handoff: hyphen-broken on screen (tools/pass7/broken_names.py on a fresh render); broken at the dot, F18's form.
+
+#### `items/contexts-and-predicates`
+
+17. `items/contexts-and-predicates`:321 — was “LootP->>CMap: ContextMap.Builder.buildAndValidate against LootContextParamSets.COMMAND” — now “LootP->>CMap: ContextMap.Builder.<br/>buildAndValidate against LootContextParamSets.COMMAND” — K's handoff: hyphen-broken on screen (tools/pass7/broken_names.py on a fresh render); broken at the dot, F18's form.
+
+#### `reference/hud-elements`
+
+18. `reference/hud-elements` (since revised) — was “twenty-seven slots in `Hud.extractRenderState`” — now “twenty-seven numbered rows in `Hud.extractRenderState`” — The count said "slots" and glossed it as one row holding two alternatives; Hud.extractRenderState has four if/else pairs: scoping else the equipment overlay (Hud.java:288, :290), portal else nausea (:317, :319), spectato…
+19. `reference/hud-elements`:8 — was “*Slots*, because one of the twenty-seven holds two alternative elements and is numbered 17 and 17b below.” — now “Four places in it record one element or another: the spyglass or the equipment overlay (rows 2 and 3), the portal or the nausea overlay (5 and 6), the…” — The count said "slots" and glossed it as one row holding two alternatives; Hud.extractRenderState has four if/else pairs: scoping else the equipment overlay (Hud.java:288, :290), portal else nausea (:317, :319), spectato…
+20. `reference/hud-elements`:47 — was “*else*: the game mode is spectator **and** the player is one — the same slot as row 17” — now “*else*: the game mode is spectator **and** the player is one, and a spectator menu is open — the same slot as row 17” — SpectatorGui.extractAction records only while its menu is open and the hotbar alpha is above zero (client/gui/components/spectator/SpectatorGui.java:95-98).
+21. `reference/hud-elements`:73 — was “| 30 | debug overlay | resources are loaded, and the current screen is not `DebugOptionsScreen` |” — now “| 30 | debug overlay | resources are loaded, the current screen is not `DebugOptionsScreen`, and some debug entry is on — F3 is open, or an entry is s…” — DebugScreenOverlay.extractRenderState records only when debugEntries.getCurrentlyEnabled() is non-empty (DebugScreenOverlay.java:97-101), which DebugScreenEntryList.rebuildCurrentList fills with ALWAYS_ON entries and, wh…
+22. `reference/hud-elements`:74 — was “row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, and this call…” — now “row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, `LoadingOverl…” — LoadingOverlay also calls Hud.extractDeferredSubtitles on fade-out and fade-in (LoadingOverlay.java:83, :94).
+
+#### `client/hud`
+
+23. `client/hud`:257 — was “`Hud.extractRenderState` — the whole HUD is one ordered method, and the two” — now “`Hud.extractRenderState` — all but the last four of the HUD's elements in one ordered method, and the two” — client/hud's reading line said the whole HUD is one method; four elements are recorded by Gui.extractRenderState (Gui.java:219, :226, :245, :248), which its own lines 50-60 count as HUD.
+
+#### `reference/block-update-flags`
+
+24. `reference/block-update-flags`:22 — was “| `Level.sendBlockUpdated` — the broadcast on the server, a re-mesh on the client, where it is `LevelExtractor.blockChanged` |” — now “| `Level.sendBlockUpdated` — on the server the broadcast, and the path check for mobs navigating across the position; a re-mesh on the client, where i…” — ServerLevel.sendBlockUpdated also invalidates pathTypesByPosCache and, when the collision shape changed, recomputes crossing mobs' paths (server/level/ServerLevel.java sendBlockUpdated, after blockChanged).
+25. `reference/block-update-flags`:23 — was “`Level.setBlock` tests it only on the client, so a server write carrying it still broadcasts |” — now “`Level.setBlock` tests it only on the client, so a server write carrying it with bit 2 still broadcasts |” — The gate is `(f & 2) != 0 && (!client || (f & 4) == 0) && (client || BLOCK_TICKING)` (world/level/Level.java:231): bit 4 on the server matters only with bit 2, and then does not stop the broadcast.
+26. `reference/block-update-flags`:26 — was “A one-level flag: it is masked out of the word as it propagates, both to the neighbours and into the recursive write |” — now “A one-level flag: it is masked out of the word as it propagates, both to the neighbours and into the recursive write — and no caller hands `Block.upda…” — Level.setBlock masks 32 out before its shape passes (Level.java:243, `& -34`) and Block.updateOrDestroy before its own write (Block.java:239, `& -33`); the direct callers of updateOrDestroy pass 3 or 18 (PistonMovingBloc…
+27. `reference/block-update-flags`:33 — was “and only the first two are ever passed by a page in this book.” — now “and only the first two are ever named by a page in this book.” — pistons-and-block-events passes 324 and 276, UPDATE_NONE's bits plus one; no page names 260 itself.
+28. `reference/block-update-flags`:38 — was “| `Block.UPDATE_ALL_IMMEDIATE` | 11 | 1 + 2 + 8 | placement |” — now “| `Block.UPDATE_ALL_IMMEDIATE` | 11 | 1 + 2 + 8 | placement, your client's predicted break, and an emptied bucket |” — 11 is also the client's predicted break (client/multiplayer/MultiPlayerGameMode.java:144; block-breaking.md:100) and an emptied bucket (world/item/BucketItem.java:194; fluids.md).
+29. `reference/block-update-flags`:39 — was “nowhere in this book — and *none* is a misnomer: it suppresses the client-side gate and the block entity's side effects, rather than doing nothing |” — now “nowhere in this book by name — and *none* is a misnomer: a write with it tells no client and no neighbour and skips the block entity's side effects, b…” — 260 = 4 + 256 has no bit 2, so the client gate its bit 4 belongs to is never reached (Level.java:231); what a 260 write skips is the broadcast, the neighbour fan-out and the block entity's side effects (LevelChunk.java:3…
+30. `reference/block-update-flags`:40 — was “nowhere in this book; it is what a structure or a data-pack write passes to land a state and tell nobody |” — now “nowhere in this book; it is the *strict* mode of `/setblock`, `/fill`, `/clone` and `/place` and of a structure block, and what a game test's template…” — Every 816 write, with its bit 2 where it has one: /setblock and /fill strict (SetBlockCommand.java:65, FillCommand.java:121), /clone strict (CloneCommands.java:185) and its temporary barriers (:192, :216), /place (PlaceC…
+31. `reference/block-update-flags`:42 — was “**512 appears twice on this page and means two unrelated things.**” — now “**512 is two constants and means two unrelated things.**” — 512 appears four times on the page (the hook, the bit table, 816's decomposition, the paragraph); what the bold sentence means is that it is two constants (Block.java:100, :107).
+
+#### `reference/README`
+
+32. `reference/README`:8 — was “If yes, it lives here and the page links to it — so nobody arrives at this shelf by walking it, and the table below is sorted for the one question a r…” — now “If yes, it lives here and the page links to it — so a shelf page is reached from the lecture that needs it, and the table below is grouped by the one…” — "nobody arrives by walking it" is a claim about readers; SUMMARY.md lists the whole shelf in this table's order, so it can be walked. What is true by design is that a lecture links the shelf page it needs. The table is g…
+33. `reference/README`:11 — was “Thirteen of the twenty-three are rewritten by a tool on every deploy and cannot go stale. The other ten were read by a person, one class at a time, an…” — now “Thirteen of the twenty-three are rewritten by a tool on every deploy, so their rows cannot go stale, though the few sentences each tool types above it…” — The rows regenerate (tools/deploy.sh:10, :13, :14); the prose each view carries is typed into the tool (gen_reference.py blurbs, e.g. :281 "Seventeen of these thirty-one sets", :476 "The seven"; check_lanes.py:264-277; v…
+34. `reference/README`:17 — was “and everywhere else, this page included, its figure is the table.” — now “and everywhere else, this page included, the table or the list is the figure.” — The glossary has no table; its entries are paragraphs.
+35. `reference/README`:21 — was “*Generated · decompile* is read off the source, *generated · corpus* off the book's own pages, and both are rewritten on every deploy; *hand-kept* is…” — now “*Generated · decompile* is read off the source, *generated · corpus* off the book itself — its pages, and the lane key in its page template — and both…” — lanes.md is written from TEMPLATE.md's key alone (tools/check_lanes.py:256-288), not from the pages.
+36. `reference/README` (since revised) — was “| every `DataComponentType`, persistent and synced |” — now “| every `DataComponentType` in `DataComponents`, persistent and synced |” — The view is DataComponents' 122; EnchantmentEffectComponents registers 31 more DataComponentTypes into ENCHANTMENT_EFFECT_COMPONENT_TYPE (world/item/enchantment/EnchantmentEffectComponents.java:29-132).
+37. `reference/README`:39 — was “| every HUD element and the condition it is behind |” — now “| every HUD element and the condition, if any, it is behind |” — hud-elements' own opening: almost every element is behind a condition; the contextual bar is not.
+38. `reference/README`:40 — was “| the fifteen phases and the twelve renderers, in declaration order |” — now “| the fifteen phases and the twelve renderers, in the order the code lists them |” — Phases follow SubmitNodeCollection.allPhases (client/renderer/SubmitNodeCollection.java:97), not the field declarations (:54-69); renderers follow FeatureRenderDispatcher's registration (:45-56).
+39. `reference/README`:46 — was “| one sentence per term, and the page that owns it |” — now “| a short entry per term, and the page that owns it |” — Glossary entries run to two sentences or more in about a fifth of cases (Authority, Batch, Entity ...).
+40. `reference/README`:48 — was “| every class backticked on a page, and the pages that name it |” — now “| every class a written page backticks or a figure names, and the pages that name it |” — verify_names.py --index skips every page with the generated mark (:185-186) and adds names from figures (:249-263); 44 packet classes appear only on packets.md and are not indexed.
+41. `reference/README`:51 — was “rewrites eleven of them from the decompile's declaration lines, so a version bump re-derives them rather than re-reading them;” — now “rewrites eleven of them from the decompile — its declarations, its call sites and its data files — so a version bump re-derives their rows rather than…” — Four views read other than declaration lines: structure-spawn-overrides the worldgen JSON (gen_reference.py:510), enchantment-hooks every call site (:318-330), spawn-reasons every comparison site (:394-417), the serializ…
+42. `reference/README` (since revised) — was “backticked name) and” — now “backticked name and every class a figure names) and” — Four views read other than declaration lines: structure-spawn-overrides the worldgen JSON (gen_reference.py:510), enchantment-hooks every call site (:318-330), spawn-reasons every comparison site (:394-417), the serializ…
+43. `reference/README` (since revised) — was “`tools/verify_names.py` checks every name on the page,” — now “`tools/verify_names.py` checks every backticked name on the page,” — verify_names.py checks backticked spans only (TICK, :70); an italic identifier is never checked.
+44. `reference/README`:55 — was “declaration orders drift on a version bump, and two of these pages (submit phases, density-function nodes) are nothing but declaration order.” — now “the code's own orders drift on a version bump, and three of these pages (the flags, the submit phases, the density-function nodes) are laid out in one…” — submit-phases is in allPhases order, density-function-nodes in bootstrap registration order (DensityFunctions.java:85-147), block-update-flags in declaration order (Block.java:91-100); each carries more than the order.
+45. `reference/README`:57 — was “The last column is the one thing on this page a tool can settle, and it is now settled by one:” — now “The last column is one a tool can settle, and it is now settled by one:” — The kept-by column is as mechanical (the generated mark verify_names.py:40, :185 reads).
+46. `reference/README`:52 — was “(the class index, from every backticked name and every class a figure names)” — now “(the class index, from every written page's backticked names and every class a figure names)” — verify_names.py --index skips the generated views; the class index is the written pages' names.
+
+#### `tools/gen_reference.py`
+
+47. `tools/gen_reference.py`:24 — was “each catalogue is names plus the facts a declaration line states about them.” — now “each catalogue is names plus the facts the tree states about them — a declaration line, a call site, a data file.” — The tool's own docstring made the declaration-lines claim.
+48. `tools/gen_reference.py`:76 — was “the exact phase→packet bindings are in the `*Protocols` classes next to each `PacketTypes` class (`GameProtocols`, `ConfigurationProtocols`, `LoginPro…” — now “the exact phase→packet bindings are in the five `*Protocols` classes (`GameProtocols`, `ConfigurationProtocols`, `LoginProtocols`, `StatusProtocols`,…” — packets: common/, cookie/ and ping/ have no *Protocols class; the five phase classes bind them.
+49. `tools/gen_reference.py`:136 — was “f"Every registry key in the game. **{in_registries}” — now “f"Every registry key in the game but the root registry\'s own. **{in_registries}” — registries: the root registry's own key (BuiltInRegistries.java:186, Registries.ROOT_REGISTRY_NAME) is not a row.
+50. `tools/gen_reference.py`:136 — was “**Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen;” — now “**Built-in** registries are created empty when `BuiltInRegistries` loads, filled by `BuiltInRegistries.bootStrap` — mostly through their owners' own `…” — registries: BuiltInRegistries' initialisers create each registry empty with a loader (internalRegister, :367-377); BuiltInRegistries.bootStrap fills them (:380-393), mostly through owners' bootstrap methods, then freezes…
+51. `tools/gen_reference.py`:137 — was “out += (f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension)} data-pack" + (f" · {len(reloadable)} reloadable" if reloadable else…” — now “out += (f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension | reloadable)} data-pack" + (f", {len(reloadable)} of them reloadable…” — registries: the summary's data-pack count left out the 8 rows the kind column labels data-pack (reloadable).
+52. `tools/gen_reference.py`:157 — was “*Persistent* components have a `Codec` and are written to disk; *synced* ones have a `StreamCodec` and are sent to the client; *cache-encoded* ones us…” — now “*Persistent* types have a `Codec` and are written to disk; a type without one is *transient* (`DataComponentType.isTransient`), never saved but sent l…” — components (B's handoff): DataComponentType.Builder.build derives a stream codec from the Codec when none is given and throws when there is neither (core/component/DataComponentType.java:79-82), so every type is sent; tr…
+53. `tools/gen_reference.py`:158 — was “out += f"{len(rows)} components\n\n| id | value type | persistent | synced |\n|---|---|---|---|\n"” — now “out += f"{len(rows)} components\n\n| id | value type | persistent | on the wire |\n|---|---|---|---|\n"” — components (B's handoff): DataComponentType.Builder.build derives a stream codec from the Codec when none is given and throws when there is neither (core/component/DataComponentType.java:79-82), so every type is sent; tr…
+54. `tools/gen_reference.py`:162 — was “s = "yes" if "networkSynchronized(" in body else ""” — now “s = "its own `StreamCodec`" if "networkSynchronized(" in body else "NBT, through its `Codec`"” — components (B's handoff): DataComponentType.Builder.build derives a stream codec from the Codec when none is given and throws when there is neither (core/component/DataComponentType.java:79-82), so every type is sent; tr…
+55. `tools/gen_reference.py`:179 — was “Integer rules list their bounds and any feature gate after the default.” — now “Integer rules list the bounds they declare after the default — a minimum always, a maximum only where one is not `Integer.MAX_VALUE` — and any feature…” — gamerules: 10 of the 12 integer rules take the four-argument registerInteger, whose maximum is Integer.MAX_VALUE (world/level/gamerules/GameRules.java:173-174); only two declare one.
+56. `tools/gen_reference.py`:336 — was “"The enchantment package barely calls anything and everything calls it, so this table is the " "system's real interface: each row is a moment at which…” — now “f"{len(set().union(*callers.values()))} classes call it, so this table is where the rest of the game " "meets the enchantment system: most rows are a…” — enchantment-hooks (G's handoff): the package's effects call explosions, block writes, functions, damage, spawns (enchantment/effects/*); 60 caller classes, not "everything"; 13 of the 50 rows store, look up or choose enc…
+57. `tools/gen_reference.py`:277 — was “"`ContextKeySet.Builder` declared. The set belongs to the **caller**, not to the loot table: "” — now “"`ContextKeySet.Builder` declared. The set a roll is checked against belongs to the **caller**: "” — loot-context-params (G's handoff): a loot table carries a set too, its lenient optional *type* (world/level/storage/loot/LootTable.java:42), checked at load, never against the caller's; presence is read with LootContext.…
+58. `tools/gen_reference.py`:279 — was “"set does not declare at all, so this table is the contract each call site has to satisfy. Every key " "is read the same way, with `LootContext.getOpt…” — now “"set does not declare at all, so this table is the contract each call site has to satisfy. A loot " "table names a set of its own, its *type*, but tha…” — loot-context-params (G's handoff): a loot table carries a set too, its lenient optional *type* (world/level/storage/loot/LootTable.java:42), checked at load, never against the caller's; presence is read with LootContext.…
+59. `tools/gen_reference.py`:411 — was “else: passes[const].add(cls)” — now “elif cls != "EntitySpawnReason": passes[const].add(cls)” — spawn-reasons: the enum's own helper bodies were counted as a class that passes SPAWNER and TRIAL_SPAWNER, and "other" was false for NATURAL (Husk) and CONVERSION (Zombie), whose testers also pass them.
+60. `tools/gen_reference.py`:419 — was “and so behave differently for that reason — and how many other classes pass it.” — now “and so behave differently for that reason — and how many classes pass it.” — spawn-reasons: the enum's own helper bodies were counted as a class that passes SPAWNER and TRIAL_SPAWNER, and "other" was false for NATURAL (Husk) and CONVERSION (Zombie), whose testers also pass them.
+61. `tools/gen_reference.py`:477 — was “and every item built by one. `Item.Properties.tool` is the shared body:” — now “and every item built by one. The *components* column names what a helper sets by name; through `Item.Properties.durability`, `Item.Properties.repairab…” — weapon-helpers: the column misses what the Properties setters install (durability :452, repairable :494/:498, enchantable :484, attributes :649 in world/item/Item.java); a spear's call passes attackDuration and damageMul…
+62. `tools/gen_reference.py`:486 — was “*damage* and *speed* are the two baselines the call passes; the material adds its own attack-damage bonus on top.\n\n"” — now “*damage* and *speed* are the two baselines a tool or sword call passes; the material adds its own attack-damage bonus on top. A spear's call passes an…” — weapon-helpers: the column misses what the Properties setters install (durability :452, repairable :494/:498, enchantable :484, attributes :649 in world/item/Item.java); a spear's call passes attackDuration and damageMul…
+63. `tools/gen_reference.py`:490 — was “out += f"| `Items.{name}` | {h} | `ToolMaterial.{mat}` | {dmg.rstrip('F')} | {spd.rstrip('F')} |\n"” — now “if helper == "spear": dmg = spd = "—" out += f"| `Items.{name}` | {h} | `ToolMaterial.{mat}` | {dmg.rstrip('F')} | {spd.rstrip('F')} |\n"” — weapon-helpers: the column misses what the Properties setters install (durability :452, repairable :494/:498, enchantable :484, attributes :649 in world/item/Item.java); a spear's call passes attackDuration and damageMul…
+64. `tools/gen_reference.py` (since revised) — was “`NaturalSpawner` asks the first structure at the position that declares an override for the category, and if one answers, the biome's list is not cons…” — now “When `NaturalSpawner` builds a spawn list, `ChunkGenerator.getMobsAt` walks the structures that chunk references, in no fixed order, and the first tha…” — structure-spawn-overrides (M's handoff): the walk is ChunkGenerator.getMobsAt over the chunk's structure references, a HashMap (ChunkAccess.java:78); a full box is StructureStart.getBoundingBox, which Structure.adjustBou…
+65. `tools/gen_reference.py`:529 — was “or `full` (anywhere in the structure's).” — now “or `full` (anywhere in the structure's box, which for a structure that adapts the terrain around it is grown by twelve blocks on every side).” — structure-spawn-overrides (M's handoff): the walk is ChunkGenerator.getMobsAt over the chunk's structure references, a HashMap (ChunkAccess.java:78); a full box is StructureStart.getBoundingBox, which Structure.adjustBou…
+66. `tools/gen_reference.py`:535 — was “"which is the same as not carrying it: the biome's list stands.\n")” — now “"— the field is required — and the biome's list stands.\n")” — structure-spawn-overrides (M's handoff): the walk is ChunkGenerator.getMobsAt over the chunk's structure references, a HashMap (ChunkAccess.java:78); a full box is StructureStart.getBoundingBox, which Structure.adjustBou…
+67. `tools/gen_reference.py`:534 — was “out += (f"\nThe other {declared - len(structures)} structures that carry the field carry it empty, "” — now “out += (f"\nThe other {declared - len(structures)} structures carry the field empty "” — structure-spawn-overrides (M's handoff): the walk is ChunkGenerator.getMobsAt over the chunk's structure references, a HashMap (ChunkAccess.java:78); a full box is StructureStart.getBoundingBox, which Structure.adjustBou…
+
+#### `reference/math-and-primitives`
+
+68. `reference/math-and-primitives`:8 — was “`BlockPos` alone has 1,221 importers” — now “`BlockPos` alone has 1,229 importers” — 26.2's fan-in; src/generated/fanin.md (26.3): BlockPos 1229, Mth 703, Util 457.
+69. `reference/math-and-primitives`:188 — was “`Mth` is the maths grab-bag (677 importers)” — now “`Mth` is the maths grab-bag (703 importers)” — 26.2's fan-in; src/generated/fanin.md (26.3): BlockPos 1229, Mth 703, Util 457.
+70. `reference/math-and-primitives`:195 — was “`Util` (in `net/minecraft/util`, 454 importers)” — now “`Util` (in `net/minecraft/util`, 457 importers)” — 26.2's fan-in; src/generated/fanin.md (26.3): BlockPos 1229, Mth 703, Util 457.
+71. `reference/math-and-primitives`:15 — was “each arrow the arithmetic of one step coarser;” — now “each arrow the arithmetic of one step;” — The B->G arrow adds a dimension; it is not a step coarser.
+72. `reference/math-and-primitives`:37 — was “`SectionPos.sectionRelative` (mask 15); `SectionPos.asLong` |” — now “`SectionPos.sectionRelative` (mask 15); `SectionPos.chunk` drops y; `SectionPos.asLong` |” — The table named no method for the drop-y arrow: SectionPos.chunk (core/SectionPos.java:212-213).
+73. `reference/math-and-primitives`:36 — was “| the key of every chunk map |” — now “| packed to a long, the key of every chunk map |” — The chunk maps are keyed by the packed long (server/level/ChunkMap.java:131-133).
+74. `reference/math-and-primitives`:40 — was “| compass targets, beds, portals |” — now “| compass targets, beds, a player's last death location |” — No portal code uses GlobalPos; its users are the lodestone compass, villager memories (HOME, the bed), a player's last death location (world/entity/player/Player.java:172, :555) and respawn data.
+75. `reference/math-and-primitives`:43 — was “| `Direction.fromYRot`, `Direction.toYRot`; `Vec3.xRot`, `Vec3.yRot` |” — now “| `Direction.fromYRot`, `Direction.toYRot` |” — Vec3.xRot / Vec3.yRot rotate a vector by radians about an axis (world/phys/Vec3.java:238, :248); they convert nothing to or from pitch and yaw.
+76. `reference/math-and-primitives`:71 — was “`BlockPos.PACKED_HORIZONTAL_LENGTH` is literally derived from the world border's 30,000,000, which is why it is 26” — now “`BlockPos.PACKED_HORIZONTAL_LENGTH` is derived from 30,000,000, the level's hard horizontal bound (`Level.MAX_LEVEL_SIZE`), which is why it is 26” — 30,000,000 is Level.MAX_LEVEL_SIZE (world/level/Level.java:100), the hard horizontal bound (Level.isInWorldBoundsHorizontal); the world border's limits are WorldBorder.MAX_SIZE and MAX_CENTER_COORDINATE. The decompile sh…
+77. `reference/math-and-primitives`:109 — was “right rotation for model JSON.” — now “right rotation for model JSON and a display entity's transformation.” — The decomposition also serves the display entity's transformation (world/entity/Display.java:137-143).
+78. `reference/math-and-primitives` (since revised) — was “with `Shapes.EPSILON` and `Shapes.BIG_EPSILON` the tolerances every comparison uses.” — now “with `Shapes.EPSILON` (1.0E-7) the tolerance the package's own comparisons use and `Shapes.BIG_EPSILON` a coarser 1.0E-6.” — Every comparison in world/phys/shapes uses 1.0E-7 (Shapes.EPSILON's value, Shapes.java:23); 1.0E-6 (BIG_EPSILON, :24) appears in none. Both are compile-time constants, so which name a use cites cannot be seen.
+79. `reference/math-and-primitives`:124 — was “and `Shapes.join` picks an `IndexMerger` strategy per axis, returning a `CubeVoxelShape` only when all three merge evenly.” — now “and `Shapes.joinUnoptimized` picks an `IndexMerger` strategy per axis, building a `CubeVoxelShape` only when all three merge evenly; `Shapes.join` is…” — Shapes.join is joinUnoptimized(...).optimize() (Shapes.java:116-117); the per-axis merger choice and the CubeVoxelShape-when-even rule are joinUnoptimized's (:137), and optimize rebuilds from boxes.
+80. `reference/math-and-primitives` (since revised) — was “Shape queries are cheap because they are mostly not computed:” — now “Context-free shape queries are cheap because they are mostly not computed:” — The Cache (built at BlockPos.ZERO with CollisionContext.empty) answers only the context-free queries (BlockBehaviour.java:1076, :1284, :1288, :962); an entity's movement asks with its context (BlockCollisions -> EntityCo…
+81. `reference/math-and-primitives`:132 — was “built whether the cache is or not, and a dynamic-shape block answers every collision query live.” — now “built whether the cache is or not. Without a cache a block answers those queries live, and says it has a large collision shape whatever it has; and th…” — The Cache (built at BlockPos.ZERO with CollisionContext.empty) answers only the context-free queries (BlockBehaviour.java:1076, :1284, :1288, :962); an entity's movement asks with its context (BlockCollisions -> EntityCo…
+82. `reference/math-and-primitives`:145 — was “## Two random families, and two that are neither” — now “## Two random families, a saved table, and a mixer” — The heading's "two that are neither": RandomSequences' streams are XoroshiroRandomSource (world/RandomSequence.java:18); only LinearCongruentialGenerator is neither. Three inbound links repointed below.
+83. `reference/math-and-primitives`:163 — was “the newer of the two and the one a noise settings file gets unless it asks otherwise:” — now “the one a noise settings file gets unless its required `legacy_random_source` flag asks for legacy:” — legacy_random_source is a required field (NoiseGeneratorSettings.java:28, fieldOf not optionalFieldOf); "the newer of the two" is history the tree cannot show.
+84. `reference/math-and-primitives`:168 — was “So an ordinary world runs both families at once: its overworld is Xoroshiro, and the two dimensions you walk into through a portal are legacy.” — now “So an ordinary world runs both families at once: its overworld's noise is Xoroshiro and the noise of the two dimensions you walk into through a portal…” — Families by stream: noise follows the settings; features are Xoroshiro in every dimension (world/level/chunk/ChunkGenerator.java:358); structure placement is legacy in every dimension (RandomSpreadStructurePlacement.java…
+85. `reference/math-and-primitives`:169 — was “`RandomState` forks it positionally” — now “`RandomState` forks the chosen algorithm positionally” — RandomState forks whichever algorithm the settings chose (world/level/levelgen/RandomState.java:52-55).
+86. `reference/math-and-primitives`:180 — was “There is a third randomness path that is neither: `RandomSequence` and `RandomSequences`,” — now “There is a third randomness path, on the Xoroshiro family: `RandomSequence` and `RandomSequences`,” — RandomState forks whichever algorithm the settings chose (world/level/levelgen/RandomState.java:52-55).
+87. `reference/math-and-primitives` (since revised) — was “And a fourth that is not a `RandomSource` at all:” — now “And one that is not a `RandomSource` at all:” — RandomState forks whichever algorithm the settings chose (world/level/levelgen/RandomState.java:52-55).
+88. `reference/math-and-primitives`:184 — was “which caches a spare value — which is why reseeding a source must reset it.” — now “which caches a spare value — which is why reseeding a source resets it, in every implementation but the deprecated `ThreadSafeLegacyRandomSource`.” — ThreadSafeLegacyRandomSource.setSeed does not reset its gaussian (ThreadSafeLegacyRandomSource.java:32-34); the other three do (LegacyRandomSource.java:37, XoroshiroRandomSource.java:49, SingleThreadedRandomSource.java:3…
+89. `reference/math-and-primitives`:210 — was “the mutable block position is constructed directly and its” — now “the mutable block position comes from `BlockPos.mutable` or its constructor, and its” — BlockPos.mutable (core/BlockPos.java:259) is the converting call.
+90. `reference/math-and-primitives`:213 — was “**`BlockPos` is immutable, `Vec3i` only pretends to be.** `Vec3i` keeps protected setters that `BlockPos.MutableBlockPos` uses; every other subclass t…” — now “**A `BlockPos` may be mutable.** `Vec3i` keeps protected setters that `BlockPos.MutableBlockPos`, a subclass of `BlockPos`, makes public; every other…” — Both Vec3i and BlockPos are @Immutable with protected setters; MutableBlockPos extends BlockPos and makes them public (BlockPos.java:613, :724-740), so a BlockPos reference may hold a moving position.
+91. `reference/math-and-primitives`:216 — was “**`Level.random` deliberately crashes on cross-thread use.**” — now “**`Level.random` crashes when two threads draw at once.**” — LegacyRandomSource throws only when a compare-and-set loses to another thread's write (LegacyRandomSource.java:34, :43-47); it records no owning thread, so a use that never collides goes unnoticed.
+92. `reference/math-and-primitives`:218 — was “*detector*: any concurrent use fails the compare-and-set and raises a `ThreadingDetector` exception — both the reseed and every draw test it.” — now “*detector*: a draw or a reseed whose compare-and-set loses to another thread's write raises a `ThreadingDetector` exception, so concurrent use is caug…” — LegacyRandomSource throws only when a compare-and-set loses to another thread's write (LegacyRandomSource.java:34, :43-47); it records no owning thread, so a use that never collides goes unnoticed.
+93. `reference/math-and-primitives`:220 — was “Touching a level's random from a worker is meant to be loud.” — now “Touching a level's random from a worker is loud only when it collides.” — LegacyRandomSource throws only when a compare-and-set loses to another thread's write (LegacyRandomSource.java:34, :43-47); it records no owning thread, so a use that never collides goes unnoticed.
+94. `reference/math-and-primitives`:222 — was “**Tick randomness and worldgen randomness are different generators.** The LCG drives every `Level` and `Entity`; the saved `RandomSequences` behind lo…” — now “**Tick randomness and worldgen randomness do not divide by family.** The LCG drives every `Level` and `Entity`, the Nether's and the End's terrain, an…” — The Nether's and the End's noise and every dimension's structure placement are LegacyRandomSource, the same LCG as Level.random (Level.java:121); features are Xoroshiro everywhere.
+95. `reference/math-and-primitives`:163 — was “unless its required `legacy_random_source` flag asks for legacy:” — now “unless its required *legacy_random_source* flag asks for legacy:” — verify_names: a JSON field name is italic, not backticked (the page's own convention).
+
+#### `maps/fanin`
+
+96. `maps/fanin`:44 — was “math-and-primitives.md#two-random-families-and-two-that-are-neither” — now “math-and-primitives.md#two-random-families-a-saved-table-and-a-mixer” — The three inbound links to the renamed heading.
+
+#### `worldgen/density-functions`
+
+97. `worldgen/density-functions`:133 — was “math-and-primitives.md#two-random-families-and-two-that-are-neither” — now “math-and-primitives.md#two-random-families-a-saved-table-and-a-mixer” — The three inbound links to the renamed heading.
+
+#### `worldgen/README`
+
+98. `worldgen/README`:172 — was “math-and-primitives.md#two-random-families-and-two-that-are-neither” — now “math-and-primitives.md#two-random-families-a-saved-table-and-a-mixer” — The three inbound links to the renamed heading.
+99. `worldgen/README`:19 — was “— and two of those classes are the standing counter-example” — now “— and two of them are the standing counter-example” — The two landing sentences that referred back to the phrase as classes.
+100. `worldgen/README`:3 — was “· Part XII · the one system in the game built” — now “· Part XII · The one system in the game built” — pass5.md:145 — the verified line's scenario clause is capitalised on I to X and was not on XI, XII and XIII.
+
+#### `reference/non-living-damage`
+
+101. `reference/non-living-damage`:16 — was “It never reads the damage amount, because there is none on that side: it answers only whether a client-side swing should play its own effects.” — now “It is never handed the damage amount — `Entity.hurtOrSimulate` drops it on the client — and it answers whether the client should play a hit's effects…” — hurtClient(DamageSource) takes no amount (Entity.java:2095); the client does compute one and Entity.hurtOrSimulate drops it (:2083-2090). It is consulted for a projectile hit the client simulates too (AbstractArrow.onHit…
+102. `reference/non-living-damage` (since revised) — was “Two gates run before any of them is asked anything — `Player.cannotAttack` and `Player.deflectProjectile` ([the sword swing](../systems/player/the-swo…” — now “A swing reaches few of these. The client picks only an entity whose `Entity.isPickable` is true, which among the twenty-two is `Interaction`, `PrimedT…” — The gates' population, re-derived. Pick: LocalPlayer picks with EntitySelector.CAN_BE_PICKED = Entity::isPickable (EntitySelector.java:41; LocalPlayer.java:1378, :1409), false by default (Entity.java:2182); among the 22…
+103. `reference/non-living-damage`:18 — was “`Entity.hurtOrSimulate` is what `Player.attack` calls after them,” — now “`Entity.hurtOrSimulate` is what `Player.attack` calls after the gates,” — The gates' population, re-derived. Pick: LocalPlayer picks with EntitySelector.CAN_BE_PICKED = Entity::isPickable (EntitySelector.java:41; LocalPlayer.java:1378, :1409), false by default (Entity.java:2182); among the 22…
+104. `reference/non-living-damage`:25 — was “| **never reached** — `Entity.skipAttackInteraction` returns true, and the attacker is recorded there |” — now “| **not reached** while its response flag is off — `Entity.skipAttackInteraction` answers the flag's negation, after recording the attacker |” — Interaction.skipAttackInteraction returns !getResponse() and records the attacker first (Interaction.java:100-108).
+105. `reference/non-living-damage` (since revised) — was “**never reached** — a fireball or a wind charge is deflected,” — now “**never reached** — a large fireball or a wind charge is deflected,” — The deflectable tag's "fireball" is LargeFireball; SmallFireball is a Fireball outside the tag.
+106. `reference/non-living-damage`:33 — was “`Entity.markHurt` only, so the client sees a flinch and nothing changes” — now “`Entity.markHurt` only, so the client is sent the entity's motion again and nothing changes” — markHurt only sets syncVelocity (Entity.java:2066-2067): the motion is sent again; no non-living entity has a hurt animation.
+107. `reference/non-living-damage`:46 — was “*a flinch and nothing else* (two)” — now “*a motion resend and nothing else* (two)” — markHurt only sets syncVelocity (Entity.java:2066-2067): the motion is sent again; no non-living entity has a hurt animation.
+108. `reference/non-living-damage`:37 — was “| `Entity.kill`, `Entity.markHurt`, and drops its item — one hit, whatever the amount |” — now “| `BlockAttachedEntity.kill`, `Entity.markHurt`, and `BlockAttachedEntity.dropItem` — one hit, whatever the amount; a leash knot's drop is only a soun…” — The kill is BlockAttachedEntity's own two-argument kill (decoration/BlockAttachedEntity.java:83, :104); dropItem is abstract (:162), and LeashFenceKnotEntity's plays a sound and drops nothing (LeashFenceKnotEntity.java:6…
+109. `reference/non-living-damage`:43 — was “A creative player gets all of that too — the flag only redirects the destruction to `Entity.discard`, which drops nothing” — now “A creative player gets all of that too, and then the vehicle is discarded at once whatever the accumulator reads — `Entity.discard`, which drops nothi…” — (creativePlayer || damage <= 40) && !shouldSourceDestroy -> discard if creative (VehicleEntity.java:66-69): a creative hit discards at once, whatever the accumulator reads.
+110. `reference/non-living-damage` (since revised) — was “*one hit destroys* (five)” — now “*one hit destroys* (five, though a frame holding something loses only its item to the first)” — ItemFrame holding something pops the item on the first hit (ItemFrame.java:184-188).
+
+#### `reference/submit-phases`
+
+111. `reference/submit-phases`:34 — was “Row 11 is drained on its own, by `FeatureRenderDispatcher.PreparedFrame.executeWaterMask`.” — now “Row 11 is drained on its own, by `FeatureRenderDispatcher.PreparedFrame.executeWaterMask` — twice a frame when there is a water mask.” — With improved transparency on and a water mask, LevelRenderer runs executeOitWaterMask before the stage loop and again after DEPTH_BOUNDS (client/renderer/LevelRenderer.java:595-597, :671-673).
+112. `reference/submit-phases`:49 — was “a `SimpleFeatureRenderPhase`, which is not what half the names suggest.” — now “a `SimpleFeatureRenderPhase`, which is not what two of the four *translucent* names suggest.” — "Half the names": of the four names beginning translucent (rows 6-9), two are simple phases (SubmitNodeCollection.java:93, :96).
+113. `reference/submit-phases`:50 — was “`TranslucentSubmit` is a marker interface declaring one method, `TranslucentSubmit.distanceToCameraSq`,” — now “`TranslucentSubmit` is the interface that carries it, through `TranslucentSubmit.distanceToCameraSq`,” — A marker interface declares nothing; TranslucentSubmit declares distanceToCameraSq (feature/submit/ TranslucentSubmit.java:10), which TranslucentFeatureRenderPhase.submit reads (:21).
+114. `reference/submit-phases`:63 — was “| entity models whose `RenderType` blends and does not force the solid phase |” — now “| models whose `RenderType` blends, does not force the solid phase and is not the water mask |” — submitModel tests the water-mask type first (SubmitNodeCollection.java:206-209); the water-mask type blends. Block-entity renderers submit models too (ChestRenderer, BannerRenderer, DecoratedPotRenderer ...).
+115. `reference/submit-phases`:70 — was “and a moving block or item with its ordinary type, re-typed inside the feature renderer or dropped there” — now “and a moving block or item with its ordinary type, re-typed inside the feature renderer, where an item with no outline variant is dropped” — Only an item without an outline variant is dropped (ItemFeatureRenderer.java:93-98); a moving block keeps its ordinary type when it has none (MovingBlockFeatureRenderer.java:78-83).
+116. `reference/submit-phases`:73 — was “Two rows are worth reading twice.” — now “Two things in the table are worth reading twice.” — The paragraph covers the quad-particle split (rows 1 and 12) and outline (row 14), three rows.
+117. `reference/submit-phases`:87 — was “and the merging of consecutive same-render-type geometry.” — now “and the merging of geometry that shares a render type.” — RenderTypeFeatureRenderer also folds a node into an earlier, non-adjacent draw of the same type when the group may reorder (RenderTypeFeatureRenderer.java:38, :106); entity-rendering owns the rule.
+118. `reference/submit-phases` (since revised) — was “| `ModelFeatureRenderer` | the entity models:” — now “| `ModelFeatureRenderer` | models, an entity's or a block entity's:” — RenderTypeFeatureRenderer also folds a node into an earlier, non-adjacent draw of the same type when the group may reorder (RenderTypeFeatureRenderer.java:38, :106); entity-rendering owns the rule.
+119. `reference/submit-phases`:95 — was “walked twice — twenty-four steps out and twenty-four back for its two faces, a hundred vertices in all —” — now “walked twice, as two ribbons that cross — twenty-five stations out and twenty-five back, a pair of vertices at each, a hundred in all —” — The two walks run k = 0..24 and 24..0 (feature/LeashFeatureRenderer.java:49-55): 25 stations each, a vertex pair at each (:79-80), with different fudge offsets (0.05, 0), so two ribbons crossing, drawn as one strip with…
+120. `reference/submit-phases`:99 — was “— pistons and falling blocks —” — now “— pistons, falling blocks and the transient blocks a server sends —” — A third source: ClientboundAddTransientBlockPacket -> LevelExtractor.queueTransientBlock (client/multiplayer/ClientPacketListener.java:1243-1245) -> LevelRenderer.submitTransientBlocks.
+
+#### `reference/density-function-nodes`
+
+121. `reference/density-function-nodes`:60 — was “| the product, a single sample short-circuiting when the first child is exactly zero |” — now “| the product — with neither child a constant, a single sample short-circuits when the first is exactly zero |” — The general samplers short-circuit and skip (op/BinaryFunction.java:551-555, :608-612, :671-675, :734-738); with a ConstantFunction operand compile picks ConstMul/ConstDiv/ConstMin/ConstMax samplers, which do not (:120-3…
+122. `reference/density-function-nodes`:62 — was “| the minimum, a single sample skipping the second child when the first is already at or below its bound |” — now “| the minimum — with neither child a constant, a single sample skips the second when the first is already at or below its bound |” — The general samplers short-circuit and skip (op/BinaryFunction.java:551-555, :608-612, :671-675, :734-738); with a ConstantFunction operand compile picks ConstMul/ConstDiv/ConstMin/ConstMax samplers, which do not (:120-3…
+123. `reference/density-function-nodes`:70 — was “| delegates — requests a cache of its child |” — now “| nothing of its own — a request the compiler replaces with a cache of its child; left in place it refuses to compile |” — CacheFunction.compileSampler throws "Cannot compile cache before it has been deduplicated" (op/CacheFunction.java:17-19); the compiler replaces it with a PreparedCache (DensityFunctionCompiler.java:75-81).
+124. `reference/density-function-nodes`:96 — was “[compile step](../systems/worldgen/density-functions.md#wrap-once-per-chunk)” — now “[compile step](../systems/worldgen/density-functions.md#seed-once-per-dimension)” — The compile is RandomState.getSampler -> DensityFunctionCompiler.getSampler (RandomState.java:125-126, DensityFunctionCompiler.java:44-62), the lecture's "Seed: once per dimension"; "Wrap: once per chunk" rewrites nothin…
+125. `reference/density-function-nodes`:114 — was “`NoiseChunk` builds one for each chunk and for each height query,” — now “`NoiseChunk` builds one for each chunk and for each height query, and the biome step, the structure starts and checks, a caching biome resolver, the s…” — enableCaches builders beyond NoiseChunk (:32): ChunkGenerator.doCreateBiomes (:143) and createStructures (:544), BiomeSource.createCachingResolver (:137), StructureCheck (:76), NoiseBasedChunkGenerator's spawn search (:1…
+126. `reference/density-function-nodes`:132 — was “no registered node stores one: the arithmetic family (`BinaryFunction`, `UnaryFunction`, `ClampFunction`) combines its children's ranges through `Inte…” — now “no registered node stores one: `BinaryFunction`, `UnaryFunction` and `ClampFunction` combine their children's ranges through `Interval` on every call,” — "arithmetic" named three populations on the page (six BinaryFunction ids at :20 and :80; three families at :133; nine unary, power and rounding ids at :166). One word, one sense: it stays BinaryFunction's six.
+127. `reference/density-function-nodes`:162 — was “Nine are arithmetic: *sqrt*,” — now “Nine are maths on a value: *sqrt*,” — "arithmetic" named three populations on the page (six BinaryFunction ids at :20 and :80; three families at :133; nine unary, power and rounding ids at :166). One word, one sense: it stays BinaryFunction's six.
+128. `reference/density-function-nodes`:155 — was “— four at the top level plus the per-dimension directories —” — now “— four at the top level, the rest in a directory each for the End, the Nether, the overworld and the overworld's two preset variants —” — The five directories serve three dimensions: end, nether, overworld, and the overworld's amplified and large-biomes variants, one per world preset (world_preset/amplified.json, large_biomes.json).
+129. `reference/density-function-nodes`:157 — was “files, the per-dimension recipes [terrain](../systems/worldgen/terrain.md#the-cast) reads,” — now “files, the recipes [terrain](../systems/worldgen/terrain.md#the-cast) reads — two of them, *caves* and *floating_islands*, named by no shipped world p…” — caves and floating_islands are named by no shipped world preset or dimension ("settings": grep over worldgen/world_preset and dimension names only overworld, amplified, large_biomes, end, nether).
+
+#### `introduction`
+
+130. `introduction`:6 — was “owns every chunk, entity and block, and is the only copy allowed to decide what they are.” — now “owns every chunk, entity and block, and decides what they are — save where the player you control, and anything it steers, stands, which it takes from…” — The server adopts the controlling client's player and vehicle positions after its checks (server/network/ServerGamePacketListenerImpl.java:1345 absSnapTo(target...), :530 for the vehicle; entities/authority.md:5-13).
+131. `introduction`:7 — was “a loop that draws a frame as often as it can,” — now “a loop that draws frames as fast as vsync or the frame-rate limit allow,” — vsync is on by default (client/Options.java vsync), and the frame limit and FramerateLimitTracker throttle it; anatomy.md:196-197's wording.
+132. `introduction`:12 — was “Almost everything a player experiences is a consequence of that split:” — now “The split is behind some of the first things a player notices:” — J's handoff: most of Parts II, IV, V, VII, X, XI, XII and XIII does not follow from the split (the dropped ticks, Minecraft.java:1265 / DeltaTracker.java:59-66; the GUI tree; world generation; redstone).
+133. `introduction` (since revised) — was “each own their copy of the world and talk only through the connection,” — now “each own their copy of the world and, in play, talk only through the connection,” — In singleplayer the client reads and writes the integrated server directly (DebugScreenOverlay.java:372-381, EntityHitboxDebugRenderer.java:62-70, IntegratedServer's reads of Options); anatomy.md:284-297 calls "everythin…
+134. `introduction`:45 — was “blue is everything the dedicated server also runs, and the hatched boxes are the corners this book leaves out.” — now “blue is everything the dedicated server also ships, and the hatched boxes are the packages no part counts, most of them what this book leaves out.” — Colour marks which jar ships a package (maps/packages.md:3); hatching marks the packages no part counts (tools/map_source.py SKIPPED), which include the taught gizmos, audio backend and recipe book.
+135. `introduction`:62 — was “One page is one lecture;” — now “One system page is one lecture;” — Maps and Reference pages are looked at and looked up, not lectures (this page's own tiers; lectures.md:10-12).
+136. `introduction`:72 — was “lists its pages in the order to watch them, and says which Reference pages the part reads.” — now “lists its pages in the order to watch them, says where the part stops, and says which Reference pages the part reads.” — Every landing page has a Where the part stops (13 of 13), which TEMPLATE.md's landing page requires.
+137. `introduction` (since revised) — was “regenerated on every deploy and cannot go stale; the prose around them is written by a person from those tables,” — now “regenerated on every deploy, so their numbers cannot go stale; the prose around them is written by hand from those tables,” — The atlas's figures and tables regenerate (deploy.sh runs map_source.py); its typed words do not, and the prose is written by the sessions, not a person.
+138. `introduction`:101 — was “Thirteen of the twenty-three are rewritten from the decompile or from the corpus on every deploy and cannot go stale; the other ten are hand-kept and…” — now “Thirteen of the twenty-three are rewritten from the decompile or from the corpus on every deploy, so their rows cannot go stale; the other ten are han…” — The generated views' typed blurbs can go stale (V2 found two); "re-read every pass" promises a pass (R5).
+139. `introduction`:118 — was “Every identifier is Mojang's official mapping,” — now “Every game identifier is Mojang's official mapping,” — Library and JDK names are the libraries' own (verify_names.py ALLOW; Brigadier, DFU, authlib source).
+140. `introduction`:121 — was “Names have moved since 1.21 — `Identifier` was *ResourceLocation*, `Lightmap` was *LightTexture*, `DeltaTracker` was *Timer* — and the [naming drift](…” — now “Names have moved since 1.21 — even since 1.21.11, `Lightmap` was *LightTexture* and `RedstoneWireBlock` was *RedStoneWireBlock* — and the [naming drif…” — Identifier and DeltaTracker are already the names in 1.21.11 (D:/pvpmod/reference/minecraft resources/ Identifier.java:16, client/DeltaTracker.java:5); LightTexture and RedStoneWireBlock are 1.21.11's and renamed in 26.3…
+141. `introduction`:123 — was “Every page says in its header which release it was verified against, and the book's is 26.3.” — now “Every page that describes the game says in its header which release it was verified against, or for a generated view which release it was generated fr…” — The generated views name the release they were generated from; lanes, the class index and the lecture map describe the book, not the game.
+142. `introduction`:128 — was “**Verified means tested.** Every backticked name on every page, and every class and method named inside a diagram, is checked” — now “**Verified means tested.** Every backticked name on every written page, and every member and every class name of more than one word inside a diagram,…” — verify_names.py skips the generated views (:185-186), whose names come from the decompile; check_figure_names.py skips single-word capitalised names and ALL-CAPS tokens (:36-40) and checks compound names and members.
+143. `introduction` (since revised) — was “Every claim has been fact-checked against the decompile twice — once as drafted, and once again after the pages were restructured into the book you ar…” — now “Every page has been fact-checked against the decompile three times: as drafted, after the pages were restructured into the book you are reading, and a…” — Passes 2 and 4 checked every page; pass 8's part sessions checked every page a third time and found errors on every part (docs/plan.md, the session log).
+144. `introduction` (since revised) — was “Some of the jar is in no part, and it falls into three kinds.” — now “Most of what no part counts is left out, and it falls into three kinds.” — gizmos and blaze3d/audio are counted in no part and taught; the three kinds cover what the book leaves out.
+145. `introduction`:162 — was “the OpenAL backend, which sits in Blaze3D beside the GPU abstraction rather than” — now “the OpenAL backend, which sits in Blaze3D beside the window and `RenderSystem` rather than” — In 26.3 the GPU abstraction is com/mojang/renderpearl; blaze3d/audio sits beside the window and RenderSystem (what-this-book-skips.md:382).
+146. `introduction`:80 — was “The two dependencies every part shares — Part I for the threads, Part II for codecs and registries — keep” — now “The two dependencies the whole book leans on, whether or not a landing page lists them — Part I for the threads, Part II for codecs and registries — k…” — VII -> XIII rests on "if you are here for advancements" (commands/README:73-74); the tickets half of IV -> III "keeps until Part IV" (server/README:75-80). Parts VI, VIII and XI list no Part I or II page; the two are lef…
+147. `introduction`:43 — was “The whole thing is 7,301 classes and about 740,000 lines of Java 25.” — now “The whole thing is 7,301 source files and about 740,000 lines of Java 25.” — The whole tree: 7,301 .java files, 565 of them package-info.
+148. `introduction`:9 — was “It ticks too, nought to ten times inside each frame, catching its own copy up to the same twenty-a-second clock.” — now “It ticks too, nought to ten times inside each frame, catching its own copy up to the same twenty-a-second clock and dropping any tick owed beyond ten.” — DeltaTracker.Timer subtracts every whole tick owed (DeltaTracker.java:59-66) and Minecraft.runTick runs at most ten (Minecraft.java:1265): ticks beyond ten are dropped, not caught up.
+
+#### `tools/map_source.py`
+
+149. `tools/map_source.py`:19 — was “packages-treemap.svg the jar as a treemap: area = lines, colour = jar, hatch = skipped” — now “packages-treemap.svg the jar as a treemap: area = lines, colour = jar, hatch = in no part” — The treemap's words: hatching is SKIPPED, which includes stats (the recipe book, Part VII), gizmos and blaze3d/audio (Part X), all taught.
+150. `tools/map_source.py` (since revised) — was “# The packages the book skips (Part I, *what this book skips*); hatched on the treemap.” — now “# The packages no part counts, hatched on the treemap. Part I's *what this book skips* tours them: most are # skipped, and the recipe book in `stats`,…” — The treemap's words: hatching is SKIPPED, which includes stats (the recipe book, Part VII), gizmos and blaze3d/audio (Part X), all taught.
+151. `tools/map_source.py`:506 — was “colour is which jar ships the package, hatching marks what this book skips")” — now “colour is which jar ships the package, hatching marks the packages no part counts")” — The treemap's words: hatching is SKIPPED, which includes stats (the recipe book, Part VII), gizmos and blaze3d/audio (Part X), all taught.
+152. `tools/map_source.py` (since revised) — was “f'{" — skipped by this book" if is_skipped(leaf) else ""}</title>')” — now “f'{" — counted in no part" if is_skipped(leaf) else ""}</title>')” — The treemap's words: hatching is SKIPPED, which includes stats (the recipe book, Part VII), gizmos and blaze3d/audio (Part X), all taught.
+153. `tools/map_source.py` (since revised) — was “font-size="12">hatched: what this book skips</text>')” — now “font-size="12">hatched: counted in no part</text>')” — The treemap's words: hatching is SKIPPED, which includes stats (the recipe book, Part VII), gizmos and blaze3d/audio (Part X), all taught.
+154. `tools/map_source.py`:410 — was “"""The size sentence's payload, for a landing page to include: `**473 classes and 43,896 lines**`.""" return f"**{fmt(n)} classes and {fmt(l)} lines**…” — now “"""The size sentence's payload, for a landing page to include: `**473 files and 43,896 lines**`. Files, not classes: the count includes each package's…” — The generated phrase included on nine landing pages counts files, package-info included (map_source.py part_rows; the 565 package-info files are four lines each).
+
+#### `maps/packages`
+
+155. `maps/packages`:3 — was “colour is which jar ships the package, hatching is what this book skips.” — now “colour is which jar ships the package, hatching is the packages no part counts.” — The treemap's words: hatching is SKIPPED, which includes stats (the recipe book, Part VII), gizmos and blaze3d/audio (Part X), all taught.
+
+#### `reference/glossary`
+
+156. `reference/glossary`:3 — was “· Reference · One sentence > per term the rest of the corpus uses,” — now “· Reference · A short entry > per term the rest of the corpus uses,” — About a fifth of the entries run to two sentences or more (Authority, Batch, Occlusion, Parameter set ...).
+157. `reference/glossary` (since revised) — was “the terms, alphabetically, one sentence each,” — now “the terms, alphabetically, a sentence or two each,” — About a fifth of the entries run to two sentences or more (Authority, Batch, Occlusion, Parameter set ...).
+158. `reference/glossary`:40 — was “so a chunk section can be drawn with a single bound texture.” — now “so a chunk section's quads can all be drawn with one bound colour texture.” — Terrain binds the atlas and the lightmap (client/renderer/chunk/ChunkSectionsToRender.java:75-76).
+159. `reference/glossary`:77 — was “the object that answers "which biome is at this quart position", through the `BiomeResolver` it makes: by a climate search, from one fixed biome, from…” — now “the object that answers "which biome is at this quart position": by a climate search, from one fixed biome, from a checkerboard of a listed few, or, i…” — TheEndBiomeSource answers the_end inside the central disc with no sample (:59-60) and uses erosion outside (:62-66); FixedBiomeSource and CheckerboardColumnBiomeSource are their own resolvers (createResolver returns this…
+160. `reference/glossary`:85 — was “zero against the seam (use the old measurement), one out of range (use the noise).” — now “zero against the seam, where the old measurement sets the offset and fixed values the factor and jaggedness, and one out of range (use the noise).” — At alpha 0 only the offset is the old measurement's; factor and jaggedness lerp to fixed values (levelgen/NoiseRouterData.java:42-43, :134-137).
+161. `reference/glossary`:113 — was “a named server-side `BossEvent` holding a name, a progress float and three client effects” — now “a `ServerBossEvent` holding a name, a progress float, a colour, an overlay style and three client effects” — The server's object is ServerBossEvent (server/level/ServerBossEvent.java:16); BossEvent also holds a colour and an overlay style (world/BossEvent.java:14-15).
+162. `reference/glossary` (since revised) — was “the memory-and-behaviour AI used by villagers, piglins and axolotls, as opposed to the older goal system.” — now “the memory-and-behaviour AI twenty kinds of mob run, villagers, piglins and axolotls among them, as opposed to the older goal system.” — Twenty mob classes override LivingEntity.makeBrain (ai-goals-and-brains.md:335-337).
+163. `reference/glossary`:148 — was “from the alpha inside that quad's own patch of its sprite rather than from the block;” — now “from the alpha inside that quad's own patch of its sprite, unless its material forces translucency, rather than from the block;” — Material.forceTranslucent skips the alpha scan (client/resources/model/cuboid/FaceBakery.java:59).
+164. `reference/glossary`:152 — was “the server's per-chunk record of the *level* the two graphs computed for it,” — now “the server's per-chunk record of the *level* the loading graph computed for it,” — ChunkHolder.ticketLevel (ChunkHolder.java:40) is set by ChunkMap.updateChunkScheduling, reached only from LoadingChunkTracker; the simulation graph's levels stay in SimulationChunkTracker.chunks.
+165. `reference/glossary`:171 — was “immutable, so every `with…` returns a copy.” — now “immutable, so a `with…` that changes something returns a copy.” — Every with... returns this when the value is unchanged (commands/CommandSourceStack.java:100-170).
+166. `reference/glossary`:199 — was “a whole map on a block entity, read-only on an entity;” — now “a whole map on a block entity, a view of its own fields on an entity;” — Entity.get answers from the entity's fields and the type's prototype, and Entity.setComponent / applyComponentsFromItemStack write into them (world/entity/Entity.java:4475-4499).
+167. `reference/glossary`:216 — was “the source of every partial tick in the frame but the lightmap's, which is a literal one.” — now “the source of every partial tick in the frame but the lightmap's and a frozen camera entity's, each a literal one.” — Camera.getCameraEntityPartialTicks returns a literal 1.0 for a frozen camera entity (client/Camera.java:139).
+168. `reference/glossary`:396 — was “The word is also a number in two other places: a *ticket level* is how strongly a chunk is held, and a *permission level* is one of five ranks.” — now “The word is also a number elsewhere: a *ticket level* is how strongly a chunk is held, a *permission level* is one of five ranks, and an *enchantment…” — enchantment level is the template's third sense (TEMPLATE.md, One word, one sense; items/loot-tables.md:259).
+169. `reference/glossary`:431 — was “behaviours are gated on which memories are present.” — now “behaviours are gated on which memories are present, absent or merely registered.” — Behaviours gate on present, absent or registered memories (world/entity/ai/memory/MemoryStatus.java:5).
+170. `reference/glossary`:433 — was “**Menu** — the server-authoritative object behind an open container screen: slots, a synchroniser and a state id.” — now “**Menu** — the object behind an open container screen, one copy on each side: slots and a state id, and on the server's copy the synchroniser that mak…” — G's and J's handoff: the client builds its own copy from MenuType with no synchroniser; only ServerPlayer.initMenu sets one (ServerPlayer.java:633-635); containers-and-menus' cast is Server and Render.
+171. `reference/glossary`:441 — was “the client's only channel for acting on the world:” — now “the client's channel for acting on the world:” — The swing (ServerboundPunchPacket, Minecraft.java:1830, :1909), the offhand swap (:2177) and a sign's text (AbstractSignEditScreen.java:146) leave without it.
+172. `reference/glossary`:485 — was “and it is what ends a sky column ([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood)) and what lets two fluid surfaces can…” — now “and it is, beside a block's light dampening, what ends a sky column ([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood));…” — Sense 2: a sky column ends on light dampening first, then on the faces (ChunkSkyLightSources.isEdgeOccluded, :146-152); the fluid wall test compares collision shapes (FlowingFluid.canPassThroughWall, :222-228, :256), and…
+173. `reference/glossary` (since revised) — was “the wire form is a `StreamCodec` the phase's protocol description holds rather than something the class owns, and a few types are registered into more…” — now “each class declares its wire form as a `StreamCodec`, which the phase's protocol description dispatches to by the packet's type, and two dozen types a…” — Every packet class declares its own STREAM_CODEC; ProtocolInfo holds the dispatch codec (network/ProtocolInfo.java:18); 24 types are registered into more than one phase (packets-and-stream-codecs.md:14-15, "two dozen").
+174. `reference/glossary`:549 — was “`ServerPlayer` and `LocalPlayer` are its two live subclasses and an `Avatar` is the rung above it.” — now “`ServerPlayer` is its server subclass, `LocalPlayer` and `RemotePlayer` its client ones (through `AbstractClientPlayer`), and an `Avatar` is the rung…” — H's handoff: RemotePlayer is a third live subclass, through AbstractClientPlayer (client/player/RemotePlayer.java:11, AbstractClientPlayer.java:20, LocalPlayer.java:110).
+175. `reference/glossary`:652 — was “`LocalPlayer` is the client's answer to it and the two share `Player`.” — now “`LocalPlayer` is the client's answer to it, `RemotePlayer` the client's copy of anyone else, and all three share `Player`.” — H's handoff: RemotePlayer is a third live subclass, through AbstractClientPlayer (client/player/RemotePlayer.java:11, AbstractClientPlayer.java:20, LocalPlayer.java:110).
+176. `reference/glossary`:568 — was “`QuartPos` is the arithmetic, tabulated with the other packings in [math and primitives](math-and-primitives.md#three-long-keys).” — now “`QuartPos` is the arithmetic, tabulated with the other coordinate spaces in [math and primitives](math-and-primitives.md#the-coordinate-spaces).” — QuartPos is a row of The coordinate spaces, not a packing in Three long keys.
+177. `reference/glossary`:589 — was “and all 161 are listed in [registries](registries.md).” — now “and the 161 registry keys are listed in [registries](registries.md).” — 161 is keys; six name no table the game keeps (registries.md's "—" rows).
+178. `reference/glossary`:632 — was “**Section mesh** — the compiled vertex buffers for one section (`CompiledSectionMesh`),” — now “**Section mesh** — what one section compiled to (`CompiledSectionMesh`): a draw record per layer into the shared vertex arenas, the visibility set and…” — CompiledSectionMesh holds a SectionDraw per layer, the visibility set and the block entities, no buffers (client/renderer/chunk/CompiledSectionMesh.java:27-46); the vertices sit in shared arenas (section-meshing.md:267-2…
+179. `reference/glossary`:633 — was “usually on a worker, but inline on the client thread when” — now “usually on a worker, but inline on the Render thread when” — CompiledSectionMesh holds a SectionDraw per layer, the visibility set and the block entities, no buffers (client/renderer/chunk/CompiledSectionMesh.java:27-46); the vertices sit in shared arenas (section-meshing.md:267-2…
+180. `reference/glossary`:660 — was “and its place in a per-player chain, so the server can prove who said it.” — now “and its place in a per-player chain, so every client that receives it can check who said it.” — Every receiving client verifies (ClientPacketListener.java:1109); chat-and-signing: the signature guards against a server lying about who said what.
+181. `reference/glossary`:670 — was “**Staging buffer** — the list an executing action appends” — now “**Staging buffer** — in the command engine, the list an executing action appends” — The word collides with the renderer's StagingBuffer (com/mojang/blaze3d/vertex/StagingBuffer.java).
+182. `reference/glossary`:676 — was “and a few — jump boost, slow falling, levitation — are read where the number is used.” — now “and others are read where the number is used, jump boost, slow falling and levitation among them.” — Also read where used: Dolphin's Grace, Resistance, Mining Fatigue, Haste and Conduit Power (LivingEntity.java:2668, :2038, :2147; MobEffectUtil.java:29-42).
+183. `reference/glossary`:720 — was “a type and a level, fed into two separate graphs, with `ChunkLevel` deciding what the level buys — a holder only, then full, then block-ticking, then…” — now “a type and a level, fed by its type's flags into one or both of two separate graphs, with `ChunkLevel` deciding what the level buys — a holder still g…” — A ticket type's flags pick the graphs (TicketType.java:14-26); above the full level a holder still generates toward a status (ChunkLevel.java:20-27; tickets-and-loading.md:130-137).
+184. `reference/glossary`:750 — was “held as a set of boxes with fast merge and sweep operations.” — now “a set of boxes over a bit grid, with fast merge and sweep operations.” — VoxelShape is backed by a DiscreteVoxelShape bit grid (world/phys/shapes/VoxelShape.java:23).
+185. `reference/glossary`:756 — was “and halts the JVM ten seconds later whether the shutdown finished or not.” — now “and halts the JVM ten seconds later if the shutdown has not ended it by then.” — The halt is scheduled and System.exit called (ServerWatchdog.java:113-122); the halt comes only if the shutdown has not ended the process first.
+186. `reference/glossary`:760 — was “the renderables that get recorded,” — now “the renderables that get extracted,” — The GUI stage is extract (TEMPLATE.md; Screen.java:128-134 calls Renderable.extractRenderState).
+187. `reference/glossary`:510 — was “asking for one that is absent gives nothing — two of the three ways a parameter can be missing.” — now “asking for one that is absent gives nothing; and loading a table reports an element that reads a key its set does not allow — the three ways a paramet…” — pass5.md:6529 — the third way is at load time (contexts-and-predicates.md:128-152).
+
+#### `reference/naming-drift`
+
+188. `reference/naming-drift`:4 — was “> layer: every name a 1.21-era reader will reach for that 26.3 does not have,” — now “> layer: the names a 1.21-era reader will reach for that 26.3 does not have,” — The table is not exhaustive (its own L41); "every" in the verified line and "the first table" (there are thirteen).
+189. `reference/naming-drift`:15 — was “needs the first table: the old name on the left, what to grep for on the right.” — now “needs the version tables: the old name on the left, what to grep for on the right.” — The table is not exhaustive (its own L41); "every" in the verified line and "the first table" (there are thirteen).
+190. `reference/naming-drift`:26 — was “Italics is the corpus's mark for *a name, but not a 26.3 name*. The right column is backticked and therefore verified: those names are in the tree.” — now “Italics is the corpus's mark for *a name, but not a 26.3 name*. The right column's names are backticked and therefore verified: those names are in the…” — The baseline, stated: 110 of 309 rows are 1.21.11 -> 26.3 moves; the rest had happened by 1.21.11 (both agents' classification, every row against both trees).
+191. `reference/naming-drift`:28 — was “"gone" in the right column means exactly that: there is no replacement class, the responsibility moved into something structurally different, and the…” — now “"gone" in the right column means no class replaced the name one for one: the responsibility moved into something structurally different, which the ent…” — "gone" rows: TagManager and the two serializers name nowhere; ChunkStorage, DirectionProperty name a class.
+192. `reference/naming-drift`:32 — was “Every row here was found the same way: a fact-sheet agent reading the decompile went looking for a name it expected and did not find it. The table is…” — now “The rows are the names the corpus's own pages needed, so the table is *not* exhaustive — it is exhaustive over the names the corpus needed. Three hund…” — Rows whose name still exists in 26.3 (ServerLevel.updateSkyBrightness on Level, ChunkMap.forEachBlockTickingChunk, DimensionType.ambientLight, BlockUtil) were not "not found"; how the rows were found is history.
+193. `reference/naming-drift`:109 — was “| *MinecraftServer.getScheduledEvents* returning a per-level queue | the same name, returning a server-wide `TimerQueue` saved data,” — now “| *ServerLevelData.getScheduledEvents*, the overworld's level data holding the queue | `MinecraftServer.getScheduledEvents`, returning a server-wide `…” — 26.2's forEach... name (O ServerLevelData.java:76, forwarded to the overworld's by DerivedLevelData, so already one queue); 26.3 MinecraftServer.getScheduledEvents (:2428).
+194. `reference/naming-drift`:106 — was “| per-level weather | server-global `WeatherData` |” — now “| weather on the overworld's level data | server-global `WeatherData` |” — 1.21.11's non-overworld levels already read the overworld's weather (O DerivedLevelData.java:63-64); what moved is the owner.
+195. `reference/naming-drift`:119 — was “| *DimensionDataStorage* | `SavedDataStorage` (two of them) |” — now “| *DimensionDataStorage* | `SavedDataStorage` (one for the server, one per level) |” — One server-wide SavedDataStorage (MinecraftServer.java:346) plus one per level (ServerChunkCache.java:90).
+196. `reference/naming-drift` (since revised) — was “| *DimensionType.ultraWarm* | split four ways: `EnvironmentAttributes.FAST_LAVA`, `EnvironmentAttributes.WATER_EVAPORATES`, `EnvironmentAttributes.INC…” — now “| *DimensionType.ultraWarm* | two attributes the Nether sets: `EnvironmentAttributes.FAST_LAVA` and `EnvironmentAttributes.WATER_EVAPORATES` |” — INCREASED_FIRE_BURNOUT is set by no dimension type (only eight overworld biomes); the owner page (environment-attributes-and-timelines.md:483) says two; SNOW_GOLEM_MELTS is also set on hot biomes.
+197. `reference/naming-drift`:133 — was “| *Level.dayTime* | `ServerClockManager`, keyed by `WorldClock` |” — now “| *Level.getDayTime* / *ServerLevel.setDayTime* | `ServerClockManager`, keyed by `WorldClock` |” — 1.21.11's day time: Level.getDayTime (O Level.java:698) and ServerLevel.setDayTime; no Level.dayTime member.
+198. `reference/naming-drift`:134 — was “*data/&lt;namespace&gt;/&lt;id&gt;.dat* — every saved-data file gained a namespace folder” — now “*data/&lt;namespace&gt;/&lt;path&gt;.dat* — every saved-data file gained a namespace folder” — Saved data goes to data/<namespace>/<path>.dat (SavedDataStorage.java:60-61; Identifier.java:165-166).
+199. `reference/naming-drift`:173 — was “| *Mob.brainProvider* | `LivingEntity.makeBrain(Brain.Packed)` |” — now “| *LivingEntity.brainProvider* | `LivingEntity.makeBrain(Brain.Packed)` |” — brainProvider was LivingEntity's (O LivingEntity.java:302).
+200. `reference/naming-drift`:223 — was “| one optional *modifier* and one optional *condition* per level;” — now “| one optional *modifier* per level, and one optional *condition* on a pool or an entry;” — A table has a modifier and no condition (LootTable.java:42-48); pools and entries have both.
+201. `reference/naming-drift`:225 — was “| *NumberProvider* / *NumberProviders* | `ContextFloatProvider` / `ContextIntProvider` |” — now “| *NumberProvider* | split in two: `ContextFloatProvider` and `ContextIntProvider` |” — The one interface split in two; NumberProviders corresponds to the two ...Providers classes.
+202. `reference/naming-drift`:233 — was “| one 36-slot `Inventory.items` + `Inventory.EQUIPMENT_SLOT_MAPPING` |” — now “| one 36-slot `Inventory.items`, and the armour and offhand in the entity's `EntityEquipment` through `Inventory.EQUIPMENT_SLOT_MAPPING` |” — Armour and offhand live in EntityEquipment (26.3 Inventory.java:46), reached through EQUIPMENT_SLOT_MAPPING.
+203. `reference/naming-drift`:237 — was “| *ServerboundInteractPacket.Action.ATTACK* |” — now “| *ServerboundInteractPacket.ActionType.ATTACK* |” — 1.21.11's attack action is ActionType.ATTACK (O ServerboundInteractPacket.java:22-25, :168).
+204. `reference/naming-drift`:244 — was “| gone — `Minecraft.startAttack` sends the punch |” — now “| gone — `Minecraft.startAttack` and `Minecraft.continueAttack` send the punch |” — Minecraft.continueAttack (:1830) sends the punch too.
+205. `reference/naming-drift`:291 — was “not a string | | *MouseHandler.lastMouseEventTime* | gone |” — now “not a string | | *MouseHandler.lastMouseEventTime* | gone |” — J's row deletions left blank lines that split the Part X table (e07ab18); 13 rows rendered as text.
+206. `reference/naming-drift`:293 — was “`PreeditEvent` | | *Font.drawInBatch*” — now “`PreeditEvent` | | *Font.drawInBatch*” — J's row deletions left blank lines that split the Part X table (e07ab18); 13 rows rendered as text.
+207. `reference/naming-drift`:294 — was “the drawing verbs are on `GuiGraphicsExtractor` |” — now “the drawing verbs are on `GuiGraphicsExtractor`, *drawString*'s as `GuiGraphicsExtractor.text` |” — drawString's successor is GuiGraphicsExtractor.text (26.3 :234).
+208. `reference/naming-drift`:308 — was “Thirty-nine rows. Most are one refactor, extract then render; the rest are the GPU layer's move into `com/mojang/renderpearl`, the window's move to SD…” — now “Thirty-nine rows. Four refactors account for more than half of them — extract then render, the GPU layer's move into `com/mojang/renderpearl`, the win…” — Of the 39 rows about 7 are extract-then-render, about 11 renderpearl, 2 SDL, 2 OIT, 17 none of the four.
+209. `reference/naming-drift` (since revised) — was “| *RenderType.chunkBufferLayers* (five layers) | `ChunkSectionLayer` — three layers |” — now “| *ChunkSectionLayer.TRIPWIRE* | gone — `ChunkSectionLayer` has three layers, not four |” — 1.21.11 has four ChunkSectionLayers, TRIPWIRE the fourth (O ChunkSectionLayer.java:9); no chunkBufferLayers.
+210. `reference/naming-drift`:327 — was “| `BlockStateModelSet`, `ItemModelResolver`, `ModelBlockRenderer` |” — now “| `BlockStateModelSet`, `ItemModelResolver`, `ModelBlockRenderer`, and for the item draw `ItemFeatureRenderer` |” — ItemRenderer's work went to ItemFeatureRenderer (26.3 feature/ItemFeatureRenderer).
+211. `reference/naming-drift` (since revised) — was “— the *get* prefix dropped, though `Camera.getCullFrustum`, `Camera.getFov` and `Camera.getCameraEntityPartialTicks` kept theirs |” — now “— the *get* prefix dropped; `Camera.getCullFrustum`, `Camera.getFov` and `Camera.getCameraEntityPartialTicks` are new, and keep it |” — None of the three kept getters is in 1.21.11 (26.3 Camera.java:219, :381, :138).
+212. `reference/naming-drift`:334 — was “| *RenderStateShard* composition (the texture/target/layering half) |” — now “| *RenderStateShard* composition (the texture and layering half) |” — RenderSetup has no target (26.3 rendertype/RenderSetup.java:25-36; OutputTarget gone).
+213. `reference/naming-drift`:335 — was “a ten-component record, with a `BakedQuad.MaterialInfo` of six |” — now “a ten-component record, with a `BakedQuad.MaterialInfo` of eight |” — MaterialInfo has eight components (26.3 client/resources/model/geometry/BakedQuad.java:70).
+214. `reference/naming-drift`:339 — was “| *Window.setVsync* |” — now “| *Window.updateVsync* |” — 1.21.11's is updateVsync (O Window.java:298).
+215. `reference/naming-drift` (since revised) — was “| *GpuDevice*, *CommandEncoder*, *RenderPass* as classes in *com/mojang/blaze3d* | interfaces in `com/mojang/renderpearl/api`,” — now “| *GpuDevice*, *CommandEncoder*, *RenderPass* in *com/mojang/blaze3d* | the same interfaces, moved to `com/mojang/renderpearl/api`,” — In 1.21.11 they were already interfaces (O GpuDevice.java:21, CommandEncoder.java:17, RenderPass.java:16).
+216. `reference/naming-drift`:375 — was “*NoiseChunk.wrapNew* and the six cache markers |” — now “*NoiseChunk.wrapNew* and the four cache markers |” — 1.21.11's Marker.Type has five: interpolated and four caches (O DensityFunctions.java:388).
+217. `reference/naming-drift`:376 — was “| *DensityFunctions.Marker* / *Mapped* / *Ap2* / *MulOrAdd* | `SimpleDensityFunction`, `UnaryFunction`, `BinaryFunction` in `world/level/levelgen/dens…” — now “| *DensityFunctions.Marker* / *BlendAlpha* / *BlendOffset* / *BeardifierMarker* / *Mapped* / *Ap2* / *MulOrAdd* | `CacheFunction` and `InterpolatedFun…” — Marker was the cache marker, whose successors are CacheFunction and InterpolatedFunction; SimpleDensityFunction replaced BlendAlpha, BlendOffset and BeardifierMarker (O :269, :303, :337).
+218. `reference/naming-drift`:406 — was “`CriterionTriggerInstance` is the one that stayed behind in `net/minecraft/advancements` |” — now “`CriterionTriggerInstance` and `CriterionProgress` stayed behind in `net/minecraft/advancements` |” — CriterionProgress stayed too (26.3 advancements/CriterionProgress.java).
+219. `reference/naming-drift`:414 — was “| `data/<ns>/functions/`, `data/<ns>/tags/functions/` |” — now “| *data/&lt;ns&gt;/functions/*, *data/&lt;ns&gt;/tags/functions/* |” — The left column is italic by the page's rule; these paths are not 26.3 names.
+220. `reference/naming-drift` (since revised) — was “| *net.minecraft.advancements.critereon* |” — now “| *net.minecraft.advancements.criterion* |” — 1.21.11's package is advancements/criterion; there is no "critereon".
+221. `reference/naming-drift`:435 — was “if you learn the three hundred and eleven rows above” — now “if you learn the three hundred and nine rows above” — 1.21.11's package is advancements/criterion; there is no "critereon".
+222. `reference/naming-drift` (since revised) — was “*Packet.write* is gone: a packet is a record with a `StreamCodec` the protocol table reads.” — now “*Packet.write* is gone: a packet carries a `StreamCodec` the protocol table reads, and most packets are records.” — About 134 of 225 packet types are records; 91 are classes.
+223. `reference/naming-drift`:456 — was “fog, sky, water colour, ambient sound and music are” — now “fog, sky, water fog colour, ambient sound and music are” — Water colour is still a BiomeSpecialEffects field (26.3 BiomeSpecialEffects.java:11).
+224. `reference/naming-drift`:460 — was “*EnchantmentCategory*, *MobSpawnType*, *BlockPathTypes*, *GenerationStep.Carving* and *Biome.BiomeCategory* are all gone, replaced by item sets, regis…” — now “*EnchantmentCategory*, *GenerationStep.Carving* and *Biome.BiomeCategory* are all gone, replaced by item sets, registry records, `HolderSet`s or nothi…” — EntitySpawnReason and PathType are still enums (26.3 EntitySpawnReason.java:3, pathfinder/PathType.java:9).
+225. `reference/naming-drift`:528 — was “The 1.21 side of this table is the only unverifiable content in the corpus, which is why it is confined to one page.” — now “The 1.21 side of this table, like the italic names in each page's *For a 1.21-era reader* note, is what the corpus cannot verify, and 1.21.11 is the o…” — 52 pages carry a 1.21 blockquote of italic names, and the Yarn column is unverifiable too.
+226. `reference/naming-drift`:529 — was “Rendering is the fourth-largest table, behind commands, the server and items.” — now “Rendering is only the second-largest table, behind commands.” — By rows, commands 41, rendering 39, items 38, server 31: rendering is second.
+227. `reference/naming-drift` (since revised) — was “No part of the tree renamed a class and kept its design; where the name changed, the responsibility usually moved too.” — now “Where a name changed, the responsibility usually moved too; a class renamed with its design intact, like *DynamicUniforms* as `DynamicGpuData`, is the…” — DynamicUniforms -> DynamicGpuData kept its API (O DynamicUniforms.java:37-57; 26.3 DynamicGpuData.java:73-123).
+228. `reference/naming-drift` (since revised) — was “`Identifier`, then `Holder` and `HolderSet` (`net/minecraft/core`), then `DataComponents` — those three carry more of the drift than any others. After…” — now “`Identifier`, then `Holder` and `HolderSet` (`net/minecraft/core`), then `DataComponents`, the vocabulary the other rows are written in. After that,” — By rows GameRules 29, Permission 13, EnvironmentAttribute 13, Registries 11 lead; the three are not the most.
+
+#### `player/the-sword-swing`
+
+229. `player/the-sword-swing`:230 — was “`Entity.hurtOrSimulate` with zero damage. Either answer ends the swing” — now “`Entity.hurtOrSimulate` with zero damage. A *no* from the first or a *yes* from the second ends the swing” — Player.attack stops on a false isAttackable or a true skipAttackInteraction (Player.java:990-991); a BlockAttachedEntity's false from its zero-damage hurt lets the swing go on (BlockAttachedEntity.java:72).
+
+#### `items/enchantments`
+
+230. `items/enchantments`:118 — was “The enchantment package calls out little and is called from everywhere, so the artefact worth keeping” — now “The enchantment package is called from all over the game, so the artefact worth keeping” — enchantments: the package's effects call explosions, block writes, functions, damage, spawns (world/item/enchantment/effects/*); 13 of the 50 hooks store, look up or choose enchantments and fall in none of the seven fami…
+231. `items/enchantments`:120 — was “and these are the seven kinds of moment it falls into.” — now “and these are the seven kinds of moment its effect hooks fall into; the rest of the table stores, looks up or chooses enchantments.” — enchantments: the package's effects call explosions, block writes, functions, damage, spawns (world/item/enchantment/effects/*); 13 of the 50 hooks store, look up or choose enchantments and fall in none of the seven fami…
+
+#### `items/README`
+
+232. `items/README`:178 — was “— every component type with what it holds;” — now “— every component type in `DataComponents` with what it holds;” — items/README: the components view is DataComponents' 122; the 31 enchantment effect component types are in a registry of their own (EnchantmentEffectComponents.java:29-132).
+
+#### `TEMPLATE`
+
+233. `TEMPLATE`:996 — was “Three classes have two lanes on purpose:” — now “Four classes have two lanes on purpose:” — TEMPLATE: EM and CEM are both EnchantmentMenu (TEMPLATE.md:767, :863; enchanting.md:300, :304).
+234. `TEMPLATE`:1001 — was “are each a page's one picture of two copies of one object, and a `box` per machine says which is which.” — now “are each a page's one picture of two copies of one object, and `CEM` is also `EnchantmentMenu`, because [enchanting](systems/items/enchanting.md)'s se…” — TEMPLATE: EM and CEM are both EnchantmentMenu (TEMPLATE.md:767, :863; enchanting.md:300, :304).
+
+#### `tools/check_lanes.py`
+
+235. `tools/check_lanes.py`:271 — was “"the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other", "rules make about a third of them: a short one-word class i…” — now “"the class's CamelCase words, a trailing *Impl* dropped (`ServerGamePacketListenerImpl` is `SGPL`),", "but about a third are not: a short one-word cla…” — check_lanes.py: 170 of 273 rows are initials (Impl dropped), 103 are not; four are second lanes for a class drawn twice, which the three rules do not make.
+236. `tools/check_lanes.py`:276 — was “"`ChestMenu` is `ChestM` and not `CM` (`ChunkMap` had it first). Derive nothing from a lane;",” — now “"`ChestMenu` is `ChestM` and not `CM` (`ChunkMap` had it first); and a class a page draws twice, as two", "copies, has a second lane. Derive nothing f…” — check_lanes.py: 170 of 273 rows are initials (Impl dropped), 103 are not; four are second lanes for a class drawn twice, which the three rules do not make.
+
+#### `tools/verify_names.py`
+
+237. `tools/verify_names.py` (since revised) — was “"the generated views, whose backticks are registry and packet ids rather than class names.",” — now “"the generated views, whose names come straight from the decompile they are written from.",” — verify_names.py --index: the generated views do backtick class names (packets.md's packet classes, spawn-reasons' species); they are skipped because their names come from the decompile they are written from.
+238. `tools/verify_names.py` (since revised) — was “# checked (its backticked cells are registry ids and packet ids).” — now “# checked (its names are extracted from the decompile it is written from).” — verify_names.py --index: the generated views do backtick class names (packets.md's packet classes, spawn-reasons' species); they are skipped because their names come from the decompile they are written from.
+
+#### `reference/threads`
+
+239. `reference/threads`:7 — was “game state belongs to exactly one thread, and anything else submits a task to that thread's event loop.” — now “game state belongs to exactly one thread, and anything else hands its work to that thread rather than doing it itself.” — Packets go to the PacketProcessor (PacketUtils.java:24-29), console lines to a list the tick drains (DedicatedServer.java:474-476, :469-471); the closer owns singleplayer's direct settings.
+240. `reference/threads`:15 — was “`Runnable` handed to the executor that will run it — the owner's `BlockableEventLoop`, a worker pool, or the connection's Netty event loop, which is w…” — now “`Runnable` handed to the executor that will run it — the owner's `BlockableEventLoop`, a worker pool, or the connection's Netty event loop, which is w…” — Packets go to the PacketProcessor (PacketUtils.java:24-29), console lines to a list the tick drains (DedicatedServer.java:474-476, :469-471); the closer owns singleplayer's direct settings.
+241. `reference/threads`:28 — was “LST["console, RCON, query, management: dedicated only"]:::server” — now “LST["console, RCON, management: dedicated only"]:::server” — The query listener reads PlayerList live and unlocked (QueryThreadGs4.java:117, :170, :181 -> MinecraftServer.java:1324-1329), the watchdog's kind of edge, not a posted task.
+242. `reference/threads`:29 — was “WD["Server Watchdog: dedicated only"]:::server” — now “WD["Server Watchdog, query: dedicated only"]:::server” — The query listener reads PlayerList live and unlocked (QueryThreadGs4.java:117, :170, :181 -> MinecraftServer.java:1324-1329), the watchdog's kind of edge, not a posted task.
+243. `reference/threads`:45 — was “and the one edge that is none of the three, the watchdog reading the Server thread's tick state without a lock.*” — now “and the one edge that is none of the three, the watchdog and the query listener reading the Server thread's state without a lock.*” — The query listener reads PlayerList live and unlocked (QueryThreadGs4.java:117, :170, :181 -> MinecraftServer.java:1324-1329), the watchdog's kind of edge, not a posted task.
+244. `reference/threads`:58 — was “Every box in the figure has a row in the table — the listeners' box has four —” — now “Every box in the figure has a row in the table — the listeners' box has three, the watchdog's two —” — The query listener reads PlayerList live and unlocked (QueryThreadGs4.java:117, :170, :181 -> MinecraftServer.java:1324-1329), the watchdog's kind of edge, not a posted task.
+245. `reference/threads`:55 — was “Everything else the game starts is a daemon and simply stops existing” — now “Everything else in the table is a daemon and simply stops existing; of the situational threads below, the chat filter's workers, *Server Connector* an…” — Non-daemon threads outside the table: Chat-Filter-Worker when the Server thread made it (ServerTextFilter.java:43-44), Server Connector (ConnectScreen.java:90), two java.util.Timer threads (PeriodicNotificationManager.ja…
+246. `reference/threads`:71 — was “the `WorldLoader`, the `DedicatedServer` constructor, then `MinecraftServer.spin`, and finally” — now “the `WorldLoader`, then `MinecraftServer.spin`, which constructs the `DedicatedServer` before it starts the Server thread, and finally” — The DedicatedServer constructor runs inside MinecraftServer.spin (MinecraftServer.java:312, before thread.start at :315; server/Main.java:214-226).
+247. `reference/threads`:72 — was “Serverbound *play* packet handlers run here, not on Netty.” — now “Serverbound *play* packet handlers run here, all but the ten below.” — Ten play handlers run on Netty (the section below).
+248. `reference/threads`:74 — was “| Its own inputs. Results return to the owning thread as a `CompletableFuture` completed onto that thread's executor. Never `Level` state directly. |” — now “| Its own inputs, and during generation the chunk being generated — its first mobs included, which the Server thread builds again from their saved tag…” — The worldgen executor reads the level's game rules and builds a chunk's first mobs against the ServerLevel (NaturalSpawner.java:333, :373), saved into the proto-chunk and re-created on the Server thread at FULL (ChunkSta…
+249. `reference/threads`:75 — was “`Util.nonCriticalIoPool` (`Download-n`) is the same cached pool for downloads, telemetry and sound decoding,” — now “`Util.nonCriticalIoPool` (`Download-n`) is a second pool of the same kind, for downloads and sound decoding,” — Telemetry uses its own Telemetry-Sender thread and the worker pool (ClientTelemetryManager.java:26-31); the two pools are two instances of one factory (Util.java:110-111, :305-316).
+250. `reference/threads`:77 — was “It kills the JVM past `DedicatedServerProperties.maxTickTime`, and that kill does **not** save the world. |” — now “It kills the JVM past `DedicatedServerProperties.maxTickTime`, and with the tick wedged that kill does **not** save the world. |” — how-a-server-dies' watchdog section is the wedged tick; a tick that ends inside the ten seconds would still save.
+251. `reference/threads` (since revised) — was “| Its own cached status. Dedicated only, and stopped by the same call as RCON. |” — now “| Its own reply, cached for five seconds, and the live player count and names, read without a lock. Dedicated only, and stopped by the same call as RC…” — The query listener's rules reply is cached for five seconds (QueryThreadGs4.java:31, :140); player counts and names are read live (:117, :181).
+252. `reference/threads`:89 — was “The client's play listener has nine handlers that omit it and the server's has ten, and they are different in kind: the client's really do run to comp…” — now “The client's play listener has nine handlers that omit it, two of them inherited; the server's declares ten, and inherits three more that never hop (t…” — The client's nine include two inherited from the common listener; the server's ten are the ones declared in ServerGamePacketListenerImpl, which also inherits three that never hop (ServerCommonPacketListenerImpl.java:84-1…
+253. `reference/threads`:93 — was “because a keep-alive is answered and a disconnect is acted on without the game thread being involved at all. One row is an exception to the section's…” — now “because a keep-alive is answered, and a disconnect's channel closed, from the Netty thread. Two rows cross to the Render thread after all, and say so.” — handleKeepAlive's reply waits for the Render thread's tick when the window is frozen; the disconnect's onDisconnect runs from Connection.tick on the Render thread (Connection.java:393-394, :613-627).
+254. `reference/threads`:100 — was “times packet decode, not mesh building |” — now “times the batch's arrival and decode on Netty, not mesh building |” — The interval runs between two Netty-side handler calls (ChunkBatchSizeCalculator.java:16-29).
+255. `reference/threads` (since revised) — was “— the one that crosses after all, by `Minecraft.execute` rather than by the hop |” — now “— one of the two that cross after all, by `Minecraft.execute` rather than by the hop |” — The interval runs between two Netty-side handler calls (ChunkBatchSizeCalculator.java:16-29).
+256. `reference/threads`:110 — was “They fall into four kinds, and only the first kind is what the client's nine are: two that touch nothing,” — now “They fall into four kinds: two that touch nothing,” — The client's nine include a task poster and handlers that write client state; "only the first kind" was false.
+257. `reference/threads`:118 — was “advances the acknowledgement window under the listener's lock,” — now “advances the acknowledgement window under the `LastSeenMessagesValidator`'s lock,” — I's handoff: the lock is the LastSeenMessagesValidator's (ServerGamePacketListenerImpl.java:1898-1900).
+258. `reference/threads`:120 — was “| the same, with the signed arguments collected on the way through |” — now “| the same, the signed arguments collected inside the posted task |” — The signed arguments are collected inside the posted task (:1793-1806).
+259. `reference/threads`:129 — was “*User Authenticator* (one per login, for the session-server call),” — now “*User Authenticator* (one per login that asks the session server),” — I's handoff: offline, memory and singleplayer-profile logins start none (ServerLoginPacketListenerImpl.java:129-137).
+260. `reference/threads`:132 — was “the client and server shutdown hooks with `ClientShutdownWatchdog` behind them,” — now “the client and server shutdown hooks, `ClientShutdownWatchdog` once the client is closing,” — ClientShutdownWatchdog is started post-main and by the window-close callback (client/main/Main.java:291; Minecraft.java:576), not by a hook; the Friends List fetcher starts with the client (Minecraft.java:636-639).
+261. `reference/threads`:134 — was “the *Friends List* fetcher behind the social screen,” — now “the *Friends List* fetcher the client starts when its friend list is on,” — ClientShutdownWatchdog is started post-main and by the window-close callback (client/main/Main.java:291; Minecraft.java:576), not by a hook; the Friends List fetcher starts with the client (Minecraft.java:636-639).
+262. `reference/threads`:134 — was “`MinecraftServerGui`,” — now “`MinecraftServerGui` and its *Server log monitor*, *Latency Simulator #n* behind a debug latency flag,” — B's handoff: two named threads were missing (MinecraftServerGui.java:152; ServerConnectionListener.java:248).
+263. `reference/threads` (since revised) — was “Realms starts nine more,” — now “Realms starts seven more,” — 26.3's realmsclient has seven new Thread sites (FileDownload, the five screens and RealmsMainScreen).
+264. `reference/threads`:151 — was “workers compute and owners commit, so a generated chunk or a built mesh is installed by the thread that owns it, never by the pool” — now “workers compute and owners commit, so a generated chunk is installed by the thread that owns it, never by the pool” — An empty mesh is installed by the worker (SectionRenderDispatcher.java:612-613); the chunk half stands.
+265. `reference/threads` (since revised) — was “of the situational threads below, the chat filter's workers, *Server Connector* and two `java.util.Timer` threads are not” — now “the chat filter's workers and *Server Connector*, among the situational threads below, are not, and nor are the two `java.util.Timer` threads the clie…” — The two java.util.Timer threads (PeriodicNotificationManager.java:98, ServerWatchdog.java:111) are not in the situational list; the chat filter's workers and Server Connector are.
+266. `reference/threads`:55 — was “and the other two are `GenericThread`s, which is where the half-second socket timeout and `GenericThread.running` come from: each polls so that it not…” — now “and the other two are `GenericThread`s, stopped by clearing `GenericThread.running` and joining: the query listener polls its socket every half second…” — The socket timeouts are set by RconThread.create (RconThread.java:82) and QueryThreadGs4.initSocket (:277), not by GenericThread; RconThread.stop closes its socket before joining (RconThread.java:103-105), so the RCON ac…
+267. `reference/threads`:79 — was “accepts RCON sockets on a 500 ms timeout, so it notices `GenericThread.running` going false within half a second;” — now “accepts RCON sockets on a 500 ms timeout, though `RconThread.stop` closes the socket before it joins, so the accept ends at once;” — The socket timeouts are set by RconThread.create (RconThread.java:82) and QueryThreadGs4.initSocket (:277), not by GenericThread; RconThread.stop closes its socket before joining (RconThread.java:103-105), so the RCON ac…
+268. `reference/threads`:80 — was “the GS4 query protocol, on the same 500 ms socket timeout and for the same reason” — now “the GS4 query protocol, on a 500 ms socket timeout, so it notices `GenericThread.running` going false within half a second” — The socket timeouts are set by RconThread.create (RconThread.java:82) and QueryThreadGs4.initSocket (:277), not by GenericThread; RconThread.stop closes its socket before joining (RconThread.java:103-105), so the RCON ac…
+
+#### `reference/level-data-and-rules`
+
+269. `reference/level-data-and-rules`:13 — was “— what is left in *level.dat*, how a save happens, the two saved-data storages, the rules, the border, and the dimensions and the seed —” — now “— what is left in *level.dat*, with how a save happens inside it, the two saved-data storages, the rules, the border, the dimensions and the seed, and…” — The page's six H2s after the table include Difficulty and weather; "how a save happens" is an H3 inside the first.
+270. `reference/level-data-and-rules`:20 — was “for the rule values a client asks for by name,” — now “for the rule values a server sends a gamemaster's client on request,” — The request names nothing and the reply is every rule, sent only to a gamemaster (ServerboundClientCommandPacket.java:38-40; ServerGamePacketListenerImpl.java:2220-2230).
+271. `reference/level-data-and-rules`:32 — was “| world spawn | `PrimaryLevelData.respawnData` | *level.dat* | `ClientboundSetDefaultSpawnPositionPacket` |” — now “| world spawn | `PrimaryLevelData.respawnData` | *level.dat* | `ClientboundSetDefaultSpawnPositionPacket` — the effective spawn [below](#the-spawn-eve…” — The world spawn packet carries the effective spawn on join and respawn (PlayerList.java:717, :453) and the stored one when it is set (MinecraftServer.setRespawnData, :1856).
+272. `reference/level-data-and-rules`:104 — was “Nothing in the table above saves itself. `MinecraftServer.saveAllChunks` is the single call behind every row, and it does four things in order:” — now “Nothing in the table above saves itself, and but for player data `MinecraftServer.saveAllChunks` is the single call behind every row. It does four thi…” — PlayerDataStorage is not SavedData (PlayerDataStorage.java:23); PlayerList.save writes a player's file, from saveAll and on every disconnect (PlayerList.java:292-312, :687-689). Day time and chunk tickets have no section…
+273. `reference/level-data-and-rules`:110 — was “the scoreboard, maps, raids, the dragon fight, the boss-bar row's six owners and player data — are saved by being `SavedData`, and that one flush is t…” — now “day time, the scoreboard, maps, raids, chunk tickets, the dragon fight and the boss-bar row's six owners — are saved by being `SavedData`, and that on…” — PlayerDataStorage is not SavedData (PlayerDataStorage.java:23); PlayerList.save writes a player's file, from saveAll and on every disconnect (PlayerList.java:292-312, :687-689). Day time and chunk tickets have no section…
+274. `reference/level-data-and-rules`:119 — was “and `LevelSummary.SymlinkLevelSummary` for a world folder that leaves the saves directory by a link.” — now “and `LevelSummary.SymlinkLevelSummary` for a world whose *level.dat* is a link to a place the allow list refuses.” — SymlinkLevelSummary is made when level.dat is a symbolic link the allow list rejects (LevelStorageSource.java:343-348).
+275. `reference/level-data-and-rules`:123 — was “`LevelResource` names every path under a world folder, and the per-player” — now “`LevelResource` names thirteen paths under a world folder, and the per-player” — LevelResource has thirteen constants and no dimensions/, region/, poi/ or entities/ (the page's own :147).
+276. `reference/level-data-and-rules`:130 — was “| *session.lock* | held for the life of the process (” — now “| *session.lock* | held for as long as the world is open (” — The lock is released when the LevelStorageAccess closes (LevelStorageSource.java:790-791), at stopServer (:731).
+277. `reference/level-data-and-rules`:135 — was “| *players/* | the folder the other three moved out of |” — now “| *players/* | the parent of the three, and where the oldest worlds' name-keyed player files sit until `OldUsersConverter` moves them into *players/da…” — The three new folders sit under players/; PLAYER_OLD_DATA_DIR is where old name-keyed files are drained from by OldUsersConverter.convertPlayers (server/players/OldUsersConverter.java:309-359); PlayerStorageFileFix moved…
+278. `reference/level-data-and-rules`:136 — was “and the world resource pack a server may send |” — now “and the world's own resource pack, which the client loads when it opens the world |” — MAP_RESOURCE_FILE is the world's own pack, loaded when the client opens the world (WorldOpenFlows.java:522-530).
+279. `reference/level-data-and-rules`:138 — was “the *dimensions/* tree and the region files are addressed by `ChunkPos` arithmetic instead” — now “the *dimensions/* tree is named by `DimensionType.getStorageFolder`, and the region files inside it by `ChunkPos` arithmetic” — The dimensions/ folders are named by DimensionType.getStorageFolder (DimensionType.java:87-89); ChunkPos names only the region files (RegionFileStorage.java:42-44).
+280. `reference/level-data-and-rules`:149 — was “it is the stored one wherever that is still inside the border and its dimension still exists, and a recomputed one where it is not.” — now “it is the stored one wherever that is inside the border it is tested against — the overworld's, when the stored dimension no longer exists — and a rel…” — For a missing dimension the adjusted spawn keeps the stored key and position unless it is outside the border of the level findRespawnDimension falls back to (Level.java:535-545; MinecraftServer.java:1842-1848).
+281. `reference/level-data-and-rules`:170 — was “`SavedDataStorage.set`) and writes `<id>.dat` as *{ data, DataVersion }*,” — now “`SavedDataStorage.set`) and writes each as *{ data, DataVersion }*,” — D's handoff: the file is <namespace>/<path>.dat (the next paragraph); saved data is encoded from the live object, no copy (SavedDataStorage.java:256-267), written on Util.ioPool (:232, :244), joined by a flush save, shut…
+282. `reference/level-data-and-rules`:171 — was “How a dirty entry reaches the disk — encoded on the caller's thread, written on the IO pool, and joined at shutdown — is the same copy-then-encode-the…” — now “How a dirty entry reaches the disk — encoded straight from the live object on the caller's thread, with no copy first, written on the IO pool, and joi…” — D's handoff: the file is <namespace>/<path>.dat (the next paragraph); saved data is encoded from the live object, no copy (SavedDataStorage.java:256-267), written on Util.ioPool (:232, :244), joined by a flush save, shut…
+283. `reference/level-data-and-rules`:201 — was “the client's only `GameRules` objects belong to the two `AbstractGameRulesScreen`s, `WorldCreationGameRulesScreen` and `InWorldGameRulesScreen`, and n…” — now “the client's `GameRules` objects belong to the two `AbstractGameRulesScreen`s, `WorldCreationGameRulesScreen` and `InWorldGameRulesScreen`, and to `Wo…” — WorldCreationUiState owns a GameRules (:51, :68) whose values become the new world's (CreateWorldScreen.java:257-272 -> MinecraftServer.java:361-364).
+284. `reference/level-data-and-rules`:209 — was “Five rules, and everything else is server-only.” — now “Five rules are pushed, and the rest reach a client only through the editor below.” — The editor sends every rule's value to a gamemaster (the next paragraph).
+285. `reference/level-data-and-rules`:223 — was “New is an in-game editor:” — now “There is an in-game editor:” — "New" is history the tree cannot show (rule 3).
+286. `reference/level-data-and-rules`:231 — was “It is the one mechanism in Part IV's packages whose home is this page rather than a page of the part:” — now “It is the one mechanism in Part IV's packages whose home is this page — the part's pages teach the rest, but for two small libraries its landing page…” — D's handoff: world/level/blockscan and the modifier classes have no page of the part either (world/README:142-149).
+287. `reference/level-data-and-rules`:246 — was “pushes it into the live fields once, restarting a lerp in progress,” — now “pushes it into the live fields once, resuming a lerp in progress from where the save left it,” — The save stores the current size and remaining ticks (WorldBorder.java:349, :539-541), so the loaded lerp resumes from there (:330-331).
+288. `reference/level-data-and-rules`:252 — was “A moving border re-saves itself every tick:” — now “A moving border marks itself for saving every tick:” — MovingBorderExtent.update only calls setDirty (WorldBorder.java:564); the write comes at the next save.
+289. `reference/level-data-and-rules`:277 — was “the six that decide whether there is daylight, a roof over it, a clock behind it and what is drawn where the blocks stop” — now “the six that decide whether there is daylight, a roof over it, whether its brightness can follow the time, and what is drawn where the blocks stop” — hasFixedTime gates Level.isBrightOutside/isDarkOutside (Level.java:356, :360); the clock is defaultClock.
+290. `reference/level-data-and-rules`:278 — was “and — new — the dragon fight as a flag rather than hard-wired to `Level.END`” — now “and the dragon fight as a flag rather than hard-wired to `Level.END`” — hasEnderDragonFight is in 26.2 too; "new" is history.
+291. `reference/level-data-and-rules`:330 — was “So the two paths are independent — the rules empty the spawner, peaceful empties the world —” — now “So the two paths are independent — `GameRules.SPAWN_MOBS` empties the spawner and `GameRules.SPAWN_MONSTERS` its hostile half, while peaceful empties…” — Only SPAWN_MOBS empties the spawner (ServerChunkCache.java:383-393, :418-421); SPAWN_MONSTERS false leaves friendly categories spawning (NaturalSpawner.java:121).
+
+#### `lectures`
+
+292. `lectures`:41 — was “The five above them lean on those two far more than on each other, so 3 to 7 have no order among themselves — except that 7 is the pattern the other s…” — now “The five below them lean on those two far more than on each other, so 3 to 7 have little order among themselves: tags come after the resource system,…” — foundations/README's figure is top-down with 1 and 2 at the top, and draws the resource system into tags (foundations/README.md:40, "tags are read from the same stack"; tags.md:155-156).
+293. `lectures`:112 — was “reaches forward once, to Part VII, for the menu a furnace's progress travels in.” — now “reaches forward into Parts VI, VII and XI, most of all for the menu a furnace's progress travels in.” — block-entities links recipes (:203) and containers (:245) in Part VII, and Parts VI (:312) and XI (:359).
+294. `lectures`:170 — was “the packet drain at the top of the tick, and the level's entity phase.” — now “the packet drain at the top of the tick, the level's entity phase, and a pickup in the connection phase after the levels.” — A third broadcast: a pickup inside ServerPlayer.doTick in the connection phase (MinecraftServer.java:1233-1234 -> Player.touch -> ItemEntity.playerTouch -> ServerPlayer.take, :1361-1363); containers-and-menus.md:358-363.
+295. `lectures`:189 — was “Lectures 1 and 2 are the trunk and are watched in that order; the five above them” — now “Lectures 1 and 2 are the trunk and are watched in that order; the five below them” — player/README's figure is top-down.
+296. `lectures`:208 — was “Nothing later in the book is needed to watch it, but Part IX and Part X both come back to it.” — now “Nothing later in the book is needed to watch it, but Part X comes back to it.” — No Part IX page links Part VIII or names it; Part X does (input-and-keybinds, prediction-and-acks).
+297. `lectures`:255 — was “Two and three are the other pair.” — now “Two and three are a pair.” — Six to nine are four pages; two and three are a pair of their own.
+298. `lectures`:258 — was “Part X assumes [Part IX](systems/networking/README.md), which is the same wire watched from the sending end, and” — now “Part X assumes [Part IX](systems/networking/README.md) for the wire it is the far end of, and” — Part IX's first lecture follows a serverbound swing to the server (the-connection.md:3-11), both ends.
+299. `lectures`:269 — was “whose frame is one span inside the loop's turn, opening at the acquired surface.” — now “whose frame is one span inside the loop's turn.” — The frame zone opens before the acquire (Minecraft.java:1320 against :1373); the frame runs when it fails.
+300. `lectures`:274 — was “it — the one inversion in the book's order made for the viewer rather than for the dependencies — so” — now “it — an inversion made for the viewer rather than for the dependencies, like the late place of Part XII's structure lectures — so” — Part XII places its structure lectures last for the viewer too (worldgen/README.md:62-69, "the same trade at the other end"; this page's own Part XII paragraph).
+301. `lectures`:376 — was “the part at the tail is one the part at the head assumes, and not optionally. The two dependencies every part shares keep their boxes” — now “the part at the tail is one the part at the head assumes. The two dependencies the whole book leans on, whether or not a landing page lists them, keep…” — VII -> XIII rests on "if you are here for advancements" (commands/README:73-74); the tickets half of IV -> III "keeps until Part IV" (server/README:75-80). Parts VI, VIII and XI list no Part I or II page; the two are lef…
+302. `lectures`:411 — was “Part VI hands something forward to two *other* Part X pages:” — now “Part VI hands something forward to two Part X pages:” — Prediction and acknowledgement is the "one Part X lecture" of the sentence before, not another page.
+303. `lectures`:419 — was “less the three pages those two universal parts contribute, which are the boxes whose other arcs the figure leaves off.” — now “less anatomy, codecs and registries, the three pages behind the arcs the figure leaves off.” — Parts I and II put six pages into the two-or-more set; check_deps' UNIVERSAL_PAGES removes three (tools/check_deps.py:66).
+304. `lectures`:425 — was “seven of the eight later parts that run on the Server thread,” — now “seven of the eight later parts on the server's side of the game,” — Part XII's generation runs on the worldgen executor, not the Server thread (ChunkMap.java:185-191).
+305. `lectures`:426 — was “| III, VI, XI, XII — the clock, the schedule, and the colour of the sky |” — now “| III, VI, XI, XII — the clock, the schedule, the colour of the sky, and the biome as one layer of the stack |” — Part XII assumes environment attributes for the biome as one layer (worldgen/README:89-90).
+306. `lectures`:427 — was “| V, VI, XII — a block state's home, a ticking entity's chunk, and what terrain is written into |” — now “| V, VI, XII — a block state's home, the heightmaps that decide where a mob may spawn, and what terrain is written into |” — Part VI names chunk anatomy for the heightmaps that decide where a mob may spawn (entities/README:85-87).
+307. `lectures`:430 — was “| X, XIII — the thread boundary every packet crosses |” — now “| X, XIII — the thread boundary between the network and the game, and the hop most packets make across it |” — Keep-alive, pong, custom payload and command suggestions never hop (ServerCommonPacketListenerImpl.java:84-100; ServerGamePacketListenerImpl.java:620-627), and nine client handlers.
+308. `lectures`:435 — was “A dozen or so other pages are named by exactly one landing page,” — now “Nineteen other system pages are named by exactly one landing page,” — The thirteen before-you-start lists name 19 other system pages exactly once (parsed from check_deps.py's output).
+309. `lectures`:88 — was “inside the chain, but nothing later in this part assumes it;” — now “inside the chain, but nothing later in this part needs it first (chunk storage points at it once, for the layers an unload drops);” — chunk-storage (lecture 6) points at lighting once, for the layers an unload drops (chunk-storage.md:245-247), without needing the lecture first.
+310. `lectures`:81 — was “and nine pages in six other parts depend on it.” — now “and nine pages in six other parts cite it, though only four of those parts' landing pages list it (the table at the foot).” — pass5.md:224 — nine pages in six other parts link the page (client 2, entities 2, networking 1, rendering 2, server 1, worldgen 1); four of those parts' landing pages list it, which is the table's row.
+
+#### `blocks/README`
+
+311. `blocks/README`:26 — was “Most of those classes are one `Block` subclass each,” — now “Most of those files are one `Block` subclass each,” — The two landing sentences that referred back to the phrase as classes.
+
+#### `server/README`
+
+312. `server/README`:23 — was “`server/level`'s forty-two classes at nearly three hundred lines apiece,” — now “`server/level`'s forty-two files at nearly three hundred lines apiece,” — server/level is 42 files, 40 classes.
+
+#### `rendering/README`
+
+313. `rendering/README`:29 — was “— counted the way [the atlas](../../maps/README.md) counts everything, and against 432 classes and 54,000 lines for the whole of `net/minecraft/server…” — now “— counted the way [the atlas](../../maps/README.md) counts a part, the packages this book skips left out — against 358 files and 48,834 lines for `net…” — L's handoff: the renderer's phrase leaves out the skipped blaze3d/audio (PARTS), the comparator kept the skipped jsonrpc and rcon; counted the same way the server is 358 files and 48,834 lines (27.7% and 49.7%).
+314. `rendering/README`:3 — was “· Part XI · one thread, a hundred-odd times a second,” — now “· Part XI · One thread, a hundred-odd times a second,” — pass5.md:145 — the verified line's scenario clause is capitalised on I to X and was not on XI, XII and XIII.
+
+#### `anatomy/what-this-book-skips`
+
+315. `anatomy/what-this-book-skips` (since revised) — was “Java Minecraft is 7,301 classes and 741,069 lines,” — now “Java Minecraft is 7,301 files and 741,069 lines,” — The whole tree: 7,301 .java files, 565 of them package-info.
+316. `anatomy/what-this-book-skips`:32 — was “rows against the map's fourteen hatched boxes:” — now “rows against the map's fourteen hatched packages:” — The treemap draws 28 hatched rectangles for 14 packages (data is ten leaf boxes, realmsclient six).
+317. `anatomy/what-this-book-skips` (since revised) — was “The counts in the table are files, so a *package-info.java* counts as a class there and wherever the prose quotes the table;” — now “The counts in the tables are files, so a *package-info.java* counts as one there and wherever the prose quotes the tables;” — The treemap draws 28 hatched rectangles for 14 packages (data is ten leaf boxes, realmsclient six).
+318. `anatomy/what-this-book-skips`:425 — was “| 33 classes, 7,387 lines |” — now “| 33 files, 7,387 lines |” — The declined table's sizes are file counts (vulkan 33 files, 30 classes; client/data 28 and 24; data/worldgen 64 and 59).
+319. `anatomy/what-this-book-skips`:426 — was “| 28 classes, 6,189 lines |” — now “| 28 files, 6,189 lines |” — The declined table's sizes are file counts (vulkan 33 files, 30 classes; client/data 28 and 24; data/worldgen 64 and 59).
+320. `anatomy/what-this-book-skips`:429 — was “| 64 classes, 6,016 lines |” — now “| 64 files, 6,016 lines |” — The declined table's sizes are file counts (vulkan 33 files, 30 classes; client/data 28 and 24; data/worldgen 64 and 59).
+321. `anatomy/what-this-book-skips`:428 — was “| a few classes each |” — now “| one or two classes each |” — quickplay 2 classes, client/profiling 1, client/renderer/gizmos 1.
+322. `anatomy/what-this-book-skips`:430 — was “| 16 of its 23 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 509 lines and 674 KB,” — now “| 16 of its 21 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 266 lines and 665 KB,” — client/animation has 23 files, 21 classes; the 16 definitions are 266 lines and 665 KB (the whole package is 509 lines and 674 KB).
+323. `anatomy/what-this-book-skips`:450 — was “and the *linkfs* synthetic file system that presents the launcher's hash-named asset files as the one tree their index describes.” — now “and the *linkfs* synthetic file system that presents the launcher's hash-named asset files as the one tree their index describes. Beside them sit the…” — R10: the queued gaps declared nowhere (pass3.md §7:1441 maps and the trader timer; §7:1528 rails, the shelf, the beehive and fire spread) are declared where the book says what it skips.
+
+#### `commands/README`
+
+324. `commands/README`:115 — was “`SpreadPlayersCommand`, `FillCommand`, `TeleportCommand`, `WorldBorderCommand` and their neighbours” — now “`TeleportCommand`, `WorldBorderCommand`, `WeatherCommand` and their neighbours” — commands/README called SpreadPlayersCommand and FillCommand doors (:114-118) and then algorithms rather than doors (:125-127); WeatherCommand is named on no other page.
+325. `commands/README`:3 — was “· Part XIII · a string typed into a chat box” — now “· Part XIII · A string typed into a chat box” — pass5.md:145 — the verified line's scenario clause is capitalised on I to X and was not on XI, XII and XIII.
+
+#### `world/environment-attributes-and-timelines`
+
+326. `world/environment-attributes-and-timelines`:292 — was “`ServerClockManager.createFullSyncPacket` fills that map on join, respawn and a change of dimension, and on a `GameRules.ADVANCE_TIME` change and ever…” — now “`ServerClockManager.createFullSyncPacket` fills that map on join, respawn and a change of dimension, and on a `GameRules.ADVANCE_TIME` change. Every m…” — pass5.md:5171 — one sentence carried the full sync, the per-mutator update and the routine broadcast. The ADVANCE_TIME change sends the full sync (MinecraftServer.java:2404-2405).
+327. `world/environment-attributes-and-timelines`:290 — was “`ClientboundSetTimePacket`: a game time plus a `ClockNetworkState`” — now “`ClientboundSetTimePacket`: a game time — the world's own tick count, which no clock owns — plus a `ClockNetworkState`” — pass5.md:5188 — the packet's game time is the world's own tick count, PrimaryLevelData's gameTime, saved as *Time* in level.dat (PrimaryLevelData.java:45, :74), which no clock owns.
+328. `world/environment-attributes-and-timelines`:214 — was “and gates every clock at once where `ServerClockManager.setPaused` gates one.” — now “and gates every clock at once, whereas `ServerClockManager.setPaused` gates one.” — pass5.md:5175 — "where" for "whereas".
+
+#### By hand, round one
+
+329. `reference/threads`:55 — was “`java.util.Timer`” — now “*java.util.Timer*” — a JDK class, not a game name; the gate cannot look it up, and the page's rule italicises a name that is not 26.3's
+330. `anatomy/what-this-book-skips`:450 — was “…the beehive and fire spread. They are” — now “…fire spread; local difficulty (`DifficultyInstance`), which only that table's page explains; and four things a player carries that Part VIII lists and does not teach — … the spectator camera behind */spectate*. They are” — R10: a gap is declared where the book says what it skips (pass5.md's Session F entry; §7's Part VIII names)
+
+### The record's audit: corrections to what the session wrote or left
+
+Seventeen agents, one a page or a group of pages, each given the pages' word diff against the last commit and the edit scripts' reasons, re-derived every changed sentence, its neighbours and the corpus. *(own)* marks a fix whose target was a sentence this session wrote (absent from the page at HEAD); *(beside)* one left beside a correction or on another page. The drift table's audit read its rows against the 1.21.11 tree as well.
+
+#### `reference/hud-elements`
+
+331. `reference/hud-elements`:6 *(own)* — was “twenty-seven numbered rows in `Hud.extractRenderState`” — now “the rows numbered 1 to 27 in `Hud.extractRenderState`” — The table's # column has 28 numbered rows (1-27 and 17b); the page cites 17b as a row.
+332. `reference/hud-elements`:8 *(own)* — was “and the item name or a spectator's action (17 and 17b).” — now “and the item name or a spectator's action (17 and 17b); food and the mount's health (11 and 13) exclude each other too, though each is decided in its…” — Food is recorded only when the vehicle has no hearts (Hud.java:903-907) and the mount's health only when it has some (:1096-1098), so the two exclude each other, decided in two methods (client/hud.md:182).
+333. `reference/hud-elements`:37 *(beside)* — was “a camera player exists — replaced by `SpectatorGui.extractHotbar` in spectator mode” — now “a camera player exists — replaced in spectator mode by `SpectatorGui.extractHotbar`, which records only while a spectator menu is open” — SpectatorGui.extractHotbar records only while a menu is open, and exits it when its fade ends (client/gui/components/spectator/SpectatorGui.java:48-53).
+334. `reference/hud-elements`:73 *(own)* — was “and some debug entry is on — F3 is open, or an entry is set to show always” — now “and some debug entry is on — one set to show always, or, while F3 is open, one set to show in the overlay” — F3 turns on only IN_OVERLAY entries, and only those isAllowed passes (DebugScreenEntryList.java:163-168).
+335. `reference/hud-elements`:74 *(own)* — was “row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, `LoadingOverl…” — now “row 27 deferred them — but only when neither a screen nor the loading overlay is up: a screen draws them itself from `Screen.extractBackground`, below…” — LoadingOverlay is an overlay, not a screen; it calls Hud.extractDeferredSubtitles on fade-out and fade-in (LoadingOverlay.java:83, :94), the second beneath its fill.
+
+#### `client/hud`
+
+336. `client/hud`:59 *(beside)* — was “whenever resources are loaded, unless the debug-options screen is the one open” — now “whenever resources are loaded and some debug entry is on, unless the debug-options screen is the one open” — The same gate on the owner page (DebugScreenOverlay.java:97-100).
+337. `client/hud`:221 *(beside)* — was “under F1 it still records whenever a screen is open.” — now “under F1 it still records, given an entry to show, whenever a screen is open.” — The same gate on the owner page (DebugScreenOverlay.java:97-100).
+338. `client/hud`:236 *(beside)* — was “and with no screen `Gui` makes the deferred call itself.” — now “and with no screen `Gui` makes the deferred call itself — or, while the loading overlay fades in or out, `LoadingOverlay` does.” — The same gate on the owner page (DebugScreenOverlay.java:97-100).
+
+#### `reference/block-update-flags`
+
+339. `reference/block-update-flags`:22 *(own)* — was “on the server the broadcast, and the path check for mobs navigating across the position;” — now “on the server the broadcast, the path-type cache and, when the collision shape changed, the re-path check on every navigating mob;” — ServerLevel.sendBlockUpdated always invalidates pathTypesByPosCache (:1204) and re-asks every navigating mob only when the collision shape changed (:1208); PathNavigation.shouldRecomputePath tests a sphere, not the path.
+340. `reference/block-update-flags`:39 *(own)* — was “a write with it tells no client and no neighbour and skips the block entity's side effects, but still runs `BlockBehaviour.BlockStateBase.onPlace` and…” — now “a write with it tells no client, sends no neighbour update and skips the block entity's side effects, but still runs `BlockBehaviour.BlockStateBase.on…” — Bit 1 clear silences the neighbour channel (Level.java:235), but the shape passes rewrite the six neighbours through Block.updateOrDestroy (BlockBehaviour.java:1129-1138; NeighborUpdater.java:41-48).
+341. `reference/block-update-flags`:40 *(own)* — was “and what a game test's template and a sapling clearing its own spot pass — each with bit 2 added, so the clients are still told” — now “and what `/clone`'s temporary barriers, a game test's template and a tree clearing its saplings pass — each with bit 2 added, so the clients are still…” — /clone's barriers are 818 in both modes (CloneCommands.java:192, :216); TreeGrower.removeSaplings clears every sapling of a 2x2 tree at 818 (TreeGrower.java:122-137); StructureTemplate.placeInWorld sets a barrier at 820,…
+
+#### `reference/submit-phases`
+
+342. `reference/submit-phases`:70 *(own)* — was “re-typed inside the feature renderer, where an item with no outline variant is dropped” — now “re-typed quad by quad inside the feature renderer to the outline variant every item and moving-block render type has” — An item quad's render type is always one of the Sheets item types (BakedQuad.java:79-88), itemCutout or itemTranslucent, both AFFECTS_OUTLINE (RenderTypes.java:91, :106), as are the moving-block types (:208); the rendere…
+343. `reference/submit-phases`:70 *(beside)* — was “plus custom geometry, which is not a second copy at all:” — now “plus custom geometry, and a model or block model submitted with an outline render type (an invisible entity that glows), which are not a second copy a…” — A model or block model submitted with an outline render type skips its normal submit (SubmitNodeCollection.java:203, :266) and getOutlineRenderType returns the type itself (:287): an invisible glowing entity (LivingEntit…
+344. `reference/submit-phases`:81 *(beside)* — was “and custom geometry goes to one phase or the other and never both.” — now “and custom geometry, like a model submitted with an outline render type, goes to one phase or the other and never both.” — A model or block model submitted with an outline render type skips its normal submit (SubmitNodeCollection.java:203, :266) and getOutlineRenderType returns the type itself (:287): an invisible glowing entity (LivingEntit…
+345. `reference/submit-phases`:57 *(beside)* — was “models whose `RenderType` does not blend or forces the solid phase (`RenderType.forceSolidModelPhase`), block models whose render type does not blend,” — now “models whose `RenderType` is not an outline and does not blend or forces the solid phase (`RenderType.forceSolidModelPhase`), block models whose rende…” — Outline types do not blend, yet a model or block model with one never reaches solid (:203, :266).
+346. `reference/submit-phases`:93 *(own)* — was “models, an entity's or a block entity's:” — now “models — an entity's, a block entity's, a special item's such as a shield or trident, and the elder guardian particle's:” — Special item renderers (ShieldSpecialRenderer.java:50, TridentSpecialRenderer.java:28) and the elder guardian particle (ElderGuardianParticleGroup.java:42) submit models too.
+347. `reference/submit-phases`:95 *(beside)* — was “a ribbon between the two ends of an `EntityRenderState.LeashState`” — now “a strip between the two ends of an `EntityRenderState.LeashState`” — One triangle strip per leash (RenderPipelines.java:147); the colour alternates per station (LeashFeatureRenderer.java:64).
+348. `reference/submit-phases`:95 *(beside)* — was “and its colour alternating per step” — now “and its colour alternating per station” — One triangle strip per leash (RenderPipelines.java:147); the colour alternates per station (LeashFeatureRenderer.java:64).
+
+#### `reference/density-function-nodes`
+
+349. `reference/density-function-nodes`:62 *(beside)* — was “when the first is already at or below its bound” — now “when the first is already at or below the second's lower bound” — The skip compares with the second's lower bound (op/BinaryFunction.java:255, :674).
+
+#### `worldgen/density-functions`
+
+350. `worldgen/density-functions`:163 *(beside)* — was “the biome step, the structure starts and checks, the height queries” — now “the biome step, the biome searches, the structure starts and checks, the height queries” — BiomeSource.createCachingResolver builds a cached context for the biome searches (BiomeSource.java:56, :90, :137), which the reference names.
+351. `worldgen/density-functions`:117 *(beside)* — was “argument into a sampler that carries the constant, such as `BinaryFunction.ConstAddSampler`,” — now “argument into a sampler that carries the constant, such as `BinaryFunction.ConstAddSampler`, unless a *min* or *max* has already been settled from its…” — For min and max the range check runs before the constant check and can return the non-constant side (op/BinaryFunction.java:203-215, :256-268).
+
+#### `lectures`
+
+352. `lectures`:208 *(own)* — was “Nothing later in the book is needed to watch it, but Part X comes back to it.” — now “Nothing later in the book is needed to watch it, but Parts X, XI and XIII come back to it.” — Parts XI and XIII come back to Part VIII too (entity-rendering.md:277; advancements.md:174; brigadier-and-commands.md:303-304).
+353. `lectures`:419 *(own)* — was “less anatomy, codecs and registries, the three pages behind the arcs the figure leaves off.” — now “less anatomy, codecs and registries, the three pages the whole book leans on.” — check_deps.py:178-180 leaves off every arc out of Parts I and II but the spine, II -> X (text components) and II -> XI (the resource system) among them; neither rests on the three pages.
+354. `lectures`:382 *(beside)* — was “assumed wherever something is written to disk, sent on the wire or looked up by name.” — now “assumed wherever something is written to disk, sent on the wire or looked up by name. Two arcs out of Part II rest on neither — Part X's on text compo…” — check_deps.py:178-180 leaves off every arc out of Parts I and II but the spine, II -> X (text components) and II -> XI (the resource system) among them; neither rests on the three pages.
+355. `lectures`:88 *(own)* — was “(chunk storage points at it once, for the layers an unload drops)” — now “(chunk storage points at it only for the layers an unload drops)” — chunk-storage links lighting twice (:247, :464), both for the dropped layers.
+
+#### `server/README`
+
+356. `server/README`:56 *(beside)* — was “every part that runs on the Server thread except world generation” — now “every later part on the server's side of the game except world generation” — Part XII's generation runs on the worldgen executor (ChunkMap.java:185, :190, :717), not the Server thread.
+
+#### `items/README`
+
+357. `items/README`:106 *(beside)* — was “*when* a menu's other changes are broadcast, which is what makes” — now “*when* a menu's other changes are broadcast (a pickup's excepted, which the connection phase sends), which is what makes” — A pickup broadcasts in the connection phase (ServerGamePacketListenerImpl.java:332 -> ServerPlayer.take, ServerPlayer.java:1361-1363), not in the level tick.
+358. `items/README`:175 *(beside)* — was “which is the enchantment system's real interface.” — now “which is where most of the game meets the enchantment system.” — AnvilMenu (:202-228) and EnchantCommand (:61, :75) call Enchantment directly.
+
+#### `tools/check_deps.py`
+
+359. `tools/check_deps.py`:349 *(beside)* — was “is a dependency every part shares — the paragraph above the "” — now “is a dependency the whole book leans on — the paragraph above the "” — The tool's own words for the rule the page now states.
+360. `tools/check_deps.py`:541 *(beside)* — was “(lectures.md: "the two # dependencies every part shares")” — now “(lectures.md: "the two # dependencies the whole book leans on")” — The tool's own words for the rule the page now states.
+
+#### `anatomy/what-this-book-skips`
+
+361. `anatomy/what-this-book-skips`:3 *(beside)* — was “and asks what is in them and why they are not taught.” — now “and asks what is in them and why no part counts them.” — Hatching marks the packages no part counts; gizmos, audio and the recipe book are taught (:282, :374, :270).
+362. `anatomy/what-this-book-skips`:6 *(own)* — was “Java Minecraft is 7,301 files and 741,069 lines” — now “Java Minecraft is 7,301 source files and 741,069 lines” — The jar also carries 17,306 data and asset files; introduction.md says source files.
+363. `anatomy/what-this-book-skips`:13 *(beside)* — was “all 174 classes of it — and the running game” — now “all 174 files of it — and the running game” — net/minecraft/data is 157 classes and 17 package-info files, 174 files.
+364. `anatomy/what-this-book-skips`:332 *(beside)* — was “ships all 174 classes of it.**” — now “ships all 174 files of it.**” — net/minecraft/data is 157 classes and 17 package-info files, 174 files.
+365. `anatomy/what-this-book-skips`:34 *(own)* — was “The counts in the tables are files, so a *package-info.java* counts as one there and wherever the prose quotes the tables; a sentence that counts a” — now “The counts in the tables are files unless a cell says *classes*, so a *package-info.java* counts as one there and wherever the prose quotes the tables…” — Two declined-table cells count working classes (quickplay, profiling, gizmos; client/animation 23 files, 21 classes).
+366. `anatomy/what-this-book-skips`:37 *(beside)* — was “| package | classes | lines | side |” — now “| package | files | lines | side |” — Two declined-table cells count working classes (quickplay, profiling, gizmos; client/animation 23 files, 21 classes).
+367. `anatomy/what-this-book-skips`:228 *(beside)* — was “client-only, 137 classes and 14,701 lines” — now “client-only, 137 files and 14,701 lines” — com/mojang/realmsclient is 137 files: 126 classes and 11 package-info.
+368. `anatomy/what-this-book-skips`:214 *(beside)* — was “challenge-token handshake and a five-second response cache.” — now “challenge-token handshake and a five-second cache on its full-status reply.” — The same facts on other pages.
+
+#### `rendering/README`
+
+369. `rendering/README` (since revised) *(own)* — was “counts a part, the packages this book skips left out —” — now “counts a part, leaving out the packages no part counts —” — Part XI's count leaves out only com/mojang/blaze3d/audio, which the skips page says is not skipped (:374).
+370. `rendering/README`:29 *(own)* — was “leaving out the packages no part counts —” — now “leaving out the hatched packages —” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+
+#### `maps/packages`
+
+371. `maps/packages` (since revised) *(beside)* — was “and everything the book skips is left out of every row.” — now “and the packages no part counts — the hatched ones and player reporting — are left out of every row.” — in_part drops exactly SKIPPED (map_source.py:135), which holds taught packages and not declined vulkan.
+372. `maps/packages`:3 *(own)* — was “hatching is the packages no part counts” — now “hatching is the packages Part I's *what this book skips* tours” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+373. `maps/packages`:100 *(own)* — was “and the packages no part counts — the hatched ones and player reporting — are left out of every row.” — now “and the hatched packages and player reporting are left out of every row.” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+
+#### `tools/map_source.py`
+
+374. `tools/map_source.py`:17 *(beside)* — was “one phrase per part, "**N classes and M lines**", no trailing” — now “one phrase per part, "**N files and M lines**", no trailing” — in_part drops exactly SKIPPED (map_source.py:135), which holds taught packages and not declined vulkan.
+375. `tools/map_source.py`:77 *(beside)* — was “(one phrase per part, "N classes and M # lines",” — now “(one phrase per part, "N files and M # lines",” — in_part drops exactly SKIPPED (map_source.py:135), which holds taught packages and not declined vulkan.
+376. `tools/map_source.py` (since revised) *(own)* — was “# The packages no part counts, hatched on the treemap.” — now “# The packages no part counts, hatched on the treemap where its depth-four boxes reach them (chat/report is not).” — The treemap's leaves are four levels deep (pkg_of(rel, 4), :494); chat/report is six and not hatched.
+377. `tools/map_source.py`:19 *(own)* — was “hatch = in no part” — now “hatch = toured in what this book skips” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+378. `tools/map_source.py`:52 *(own)* — was “# The packages no part counts, hatched on the treemap where its depth-four boxes reach them (chat/report is not). Part I's *what this book skips* tour…” — now “# The packages Part I's *what this book skips* tours, hatched on the treemap where its depth-four boxes reach them (chat/report is not); no part count…” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+379. `tools/map_source.py`:506 *(own)* — was “hatching marks the packages no part counts” — now “hatching marks the packages what this book skips tours” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+380. `tools/map_source.py`:521 *(own)* — was “" — counted in no part"” — now “" — toured in what this book skips"” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+381. `tools/map_source.py`:555 *(own)* — was “hatched: counted in no part” — now “hatched: toured in what this book skips” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+
+#### `commands/README`
+
+382. `commands/README`:114 *(beside)* — was “The **fifty-odd commands** nobody names” — now “The **nearly fifty commands** nobody names” — 50 command classes are named nowhere but here and the index, two of them the algorithms at :125-126.
+
+#### `TEMPLATE`
+
+383. `TEMPLATE`:103 *(beside)* — was “so a landing page's count and the coverage population cannot disagree;” — now “so a landing page's count and the coverage population cover the same packages;” — map_source.py:81-87: the two cover the same packages and differ by the package-info files.
+384. `TEMPLATE`:668 *(beside)* — was “the class's CamelCase words (`ServerGamePacketListenerImpl` → `SGPL`),” — now “the class's CamelCase words, a trailing *Impl* dropped (`ServerGamePacketListenerImpl` → `SGPL`),” — All six Impl rows drop it (TEMPLATE.md:718-723, :960).
+
+#### `reference/README`
+
+385. `reference/README`:8 *(own)* — was “so a shelf page is reached from the lecture that needs it” — now “so a shelf page is reached from the page that needs it” — No lecture links the glossary; landing pages and the introduction do (blocks/README.md:162, introduction.md:97).
+386. `reference/README`:11 *(own)* — was “so their rows cannot go stale, though the few sentences each tool types above its table can.” — now “so their rows are re-derived each time, though the sentences each tool types around its tables, and the odd cell it types into a row, are not.” — Some cells are typed too (gen_reference.py:483-484), and typed sentences sit between and below tables (:486, :534).
+387. `reference/README`:27 *(beside)* — was “every registry key: built-in, data-pack, synced |” — now “every registry key but the root's: built-in, data-pack, synced |” — registries.md:5 excludes the root key (BuiltInRegistries.java:186); components.md has an on-the-wire column and every type crosses the wire (DataComponentType.java:79-85).
+388. `reference/README`:28 *(own)* — was “every `DataComponentType` in `DataComponents`, persistent and synced |” — now “every `DataComponentType` in `DataComponents`, persistent or not, and how it crosses the wire |” — registries.md:5 excludes the root key (BuiltInRegistries.java:186); components.md has an on-the-wire column and every type crosses the wire (DataComponentType.java:79-85).
+389. `reference/README`:54 *(own)* — was “`tools/verify_names.py` checks every backticked name on the page” — now “`tools/verify_names.py` checks the backticked names on the page” — verify_names.py skips any span its pattern cannot match (:66-70), e.g. submit-phases' `.executeSolid`.
+390. `reference/README`:55 *(own)* — was “three of these pages (the flags, the submit phases, the density-function nodes)” — now “three of these pages (the HUD, the submit phases, the density-function nodes)” — The flags page is ordered by value (its second table 3, 11, 260, 816 against Block.java:101-104's order); the HUD page is in record order, Hud.extractRenderState's call order (Hud.java:222-244).
+391. `reference/README`:45 *(beside)* — was “every 1.21-era name a reader will reach for, and what 26.3 calls it” — now “the 1.21-era names a reader will reach for, and what 26.3 calls them” — By right-column rows GameRules (25), EnvironmentAttribute (13) and Permission (13) lead DataComponents (6).
+
+#### `introduction`
+
+392. `introduction`:101 *(own)* — was “on every deploy, so their rows cannot go stale; the other ten are hand-kept” — now “on every deploy, so their rows are re-derived each time; the other ten are hand-kept” — Some cells are typed too (gen_reference.py:483-484), and typed sentences sit between and below tables (:486, :534).
+393. `introduction`:6 *(own)* — was “and decides what they are — save where the player you control, and anything it steers, stands, which it takes from your client once it has checked it.” — now “and decides what they are — save a few things it takes from your client once it has checked them, chief among them where the player you control, and a…” — The server takes a creative slot's stack (ServerGamePacketListenerImpl.java:2344-2366) and sign and book text from the client too (containers-and-menus.md:433-440).
+394. `introduction`:41 *(own)* — was “each own their copy of the world and, in play, talk only through the connection,” — now “each own their copy of the world and talk through the connection,” — In play the integrated server reads the client directly (IntegratedServer.java:139, :157, :164).
+395. `introduction`:45 *(own)* — was “the hatched boxes are the packages no part counts, most of them what this book leaves out.” — now “the hatched boxes are the packages Part I's *what this book skips* tours, most of them what this book leaves out.” — The hatching is SKIPPED (map_source.py:54, :523-524); 309 files in 35 directories are in no part and not hatched (world/phys, sounds, com/mojang/math ...).
+396. `introduction`:150 *(own)* — was “Most of what no part counts is left out, and it falls into three kinds.” — now “Most of what the treemap hatches is left out, and it falls into three kinds.” — The hatching is SKIPPED (map_source.py:54, :523-524); 309 files in 35 directories are in no part and not hatched (world/phys, sounds, com/mojang/math ...).
+397. `introduction`:91 *(own)* — was “regenerated on every deploy, so their numbers cannot go stale; the prose around them is written by hand from those tables,” — now “regenerated on every deploy, so their numbers are re-derived each time; the prose around them is written by hand from those tables, or from the tree w…” — PARTS is hand-kept (maps/packages.md:92-95); prose numbers are also counted from the tree (maps/README.md:17-18).
+398. `introduction`:124 *(beside)* — was “sections and no "in 1.x this was".” — now “sections, and the only "in 1.x this was" on a system page is the *For a 1.21-era reader* note at its foot.” — The 1.21 note at a page's foot is the one allowed "in 1.x this was" (TEMPLATE.md), and :121 is one.
+399. `introduction`:128 *(own)* — was “and every member and every class name of more than one word inside a diagram,” — now “and every class name of more than one word and every member named with its class or its lane inside a diagram,” — check_figure_names.py skips ALL-CAPS and one-word tokens (:36-37) and checks dotted, humped and message-head members (:46-47, :117).
+400. `introduction`:140 *(own)* — was “Every page has been fact-checked against the decompile three times: as drafted, after the pages were restructured into the book you are reading, and a…” — now “The book has been fact-checked against the decompile three times — as drafted, after the pages were restructured into the book you are reading, and ag…” — The landing pages were written in pass 3, after pass 2; three Reference views after pass 4.
+
+#### `tools/gen_reference.py`
+
+401. `tools/gen_reference.py`:6 *(beside)* — was “# every registry key: built-in / data-pack / synced” — now “# every registry key but the root's: built-in / data-pack / synced” — registries.md:5 excludes the root key (BuiltInRegistries.java:186); components.md has an on-the-wire column and every type crosses the wire (DataComponentType.java:79-85).
+402. `tools/gen_reference.py`:7 *(beside)* — was “# every DataComponentType, persistent / synced” — now “# every DataComponentType in DataComponents, persistent / on the wire” — registries.md:5 excludes the root key (BuiltInRegistries.java:186); components.md has an on-the-wire column and every type crosses the wire (DataComponentType.java:79-85).
+403. `tools/gen_reference.py`:136 *(own)* — was “filled by `BuiltInRegistries.bootStrap` — mostly through their owners' own `bootstrap` methods — and frozen;” — now “filled during `Bootstrap.bootStrap` — most by `BuiltInRegistries.bootStrap` through their owners' own `bootstrap` methods, the block, item and entity-…” — Bootstrap.bootStrap runs FireBlock.bootStrap (touching Blocks), EntityType.getKey and the dispenser and cauldron tables before BuiltInRegistries.bootStrap (Bootstrap.java:54-61); Blocks and Items register in their static…
+404. `tools/gen_reference.py`:336 *(own)* — was “classes call it, so this table is where the rest of the game "” — now “classes call it, so this table is where most of the rest of the game "” — 31 classes outside the package use it without the helper (EnchantRandomlyFunction.java:25, EnchantmentsPredicate.java:11).
+405. `tools/gen_reference.py`:477 *(own)* — was “every one also sets the durability, repair, enchantability and attribute-modifier components.” — now “every one also sets the durability components and a stack size of one, and the repair, enchantability and attribute-modifier components.” — Item.Properties.durability also sets MAX_STACK_SIZE to 1 (Item.java:452-456).
+406. `tools/gen_reference.py`:529 *(own)* — was “`Structure.spawnOverrides`; When `NaturalSpawner`” — now “`Structure.spawnOverrides`; when `NaturalSpawner`” — A capital after a semicolon; and "therefore" follows from the walk, not from the exception, which draws only the creature category (NaturalSpawner.java:332-336).
+407. `tools/gen_reference.py`:529 *(own)* — was “The first creatures a chunk gets while it generates are the exception: `NaturalSpawner.spawnMobsForChunkGeneration` reads the biome's list and no over…” — now “An override with an **empty** spawn list is therefore a *ban*, not a no-op. The one exception is the creatures a chunk gets while it generates: `Natur…” — A capital after a semicolon; and "therefore" follows from the walk, not from the exception, which draws only the creature category (NaturalSpawner.java:332-336).
+
+#### `foundations/README`
+
+408. `foundations/README`:110 *(beside)* — was “every registry key: built-in, data-pack, synced.” — now “every registry key but the root's: built-in, data-pack, synced.” — registries.md:5 excludes the root key (BuiltInRegistries.java:186); components.md has an on-the-wire column and every type crosses the wire (DataComponentType.java:79-85).
+
+#### `reference/glossary`
+
+409. `reference/glossary`:9 *(own)* — was “the terms, alphabetically, a sentence or two each,” — now “the terms, alphabetically, a short entry each,” — Frame, Occlusion and View distance run past two sentences (glossary.md:289, :479, :747).
+410. `reference/glossary`:12 *(beside)* — was “A sentence here is a *reminder*, not a definition to rely on. If the sentence is all you needed” — now “An entry here is a *reminder*, not a definition to rely on. If the entry is all you needed” — The page's entries are reminders of a sentence or more (:3, :9).
+411. `reference/glossary`:117 *(own)* — was “the memory-and-behaviour AI twenty kinds of mob run,” — now “the memory-and-behaviour AI that twenty mob classes build,” — CamelHusk extends Camel without overriding makeBrain (CamelHusk.java:24), so 21 entity types run a brain that twenty classes build.
+412. `reference/glossary`:199 *(own)* — was “a view of its own fields on an entity;” — now “a view over its own fields and its type's prototype on an entity;” — Entity.get answers two types from fields and the rest from the type's prototype (Entity.java:4480-4481).
+413. `reference/glossary`:433 *(own)* — was “and on the server's copy the synchroniser that makes it the authority.” — now “and on the server's copy the synchroniser that sends its changes to the client.” — The synchroniser is the channel to the connection (containers-and-menus.md:26); the server's copy is the authority because clicks are resolved there.
+414. `reference/glossary`:501 *(own)* — was “each class declares its wire form as a `StreamCodec`,” — now “each class but the bundle packet and its delimiter declares its wire form as a `StreamCodec`,” — The bundle packet and its delimiter declare no codec (ProtocolInfoBuilder.java:41-46).
+415. `reference/glossary`:632 *(own)* — was “a draw record per layer into the shared vertex arenas, the visibility set and the block entities,” — now “a draw record per layer into the shared vertex arenas, the visibility set, the block entities and the translucent layer's sort state,” — CompiledSectionMesh also holds the translucent sort state (CompiledSectionMesh.java:27-31).
+416. `reference/glossary`:660 *(own)* — was “so every client that receives it can check who said it.” — now “so the server, and every client that holds the sender's session, can check who said it.” — A client without the sender's session links it unsigned (ClientPacketListener.java:1101-1105); the server verifies too (SignedMessageChain.java:66).
+
+#### `maps/README`
+
+417. `maps/README`:17 *(beside)* — was “**The prose is written by a person**, and every number” — now “**The prose is typed**, and every number” — The atlas's prose is typed by the sessions, as reference/README now says of the shelf.
+418. `maps/README`:26 *(beside)* — was “G -- "read and typed by a person" --> S” — now “G -- "read and typed by a session" --> S” — The atlas's prose is typed by the sessions (reference/README's wording).
+419. `maps/README`:30 *(beside)* — was “the sentences arrive by the lower one, typed by a person,” — now “the sentences arrive by the lower one, typed by a session,” — The atlas's prose is typed by the sessions (reference/README's wording).
+
+#### `tools/check_lanes.py`
+
+420. `tools/check_lanes.py`:272 *(own)* — was “"but about a third are not: a short one-word class is its own lane (`Player`,",” — now “"but more than a third are not: a short one-word class is its own lane (`Player`,",” — 104 of 273 class rows are not plain initials (38%).
+421. `tools/check_lanes.py`:277 *(own)* — was “"copies, has a second lane. Derive nothing from a lane;",” — now “"copies, has a second lane; and a few follow none of these (`MC` is `Minecraft`, `PDM` is " "`PatchedDataComponentMap`). Derive nothing from a lane;",” — Fifteen rows follow none of the listed rules (TEMPLATE.md:707 MC, :769 PDM ...).
+
+#### `tools/verify_names.py`
+
+422. `tools/verify_names.py`:362 *(own)* — was “"the generated views, whose names come straight from the decompile they are written from.",” — now “"the generated pages: the eleven views, whose rows are read off the decompile, and the lane index, read off " "the page template's key.",” — The views' rows are read off the decompile; the paragraphs above them are typed; lanes.md is read off the key.
+423. `tools/verify_names.py`:37 *(own)* — was “# A reference page whose header carries this was written by tools/gen_reference.py and is not # checked (its names are extracted from the decompile it…” — now “# A reference page whose header carries this was written by a tool and is not checked: gen_reference.py's # views (their rows read off the decompile;…” — The views' rows are read off the decompile; the paragraphs above them are typed; lanes.md is read off the key.
+424. `tools/verify_names.py`:187 *(beside)* — was “# a generated view or index: its backticks are ids, or names already checked” — now “# a generated view or index: its rows are read off the decompile, or its names are already checked” — The views' rows are read off the decompile; the paragraphs above them are typed; lanes.md is read off the key.
+
+#### `reference/non-living-damage`
+
+425. `reference/non-living-damage`:18 *(own)* — was “A swing reaches few of these.” — now “A swing reaches about half of these.” — Nine rows are always reached by a swing and two sometimes, of twenty-two.
+426. `reference/non-living-damage`:18 *(own)* — was “Two gates follow on the server — `Player.cannotAttack` and `Player.deflectProjectile`” — now “Two gates follow in `Player.attack`, which the client runs as it sends the attack and the server runs again — `Player.cannotAttack` and `Player.deflec…” — Both gates are in Player.attack, which the client runs as it sends (MultiPlayerGameMode.java:478-479).
+427. `reference/non-living-damage`:18 *(own)* — was “`ExperienceOrb`, `ItemEntity`, and in the projectile row a firework and every arrow)” — now “`ExperienceOrb`, `ItemEntity`, and in the projectile row a firework, every arrow and a thrown trident — though the server disconnects a player whose a…” — ThrownTrident extends AbstractArrow (ThrownTrident.java:32); the server disconnects an attack on an ItemEntity, an ExperienceOrb or an unattackable arrow first (ServerGamePacketListenerImpl.java:2092-2117).
+428. `reference/non-living-damage`:18 *(own)* — was “`BlockAttachedEntity` answers by running its own hurt with no damage)” — now “`BlockAttachedEntity` answers true outright for a player who may not interact at its position, and otherwise by running its own hurt with no damage)” — BlockAttachedEntity.skipAttackInteraction answers true for a player who may not interact there (:72).
+429. `reference/non-living-damage`:18 *(own)* — was “The second deflects those three projectiles.” — now “The second deflects those three projectiles, except a player's `WindCharge` in its first five ticks, which refuses.” — WindCharge refuses deflection for its first five ticks (WindCharge.java:29, :46-54).
+430. `reference/non-living-damage`:18 *(own)* — was “`PrimedTnt` is the one *nothing* row a swing really does reach, and its `Entity.hurtServer` then does nothing.” — now “`PrimedTnt` is the one *nothing* row a swing always reaches, and `Interaction` with its response flag on and a wind charge in its first five ticks rea…” — With its flag on, Interaction is reached (Interaction.java:109, :116); a young wind charge reaches AbstractHurtingProjectile.hurtServer (:133), which returns false.
+431. `reference/non-living-damage`:32 *(own)* — was “**never reached** — a large fireball or a wind charge is deflected,” — now “**not reached** but by a player's wind charge in its first five ticks — a large fireball or a wind charge is otherwise deflected,” — With its flag on, Interaction is reached (Interaction.java:109, :116); a young wind charge reaches AbstractHurtingProjectile.hurtServer (:133), which returns false.
+432. `reference/non-living-damage`:47 *(own)* — was “(five, though a frame holding something loses only its item to the first)” — now “(five, though a non-explosion hit on an unfixed frame holding something takes only the item)” — Only a non-explosion hit on an unfixed frame pops the item (ItemFrame.java:167, :181-193).
+433. `reference/non-living-damage`:44 *(beside)* — was “on that path, nothing else: the explosion calls `Entity.discard`, so `VehicleEntity.hurtServer` returns at its already-removed test. Any other source…” — now “on that path, nothing else when `GameRules.TNT_EXPLODES` is on or the cart is primed: the explosion calls `Entity.discard`, so `VehicleEntity.hurtServ…” — MinecartTNT.shouldSourceDestroy (:221-232) sends fire, explosion and burning projectiles to MinecartTNT.destroy, which primes the fuse (:88-99); the explosion discards only with GameRules.TNT_EXPLODES on or a primed cart…
+
+#### `entities/damage-and-death`
+
+434. `entities/damage-and-death`:476 *(beside)* — was “two flinch,” — now “two resend their motion and nothing else,” — The owner page, the same two facts (Entity.java:2066-2067; ItemFrame.java:181-189).
+435. `entities/damage-and-death`:477 *(beside)* — was “five are destroyed by one hit of any size” — now “five are destroyed by one hit of any size (an unfixed frame holding something loses only its item to the first)” — The owner page, the same two facts (Entity.java:2066-2067; ItemFrame.java:181-189).
+
+#### `player/the-sword-swing`
+
+436. `player/the-sword-swing`:234 *(beside)* — was “is turned around here rather than damaged, and the attack ends.” — now “is turned around here rather than damaged, and the attack ends — all but a player's wind charge in its first five ticks, which `WindCharge` will not l…” — The owner page, the same two facts (Entity.java:2066-2067; ItemFrame.java:181-189).
+
+#### `reference/math-and-primitives`
+
+437. `reference/math-and-primitives`:36 *(own)* — was “packed to a long, the key of every chunk map” — now “packed to a long, the key of the chunk maps in `ChunkMap` and the ticket system” — IOWorker keys pendingWrites by the ChunkPos record (IOWorker.java:39); ChunkMap and the tickets use the long.
+438. `reference/math-and-primitives`:121 *(own)* — was “with `Shapes.EPSILON` (1.0E-7) the tolerance the package's own comparisons use and `Shapes.BIG_EPSILON` a coarser 1.0E-6.” — now “with `Shapes.EPSILON` (1.0E-7) the tolerance the shape algebra's own comparisons use and `Shapes.BIG_EPSILON` a coarser 1.0E-6; a collision context's…” — isAbove subtracts 1.0E-5F (EntityCollisionContext.java:81, PositionCollisionContext.java:25).
+439. `reference/math-and-primitives`:126 *(own)* — was “Context-free shape queries are cheap because they are mostly not computed:” — now “Context-free collision and face-sturdiness queries are cheap because they are mostly not computed (the outline, interaction and support shapes are ask…” — The cache holds the collision shape, a large-shape flag, the full-block flag and face sturdiness (BlockBehaviour.java:1325-1362); getShape, getBlockSupportShape and getInteractionShape ask every time.
+440. `reference/math-and-primitives`:129 *(beside)* — was “the large-collision shape,” — now “whether the collision shape reaches outside its cell,” — The cache holds the collision shape, a large-shape flag, the full-block flag and face sturdiness (BlockBehaviour.java:1325-1362); getShape, getBlockSupportShape and getInteractionShape ask every time.
+441. `reference/math-and-primitives`:168 *(own)* — was “while every dimension places structures with a legacy source and decorates with a Xoroshiro one.” — now “while every dimension carves, and chooses where its structures go, with a legacy source, and decorates with a Xoroshiro one.” — Carvers use a LegacyRandomSource in every dimension (NoiseBasedChunkGenerator.java:272); a structure's blocks go down in decoration with the Xoroshiro random (ChunkGenerator.java:406).
+442. `reference/math-and-primitives`:182 *(own)* — was “And one that is not a `RandomSource` at all: `LinearCongruentialGenerator`, the bare mixer `BiomeManager` uses for biome fuzzing.” — now “And two that are not a `RandomSource` at all: `LinearCongruentialGenerator`, the bare mixer `BiomeManager` uses for biome fuzzing, and `Level.randValu…” — Level.randValue is a second non-RandomSource generator (Level.java:115, :877).
+443. `reference/math-and-primitives`:184 *(own)* — was “in every implementation but the deprecated `ThreadSafeLegacyRandomSource`.” — now “in every implementation but the deprecated `ThreadSafeLegacyRandomSource` and `WorldgenRandom`, whose `WorldgenRandom.setSeed` reseeds only its delega…” — WorldgenRandom.setSeed reseeds only its delegate (WorldgenRandom.java:42-47), leaving its inherited gaussian.
+444. `reference/math-and-primitives`:222 *(own)* — was “The LCG drives every `Level` and `Entity`, the Nether's and the End's terrain, and structure placement in every dimension; the saved `RandomSequences`…” — now “The LCG drives every `Level` and `Entity`, the Nether's and the End's noise, and every dimension's carvers and structure placement; the saved `RandomS…” — WorldgenRandom.setSeed reseeds only its delegate (WorldgenRandom.java:42-47), leaving its inherited gaussian.
+445. `reference/math-and-primitives`:224 *(beside)* — was “so the parity dumps cover whichever one a dimension is on.” — now “so the parity dumps cover whichever one a dimension's noise settings choose.” — WorldgenRandom.setSeed reseeds only its delegate (WorldgenRandom.java:42-47), leaving its inherited gaussian.
+446. `reference/math-and-primitives`:34 *(beside)* — was “immutable; `BlockPos.MutableBlockPos` for loops” — now “immutable unless it is a `BlockPos.MutableBlockPos`, the loop subclass” — A MutableBlockPos is a BlockPos with public setters (BlockPos.java:613, :724-740), as the closer says.
+447. `reference/math-and-primitives`:48 *(beside)* — was “immutable to every caller, though not quite immutable underneath, which the closer takes up” — now “immutable to every caller that does not hold a `BlockPos.MutableBlockPos`, which the closer takes up” — A MutableBlockPos is a BlockPos with public setters (BlockPos.java:613, :724-740), as the closer says.
+448. `reference/math-and-primitives`:15 *(beside)* — was “The figure is the spaces from the finest to the coarsest,” — now “The figure is the spaces from the finest to the coarsest, then the dimension added,” — GlobalPos adds a dimension and is not coarser (the figure's B -> G arrow).
+
+#### `reference/level-data-and-rules`
+
+449. `reference/level-data-and-rules`:32 *(own)* — was “on join, the stored one when it is set” — now “on join, respawn and dimension change, the stored one when it is set” — The effective spawn is sent on respawn (PlayerList.java:453, :717) and on a dimension change (ServerPlayer.java:1320) too.
+450. `reference/level-data-and-rules`:135 *(own)* — was “sit until `OldUsersConverter` moves them into *players/data/*” — now “sit until a dedicated server's boot moves them, through `OldUsersConverter`, into *players/data/*” — Only a dedicated server's boot runs the move (OldUsersConverter.java:309; DedicatedServer.java:239, :751).
+451. `reference/level-data-and-rules`:209 *(own)* — was “Five rules are pushed, and the rest reach a client only through the editor below.” — now “Five rules are pushed, and the rest reach a client only when a gamemaster asks — as data through the editor below, or as the chat feedback of */gameru…” — /gamerule sends a rule's value as chat feedback (GameRuleCommand queryRule / setRule).
+452. `reference/level-data-and-rules`:231 *(own)* — was “It is the one mechanism in Part IV's packages whose home is this page — the part's pages teach the rest, but for two small libraries its landing page…” — now “It is the one mechanism in Part IV's packages whose home is this page:” — world/README.md:142 says "mostly" two small libraries; pass5_coverage lists other untaught classes.
+453. `reference/level-data-and-rules`:277 *(own)* — was “whether its brightness can follow the time,” — now “whether it ever counts as day or night,” — hasFixedTime's only readers are Level.isBrightOutside / isDarkOutside (Level.java:356, :360); brightness comes from SKY_LIGHT_LEVEL (:524).
+
+#### `server/server-level-tick`
+
+454. `server/server-level-tick`:321 *(beside)* — was “the other two answer only to `GameRules.SPAWN_MOBS`, which gates the whole call.” — now “the other two carry none, and `GameRules.SPAWN_MOBS` gates the whole call — though `VillageSiege`, like the phantom and patrol spawners, also stops wh…” — VillageSiege also needs the enemies flag (VillageSiege.java:43), which GameRules.SPAWN_MONSTERS clears (ServerLevel.java:1925), as do the phantom and patrol spawners (PhantomSpawner.java:30, PatrolSpawner.java:25).
+455. `server/server-level-tick`:424 *(own)* — was “resets `ServerLevel.emptyTime` in the tick, and two calls reset it from outside: `Entity.teleportCrossDimension` for the level an entity arrives in, a…” — now “resets `ServerLevel.emptyTime` at this point in the tick, and two other calls reset it: `Entity.teleportCrossDimension` for the level a non-player ent…” — The pearl's reset runs from ThrownEnderpearl.tick in the entity loop (ThrownEnderpearl.java:216); ServerPlayer.teleport never calls teleportCrossDimension (ServerPlayer.java:1271).
+456. `server/server-level-tick`:483 *(beside)* — was “a concurrent queue that chunk storage fills from IO threads” — now “a concurrent queue that chunk storage fills on the Server thread once an IO read returns” — The entity deserializer is a ConsecutiveExecutor on the server (EntityStorage.java:44, :100; ServerLevel.java:243).
+
+#### `foundations/data-components`
+
+457. `foundations/data-components`:111 *(beside)* — was “routes a type's encodes through `EncoderCache` (`DataComponents.ENCODER_CACHE`).” — now “routes a type's `Codec` encodes — disk and JSON, not the wire — through `EncoderCache` (`DataComponents.ENCODER_CACHE`).” — The wire encode uses the unwrapped codec (DataComponentType.java:81); only the Codec is wrapped (:83).
+458. `foundations/data-components`:405 *(beside)* — was “**Entities, read-only.**” — now “**Entities, a view with a narrow write path.**” — Entity.setComponent writes (Entity.java:4489-4503), which the same paragraph names.
+
+#### `foundations/data-driven-types`
+
+459. `foundations/data-driven-types`:31 *(beside)* — was “filled at `BuiltInRegistries.bootStrap`” — now “filled during `Bootstrap.bootStrap`” — The wire encode uses the unwrapped codec (DataComponentType.java:81); only the Codec is wrapped (:83).
+
+#### `entities/entity-lifecycle`
+
+460. `entities/entity-lifecycle`:164 *(beside)* — was “which walks the structures at the position and, for the first one declaring a `StructureSpawnOverride` for this category, **replaces the biome's list…” — now “which walks the structures the position's chunk references and, for the first one that declares a `StructureSpawnOverride` for this category and whose…” — getMobsAt walks the position's chunk's references and skips a structure whose box misses the position (ChunkGenerator.java:508-533; StructureManager.java:237-241).
+
+#### `reference/threads`
+
+461. `reference/threads`:7 *(own)* — was “and anything else hands its work to that thread rather than doing it itself.” — now “and anything else hands its work to that thread rather than doing it itself, apart from the unlocked readers and the Netty-side handlers this page nam…” — The unlocked readers (the watchdog, the query listener) and the Netty-side writers (handleChatAck, handleConfigurationAcknowledged) are this page's own exceptions.
+462. `reference/threads`:55 *(own)* — was “the chat filter's workers and *Server Connector*, among the situational threads below, are not,” — now “*Server Connector*, Swing's event dispatch thread, Realms's threads and the chat filter's workers the Server thread starts, among the situational thre…” — ServerTextFilter's factory sets no daemon flag (:43-45): chat filters from the Server thread (a non-daemon worker), signs and books from Netty (a daemon one); Swing's EDT and Realms's threads are not daemons either.
+463. `reference/threads`:72 *(own)* — was “Serverbound *play* packet handlers run here, all but the ten below.” — now “Serverbound *play* packet handlers run here, all but the ten in the table below and the three they inherit that never hop.” — The play listener also inherits three handlers that never hop (ServerCommonPacketListenerImpl.java:84-121).
+464. `reference/threads`:74 *(own)* — was “and during generation the chunk being generated — its first mobs included,” — now “and during generation the chunks its step may write — the one being generated and, while features are placed, its eight neighbours — the generated chu…” — FEATURES writes with blockStateWriteRadius(1) (ChunkPyramid.java:23); an empty mesh is installed by the worker (SectionRenderDispatcher.java:612-613).
+465. `reference/threads`:74 *(own)* — was “or, for a mesh, through the upload the Render thread runs.” — now “or, for a mesh with geometry, through the upload the Render thread runs — a mesh with nothing to draw the worker installs itself.” — FEATURES writes with blockStateWriteRadius(1) (ChunkPyramid.java:23); an empty mesh is installed by the worker (SectionRenderDispatcher.java:612-613).
+466. `reference/threads`:75 *(own)* — was “for downloads and sound decoding,” — now “for downloads, profile and account-service lookups, and sound decoding,” — nonCriticalIoPool's callers include the profile and account-service lookups (ResolvableProfile.java:208; Minecraft.java:431, :441; FetchProfileCommand.java:89).
+467. `reference/threads`:80 *(own)* — was “Its own reply, cached for five seconds, and the live player count and names, read without a lock.” — now “Its full-status reply, rebuilt at most every five seconds from the player count and names it reads off the live `PlayerList` without a lock; the basic…” — Only the full-status reply is cached (QueryThreadGs4.java:140); the basic reply reads the count each time (:117).
+468. `reference/threads`:93 *(own)* — was “Two rows cross to the Render thread after all, and say so.” — now “Three rows reach the Render thread after all: the low-disk warning by a posted task, a keep-alive deferred to its next tick, and a disconnect, whose `…” — Three rows reach the Render thread: the low-disk toast (Minecraft.java:1615-1618), the deferred keep-alive (ClientPacketListener.java:2972) and the disconnect (MultiPlayerGameMode.java:324-330).
+469. `reference/threads`:103 *(own)* — was “one of the two that cross after all,” — now “one of the three that cross after all,” — Three rows reach the Render thread: the low-disk toast (Minecraft.java:1615-1618), the deferred keep-alive (ClientPacketListener.java:2972) and the disconnect (MultiPlayerGameMode.java:324-330).
+470. `reference/threads`:105 *(beside)* — was “| calls `Connection.disconnect` straight from the event loop |” — now “| calls `Connection.disconnect` straight from the event loop, which closes the channel; the Render thread's next tick finds it closed and runs `Connec…” — Three rows reach the Render thread: the low-disk toast (Minecraft.java:1615-1618), the deferred keep-alive (ClientPacketListener.java:2972) and the disconnect (MultiPlayerGameMode.java:324-330).
+471. `reference/threads`:137 *(own)* — was “Realms starts seven more,” — now “Realms starts eight more — seven in *com/mojang/realmsclient* and `RealmsConnect`'s connect task —” — RealmsConnect.java:45 starts a Realms-connect-task thread outside com/mojang/realmsclient.
+
+#### `networking/what-the-client-is-told`
+
+472. `networking/what-the-client-is-told`:343 *(beside)* — was “loop is timing packet decode, not mesh building” — now “loop is timing the batch's arrival and decode on Netty, not mesh building” — The same facts on other pages.
+
+#### `server/how-a-server-dies`
+
+473. `server/how-a-server-dies`:234 *(beside)* — was “chat filter's pool, whose workers the text filter's close shuts down.” — now “chat filter's pool, whose workers the text filter's close shuts down, and, with the GUI up, Swing's event dispatch thread, which ends once `MinecraftS…” — The same facts on other pages.
+
+#### `world/chunk-anatomy`
+
+474. `world/chunk-anatomy`:26 *(own)* — was “built on the Server thread, read by a neighbour's step on the worldgen executor |” — now “built on the Server thread; read on the worker pool — by a neighbour's step on the worldgen executor or in the *buildTerrain* fork, and by the light e…” — TERRAIN forks to Util.backgroundExecutor (NoiseBasedChunkGenerator.java:398, :523), whose carvers and beardifier read neighbours (:103, :286-288); the light engine reads the FEATURES future (ServerChunkCache.java:274).
+
+#### `world/chunk-storage`
+
+475. `world/chunk-storage`:235 *(own)* — was “A type built never to be saved — a leash knot, a lightning bolt, a fishing bobber — passes the filter, writes nothing in `Entity.save`, and is removed…” — now “The three types besides `Player` built never to be saved — a leash knot, a lightning bolt, a fishing bobber — pass the filter, write nothing in `Entit…” — PLAYER is the fourth noSave type and fails the filter (EntityTypes.java:354; Player.java:1923-1925).
+
+#### `anatomy/anatomy`
+
+476. `anatomy/anatomy`:227 *(own)* — was “submits a task — except a packet, which has a queue of its own (below), and a dedicated server's console line, which waits in a list `DedicatedServer.…” — now “submits a task, or leaves its work in one of the queues beside the loop's own that the owning thread drains — a packet in the `PacketProcessor` (below…” — Chunk work goes to each level's ServerChunkCache.MainThreadExecutor (ServerChunkCache.java:80, :92), which this page calls a further event loop.
+
+#### `world/scheduled-ticks`
+
+477. `world/scheduled-ticks`:56 *(beside)* — was “the worker pool books into a generating chunk's” — now “the worldgen executor books into a generating chunk's” — Every generation booking is at FEATURES, inline on the worldgen executor; the forks book nothing.
+478. `world/scheduled-ticks`:131 *(beside)* — was “generation books ticks from the worker pool.” — now “generation books ticks off the Server thread, on the worldgen executor.” — Every generation booking is at FEATURES, inline on the worldgen executor; the forks book nothing.
+
+#### `commands/brigadier-and-commands`
+
+479. `commands/brigadier-and-commands`:314 *(beside)* — was “additionally dedicated-server-only, which matters” — now “additionally registered only in a dedicated server's command set, which matters” — The game-test server boots with the dedicated command set (Commands.java:290; GameTestServer.java:103).
+
+#### `foundations/tags`
+
+480. `foundations/tags`:209 *(beside)* — was “Only `/reload` applies on the Server thread.” — now “Only a reload of a running server — `/reload`, or `/datapack enable` or `disable` — applies on the Server thread.” — /datapack enable and disable reload a running server too (DataPackCommand.java:217, :229).
+
+#### `entities/README`
+
+481. `entities/README`:92 *(beside)* — was “blocks-and-states.md#four-decisions-four-lookups) for the” — now “blocks-and-states.md#the-state-a-leaf) for the” — The collision-shape cache is in "The state, a leaf" (blocks-and-states.md:184), not the stair-placement section.
+
+#### `reference/naming-drift`
+
+482. `reference/naming-drift`:4 *(own)* — was “the names a 1.21-era reader will reach for that 26.3 does not have,” — now “the names a 1.21-era reader will reach for that 26.3 dropped, moved or repurposed,” — Several rows' left names 26.3 still has, changed (L112, L113, L133, L167 ...).
+483. `reference/naming-drift`:15 *(beside)* — was “A reader coming from **Yarn** (Fabric's community mappings) needs the last one” — now “A reader coming from **Yarn** (Fabric's community mappings) needs the last table” — "the last one" after "the version tables": Yarn is its own table.
+484. `reference/naming-drift`:26 *(own)* — was “The right column's names are backticked and therefore verified: those names are in the tree.” — now “The right column's class and member names are backticked and therefore verified: those names are in the tree; its italics are file paths, save-file ke…” — Some right-column cells hold italic paths, save-file keys and old names (L89, L136, L296, L416).
+485. `reference/naming-drift`:28 *(own)* — was “the responsibility moved into something structurally different, which the entry names where it can.” — now “the responsibility moved into something structurally different or was dropped, and the entry names where it went when it went somewhere.” — Six "gone" rows name no replacement (L66, L106, L180, L276, L294, L365).
+486. `reference/naming-drift`:32 *(own)* — was “so the table is *not* exhaustive — it is exhaustive over the names the corpus needed.” — now “so the table is *not* exhaustive — not even over the corpus: a few names the *For a 1.21-era reader* notes use, such as *ItemBlockRenderTypes* and *Lo…” — The pages' own 1.21 notes name 1.21.11 classes gone in 26.3 with no row (ItemBlockRenderTypes, BedRenderer, BlockModelDefinition, ParticleFeatureRenderer, LootItemFunctionType).
+487. `reference/naming-drift`:125 *(own)* — was “| *DimensionType.ultraWarm* | two attributes the Nether sets: `EnvironmentAttributes.FAST_LAVA` and `EnvironmentAttributes.WATER_EVAPORATES` |” — now “| *DimensionType.ultraWarm* | attributes the Nether sets, `EnvironmentAttributes.FAST_LAVA` and `EnvironmentAttributes.WATER_EVAPORATES` chief among t…” — 1.21.11 already had the environment attributes and no ultraWarm; ultraWarm's readers went to FAST_LAVA, WATER_EVAPORATES and, for dripstone, DEFAULT_DRIPSTONE_PARTICLE (1.21.11 PointedDripstoneBlock.java:603), so "two" i…
+488. `reference/naming-drift`:223 *(own)* — was “and one optional *condition* on a pool or an entry;” — now “and one optional *condition* on a pool, an entry or a conditional function;” — A conditional function carries one condition too (LootItemConditionalFunction.java:30).
+489. `reference/naming-drift`:308 *(own)* — was “and the rest are the model, particle, camera and lighting renames around them.” — now “and the rest are the renames and moves around them — models, particles, sections, the camera, and the sky and fog.” — The rest also takes in sections, the frame graph and the sky and fog moving into attributes (L321-326, L351).
+490. `reference/naming-drift`:325 *(own)* — was “| *ChunkSectionLayer.TRIPWIRE* | gone — `ChunkSectionLayer` has three layers, not four |” — now “| *RenderType.chunkBufferLayers*, *ChunkSectionLayer.TRIPWIRE* | `ChunkSectionLayer`, with three layers — the tripwire layer is gone |” — The chunkBufferLayers -> ChunkSectionLayer drift had happened by 1.21.11 and is kept by the ruling; the tripwire layer's loss is the 1.21.11 -> 26.3 half (1.21.11 ChunkSectionLayer.java:9; 26.3 :11).
+491. `reference/naming-drift`:333 *(own)* — was “— the *get* prefix dropped; `Camera.getCullFrustum`, `Camera.getFov` and `Camera.getCameraEntityPartialTicks` are new, and keep it |” — now “— the *get* prefix dropped from these four, though `Camera.getNearPlane` and `Camera.getFluidInCamera` kept theirs and new getters such as `Camera.get…” — getNearPlane and getFluidInCamera kept their prefix (Camera.java:489, :500).
+492. `reference/naming-drift`:340 *(own)* — was “the same interfaces, moved to `com/mojang/renderpearl/api`” — now “still interfaces, reworked and moved to `com/mojang/renderpearl/api`” — GpuDevice lost eleven methods and gained four; blaze3d.md:397 says getRenderer's siblings are DeviceInfo.
+493. `reference/naming-drift`:418 *(own)* — was “| *net.minecraft.advancements.criterion* |” — now “| *net.minecraft.advancements.critereon* / *criterion* |” — Older 1.21 spells it critereon (contexts-and-predicates.md:404), 1.21.11 criterion.
+494. `reference/naming-drift`:444 *(own)* — was “a packet carries a `StreamCodec` the protocol table reads,” — now “every packet but the bundle carries a `StreamCodec` the protocol table reads,” — The bundle packet has no codec (ClientboundBundlePacket.java:7; GameProtocols.java:68).
+495. `reference/naming-drift`:460 *(own)* — was “*MobSpawnType* and *BlockPathTypes* only changed their names.” — now “*MobSpawnType* and *BlockPathTypes* stayed enums under new names.” — EntitySpawnReason gained values (SPAWN_ITEM_USE, LOAD, DIMENSION_TRAVEL).
+496. `reference/naming-drift`:528 *(own)* — was “like the italic names in each page's *For a 1.21-era reader* note,” — now “like the Yarn column above and the italic names in the pages' *For a 1.21-era reader* notes,” — EntitySpawnReason gained values (SPAWN_ITEM_USE, LOAD, DIMENSION_TRAVEL).
+497. `reference/naming-drift`:534 *(own)* — was “Where a name changed, the responsibility usually moved too; a class renamed with its design intact, like *DynamicUniforms* as `DynamicGpuData`, is the…” — now “Where a name changed, the responsibility often moved too — though not always: *ClickType* is `ContainerInput` with the same constants, and *RedStoneWi…” — ClickType -> ContainerInput keeps its constants (ContainerInput.java:11); RedStoneWireBlock -> RedstoneWireBlock keeps its methods; DynamicGpuData grew.
+498. `reference/naming-drift`:560 *(own)* — was “then `DataComponents`, the vocabulary the other rows are written in. After that,” — now “then `DataComponents`. After that,” — By right-column rows GameRules (25), EnvironmentAttribute (13) and Permission (13) lead DataComponents (6).
+
+#### `world/environment-attributes-and-timelines`
+
+499. `world/environment-attributes-and-timelines`:479 *(beside)* — was “*ultrawarm* has become two of them, `EnvironmentAttributes.FAST_LAVA` and > `EnvironmentAttributes.WATER_EVAPORATES`.” — now “*ultrawarm* has become several, `EnvironmentAttributes.FAST_LAVA` and > `EnvironmentAttributes.WATER_EVAPORATES` chief among them.” — 1.21.11 already had the environment attributes and no ultraWarm; ultraWarm's readers went to FAST_LAVA, WATER_EVAPORATES and, for dripstone, DEFAULT_DRIPSTONE_PARTICLE (1.21.11 PointedDripstoneBlock.java:603), so "two" i…
+
+#### By hand, the audit
+
+500. `reference/math-and-primitives`:15 *(own)* — was “then the dimension added,” — now “and the one that adds a dimension,” — the wording of this session's own fix, which read as a list item
+501. `foundations/tags`:209 *(own)* — was “or `disable`” — now “or `/datapack disable`” — a bare word backticked, which the name gate failed
+502. `blocks/block-entities`:169 *(beside)* — was “LevelChunk.<br/>BoundTickingBlock<br/>Entity.tick” — now “LevelChunk.<br/>BoundTickingBlockEntity.tick” — found in the render: the break split a class name, the fault K's handoff named on the same figure
+503. `tools/map_source.py`:52 *(own)* — was “though they are not all a part does not count” — now “and they are not all that no part counts” — the comment this session rewrote after the audit, made to say what it means
+
 ## Pass 8, session N — Part XIII · Commands and data packs *(2026-09-29)*
 
 Ten pages, each checked under Part 2 by its own agent while the session read the part whole (the whole-part read was
@@ -7652,7 +8527,7 @@ hand-drawn mermaid figures left; no Mojang name is broken on screen.
   *Prediction and acknowledgement*) rather than hand-written phrases. A table
   beside it, `src/generated/parts-dependency.md`, carries the same edges to
   `llms-full.txt`.~~ *(no claim the gate does not check: `check_deps.py` fails when the figure disagrees with the landing pages, and passes; what each landing page's *before you start* asserts is its part session's — pass 8, session A)*
-- **`introduction` figure 1** — four subgraphs, one per thread (Render
+- ~~**`introduction` figure 1** — four subgraphs, one per thread (Render
   thread, Netty event loop, Server thread, *Worker-Main-n*), where it had
   client, *the wire* and server, with the pool outside all three. Asserts:
   `Minecraft` sends *what the player did* to `Connection`, and `Connection`
@@ -7662,7 +8537,7 @@ hand-drawn mermaid figures left; no Mojang name is broken on screen.
   arrow on `ClientLevel`; `threads.md`'s own table puts section meshing under
   `SectionRenderDispatcher`, a Render-thread object). The serverbound arrow
   now leaves `Minecraft`, not `ClientLevel`. Caption: *the worker pool hands
-  its results back, dotted, to whichever of them asked*.
+  its results back, dotted, to whichever of them asked*.~~ *(checked: four subgraphs, each a thread the tree names (`Main.java`:263, `MinecraftServer.java`:303, `EventLoopGroupHolder.java`:82, `Util.java`:109, :238) — pass 8, session O)*
 - ~~**`maps/README` figure 1** — two subgraphs of convenience (F3) with clipped
   titles become a five-node pipeline: the decompile, `map_source.py`, *seven
   figures, seven tables*, and the four map pages, reached directly and through
@@ -7672,7 +8547,7 @@ hand-drawn mermaid figures left; no Mojang name is broken on screen.
   Cut: the branch to the landing pages' size phrases, and *eight SVG figures,
   seven of them the atlas's* (the eighth is `tree-EntityRenderState`, and a
   ninth is now `check_deps.py`'s).~~ *(checked: `tools/map_source.py`:738–758, the seven SVGs and seven tables the four map pages include, drawn as the figure's five nodes; `tree-EntityRenderState.svg` is included only by `rendering/entity-rendering`, and the ninth SVG is `check_deps.py`'s, `tools/deploy.sh`:12 — pass 8, session B)*
-- **`math-and-primitives` figure 1** — eight nodes and seventeen
+- ~~**`math-and-primitives` figure 1** — eight nodes and seventeen
   method-named edges, most of them in both directions, become a ladder of
   seven nodes and seven edges labelled with arithmetic. Asserts: `Vec3` floors
   to `BlockPos`; `BlockPos` to `QuartPos` is a right shift of 2
@@ -7683,16 +8558,16 @@ hand-drawn mermaid figures left; no Mojang name is broken on screen.
   (`ChunkPos.getRegionX`); a `BlockPos` plus a dimension is a `GlobalPos`. The
   lead-in now says the table names the way back for all but `GlobalPos` (the
   table names only `GlobalPos.of`). The long-key edges went to the section
-  that owns them.
-- **`threads` figure 1** — subgraphs dropped for the class words (`client`,
+  that owns them.~~ *(checked: the seven edges' arithmetic; the lead-in's *names the method for each arrow* had no method for the drop-y arrow, and `SectionPos.chunk` is added to the table, corrected this session — pass 8, session O)*
+- ~~**`threads` figure 1** — subgraphs dropped for the class words (`client`,
   `netty`, `server`, `worker`), edge labels cut to the kind. The same eight
   boxes and thirteen edges, with **one kind changed**: both packet-out edges
   (Render thread to Netty, Server thread to Netty) are *posted task* (see the
   first correction). The watchdog edge reads *reads, unsynchronised*, and the
-  caption names it as the one edge that is none of the three kinds.
-- **`reference/README` figure 1** — cut (F13: the shelf's figure is a
+  caption names it as the one edge that is none of the three kinds.~~ *(checked: the boxes and edges; the listeners' *posted task* edge was false for the query listener, which reads `PlayerList` live and unlocked (`QueryThreadGs4.java`:117, :181) — its edge is now the watchdog's kind, corrected this session — pass 8, session O)*
+- ~~**`reference/README` figure 1** — cut (F13: the shelf's figure is a
   table). What only it said, which source each kind of page is read from, is
-  the table's *kept by* column and the paragraph under the table.
+  the table's *kept by* column and the paragraph under the table.~~ *(checked: the page has no figure and the *kept by* column carries the sources; the paragraph's *declaration lines* was false for four views (the worldgen JSON, call sites, comparison sites, a static block), corrected this session — pass 8, session O)*
 
 ### Captions written
 
@@ -7704,7 +8579,7 @@ where a parent has only one*).
 
 ### Corrections — re-derived against the decompile before the fix
 
-1. **`threads` figure 1 and its lead-in** said a serverbound packet is
+1. ~~**`threads` figure 1 and its lead-in** said a serverbound packet is
    *written on the caller's thread*, and defined a posted task as a
    `Runnable` on the owner's `BlockableEventLoop`. `Connection.sendPacket`
    (`net/minecraft/network/Connection.java`, the method after
@@ -7714,21 +8589,21 @@ where a parent has only one*).
    Server thread is a task posted to Netty, and the write, encode, compress
    and encrypt happen there, as the page's own table row for Netty IO says.
    Both edges relabelled; the definition now names the Netty loop and the
-   worker pools.
-2. **`threads`**: *Five rows of the table are non-daemon* — six are (Render
+   worker pools.~~ *(checked: `Connection.sendPacket` posts to the event loop unless already on it (`Connection.java`:327-333); the hop's target is the owner's `PacketProcessor` (`PacketUtils.java`:24-29), now said, corrected this session — pass 8, session O)*
+2. ~~**`threads`**: *Five rows of the table are non-daemon* — six are (Render
    thread, main, Server thread, IO-Worker-n, RCON, Query). The paragraph is
    about a dedicated server, which has no Render thread; it now says six, and
-   five on a dedicated server.
-3. **`threads`**: *Every lane in the figure has a row in the table* — the
-   figure is a flowchart of boxes, and one box is four rows. Reworded.
-4. **`math-and-primitives` figure 1** labelled the `SectionPos`-to-`BlockPos`
+   five on a dedicated server.~~ *(checked: six rows are non-daemon, five on a dedicated server; *everything else is a daemon* was false (the chat filter's workers, *Server Connector*, two timer threads), corrected this session — pass 8, session O)*
+3. ~~**`threads`**: *Every lane in the figure has a row in the table* — the
+   figure is a flowchart of boxes, and one box is four rows. Reworded.~~ *(checked: every box has a row and two rows have no box — pass 8, session O)*
+4. ~~**`math-and-primitives` figure 1** labelled the `SectionPos`-to-`BlockPos`
    edge with `SectionPos.sectionRelative`, which takes a *block* coordinate
    and returns its 0–15 offset inside its section; it is not a
-   section-to-block conversion. Gone with the redraw.
-5. **`introduction` figure 1** landed the pool's meshing result on
+   section-to-block conversion. Gone with the redraw.~~ *(checked: the edge is gone (`SectionPos.java`:90-91 masks a block coordinate) and the table describes the mask — pass 8, session O)*
+5. ~~**`introduction` figure 1** landed the pool's meshing result on
    `ClientLevel`; meshes go back to the Render thread's renderer
    (`SectionRenderDispatcher`, per `threads.md`). Redrawn to the Render
-   thread's box.
+   thread's box.~~ *(checked: meshes are uploaded on the Render thread's path (`LevelRenderer.java`:285-292, :1321-1326) — pass 8, session O)*
 6. ~~**`maps/biggest`'s figure** printed `RealmsMainScreen`'s package as
    `realmsclient` under a caption saying the grey text is the package under
    `net/minecraft`: `map_source.svg_biggest` cut the first two path segments
@@ -7745,24 +8620,24 @@ where a parent has only one*).
    And *Seventy-one subclasses* for `Item`, where 71 is the descendant count
    and 51 the direct one (`hierarchy-classes.md`), on a page whose opening
    separates the two: now *seventy-one types descend from `Item`*.~~ *(checked: `tools/map_source.py`:646–654, a parent's lone childless subclass named (`ArmorStand`, `Painting`) and the rest folded, in italics by `custom.css`:146–148; the `Item` sentence now says sixty-seven types descend, V1's count in `src/generated/hierarchy-classes.md` — pass 8, session B)*
-9. **`lectures.md`**: *Lighting — nothing later in this part assumes it;
+9. ~~**`lectures.md`**: *Lighting — nothing later in this part assumes it;
    Parts IX and X do* — neither part's landing page lists it, so neither has
    the arc the page's own figure draws for an assumption; one page in each
    cites it (`what-the-client-is-told`, `the-client-level`). Reworded to say
-   that.
+   that.~~ *(checked: one page each in Parts IX and X cites lighting and neither landing page lists it; *nothing later in this part assumes it* passed over chunk storage's one pointer, corrected this session — pass 8, session O)*
 
 ### Claims introduced
 
-- `reference/README`: a Reference page is exempt from the one-figure rule and
+- ~~`reference/README`: a Reference page is exempt from the one-figure rule and
   draws one only where its subject is a shape — today `math-and-primitives`
-  and `threads`, the only two Reference pages with a figure after the cut.
-- `introduction`: the four boxes of its first figure are *the four threads
+  and `threads`, the only two Reference pages with a figure after the cut.~~ *(checked: the only figures under `src/reference` are math-and-primitives' and threads'; *everywhere else its figure is the table* was false for the glossary, which has none, corrected this session — pass 8, session O)*
+- ~~`introduction`: the four boxes of its first figure are *the four threads
   that carry nearly all of it*, and the pool's threads are named
-  *Worker-Main-n*.
-- `lectures.md` and `introduction`: *the parts run down the page in the
+  *Worker-Main-n*.~~ *(checked: `Util.java`:109, :238 name the pool's threads *Worker-Main-n* — pass 8, session O)*
+- ~~`lectures.md` and `introduction`: *the parts run down the page in the
   sidebar's order, and every solid arc runs down with them* — true by the
   generator's construction, and `check_deps.py` still fails a solid arc that
-  points at an earlier part.
+  points at an earlier part.~~ *(checked: `check_deps.py` draws a solid arc only downward and fails otherwise — pass 8, session O)*
 
 ### Tool changes
 
@@ -10132,7 +11007,7 @@ generated page changed and one tool now feeds it, which is what pass 9 checks.
 
 ### The one change to a published page
 
-- `src/reference/class-index.md` is **regenerated from two sources now** instead
+- ~~`src/reference/class-index.md` is **regenerated from two sources now** instead
   of one. `verify_names.py --index` still reads every backticked name on every
   hand-written page; it now also merges `check_figure_names.py`'s mentions —
   every class named inside a mermaid block, as a lane's expansion, a node label,
@@ -10144,7 +11019,7 @@ generated page changed and one tool now feeds it, which is what pass 9 checks.
   (the figure parser resolves every name against the same decompile index, and
   119 names in figures do *not* resolve and are therefore absent from the
   index, which is the gate's own report), and that the preamble's two sentences
-  match what the two parsers actually do.
+  match what the two parsers actually do.~~ *(checked: `verify_names.py --index` reads every written page's backticked names and every class a figure names, and skips the generated views; the README's wording of this was loose, corrected this session — pass 8, session O)*
 
 ### Claims introduced elsewhere, all of them about the book rather than the game
 
@@ -10181,61 +11056,61 @@ re-derives a game fact.
 
 ### Corrections — the counts, each re-derived by counting the page
 
-- `src/reference/README.md`:9 — *Half of them are rewritten from the source on
+- ~~`src/reference/README.md`:9 — *Half of them are rewritten from the source on
   every deploy … the other half are read by a person* against a table of 23
   rows that splits **13 generated / 10 hand-kept**. Now stated as thirteen and
   ten, and `src/introduction.md` (which said *rather more than half*) now says
-  the same two numbers.
-- `src/reference/README.md`:84 — *It disagreed in six of twenty rows when the
+  the same two numbers.~~ *(checked: thirteen generated, ten hand-kept; *read by a person* and *cannot go stale* overreached (the typed prose above each generated table can go stale), corrected this session — pass 8, session O)*
+- ~~`src/reference/README.md`:84 — *It disagreed in six of twenty rows when the
   check was written*. `check_deps.reference_column` compares every row matching
   `REF_ROW`, which is all twenty-three today; the twenty was the table's size
   on the day pass 5's session N wrote it. Now *six rows on the day the check
-  was written*, with no phantom population.
-- `src/reference/README.md`:45–69 — the *kept by* column carried four values
+  was written*, with no phantom population.~~ *(checked: git `10f9eb7` changed exactly six rows' *parts* cells — pass 8, session O)*
+- ~~`src/reference/README.md`:45–69 — the *kept by* column carried four values
   (*generated*, *hand-kept*, *generated from the lane key*, *generated from the
   pages*) where the figure above it draws three groups and the prose splits two
   ways. Now three values matching the figure: *generated · decompile*,
-  *generated · corpus*, *hand-kept*.
-- `src/reference/level-data-and-rules.md`:13 — *the rest are one line each
+  *generated · corpus*, *hand-kept*.~~ *(checked: three values (11, 2, 10); *generated · corpus* said *off the book's own pages*, but the lanes page is read off `TEMPLATE.md`'s key, corrected this session — pass 8, session O)*
+- ~~`src/reference/level-data-and-rules.md`:13 — *the rest are one line each
   because one line is all there is*. Every section after the table is
   multi-paragraph prose; no section is one line. Now names the six sections and
-  says what a row with no section below it means.
-- `src/reference/level-data-and-rules.md`:197 — *is the one entry below that is
-  not a packet* indexes a list that is not on the page.
-- `src/reference/level-data-and-rules.md`:65 — *about ten fields*, then ten
+  says what a row with no section below it means.~~ *(checked: the opening named an H3 among the H2s and left out *Difficulty and weather*, corrected this session — pass 8, session O)*
+- ~~`src/reference/level-data-and-rules.md`:197 — *is the one entry below that is
+  not a packet* indexes a list that is not on the page.~~ *(overtaken: the phrase is gone; its replacement (`MinecraftServer.updateMobSpawningFlags` sends nothing, `MinecraftServer.java`:1437-1445) is checked — pass 8, session O)*
+- ~~`src/reference/level-data-and-rules.md`:65 — *about ten fields*, then ten
   named. `PrimaryLevelData` has **eleven** instance fields
   (`PrimaryLevelData.java`:39–49); the eleventh,
-  `PrimaryLevelData.worldGenSettingsLifecycle`, is now named.
-- `src/reference/level-data-and-rules.md`:178 — *the two rules screens*, only
+  `PrimaryLevelData.worldGenSettingsLifecycle`, is now named.~~ *(overtaken: twelve fields since V1 added `PrimaryLevelData.versionHistory` (`PrimaryLevelData.java`:41-52); checked at twelve — pass 8, session O)*
+- ~~`src/reference/level-data-and-rules.md`:178 — *the two rules screens*, only
   one of which (`InWorldGameRulesScreen`) the page ever names. The other is
-  `WorldCreationGameRulesScreen`; both extend `AbstractGameRulesScreen`.
-- `src/reference/block-update-flags.md`:29 — *the two large ones are worth
+  `WorldCreationGameRulesScreen`; both extend `AbstractGameRulesScreen`.~~ *(checked: two screens, both `AbstractGameRulesScreen`s; *the client's only `GameRules` objects belong to the two screens* was false (`WorldCreationUiState` owns one that becomes the new world's), corrected this session — pass 8, session O)*
+- ~~`src/reference/block-update-flags.md`:29 — *the two large ones are worth
   decomposing here rather than in the reader's head*, above a table whose *the
-  bits* column decomposes all four.
-- `src/reference/hud-elements.md`:6 — *The HUD is one ordered method* against
+  bits* column decomposes all four.~~ *(checked: four combinations, all four decomposed (`Block.java`:101-104) — pass 8, session O)*
+- ~~`src/reference/hud-elements.md`:6 — *The HUD is one ordered method* against
   the page's own header (*from `Hud.extractRenderState` **and**
-  `Gui.extractRenderState`*) and its second table.
-- `src/reference/hud-elements.md`:22 — *Hidden in the last column* describes the
+  `Gui.extractRenderState`*) and its second table.~~ *(checked: one sweep down two methods (`Gui.java`:174, :219, :226, :245, :248); the *slots* gloss beside it missed three of the four if/else pairs, corrected this session — pass 8, session O)*
+- ~~`src/reference/hud-elements.md`:22 — *Hidden in the last column* describes the
   second table's column order while standing over the first, where the column
-  is fourth of five.
-- `src/reference/hud-elements.md`:57 — *three of them are still `Hud` methods*,
+  is fourth of five.~~ *(checked: the column's position is right in both tables — pass 8, session O)*
+- ~~`src/reference/hud-elements.md`:57 — *three of them are still `Hud` methods*,
   above a table that names no method. They are `Hud.extractSavingIndicator`,
   `Hud.extractDebugOverlay` and `Hud.extractDeferredSubtitles`
   (`Gui.java`, `extractRenderState`); the fourth is
-  `ToastManager.extractRenderState`.
-- `src/reference/density-function-nodes.md`:99 — *three unregistered
+  `ToastManager.extractRenderState`.~~ *(checked: `Hud.extractSavingIndicator`, `Hud.extractDebugOverlay`, `Hud.extractDeferredSubtitles` and `ToastManager.extractRenderState` (`Gui.java`:219, :226, :245, :248) — pass 8, session O)*
+- ~~`src/reference/density-function-nodes.md`:99 — *three unregistered
   singletons*, naming `DensityFunctions.BlendAlpha`,
   `DensityFunctions.BlendOffset` and `DensityFunctions.BeardifierMarker`, all
   three of which the page's own main table lists as **registered** ids
   (*blend_alpha*, *blend_offset*, *beardifier*). The word *unregistered* also
   means something else twenty lines above, where it is right. What is true of
-  the three is that they are singletons resolved by object identity.
-- `src/reference/naming-drift.md`:42 and :385 — *two hundred and forty-five
-  rows*; counting every data row in the thirteen drift tables gives **247**.
-- `src/reference/naming-drift.md`:44 and :284 — the rendering table at
-  *twenty-seven rows*; it has **28**.
-- `src/reference/naming-drift.md`:385 — *a dozen of these rows are one design
-  change each*, introducing **seven** bullets.
+  the three is that they are singletons resolved by object identity.~~ *(checked: *three of the registered nodes* (`DensityFunctions.java`:87-96) — pass 8, session O)*
+- ~~`src/reference/naming-drift.md`:42 and :385 — *two hundred and forty-five
+  rows*; counting every data row in the thirteen drift tables gives **247**.~~ *(overtaken: the tables hold 309 rows since session J cut three and added one; the page said 311, corrected this session — pass 8, session O)*
+- ~~`src/reference/naming-drift.md`:44 and :284 — the rendering table at
+  *twenty-seven rows*; it has **28**.~~ *(overtaken: the rendering table has 39 rows, and the page says so — pass 8, session O)*
+- ~~`src/reference/naming-drift.md`:385 — *a dozen of these rows are one design
+  change each*, introducing **seven** bullets.~~ *(checked: seven bullets follow — pass 8, session O)*
 - ~~`src/maps/README.md`:7 — *Each map is a figure … and then the table the
   figure was drawn from*, against a figure on the same page saying eight SVGs
   and six tables. The truth is eight SVGs (seven of them the atlas's — the
@@ -10258,28 +11133,28 @@ re-derives a game fact.
 - ~~`src/maps/hierarchy.md`:5 — *`Block` has 293 subclasses* against :39 *92
   direct subclasses* and :47 *`Block` is [`BlockBehaviour`'s] only subclass*.
   293 is the descendant count, which is the word both tables use.~~ *(checked: `src/generated/hierarchy-classes.md`, `Block` 297 descendants from 92 direct, the tables' *descendants*, which :5–6 now name — pass 8, session B)*
-- `src/lectures.md`:19 against :461 — two lists both claiming to be *the three
+- ~~`src/lectures.md`:19 against :461 — two lists both claiming to be *the three
   worth taking out of turn*, differing in their first member (*environment
   attributes and timelines* against *blocks and states*). There is one
-  departure from the sidebar order and three pages a single-part viewer fetches.
-- `src/lectures.md`:80 against :96 — *the last four can be watched in any order*
-  against the entry two lines below saying fluids assumes scheduled ticks.
-- `src/lectures.md`:196 — *Two groups have an internal order*, one of which
-  (player anatomy → the two-phase tick) is the trunk and not one of the four.
-- `src/lectures.md`:246 — *With one exception, nothing here hands off to
-  anything*; the exception is never named.
-- `src/lectures.md`:320 against :340 — Part XII partitioned as *a substrate, a
+  departure from the sidebar order and three pages a single-part viewer fetches.~~ *(checked: one departure and three single-part fetches, stated apart — pass 8, session O)*
+- ~~`src/lectures.md`:80 against :96 — *the last four can be watched in any order*
+  against the entry two lines below saying fluids assumes scheduled ticks.~~ *(checked: *7 comes before 8* is stated — pass 8, session O)*
+- ~~`src/lectures.md`:196 — *Two groups have an internal order*, one of which
+  (player anatomy → the two-phase tick) is the trunk and not one of the four.~~ *(checked: resolved — pass 8, session O)*
+- ~~`src/lectures.md`:246 — *With one exception, nothing here hands off to
+  anything*; the exception is never named.~~ *(checked: the two exceptions are named — pass 8, session O)*
+- ~~`src/lectures.md`:320 against :340 — Part XII partitioned as *a substrate, a
   pipeline, and a wing* and then as 1–6 / 7–9 / 10, which do not cover the same
-  ten lectures: lecture ten is in none of the first three.
-- `src/introduction.md`:52 — *Four threads carry nearly all of it* above a
+  ten lectures: lecture ten is in none of the first three.~~ *(checked: neither split survives — pass 8, session O)*
+- ~~`src/introduction.md`:52 — *Four threads carry nearly all of it* above a
   figure that labels three threads and draws the connection as *the wire*.
-  Fixed in the figure's label rather than in the sentence.
-- `src/introduction.md`:95 — *Twenty-three pages* followed by a list of about a
-  dozen items, which reads as the twenty-three.
+  Fixed in the figure's label rather than in the sentence.~~ *(overtaken by pass 7's redraw: four subgraphs — pass 8, session O)*
+- ~~`src/introduction.md`:95 — *Twenty-three pages* followed by a list of about a
+  dozen items, which reads as the twenty-three.~~ *(checked: twenty-three pages and a selection of five; the Reference paragraph's *cannot go stale* disagreed with the shelf's own page, corrected this session — pass 8, session O)*
 
 ### Corrections — facts, re-derived against the decompile
 
-- `src/reference/level-data-and-rules.md`:305 — **"so peaceful stops the
+- ~~`src/reference/level-data-and-rules.md`:305 — **"so peaceful stops the
   spawner rather than the mobs" is the wrong way round in 26.2.**
   `MinecraftServer.setDifficulty` does call
   `MinecraftServer.updateMobSpawningFlags`, but that method pushes
@@ -10291,12 +11166,12 @@ re-derives a game fact.
   `EntityType.java`:284 gates the spawn attempt. So peaceful empties the world
   and the two game rules empty the spawner. **This is a 1.21 fact surviving
   inside a chain of correct 26.2 method names**, which is why two fact-checks
-  kept it.
-- `src/reference/level-data-and-rules.md`:197 — *it pushes the two spawn flags
+  kept it.~~ *(checked (`ServerLevel.java`:1924-1925, `Mob.java`:754-756); *the rules empty the spawner* beside it was true only of `GameRules.SPAWN_MOBS`, corrected this session — pass 8, session O)*
+- ~~`src/reference/level-data-and-rules.md`:197 — *it pushes the two spawn flags
   down instead*. `Level.setSpawnSettings` (`Level.java`:537) takes **one**
   boolean; the *two* are the two game rules `ServerLevel.isSpawningMonsters`
-  ANDs into it.
-- `src/reference/math-and-primitives.md`:182 — *so most of a new world's
+  ANDs into it.~~ *(checked: one boolean (`Level.java`:527-528) — pass 8, session O)*
+- ~~`src/reference/math-and-primitives.md`:182 — *so most of a new world's
   generation is legacy, not Xoroshiro*. The four shipped noise settings with
   `legacy_random_source: true` are *caves*, *end*, *floating_islands* and
   *nether* (`reference/26.2/data/minecraft/worldgen/noise_settings/`); the
@@ -10305,17 +11180,17 @@ re-derives a game fact.
   a count of four in seven does not support a claim about *most of a new
   world's generation*. Line 248 stated the same fact more narrowly and was also
   not quite right (*which the nether and the end have* implies the rest do not
-  opt in; two presets do).
-- `src/reference/threads.md`:54 — *Four kinds of thread on a dedicated server
+  opt in; two presets do).~~ *(checked: four of seven shipped noise settings are legacy; the Xoroshiro bullet's *forks it* and the features' and structures' streams were stated for the wrong population, corrected this session — pass 8, session O)*
+- ~~`src/reference/threads.md`:54 — *Four kinds of thread on a dedicated server
   are non-daemon*, against the page's own **main (dedicated)** row marked
   daemon **no**. Five rows are non-daemon; main returns immediately after
   `Runtime.getRuntime().addShutdownHook` (`server/Main.java`:236) and cannot
-  hold the JVM open.
-- `src/reference/threads.md`:73 — the same row said main runs
+  hold the JVM open.~~ *(overtaken by pass 7: six rows, five on a dedicated server; checked — pass 8, session O)*
+- ~~`src/reference/threads.md`:73 — the same row said main runs
   *`MinecraftServer.spin` and the shutdown hook*. It **registers** the hook;
   the hook runs on its own *Server Shutdown Thread* (`server/Main.java`:228–236),
-  which the page's own *Situational threads* paragraph already knew.
-- `src/reference/non-living-damage.md`:68 — *they are why several rows below
+  which the page's own *Situational threads* paragraph already knew.~~ *(checked: *registers* (`server/Main.java`:236); *the constructor, then `MinecraftServer.spin`* reversed the order (the constructor runs inside `spin`, `MinecraftServer.java`:312), corrected this session — pass 8, session O)*
+- ~~`src/reference/non-living-damage.md`:68 — *they are why several rows below
   read `nothing`: the class was never reached*, with no row marked. Exactly
   three of the ten are: `Interaction` (`Entity.skipAttackInteraction`),
   `EyeOfEnder` (`EyeOfEnder.java`, `isAttackable()` returns false — the page's
@@ -10323,65 +11198,65 @@ re-derives a game fact.
   `Player.deflectProjectile`, which fires only for
   `EntityTypeTags.REDIRECTABLE_PROJECTILE`). `PrimedTnt` overrides
   `Entity.isPickable`, not either gate, and the other six are reached and do
-  nothing.
-- `src/reference/density-function-nodes.md`:88 — *All six installed classes
+  nothing.~~ *(checked, and still wrong: `Entity.isAttackable` is false for six more classes and most rows are never picked (`EntitySelector.CAN_BE_PICKED`); the pick and the two gates rewritten as one paragraph, corrected this session — pass 8, session O)*
+- ~~`src/reference/density-function-nodes.md`:88 — *All six installed classes
   implement `DensityFunctions.MarkerOrMarked`, so … the graph would
   re-serialise unchanged*, stated without the exception the table two lines
   below states: `NoiseChunk.wrapNew`'s `BlendDensity` case installs the
   marker's own child when the level's `Blender` is empty, and a child does not
-  re-serialise as *blend_density*.
+  re-serialise as *blend_density*.~~ *(overtaken: `MarkerOrMarked` and `wrapNew` are gone; the replacement (a prepared cache refuses to encode, `DensityFunctionCompiler.java`:95-98) is checked — pass 8, session O)*
 - ~~`src/maps/hierarchy.md`:11 — *so it inherits the whole block tree and the
   whole item tree at once*, of `FeatureElement`, an interface. Its implementers
   inherit from it; what sweeps up the two trees is its **descendant count**.~~ *(checked: `world/level/block/state/BlockBehaviour.java`:85, `world/item/Item.java`:113, two of the seven implementers, whose 298 and 67 descendants fall inside `FeatureElement`'s 386; :12–13 now give the sweep to the descendant count — pass 8, session B)*
-- `src/reference/naming-drift.md`:151 against :511 — *Material* given two
+- ~~`src/reference/naming-drift.md`:151 against :511 — *Material* given two
   verdicts, *gone* and *survived and changed meaning*. Both are true of
   different classes: the block property is gone, and
   `net/minecraft/client/resources/model/sprite/Material` exists. The drift row
-  now says so.
-- `src/reference/glossary.md` *Render state* against *Extract* — the same rule
+  now says so.~~ *(checked: both verdicts are true of different releases; the meaning change predates 1.21.11, which the page now says of its older rows — pass 8, session O)*
+- ~~`src/reference/glossary.md` *Render state* against *Extract* — the same rule
   stated with its exception in one entry and without it in the other (*the
   drawing half reads no game object* against *no live game object from
-  `LevelRenderer.render` down — the top of the render half still does*).
-- `src/reference/glossary.md` *Batch* — *a group of game tests keyed by the
-  environment they share* and then *a batch **is** an environment*.
-- `src/reference/submit-phases.md`:100 — *That list is the answer to what can
+  `LevelRenderer.render` down — the top of the render half still does*).~~ *(checked: both entries carry the exception — pass 8, session O)*
+- ~~`src/reference/glossary.md` *Batch* — *a group of game tests keyed by the
+  environment they share* and then *a batch **is** an environment*.~~ *(checked: the key is `BatchKey(environment, dimension)` (`GameTestBatchFactory.java`:83) — pass 8, session O)*
+- ~~`src/reference/submit-phases.md`:100 — *That list is the answer to what can
   be drawn in a level*, dropping the five exclusions the page's own opening
-  makes (sky, clouds, weather, world border, terrain).
+  makes (sky, clouds, weather, world border, terrain).~~ *(checked: the five exclusions match the opening — pass 8, session O)*
 
 ### Claims introduced
 
 **`src/introduction.md`.**
 
-- *This site is the notes for a video lecture series* — new, and the page's
+- ~~*This site is the notes for a video lecture series* — new, and the page's
   largest previously unstated premise. Also *nothing on it leans on the video
-  to make sense*, which restates the owner's 2026-09-05 ruling.
-- *It ticks too, nought to ten times inside each frame, catching its own copy
+  to make sense*, which restates the owner's 2026-09-05 ruling.~~ *(checked: agrees with the project's own statement; not a claim about the game — pass 8, session O)*
+- ~~*It ticks too, nought to ten times inside each frame, catching its own copy
   up to the same twenty-a-second clock* — new in the opening, reconciling the
-  prose with the figure's *0 to 10 ticks*. Check against `Minecraft.runTick`.
-- *Just under a third of **those lines** is client-only* — the population
-  named. `src/maps/packages.md` says 212,242 lines, 29.5%.
-- The skip list re-sorted into three kinds: *version differences by definition*
+  prose with the figure's *0 to 10 ticks*. Check against `Minecraft.runTick`.~~ *(checked (`Minecraft.java`:1265, `DeltaTracker.java`:59-66); ticks owed beyond ten are dropped, not caught up, corrected this session — pass 8, session O)*
+- ~~*Just under a third of **those lines** is client-only* — the population
+  named. `src/maps/packages.md` says 212,242 lines, 29.5%.~~ *(checked at 26.3: 220,818 of 741,069 lines, 29.8% — pass 8, session O)*
+- ~~The skip list re-sorted into three kinds: *version differences by definition*
   (datafix, filefix), *not the game* (Realms, telemetry, the profiler, the
   management server, RCON, the data generators), *the game's bookkeeping rather
   than its behaviour* (statistics, player reporting, the id constants). Every
-  membership is a claim.
-- *Thirteen of the twenty-three … the other ten* for the Reference split.
+  membership is a claim.~~ *(checked: gizmos and the audio backend are counted in no part and taught, so fit none of the three kinds; corrected this session — pass 8, session O)*
+- ~~*Thirteen of the twenty-three … the other ten* for the Reference split.~~ *(checked: 13 files carry the generated mark — pass 8, session O)*
 
-**`src/lectures.md`.** Four per-part shape paragraphs cut to their order
+~~**`src/lectures.md`.** Four per-part shape paragraphs cut to their order
 claims (IV, XI, XII, XIII), each of which now asserts the order and no longer
 the shape: Part IV *of the last four, 7 comes before 8*; Part II *3 to 7 have
 no order among themselves — except that 7 … reads best last*; Part VIII *only
 one of the four has an internal order*; Part X *nothing here hands off to
 anything except lecture seven, which draws what lecture six opens*; Part XIII
 *lectures 1 to 3, then 4 and 5, then the last four*. The *points of interest*
-blurb is now an order claim: *Part VI's AI lecture reads this index*.
+blurb is now an order claim: *Part VI's AI lecture reads this index*.~~ *(checked against the landing pages; Part X's was superseded by session J — pass 8, session O)*
 
-**`src/reference/README.md`.** *Nobody arrives at this shelf by walking it*;
+~~**`src/reference/README.md`.** *Nobody arrives at this shelf by walking it*;
 *the table below is sorted for the one question a reader of a catalogue should
 ask of it*; the three-value *kept by* taxonomy; *eleven of them from the
-decompile's declaration lines … the other two are read off this book instead*.
+decompile's declaration lines … the other two are read off this book instead*.~~ *(checked: *nobody arrives by walking it* was a claim about readers the sidebar contradicts, and the table is grouped, not sorted, corrected this session — pass 8, session O)*
 
-**`src/reference/level-data-and-rules.md`.** A new section, *One method saves
+~~**`src/reference/level-data-and-rules.md`.** A new section, *One method saves
 all three*, asserting the order inside `MinecraftServer.saveAllChunks`
 (`MinecraftServer.java`:628–664): the `ScoreboardSaveData` flush first, then
 every level's chunks, then *level.dat* through
@@ -10394,18 +11269,18 @@ world-select screen reads from them; `LevelSummary.CorruptedLevelSummary` and
 **sixteen**-component table in four groups, of which the glosses are claims —
 `DimensionType.logicalHeight` as the ceiling `PortalForcer` and
 `TeleportRandomlyConsumeEffect` clamp to, and `DimensionType.MonsterSettings`'s
-two light tests.
+two light tests.~~ *(checked: the order in `MinecraftServer.saveAllChunks`; the claim about player data and the symlink gloss were false (`PlayerDataStorage` is not saved data; a *level.dat* link the allow list rejects), corrected this session — pass 8, session O)*
 
-**`src/reference/block-update-flags.md`.** The opening now states two surprises
+~~**`src/reference/block-update-flags.md`.** The opening now states two surprises
 as the hook: `Block.UPDATE_NONE` is 260 and not zero, and 512 is both
 `Block.UPDATE_SKIP_ON_PLACE` and `Block.UPDATE_LIMIT`. New glosses: *none*
 suppressing the client gate and the block entity's side effects, and
 `Block.UPDATE_SKIP_ALL_SIDEEFFECTS` as what a structure or data-pack write
-passes — both worth checking.
+passes — both worth checking.~~ *(checked: both hooks; the gloss on 260 and on 816's users was wrong (`Level.java`:231, `LevelChunk.java`:325), corrected this session — pass 8, session O)*
 
-**`src/reference/threads.md`.** *Every lane in the figure has a row in the
+~~**`src/reference/threads.md`.** *Every lane in the figure has a row in the
 table; two rows have no lane* — a claim about the figure and the table
-together.
+together.~~ *(checked: every box has a row — pass 8, session O)*
 
 **`src/maps/`.** `maps/README`: *four figures and two tables on what extends
 what, one and one on the two bar charts, one and three on where the code is*,
@@ -10416,22 +11291,22 @@ history* — check against the treemap.
 
 ### For pass 9's attention, found and not fixed
 
-- `src/reference/level-data-and-rules.md` — the *world spawn* row names
+- ~~`src/reference/level-data-and-rules.md` — the *world spawn* row names
   `PrimaryLevelData.respawnData` while *The spawn every level reports is the
   server's* says every level reports `MinecraftServer.effectiveRespawnData`.
   Both are true (stored against reported) and the table gives no hint which it
-  means.
-- `src/reference/submit-phases.md`:91 — *twenty-four steps out and twenty-four
+  means.~~ *(checked, and still misleading: the packet carries the effective spawn on join and respawn and the stored one when set (`PlayerList.java`:453, :717), corrected this session — pass 8, session O)*
+- ~~`src/reference/submit-phases.md`:91 — *twenty-four steps out and twenty-four
   back for its two faces, a hundred vertices in all*; 48 and 100 do not
-  reconcile without a per-step vertex count the cell does not give.
-- `src/reference/non-living-damage.md`:102 — *Only four classes read the damage
+  reconcile without a per-step vertex count the cell does not give.~~ *(checked, and still misleading: 25 stations each way, a vertex pair at each, two ribbons crossing (`LeashFeatureRenderer.java`:49-55, :79-80), corrected this session — pass 8, session O)*
+- ~~`src/reference/non-living-damage.md`:102 — *Only four classes read the damage
   amount at all*, counting `MinecartTNT`, whose own `MinecartTNT.hurtServer`
   reads only the arrow's speed and passes the amount straight to
   `VehicleEntity`. Re-derived and left: the fall-through does read it, and the
-  page's row says so.
-- `src/reference/density-function-nodes.md`:21 — *four arithmetic* in the
+  page's row says so.~~ *(checked: the class's own override reads nothing and passes the amount to `VehicleEntity.hurtServer`, which does — pass 8, session O)*
+- ~~`src/reference/density-function-nodes.md`:21 — *four arithmetic* in the
   census against :110's *the arithmetic family — the two-argument nodes, the
-  mapped ones and clamp*. Two populations, one word.
+  mapped ones and clamp*. Two populations, one word.~~ *(checked, and still wrong: *arithmetic* named three populations; it now means `BinaryFunction`'s six only, corrected this session — pass 8, session O)*
 - ~~`src/maps/hierarchy.md`:80 — *Two trees the table shows and the figures do
   not* names `Goal` and `Packet`; the section heading is about the page's own
   apparatus rather than about the game.~~ *(no claim: a note on the heading's register, and the polish rewords no heading; its fact holds, `Goal` and `Packet` in the tables and neither among `tools/map_source.py`'s `TREE_ROOTS` (:64) — pass 8, session B)*
@@ -10988,10 +11863,10 @@ Eleven system pages and the landing page, twelve readers, one each.
   reading order only, with two of them the reverse of a frame's order; the
   substrate-to-frame edge reversed; and *Where the part stops* written as a
   section with the coverage include.~~ *(checked (`generated/coverage-*.md`: V 47%, XI 41%); the sentence beside the include, *Teaching six shapes*, named four families — see *Pass 8, session L* — pass 8, session L)*
-- `src/lectures.md`: Part XI's paragraph re-argued as the one inversion in the
-  book's order made for the viewer rather than for the dependencies.
-- `src/reference/naming-drift.md`: a row for the four `Camera` accessors that
-  lost their *get* prefix, which the trimmed `the-frame` blockquote released.
+- ~~`src/lectures.md`: Part XI's paragraph re-argued as the one inversion in the
+  book's order made for the viewer rather than for the dependencies.~~ *(checked, and wrong: Part XII makes the same trade for the viewer (`worldgen/README`); corrected this session — pass 8, session O)*
+- ~~`src/reference/naming-drift.md`: a row for the four `Camera` accessors that
+  lost their *get* prefix, which the trimmed `the-frame` blockquote released.~~ *(checked at 26.3; against 1.21.11 the four prefix-less accessors already existed and none of the three kept getters did, corrected this session — pass 8, session O)*
 
 ## Pass 6, session J — Part X · The client *(2026-09-14)*
 
@@ -12139,9 +13014,9 @@ unglossable on a landing page). *Watch in this order* blurbs re-synced for
 
 ### Reference
 
-**`reference/non-living-damage.md`**'s pattern summary changed from five classes
+~~**`reference/non-living-damage.md`**'s pattern summary changed from five classes
 reading the damage amount to four, to agree with `damage-and-death`; see
-correction 6.
+correction 6.~~ *(checked: four classes — pass 8, session O)*
 
 ## Pass 6, session E — Part V · Blocks *(2026-09-13)*
 
@@ -13229,7 +14104,7 @@ come first.*
    exclusion list". Now "a third parameter, `EntityType.trackDeltas`, which is
    true of every type but ten", with the roster left to its owner.~~ *(checked (`world/entity/EntityTypes.java`: eleven `dontTrackDeltas`); the tick-zero clause beside it was wrong in 26.3 — see *Pass 8, session F*, correction 45 — pass 8, session F)*
 
-2. **`introduction`:148 — three things called skipped that the skips page says
+2. ~~**`introduction`:148 — three things called skipped that the skips page says
    are taught.** The introduction listed "the data generators, statistics and
    the recipe book, the OpenAL audio backend and two packages nobody will
    recognise" as "all in the jar and not in the parts".
@@ -13241,7 +14116,7 @@ come first.*
    "are not skipped, they are recipes'" (:263-268). The frame is the summariser
    and the page wins: the introduction's list now names player reporting and the
    id-constant tables instead, and a following sentence says the page tours
-   three things that are not skipped and why.
+   three things that are not skipped and why.~~ *(checked: the three are taught; the OpenAL clause put the backend beside the GPU abstraction, which is `renderpearl` in 26.3, corrected this session — pass 8, session O)*
 
 3. ~~**`anatomy/README`:11 — what a non-class lane stands for.** "The handful
    that are not stand for a thread." `check_lanes.py --strict` prints nine word
@@ -13284,15 +14159,15 @@ come first.*
    by line is the catalogue rather than the machinery, and it is where the
    unexplained lines are."~~ *(checked: 13,357 of 44,083 lines, 30% — pass 8, session N)*
 
-9. **`lectures.md`:88 — lighting's consumer is not Part XI.** "Inside the
+9. ~~**`lectures.md`:88 — lighting's consumer is not Part XI.** "Inside the
    chain, but nothing later in this part assumes it; Part XI does."
    `check_links.py --inbound src/systems/world/lighting.md` lists twelve links
    from eight pages and **no page under `systems/rendering/`** among them;
    `rendering/README`'s *before you start* does not name it either. The pages
    that lean on it are `networking/what-the-client-is-told` (twice) and
-   `client/the-client-level`. Now "Parts IX and X do".
+   `client/the-client-level`. Now "Parts IX and X do".~~ *(overtaken by pass 7, and checked there — pass 8, session O)*
 
-10. **`lectures.md`:171 — the three places a menu broadcast happens.** The map
+10. ~~**`lectures.md`:171 — the three places a menu broadcast happens.** The map
     said containers and menus "needs all three of Part III's and Part VIII's
     tick pages … the drain, the level's entity phase, and the player's second
     half". `items/containers-and-menus`:325-336 gives the third place as
@@ -13300,59 +14175,59 @@ come first.*
     finished", which "repeats only the `AbstractContainerMenu.stillValid`
     distance test, **without a broadcast**". Two broadcasts, both Part III's.
     Now "needs both of Part III's tick pages … the packet drain at the top of
-    the tick, and the level's entity phase".
+    the tick, and the level's entity phase".~~ *(overtaken: a third broadcast, a pickup inside `ServerPlayer.doTick` in the connection phase (`MinecraftServer.java`:1233-1234), corrected this session — pass 8, session O)*
 
-11. **`lectures.md`:322 — "two statuses before the biomes and terrain".**
+11. ~~**`lectures.md`:322 — "two statuses before the biomes and terrain".**
     `worldgen/README`:74 says "two statuses before the biomes it will stand in
     exist"; terrain (`ChunkStatus.NOISE`) is further down the ladder than
-    `ChunkStatus.BIOMES`, so one count cannot cover both. "And terrain" dropped.
+    `ChunkStatus.BIOMES`, so one count cannot cover both. "And terrain" dropped.~~ *(checked (`ChunkStatus.java`:21-23) — pass 8, session O)*
 
-12. **`lectures.md`:325 — "costs one forward reference".**
+12. ~~**`lectures.md`:325 — "costs one forward reference".**
     `worldgen/README`:80-83 prices the same trade at "three of the six pages
     before the structure arc reach for the beardifier before the page that owns
-    it". Now "costs three of the earlier pages a forward topic".
+    it". Now "costs three of the earlier pages a forward topic".~~ *(checked: *two of the earlier pages* name the beardifier — pass 8, session O)*
 
-13. **`lectures.md`:37 — Part II called a stack.** `foundations/README`:15 says
+13. ~~**`lectures.md`:37 — Part II called a stack.** `foundations/README`:15 says
     "Part II is **not a stack but a fan**. Codecs and registries are underneath
     everything else here, and the five pages above them are largely independent
     of one another — which is why the figure has two roots and no single
     column", and its figure has two roots. The only place in the book where two
     copies of a shape sentence contradicted rather than merely differed. The map
-    now says fan, and Part XIII keeps *a stack of three floors* alone.
+    now says fan, and Part XIII keeps *a stack of three floors* alone.~~ *(checked: *fan* is gone; *the five above them* brought back a stack geometry the landing page's top-down figure does not draw, corrected this session — pass 8, session O)*
 
-14. **`lectures.md`:195 — Part VIII's groups with an internal order.** "Only
+14. ~~**`lectures.md`:195 — Part VIII's groups with an internal order.** "Only
     one group has an internal order — the spear is the sword swing's sequel",
     three lines above the map's own entry "the two-phase tick — watch it
     immediately after *player anatomy*", and against `player/README`:104-106,
-    which declares two pairs. Now "Two groups have an internal order".
+    which declares two pairs. Now "Two groups have an internal order".~~ *(overtaken by pass 6; *only one of the four* is checked — pass 8, session O)*
 
-15. **`lectures.md`:242 — "Nothing here hands off to anything".**
+15. ~~**`lectures.md`:242 — "Nothing here hands off to anything".**
     `client/README`:18 says the same sentence "with one exception, noted below",
     the exception being the GUI stack, which the map itself then describes.
     Corrected, and "except the two pairs noted below" became "the three groups",
     because `client/README`:123-126 declares three (two and three; six to nine;
-    ten and eleven, the two halves of sound).
+    ten and eleven, the two halves of sound).~~ *(overtaken by session J's two exceptions, and checked there — pass 8, session O)*
 
-16. **`lectures.md`:396 and `introduction`:76 — the figure's own arrows.** Both
+16. ~~**`lectures.md`:396 and `introduction`:76 — the figure's own arrows.** Both
     said Parts I and II are drawn "as boxes but not as edges" / "left off".
     `src/figures/parts-dependency.md`:16 is `P1 --> P2 --> P3`, and both edges
     are real declared dependencies (`foundations/README`:45,
     `server/README`:53-59) that `check_deps.py`'s first check requires. Three
     prose copies against one figure. Both pages now say the two keep their boxes
     and the one arrow each along the spine and have the rest left off; the same
-    correction went into `check_deps.py`'s comment at :392.
+    correction went into `check_deps.py`'s comment at :392.~~ *(checked: Parts I and II keep one arc each along the spine — pass 8, session O)*
 
-17. **`lectures.md`:457 — "Three more pages are a single part's dependency".**
+17. ~~**`lectures.md`:457 — "Three more pages are a single part's dependency".**
     Read against the thirteen landing pages, about a dozen pages are named by
     exactly one; the sentence claimed an enumeration and meant a selection.
-    Rewritten as a selection with the reason for the three it names.
+    Rewritten as a selection with the reason for the three it names.~~ *(checked as a selection; the count beside it was wrong (the thirteen lists name 19 other pages exactly once), corrected this session — pass 8, session O)*
 
-18. **`lectures.md`:8 — the lecture order "is confirmed by the owner".** Stated
+18. ~~**`lectures.md`:8 — the lecture order "is confirmed by the owner".** Stated
     in the present tense as a completed fact; [plan.md](plan.md) books the
     owner's confirmation for **before pass 9**. Now written as what happens
-    rather than what has happened.
+    rather than what has happened.~~ *(checked: the page states the owner's confirmation as what happens; not a claim about the game — pass 8, session O)*
 
-19. **`reference/glossary`:461 — occlusion "a shape question a `BlockState`
+19. ~~**`reference/glossary`:461 — occlusion "a shape question a `BlockState`
     caches".** `reference/math-and-primitives`:141 says the occlusion shape is
     **not** in `BlockBehaviour.BlockStateBase.Cache`; the decompile agrees —
     `BlockBehaviour.BlockStateBase.initCache` builds the `Cache` only for a
@@ -13360,7 +14235,7 @@ come first.*
     `occlusionShape` on the state itself unconditionally (:901-915). Now "a
     shape question every `BlockState` precomputes — a field on the state itself
     rather than anything in its shape cache", with the link to the page that
-    owns the distinction.
+    owns the distinction.~~ *(checked (`BlockBehaviour.java`:899-920); the sky-column and fluid-wall senses beside it were wrong, corrected this session — pass 8, session O)*
 
 20. ~~**`blocks/README`:29 — "the sculk family is game events and vibrations'".**
     That page owns the sensor, the shrieker and the catalyst as *listeners*;
@@ -13370,7 +14245,7 @@ come first.*
 
 ### The claims this session introduced
 
-**`introduction`** — the part list names all thirteen parts, where it named ten
+~~**`introduction`** — the part list names all thirteen parts, where it named ten
 systems for thirteen and called Part III by the title of one of its pages; the
 landing page's role is stated as the six things `TEMPLATE.md` requires, where it
 stated three; the Maps paragraph now separates the generated figure and table
@@ -13381,7 +14256,7 @@ page, `reference/threads` and `reference/class-index` for the first time, and
 says "rather more than half" are regenerated (thirteen of twenty-three, per
 `reference/README`'s own figure); the gates paragraph names the sidebar and the
 Reference shelf's *parts* column, which `check_deps.py` gained in pass 5's
-sessions A and N; the anatomy link takes the owner's anchor.
+sessions A and N; the anatomy link takes the owner's anchor.~~ *(checked: thirteen parts; the landing page's role listed five of the template's seven slots, corrected this session — pass 8, session O)*
 
 ~~**`anatomy/what-this-book-skips`** — a new clause saying the table has fifteen
 top-level rows against the treemap's fourteen hatched boxes, because the map's
@@ -13422,7 +14297,7 @@ one mechanism in Part V's two packages that no page explains, with the reason
 (its scenario is a mob dying on sculk, not a block hearing a neighbour) and the
 size (about 760 lines).~~ *(overtaken by pass 6 session E (three mechanisms, not one) — pass 8, session E)*
 
-**`reference/glossary`** — eight headwords added (*Feature flag*, *ItemStack*,
+~~**`reference/glossary`** — eight headwords added (*Feature flag*, *ItemStack*,
 *LivingEntity*, *MinecraftServer*, *Particle*, *Player*, *Random tick*,
 *Widget*), each a sentence drawn from the owner page and an anchored arrow;
 **twenty-seven more arrows given anchors**, so 73 of the file's links now land on
@@ -13434,18 +14309,18 @@ reduced to one owner (*Chunk layer* to `models-and-atlases`, *NoiseChunk* to
 to `player-anatomy`), each keeping the loser's distinct half as a clause; three
 headwords marked for sense (*Batch* (game tests), *Trigger* (advancements),
 *Sensor* (brains)) with a link to the other sense; seven headwords moved into
-alphabetical order. 171 headwords, from 163.
+alphabetical order. 171 headwords, from 163.~~ *(checked; *Player* said two live subclasses where `RemotePlayer` is a third, corrected this session — pass 8, session O)*
 
 ~~**`items/README`** — the Reference link that read "Enchantment helpers" is *The
 weapon helpers*, its real title, and "Two were written for it" introduced three.~~ *(checked (`reference/weapon-helpers`:1) — pass 8, session G)*
 
-**`lectures.md`** — the two Reference asides cut (the rule is stated once at the
+~~**`lectures.md`** — the two Reference asides cut (the rule is stated once at the
 top for all of Reference); the Part V/X cut reduced to a clause and a link to
 the section that states it in full; Part VI's dependency clause now leads with
 Part III; the *authority* blurb's "the one page most often skipped" replaced,
 because nothing in the project can know what a viewer skips; the three pages
 worth taking out of turn are linked at first mention and the one that is a
-departure from the sidebar order is distinguished from the two that are not.
+departure from the sidebar order is distinguished from the two that are not.~~ *(checked — pass 8, session O)*
 
 **`map_source.py`** — `net/minecraft/client/multiplayer/chat/report` added to
 `SKIPPED`, so the twelve classes and 952 lines the book declares skipped stop
@@ -13525,11 +14400,11 @@ states.
    and the shared three quarters never name it." The client-only side is 2,206 of
    7,055 files (31%) and 212,242 of 719,302 lines (29.5%), both from
    `maps/packages`:22-27. Now "under a third" and "the shared seven tenths".~~ *(checked: `src/generated/packages-depth3.md`, 2,264 of 7,301 files (31%) and 220,818 of 741,069 lines (29.8%) client-only; none of `Minecraft`'s 284 importers is in `server-classes.txt`, by an import grep — pass 8, session B)*
-7. **`reference/README`:44-63** — the *parts* column was stale in **six of twenty
+7. ~~**`reference/README`:44-63** — the *parts* column was stale in **six of twenty
    rows**, missing nine part numerals (registries ← IV; non-living-damage ← VIII;
    threads ← VI; level-data-and-rules ← IX; naming-drift ← VII, X; glossary ← II,
    V, VI). Derived from the thirteen landing pages' `## Reference this part uses`
-   sections and now enforced by `check_deps.py`.
+   sections and now enforced by `check_deps.py`.~~ *(checked: git `10f9eb7` — pass 8, session O)*
 8. ~~**`tools/gen_reference.py`, the registries blurb** — "Every registry key
    declared in `Registries`", printed above a total of **153**. 148 are declared
    in `Registries.java`; five are declared by their own class with the public
@@ -13537,13 +14412,13 @@ states.
    `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) — which the
    tool's own comment already recorded. The blurb now names them and cites the
    lecture's 148.~~ *(checked against 26.3: the blurb is now derived from the tree, 156 keys declared in `Registries` (its 156 `public static final` registry-key fields) and five by their own class (`ClockTimeMarkers`, `EquipmentAssets`, `RecipePropertySet`, `ServerFunctionLibrary`, `WaypointStyleAssets`), 161 in all, as the view prints — pass 8, session A)*
-9. **`reference/threads`:69** — RCON starts "when *enable-rcon* **and**
+9. ~~**`reference/threads`:69** — RCON starts "when *enable-rcon* **and**
    *rcon.password* is set". `RconThread.create` (`RconThread.java`:61-76) also
-   returns null when *rcon.port* is outside 1–65535, and tests the port **first**.
-10. **`reference/threads`:65** — `Util.nonCriticalIoPool` is "the same shape" as
+   returns null when *rcon.port* is outside 1–65535, and tests the port **first**.~~ *(checked: port, password, socket (`RconThread.java`:72, :75, :80-91); the 500 ms reason beside it was false for RCON, whose stop closes the socket first, corrected this session — pass 8, session O)*
+10. ~~**`reference/threads`:65** — `Util.nonCriticalIoPool` is "the same shape" as
     `Util.ioPool`. `Util.java`:110-111 passes `daemon=false` for *IO-Worker-* and
     `daemon=true` for *Download-*, which is the one difference the new column is
-    about.
+    about.~~ *(checked (`Util.java`:110-111); *telemetry* and *the same pool* beside it were wrong, corrected this session — pass 8, session O)*
 11. ~~**`server/server-tick`:107-117** — "the nine that do not divide into three
     kinds", then a taxonomy accounting for **seven**. The nine are
     `handlePingRequest`, `handleCustomPayload`, `handleChat`, `handleChatCommand`,
@@ -13551,49 +14426,49 @@ states.
     `handleChatAck` and `handleConfigurationAcknowledged`
     (`ServerGamePacketListenerImpl.java`); the last two write listener state on
     the Netty thread and were in no kind. Four kinds now.~~ *(wrong in 26.3: `ServerGamePacketListenerImpl` has sixty-one game handlers and fifty-one open on the hop; the tenth that does not is the command-suggestion request, new in 26.3 (`server/network/ServerGamePacketListenerImpl.java`:621–627) — see *Pass 8, session C*; `reference/threads` corrected with it — pass 8, session C)*
-12. **`reference/level-data-and-rules`:219-221** — 29,999,984 attributed to the
+12. ~~**`reference/level-data-and-rules`:219-221** — 29,999,984 attributed to the
     integrated server. `MinecraftServer.getAbsoluteMaxWorldSize`
-    (`MinecraftServer.java`:1632) returns it; `DedicatedServer` overrides.
-13. **`reference/level-data-and-rules`:16-21** — "Four parts point here"; five do
+    (`MinecraftServer.java`:1632) returns it; `DedicatedServer` overrides.~~ *(checked: `MinecraftServer.getAbsoluteMaxWorldSize` and the dedicated override are the only two — pass 8, session O)*
+13. ~~**`reference/level-data-and-rules`:16-21** — "Four parts point here"; five do
     (`networking/README`:117 is the fifth), which `check_deps.py` now enforces
-    from the shelf's side.
+    from the shelf's side.~~ *(checked: five landing pages cite it — pass 8, session O)*
 14. ~~**`worldgen/creating-a-world`:96-97** — `world_gen_settings.dat` is written
     "beside *raids.dat*". `WorldGenSettings` goes into `MinecraftServer`'s
     server-global `savedDataStorage` (`MinecraftServer.java`:355); `Raids` goes
     into `ServerLevel.getDataStorage()` (`ServerLevel.java`:259), which is
     per-dimension. Different folders; the clause is cut.~~ *(checked (`server/MinecraftServer.java`:346-349, a server-global storage; `Raids` per dimension) — pass 8, session M)*
-15. **`reference/naming-drift`:42 and :383** — "Two hundred and forty-three rows",
-    twice. The thirteen part tables hold **245** (3+4+31+18+12+18+30+9+24+20+27+13+36).
-16. **`reference/naming-drift`:416-417** — the bullet still italicised
+15. ~~**`reference/naming-drift`:42 and :383** — "Two hundred and forty-three rows",
+    twice. The thirteen part tables hold **245** (3+4+31+18+12+18+30+9+24+20+27+13+36).~~ *(overtaken: 309 rows, corrected this session — pass 8, session O)*
+16. ~~**`reference/naming-drift`:416-417** — the bullet still italicised
     *Entity.hurt* as a name that is gone, against its own corrected table row.
     `Entity.java`:2031-2040: `Entity.hurt` is a `@Deprecated` **final returning
-    void** that forwards to `Entity.hurtServer` only.
-17. **`reference/naming-drift`:290** — "`ByteBufferBuilder` → `MeshData`".
+    void** that forwards to `Entity.hurtServer` only.~~ *(checked (`Entity.java`:2070-2079); the split predates 1.21.11 — pass 8, session O)*
+17. ~~**`reference/naming-drift`:290** — "`ByteBufferBuilder` → `MeshData`".
     `BufferBuilder.build`/`buildOrThrow` produce the `MeshData`
     (`BufferBuilder.java`:68-78); `ByteBufferBuilder` is the memory under it, which
-    is what `blaze3d`:354 says.
-18. **`reference/naming-drift`:496** — backticked `Minecraft.setScreen`, which
+    is what `blaze3d`:354 says.~~ *(checked (`BufferBuilder.java`:21, :71, :81) — pass 8, session O)*
+18. ~~**`reference/naming-drift`:496** — backticked `Minecraft.setScreen`, which
     does not exist in 26.2 (`Minecraft.java` has only `setScreenAndShow`, and the
-    field lives on `Gui`). Italicised, as the page's own rule requires.
+    field lives on `Gui`). Italicised, as the page's own rule requires.~~ *(checked: only `Minecraft.setScreenAndShow` exists — pass 8, session O)*
 19. ~~**`rendering/the-window`:302-303** — "*ScreenManager*, which never existed
     here" against `naming-drift`:313, which lists it as a rename. Whether an older
     tree used the name is outside rule 3; the sentence now states only what 26.2
     settles (monitor handling is `MonitorManager`) and cites the rename table.~~ *(checked: the 1.21.11 tree has `ScreenManager`, and the blockquote now names it as now `MonitorManager` — pass 8, session L)*
-20. **`reference/math-and-primitives`:116** — "two things called `Axis`". Three:
+20. ~~**`reference/math-and-primitives`:116** — "two things called `Axis`". Three:
     `Direction.Axis`, `com/mojang/math/Axis`, `ChunkPalettedStorageFix.Axis`. Now
-    "two in scope", with the third named as out of it.
-21. **`reference/level-data-and-rules`:94-97** — `LevelResource.MAP_RESOURCE_FILE`
+    "two in scope", with the third named as out of it.~~ *(checked: two in scope, a third in save migration — pass 8, session O)*
+21. ~~**`reference/level-data-and-rules`:94-97** — `LevelResource.MAP_RESOURCE_FILE`
     glossed nowhere and then, in this session's own first draft, as the map-id
     counter. It is `resourcepacks/resources.zip` (`LevelResource.java`:15). Caught
-    before publishing and recorded because a fix is a claim.
+    before publishing and recorded because a fix is a claim.~~ *(checked, and the gloss was wrong: the world's own pack, loaded when the client opens the world (`WorldOpenFlows.java`:522-530), corrected this session — pass 8, session O)*
 
 ### Suspicions re-derived and found sound (no change, or a sharpening only)
 
-- **`reference/level-data-and-rules`:211-212** — "a fresh `WorldBorder` starts
+- ~~**`reference/level-data-and-rules`:211-212** — "a fresh `WorldBorder` starts
   with a warning time of 15, not 300." True and sharper than it looks:
   `WorldBorder(Settings)` (`WorldBorder.java`:44-53) sets `warningTime = 15` and
   stores the settings **without applying them**, so even a border built from
-  `WorldBorder.Settings.DEFAULT` (whose `warning_time` is 300) is live at 15.
+  `WorldBorder.Settings.DEFAULT` (whose `warning_time` is 300) is live at 15.~~ *(checked (`WorldBorder.java`:45-53); the server's border takes its settings on the first fetch (`ServerLevel.java`:1501-1504), which *once* covers — pass 8, session O)*
 - ~~**`maps/fanin`:45** — "all but ten of the files that import `Schema` are in
   `util/datafix`." Exactly ten, and all ten are in its sibling `util/filefix`;
   the page now says where they are.~~ *(checked: an import grep over `net/minecraft`, 394 of `Schema`'s 404 importers in `util/datafix` and the other ten in `util/filefix` — pass 8, session B)*
@@ -13601,10 +14476,10 @@ states.
   1,668 `SoundEvent` constants, one `register(...)` per line.~~ *(checked: `sounds/SoundEvents.java`:25–1928, a constant to a line, 1,903 of them registering in 26.3; the entry's 1,668 is an earlier count the page does not quote — pass 8, session B)*
 - ~~**`maps/biggest`:42** — "`FriendlyByteBuf` is the buffer both read from."
   `RegistryFriendlyByteBuf extends FriendlyByteBuf`, so play's buffer is one.~~ *(checked except the reader: `RegistryFriendlyByteBuf` extends `FriendlyByteBuf` (`network/RegistryFriendlyByteBuf.java`:7), but the listeners read no buffer, `PacketDecoder` decoding their packets before a handler runs — see *Pass 8, session B*, correction 24 — pass 8, session B)*
-- **`reference/glossary`, the "five headwords the corpus does not use"** (pass-4
+- ~~**`reference/glossary`, the "five headwords the corpus does not use"** (pass-4
   session O). Re-measured with whitespace normalised: **four**, not five, and all
   four are compound noun phrases the corpus writes in pieces. Ruled to stand; the
-  original count was a line-wrap artefact.
+  original count was a line-wrap artefact.~~ *(overtaken: no headword count is on the page — pass 8, session O)*
 
 ### Claims introduced (check these first)
 
@@ -13619,10 +14494,10 @@ generator printed on 26.2 and will move on a version bump):
   access-modifier-led signature. **Eight reasons are tested by nothing**, and all
   but two comparisons are inside `Mob.finalizeSpawn` — both stated on
   `entities/entity-lifecycle`.~~ *(wrong: the view's *test* left out `EntitySpawnReason`'s own helpers, so `SPAWNER` and `TRIAL_SPAWNER` read as untested beside a blurb naming the helpers that test them; with them, 13 reasons are tested and 6 are labels, and `gen_reference.py` now counts a helper's call sites — see *Pass 8, session A*, correction 20 — pass 8, session A)*
-- `reference/weapon-helpers.md` — 7 helpers, **42 items**. The claim: an item
+- ~~`reference/weapon-helpers.md` — 7 helpers, **42 items**. The claim: an item
   reaches a helper directly (`sword`, `pickaxe`, `spear`) or through the class
   that wraps it (`AxeItem`, `HoeItem`, `ShovelItem` each call theirs in `super`),
-  and "components it sets" follows one hop into `ToolMaterial`.
+  and "components it sets" follows one hop into `ToolMaterial`.~~ *(checked: 42 plain `Item`s (`Items.java`:2034-2035) — pass 8, session O)*
 - ~~`reference/structure-spawn-overrides.md` — **34 structures carry
   `spawn_overrides`, six fill it in, 23 overrides, 18 of them empty.** The claim
   that an empty spawn list is a *ban* rather than a no-op is the view's argument
@@ -13630,7 +14505,7 @@ generator printed on 26.2 and will move on a version bump):
 
 **New prose claims:**
 
-- `reference/threads` — a *daemon* value for every row: Render thread and *main*
+- ~~`reference/threads` — a *daemon* value for every row: Render thread and *main*
   no (they are the JVM's), Server thread no (`MinecraftServer.spin`), Netty yes
   (`EventLoopGroupHolder.createThreadFactory` sets it), Worker-Main yes
   (`ForkJoinPool`, and `how-a-server-dies`:217-220 already said so), IO-Worker
@@ -13638,37 +14513,37 @@ generator printed on 26.2 and will move on a version bump):
   (`SoundEngineExecutor.createThread`), watchdog/console/management yes, timer
   hack yes, RCON and query **no**. Plus: RCON and query poll on a **500 ms**
   socket timeout (`RconThread.java`:82, `QueryThreadGs4.java`:277) and
-  `RconClient` sets `setSoTimeout(0)`, so it does not poll at all.
-- `reference/threads` — a new *main* row for the dedicated server, and a nine-row
-  table of the server handlers that never hop, with what each does on Netty.
-- `reference/threads` — the closing section cut from four rules to one paragraph
+  `RconClient` sets `setSoTimeout(0)`, so it does not poll at all.~~ *(checked; *everything else is a daemon* beside it was false, corrected this session — pass 8, session O)*
+- ~~`reference/threads` — a new *main* row for the dedicated server, and a nine-row
+  table of the server handlers that never hop, with what each does on Netty.~~ *(overtaken by session C: the *ServerMain* row and a ten-row table, checked — pass 8, session O)*
+- ~~`reference/threads` — the closing section cut from four rules to one paragraph
   with three citations; the claim introduced is that `BlockableEventLoop.managedBlock`
-  is `server-tick`'s to own, not this page's.
-- `reference/level-data-and-rules` — a thirteen-row `LevelResource` table.
-- `reference/submit-phases` — `TranslucentSubmit` declares one method,
+  is `server-tick`'s to own, not this page's.~~ *(checked; *a built mesh is installed by the thread that owns it, never by the pool* was false for an empty mesh (`SectionRenderDispatcher.java`:612-613), corrected this session — pass 8, session O)*
+- ~~`reference/level-data-and-rules` — a thirteen-row `LevelResource` table.~~ *(overtaken: nine rows cover the thirteen constants (`LevelResource.java`:5-17) — pass 8, session O)*
+- ~~`reference/submit-phases` — `TranslucentSubmit` declares one method,
   `TranslucentSubmit.distanceToCameraSq`, and **five** of the thirteen renderers'
   nested *Submit* records implement it (`BlockModelFeatureRenderer`,
   `ItemFeatureRenderer`, `ModelFeatureRenderer`, `MovingBlockFeatureRenderer`,
-  `NameTagFeatureRenderer`).
-- `reference/glossary` — eight new entries (*Occlusion* with four senses, *Loot
+  `NameTagFeatureRenderer`).~~ *(checked: five of twelve; *a marker interface* was the wrong term for an interface with a method, corrected this session — pass 8, session O)*
+- ~~`reference/glossary` — eight new entries (*Occlusion* with four senses, *Loot
   context*, *Loot condition*, *Parameter set*, *Data-driven type*, *ServerPlayer*,
   *Status effect*) and second senses added to *Frame*, *Criterion* and *Level*.
-  The *Occlusion* entry's four senses are each a claim.
-- `reference/README` — the tier's argument re-aimed from *what regenerates it* to
+  The *Occlusion* entry's four senses are each a claim.~~ *(checked; *Status effect* and *Occlusion*'s second sense were wrong, corrected this session — pass 8, session O)*
+- ~~`reference/README` — the tier's argument re-aimed from *what regenerates it* to
   *how it survives a version bump*, and a paragraph saying the last column is
-  gated.
+  gated.~~ *(checked: the gate is real (`deploy.sh`); *cannot go stale* overreached, corrected this session — pass 8, session O)*
 - ~~`maps/README` — a new mermaid figure of the atlas's own pipeline, whose node
   labels ("eight SVG figures", "six tables", "the thirteen per-part size
   phrases") are counts of `src/generated/`.~~ *(overtaken: by pass 7 session N's redraw, which cut the size phrases and draws *seven figures, seven tables*; that count checked, `tools/map_source.py`:738–758 — pass 8, session B)*
-- `reference/hud-elements` — "this is the whole of what a screen contributes to
+- ~~`reference/hud-elements` — "this is the whole of what a screen contributes to
   the record", which answers pass-4 session O's *three or four strata* question
-  in the negative and is the session's own reading of `Gui.java`:183-207.
+  in the negative and is the session's own reading of `Gui.java`:183-207.~~ *(checked: three callers, all in this slot — pass 8, session O)*
 
 ### Rulings
 
 - ~~**The shelf's *parts* column is derived, not kept.** `check_deps.py` gained a
   fourth `F` check with a probe; the rule is the column header's own words.~~ *(no claim: `check_deps.py`'s F check, which passes — pass 8, session A)*
-- **`hud-elements`' contextual bar keeps two rows.** The ordering *is* the fact.
+- ~~**`hud-elements`' contextual bar keeps two rows.** The ordering *is* the fact.~~ *(checked (`Hud.java`:609-614) — pass 8, session O)*
 - ~~**The glossary disambiguates**, for a word the corpus itself uses in more than
   one sense, and the entry is the disambiguation (A5's rule, applied to
   *Occlusion*, *Frame*, *Criterion* and *Level*).~~ *(no claim: a rule; the glossary is session O's — pass 8, session A)*
@@ -14044,9 +14919,9 @@ every fact below was changed with the decompile open.*
   which names neither. Split: the structure block to
   `jigsaw-and-templates#where-a-template-comes-from` (written this session),
   the command block left to Part XIII.~~ *(checked for the structure block; the command block's anchor was wrong — see *Pass 8, session E*, correction 15 — pass 8, session E)*
-- `reference/density-function-nodes`' deck advertised two of the page's four
+- ~~`reference/density-function-nodes`' deck advertised two of the page's four
   sections; `reference/README`:56 and `worldgen/README`:160 copied the same
-  omission. All three corrected.
+  omission. All three corrected.~~ *(checked: the deck names the four sections — pass 8, session O)*
 
 ### Suspicions re-derived and found sound (no change)
 
@@ -14094,10 +14969,10 @@ and `CacheOnce` keeps a second counter for it; the beardifier splice's
 consequence ("every noise dimension is beardified whether or not its router
 JSON mentions one") moved here from `terrain`.~~ *(overtaken in the main (the router is eight fields, `world/level/levelgen/NoiseRouter.java`:9); the End islands' `SimplexNoise` and `NoiseUtils.biasTowardsExtreme`'s no callers still hold — pass 8, session M)*
 
-**`reference/density-function-nodes`** — *Bounds* rewritten from 36 lines of
+~~**`reference/density-function-nodes`** — *Bounds* rewritten from 36 lines of
 prose to an eight-row table plus one paragraph; the three wrap singletons
 became a table; two unregistered `DensityFunctions` members named as absent
-from the catalogue; the deck rewritten to admit four sections.
+from the catalogue; the deck rewritten to admit four sections.~~ *(overtaken by V2 (six bounds rows, one unregistered member); the page is checked as it stands — pass 8, session O)*
 
 ~~**`worldgen/terrain`** — the aquifer reads five router functions, named; the
 surface rule tree is two registries of dispatched types
@@ -14230,13 +15105,13 @@ itself. Corrections first, then the claims the session introduced, which pass
    (`GameRenderer.java`:213–223). The page contradicted itself; the claim it
    wants — the set of ids is closed and written in Java — survives, and now
    says three constants and three literals.~~ *(overtaken: the page says the set of chains is open (`client/renderer/GameRenderer.java`:107, :462-464) — pass 8, session L)*
-3. **`reference/submit-phases`:64** said a quad-particle group is submitted
+3. ~~**`reference/submit-phases`:64** said a quad-particle group is submitted
    **once** and lands in two phases. `SubmitNodeCollection.submitQuadParticleGroup`
    (`SubmitNodeCollection.java`:250–253) builds **two** separate
    `QuadParticleFeatureRenderer.Submit` records, one into `solid` and one into
    `afterTerrain`. `particles`:287 said twice and was right; the Reference page
    said once and was wrong. Now "reaches the collector in one call and becomes
-   two nodes".
+   two nodes".~~ *(checked (`SubmitNodeCollection.java`:346-349) — pass 8, session O)*
 4. ~~**`rendering/the-window`:197** said "An atlas is assembled into one with
    `NativeImage.copyRect`, `NativeImage.resizeSubRectTo` and
    `NativeImage.fillRect`". None of the three assembles an atlas.
@@ -14284,11 +15159,11 @@ itself. Corrections first, then the claims the session introduced, which pass
     with `Window.updateFullscreenIfChanged`, which `the-window`:166 states and
     `the-frame` omitted. The zone now has three statements and the first is
     cited to its owner.~~ *(checked (`client/Minecraft.java`:1354-1379); the vsync sentence beside it was wrong on both halves — see *Pass 8, session L* — pass 8, session L)*
-11. **`reference/naming-drift`:396** said the frame "builds an immutable
+11. ~~**`reference/naming-drift`:396** said the frame "builds an immutable
     render state **on the game thread**". Both halves run on the Render thread
     (`Minecraft.renderFrame`), and the glossary already retired *immutable*
     for the top-level states. Reworded to "copies the live game into render
-    state and then draws from that copy, both halves on the Render thread".
+    state and then draws from that copy, both halves on the Render thread".~~ *(checked: both halves on the Render thread (`Minecraft.java`:1406, :1429) — pass 8, session O)*
 12. ~~**`world/lighting`:354** cited `section-meshing#a-click-and-the-flag-it-leaves-behind`
     for the `hasAllNeighbors` light gate, which is two sections later under
     *The sweep that only looks at what you can see*. The anchor existed, so
@@ -14299,12 +15174,12 @@ itself. Corrections first, then the claims the session introduced, which pass
     the name is gone and `ModelBlockRenderer` does the tesselating, and
     `BlockAndTintGetter.getShade` is separated out as the one with no
     successor at all.~~ *(checked for `BlockRenderDispatcher`; *getShade has no successor* was wrong (`client/renderer/block/BlockAndTintGetter.java`:59) — see *Pass 8, session L* — pass 8, session L)*
-14. **`reference/submit-phases`:31** said three phases are a
+14. ~~**`reference/submit-phases`:31** said three phases are a
     `TranslucentFeatureRenderPhase` without saying which. They are rows 4, 7
     and 8 — `seeThroughNameTags`, `translucentBlocksAndItems`,
     `translucentModels` (`SubmitNodeCollection.java`:55–69) — and not the ones
     the names suggest. The count was an unenumerated assertion on a page whose
-    whole job is enumeration.
+    whole job is enumeration.~~ *(overtaken by V2: rows 6, 7 and 15, checked — pass 8, session O)*
 
 ### Suspicions re-derived and found sound — a strike is a claim
 
@@ -14330,11 +15205,11 @@ itself. Corrections first, then the claims the session introduced, which pass
 
 **Ownership moves, each stated once and cited everywhere else.**
 
-- The **merging rule** moved from `reference/submit-phases`:31–44 to
+- ~~The **merging rule** moved from `reference/submit-phases`:31–44 to
   `entity-rendering`'s *prepare* section, with the two phase classes, the
   batch-key explanation, `RenderTypeFeatureRenderer.Group` and
   `RenderType.canConsolidateConsecutiveGeometry` moving with it. The Reference
-  page keeps the 12:3 split, now enumerated, and a link.
+  page keeps the 12:3 split, now enumerated, and a link.~~ *(checked; the renderer's merging sentence beside it named one of the two merges, corrected this session — pass 8, session O)*
 - ~~The **two baked block-model tables** settled to `block-entity-rendering`
   (its scenario, its figure); `models-and-atlases` keeps the `BlockModel`
   naming trap and a link.~~ *(checked (`client/resources/model/ModelManager.java`:69-70, :323-324; `models-and-atlases` keeps the trap and links here) — pass 8, session L)*
@@ -14572,7 +15447,7 @@ claims the session introduced, which pass 9 checks before anything else.*
     acknowledgement arrives", and then said in its own next clause that the
     source appears with no round trip. The window holds the *old* state, not
     the write. Corrected.~~ *(checked (`client/multiplayer/ClientLevel.java`:240–247; `client/multiplayer/prediction/BlockStatePredictionHandler.java`:21–24) — pass 8, session D)*
-13. **`reference/hud-elements`** — three defects in the table, all found by
+13. ~~**`reference/hud-elements`** — three defects in the table, all found by
     reading `Hud.extractRenderState` and `Gui.extractRenderState` against it.
     (a) `SpectatorGui.extractAction` (`Hud.java`:615) is a recorded element
     and had no row; it is the *else* of the selected-item-name row. Added as
@@ -14584,11 +15459,11 @@ claims the session introduced, which pass 9 checks before anything else.*
     what `sound-engine`'s hook turns on. Both rewritten. (c) The second table
     said `Gui` records four elements "after the overlay or screen" without
     ever giving the overlay or screen a row, so the record order had a hole
-    in it. Added as a dash row.
-14. **`reference/glossary`:370-371** defined *Level* as the two subclasses
+    in it. Added as a dash row.~~ *(checked; `SpectatorGui`'s own gate was missing from row 17b, corrected this session — pass 8, session O)*
+14. ~~**`reference/glossary`:370-371** defined *Level* as the two subclasses
     "sharing an abstract `Level` and remarkably little else", where
     `the-client-level`'s whole comparison is of methods both sides *inherit*
-    and one side hollows out. Rewritten to say that.
+    and one side hollows out. Rewritten to say that.~~ *(checked; *a number in two other places* missed the enchantment level, corrected this session — pass 8, session O)*
 15. ~~**`anatomy/what-this-book-skips`:375** wrote "the channel pool" and "the
     channel pools" in the passage that forwards to a page whose own heading is
     *The channel limits are counters, not pools*. Reworded, and the forward
@@ -14904,8 +15779,8 @@ name it the same way.
   reporting (already out of scope on `what-this-book-skips`), the server list
   and its screen (Part XI's to draw), and the boss-bar feed, whose sending
   side has no owner anywhere in the book.~~ *(checked (490 classes, 38,711 lines; `network/protocol` the largest block); the boss-bar feed is taught on scores, teams and stored data — see *Pass 8, session I*, correction 14 — pass 8, session I)*
-- *Reference this part uses* now lists `level-data-and-rules`, which a page of
-  the part actually cites, and drops nothing.
+- ~~*Reference this part uses* now lists `level-data-and-rules`, which a page of
+  the part actually cites, and drops nothing.~~ *(checked: a page of each of the five parts cites it — pass 8, session O)*
 
 **`networking/the-connection`.**
 - ~~Keep-alive is stated as the *common* listener's, so it runs in
@@ -15048,12 +15923,12 @@ material.**
   well as the phase walk; `reference/threads` gains a link to
   `protocol-phases#login` for the state machine it was explaining.~~ *(checked: the link lands on `networking/the-connection`:217, the local channel's pipeline; `reference/threads`:80 links `protocol-phases#login`, the heading at `networking/protocol-phases`:145 — pass 8, session B)*
 - ~~`player/player-anatomy` and `player/README`: correction 11.~~ *(checked (the same) — pass 8, session H)*
-- `src/lectures.md` and `src/reference/glossary.md` re-synced: the Part IX
+- ~~`src/lectures.md` and `src/reference/glossary.md` re-synced: the Part IX
   shape paragraph follows the landing page, the jitter clause follows its
   owner (`the-client-loop` says *most*), *Protocol phase* spells
   *handshaking* as the page does, and *Packet* drops the unsupported "roughly
   half the implementations are records" for "three shapes", which is what the
-  owner says. Six glossary owner links gain anchors.
+  owner says. Six glossary owner links gain anchors.~~ *(checked — pass 8, session O)*
 
 **Anchors.** Part IX carried **7 anchors on 62 cross-part links** before this
 session — the sixth part running to arrive with almost none — and carries 67
@@ -15062,10 +15937,10 @@ answer; `check_links.py` proves only that the heading exists.
 
 ### For pass 9's attention, found and not fixed
 
-- `reference/glossary`:437-440 previously said "roughly half the
+- ~~`reference/glossary`:437-440 previously said "roughly half the
   implementations [of `Packet`] are records", which no page supports; it now
   says "three shapes", which the owner page does support but does not count.
-  A count either page could state and neither does.
+  A count either page could state and neither does.~~ *(checked; the wire-form sentence and *a few types* beside it were wrong (every class declares its own `STREAM_CODEC`; 24 types sit in more than one phase), corrected this session — pass 8, session O)*
 - ~~`chat-and-signing`:139-140 counts "the first fifteen rows" of its check
   table by hand; correct as it stands, and wrong the moment a row is added.~~ *(checked (eighteen rows, fifteen and three) — pass 8, session I)*
 - ~~`chat-and-signing`:100-101 uses "expired" for `hasExpiredServer`, which is
@@ -15311,14 +16186,14 @@ named section is the answer. The cuts, each *from* → *to*:
 - ~~`player/README`:57-59 said Part VII owns the inventory; `items/README`:38-41
   and `player-anatomy` say Part VIII does. The landing page and
   `src/lectures.md`:211-212 both fixed in Part VIII's favour. (`pass5.md`:2983.)~~ *(checked (`items/README`; `lectures.md`:214–215) — pass 8, session H)*
-- `reference/glossary.md`: **Avatar** led on the renderer, which the page no
+- ~~`reference/glossary.md`: **Avatar** led on the renderer, which the page no
   longer says; **LocalPlayer** claimed "its own prediction", which
   `player-anatomy`:190 explicitly denies (`MultiPlayerGameMode.startPrediction`
   reaches `ClientLevel.getBlockStatePredictionHandler` per call). Both
-  rewritten to the pages, with anchors.
-- `reference/level-data-and-rules`:16-19 sent readers to Part VIII "for the
+  rewritten to the pages, with anchors.~~ *(checked (`Avatar.java`:13-56; `MultiPlayerGameMode.java`:299-300) — pass 8, session O)*
+- ~~`reference/level-data-and-rules`:16-19 sent readers to Part VIII "for the
   spawn"; no Part VIII page explains spawn or respawn. Repointed to what
-  Part VIII actually reads there — the two movement game rules.
+  Part VIII actually reads there — the two movement game rules.~~ *(checked; *IX for the rule values a client asks for by name* was false (the request names nothing), corrected this session — pass 8, session O)*
 - ~~`player/README`'s figure node called the spear "the same hit, twice"; the
   page says two different attacks sharing a tail. Node reworded.~~ *(checked (`server/network/ServerGamePacketListenerImpl.java`:1480; `world/item/ItemStack.java`:1198–1201) — pass 8, session H)*
 
@@ -15631,19 +16506,19 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   The package holds `Activity.java` and `package-info.java` and nothing else;
   the day plan is a `Timeline`. The gloss read as the opposite of
   `ai-goals-and-brains`' hook, which is that *Schedule* does not exist in 26.2.~~ *(checked (`world/entity/schedule/` holds `Activity` alone) — pass 8, session F)*
-- **`reference/non-living-damage`:8, "twelve of the rows below inherit it
+- ~~**`reference/non-living-damage`:8, "twelve of the rows below inherit it
   unchanged".** Thirteen. There are nine declarations of `Entity.hurtClient`,
   one of them the base default; seven of the eight overriders are rows in this
   table (`RemotePlayer` is a `LivingEntity`), `MinecartTNT` inherits
   `VehicleEntity`'s, and 21 − 7 − 1 = 13. ([pass5.md](pass5.md):578 carried the
-  same wrong arithmetic and is corrected in place.)
-- **`reference/non-living-damage`:46 compressed the creative branch past
+  same wrong arithmetic and is corrected in place.)~~ *(checked as the page now states it (22 rows since session F added `Cushion`); *answers only whether a swing plays its effects* beside it was false, corrected this session — pass 8, session O)*
+- ~~**`reference/non-living-damage`:46 compressed the creative branch past
   truth.** "a creative player skips to `Entity.discard`" —
   `VehicleEntity.hurtServer` (`VehicleEntity.java`:36-73) applies the hurt
   direction, the hurt timer, `Entity.markHurt` and the ×10 accumulator *before*
   the creative test, which only redirects the destruction.
   `damage-and-death`:384-386 had it right; the catalogue contradicted its own
-  lecture.
+  lecture.~~ *(checked on the order; *only redirects the destruction* hid that a creative hit discards at once (`VehicleEntity.java`:66-69), corrected this session — pass 8, session O)*
 - ~~**`ai-goals-and-brains`:383 said "everything it will ever do".** A zombie
   gains a thirteenth goal outside `Mob.registerGoals`:
   `Zombie.setCanBreakDoors` inserts a `BreakDoorGoal` at priority 1
@@ -15758,8 +16633,8 @@ a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
   returns nothing unless the fall exceeded five blocks or the alternative's
   damage did. The `Entity.hurtServer` side-enforcement stated in place instead
   of handed forward to `authority`, which never explained it.~~ *(wrong in part: 26.3's `Cushion` makes twenty-two, and the two-block example and *fell out of the world* were wrong — see *Pass 8, session F*, corrections 213, 216 — pass 8, session F)*
-- **`reference/non-living-damage`.** An `Entity.hurtClient` column, twenty-one
-  rows, from the seven declarations plus the inherited default.
+- ~~**`reference/non-living-damage`.** An `Entity.hurtClient` column, twenty-one
+  rows, from the seven declarations plus the inherited default.~~ *(checked at 22 rows, eight declarations — pass 8, session O)*
 - ~~**`server-level-tick`.** The census kept as the tick's own cost ("walking
   every entity in the dimension is what this step costs, once a tick") with the
   cap arithmetic cut to a citation.~~ *(checked (`server/level/ServerChunkCache.java`:379–381) except, beside it, *the whole spawning half is behind `SPAWN_MOBS`*: the census and the thunder run with it off (:379–409) — see *Pass 8, session C* — pass 8, session C)*
@@ -15808,7 +16683,7 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
 
 ### Corrections — decompile open
 
-- **`reference/block-update-flags`, bit 4.** The row said
+- ~~**`reference/block-update-flags`, bit 4.** The row said
   `Block.UPDATE_INVISIBLE` "suppresses whichever of those the side does",
   i.e. on both sides. `Level.java`:237 is the only reader of bit 4 in the
   game and the test sits inside the client-side arm:
@@ -15816,7 +16691,7 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   (isClientSide() || chunk.getFullStatus()…)`. The server's extra condition is
   the chunk status, never bit 4, so a *server* write carrying bit 4 still
   broadcasts. The row now says so. `blocks-and-states`:291-295 already had it
-  right, so this was a Reference page contradicting its own lecture.
+  right, so this was a Reference page contradicting its own lecture.~~ *(checked (`Level.java`:231); the row now says bit 4 matters on the server only with bit 2, corrected this session — pass 8, session O)*
 - ~~**`world/scheduled-ticks`, `DiodeBlock.shouldPrioritize`.** The deleted
   paragraph said `TickPriority.EXTREMELY_HIGH` is picked "when the block it
   powers is itself a diode **that is not pointing straight back at it**".
@@ -15854,12 +16729,12 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   `SignalGetter.hasNeighborSignal` at > 0 (:73-74). The antecedent is now the
   methods, and the sentence says explicitly that a fan-out never stops early.
   This is [pass5.md](pass5.md):727's second half, confirmed.~~ *(checked (`world/level/SignalGetter.java`:22–42, :73–74, :86–88) — pass 8, session E)*
-- **`reference/glossary`, *Block event*.** Said the queue means a block event
+- ~~**`reference/glossary`, *Block event*.** Said the queue means a block event
   "lands late, usually within the same tick", which inverts
   `pistons-and-block-events`' argument ("a block event is a tick late" is only
   sometimes true; the queue is a wait for a named phase, not a delay). The
   entry now says a wait for a phase, and carries the owner's anchor. The page
-  won, per the summariser rule.
+  won, per the summariser rule.~~ *(checked (`ServerLevel.java`:1325-1326, :388-390) — pass 8, session O)*
 
 ### Suspicions re-derived and found sound — a strike is a claim
 
@@ -15961,14 +16836,14 @@ because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
   placeholder and its cargo in the chunk packet — which pays off
   `block-entities`:52-54's citation, previously landing on a page that did not
   carry the fact.~~ *(checked (`world/level/block/entity/BellBlockEntity.java`:103 and six more `.blockEvent` callers) — pass 8, session E)*
-- **`reference/block-update-flags`** gains a second table decomposing all four
+- ~~**`reference/block-update-flags`** gains a second table decomposing all four
   named combinations (3 = 1+2, 11 = 1+2+8, 260 = 4+256, 816 = 16+32+256+512,
   all read off `Block.java`:95-108) with a *where the book meets it* column
   claiming 260 and 816 are spent nowhere in the corpus; bit 128's row now says
   the skip is keyed on the **target** and that only the experimental evaluator
   sets it; and `Block.UPDATE_LIMIT`'s paragraph now names the distinction from
   the chain budget. Its opener stops enumerating three of the seven pages that
-  spend a flag word.
+  spend a flag word.~~ *(checked; *spent nowhere* for 260 missed the pistons' 324 and 276, corrected this session — pass 8, session O)*
 - ~~**`networking/what-the-client-is-told`** receives the fact that
   `ChunkHolder.broadcastChanges` "reads the level again when it builds the
   packet", so the set holds positions and not values and a whole cascade is
@@ -16072,10 +16947,10 @@ tool bug, and it had been hiding broken links.
   **empty** map, which is what `environment-attributes-and-timelines`:221 says.
   **Now:** the networking page says the map is empty and that clock state travels
   only on a change or a join, with the owner's anchor.~~ *(checked (`server/MinecraftServer.java`:1282); *only when a clock is changed or a player joins* was wrong — see *Pass 8, session I*, correction 127 — pass 8, session I)*
-- `reference/level-data-and-rules`:47 sent the reader to `server/server-tick`
+- ~~`reference/level-data-and-rules`:47 sent the reader to `server/server-tick`
   for day time; that page does not own it, `environment-attributes-and-timelines`
   does, and the environment page was claiming this Reference page pointed at it.
-  **Now:** repointed to `#who-owns-the-clock`, so the hand-forward is paid.
+  **Now:** repointed to `#who-owns-the-clock`, so the hand-forward is paid.~~ *(checked: the anchor is the clock's owner — pass 8, session O)*
 
 ### Suspicions re-derived and found sound — a strike is a claim
 
@@ -16120,10 +16995,10 @@ tool bug, and it had been hiding broken links.
   "nothing asks for a chunk *because* it is loaded", chunk anatomy's *distinct*).
   The Reference list gains `reference/registries.md` with the claim that three
   of the part's mechanisms are registry-backed.~~ *(checked except: the *about 2,900 lines … in six other parts* sentence is overtaken (the section now opens on the generated coverage phrase); the border's reason (`server/level/ServerLevel.java`:343–344 is its tick step); the sensor's *at least one tick* (not for a player); and *three* registry-backed mechanisms (eight) — see *Pass 8, session D* — pass 8, session D)*
-- `src/lectures.md` — Part IV's shape paragraph now counts the conveyor the way
+- ~~`src/lectures.md` — Part IV's shape paragraph now counts the conveyor the way
   the landing page does (four pages plus a vocabulary page, not five), and
   lighting's blurb no longer says *self-contained*: it says nothing later in the
-  part assumes it and Part XI does.
+  part assumes it and Part XI does.~~ *(checked — pass 8, session O)*
 - ~~`world/tickets-and-loading` — a new paragraph claims `ChunkResult` is the
   two-case type all three holder futures carry and that
   `ChunkHolder.UNLOADED_LEVEL_CHUNK` is simply its shared failure, whose message
@@ -16188,10 +17063,10 @@ tool bug, and it had been hiding broken links.
   scheduled-tick section claims only what belongs to the tick — the two calls,
   their order and their budget — citing `scheduled-ticks` for the drain order
   and the cancellation rule.~~ *(checked: `server/level/ServerChunkCache.java`:383, :413–415; `world/level/gamerules/GameRules.java`:65 — pass 8, session C)*
-- `reference/level-data-and-rules` — claims four parts point at it (III, IV,
+- ~~`reference/level-data-and-rules` — claims four parts point at it (III, IV,
   VIII, XII) where it previously named only Part IV and the level tick; claims
   *the border has no lecture* and says why. Its game-rule ids no longer carry
-  hand-copied defaults, because `gamerules.md` generates them.
+  hand-copied defaults, because `gamerules.md` generates them.~~ *(overtaken: five parts — pass 8, session O)*
 - ~~**Eighteen cross-part and nineteen within-part citations gained the owner's
   anchor.** Part IV carried **none** before this session. Each anchor is a claim
   that the named section is the answer; pass 9 should spot-check that the
@@ -16409,12 +17284,12 @@ has exactly five dedicated-only rows.
 - ~~**Anchors on twenty-eight outbound links across the six pages.** An anchor
   asserts that the named section is the answer; `check_links.py` proves the
   heading exists and not that it answers.~~ *(no claim: `check_links.py` proves each anchor, and each linked section was read where its sentence leans on it — pass 8, session C)*
-- **`src/lectures.md`** loses the pair claim (moved to the landing page), and
+- ~~**`src/lectures.md`** loses the pair claim (moved to the landing page), and
   its III-to-IV paragraph now says the level tick's first step "throws away a
   cache" rather than that its "first statement about the day-night cycle"
   rests on the environment page — the page's dependency is the cache, per
   `server-level-tick`:94-105. **`src/reference/README.md`** adds III to
-  *Level data and rules*' parts column, which the landing page now points at.
+  *Level data and rules*' parts column, which the landing page now points at.~~ *(checked (`ServerLevel.java`:338) — pass 8, session O)*
 
 ### For pass 9's attention, found and not fixed
 
@@ -16573,14 +17448,14 @@ whether it is true. The claims introduced:
 
 **`src/lectures.md`**
 
-- The dependency table gained a **membership rule** and three rows and lost
+- ~~The dependency table gained a **membership rule** and three rows and lost
   three. The rule is a claim about the corpus, checkable without the
   decompile: *a page two or more landing pages name under **before you
   start***, less `anatomy/anatomy`, `foundations/codecs-nbt-json` and
   `foundations/identifiers-and-registries`. `tools/check_deps.py` re-derives
   it on every run and fails on a mismatch, so pass 9's job here is to check
-  the rule is the right rule, not the rows.
-- Three new rows carry a new third-column phrase each, and each is a claim
+  the rule is the right rule, not the rows.~~ *(checked (`check_deps.py`:66); *the three pages those two universal parts contribute* miscounted (they put six into the set), corrected this session — pass 8, session O)*
+- ~~Three new rows carry a new third-column phrase each, and each is a claim
   about why a part depends on the page, re-derived from the depending
   landing pages' own sentences: **`resource-system`** — "the staged load and
   its barrier: a server's own data at startup, where recipes and loot tables
@@ -16591,24 +17466,24 @@ whether it is true. The claims introduced:
   `commands/README`; the "most" rests on `worldgen/README`'s existing
   twenty-six-of-fifty-six claim); **`text-components`** — "what a chat
   message and a screen's label are before anything draws them" (from
-  `networking/README`, `client/README`).
-- "Watched straight through, the sidebar order still needs one departure
+  `networking/README`, `client/README`).~~ *(checked against the depending landing pages — pass 8, session O)*
+- ~~"Watched straight through, the sidebar order still needs one departure
   from itself, and it is now as small as it can be" — the claim is that
   moving *environment attributes and timelines* to first in Part IV leaves
   exactly one out-of-order watch (Part IV lecture 1 before Part III lecture
   2) and that no other part's order departs. `check_deps.py` checks the
   three orders agree; the "one departure" is the session's own reading of
-  the graph.
-- **102 blurbs cut.** Each was a second copy of a line on a landing page.
+  the graph.~~ *(checked: two dashed arcs — pass 8, session O)*
+- ~~**102 blurbs cut.** Each was a second copy of a line on a landing page.
   The ordering claims inside them were kept and are quoted unchanged; the
   descriptions were dropped, not moved, because the landing page has them.
   Pass 9 should read the kept clauses against the landing pages rather than
   against the source: the risk is a clause that lost its subject in the cut,
-  not a fact that changed.
-- The new second paragraph ("Because the subject here is the order, nothing
-  below describes a lecture…") is a claim about the page itself.
-- "one page until this pass" became "two pages that were one" — a
-  pass-number rot fix, no claim.
+  not a fact that changed.~~ *(checked, with the exceptions corrected in the page against itself — pass 8, session O)*
+- ~~The new second paragraph ("Because the subject here is the order, nothing
+  below describes a lecture…") is a claim about the page itself.~~ *(checked — pass 8, session O)*
+- ~~"one page until this pass" became "two pages that were one" — a
+  pass-number rot fix, no claim.~~ *(no claim — pass 8, session O)*
 
 **`src/SUMMARY.md`** — *environment attributes and timelines* is now first
 in Part IV. Nothing else moved; no URL changed (mdBook derives the path from
@@ -16660,12 +17535,12 @@ shapes they must accept.
 No system page rewritten. Three claims introduced, all in the frame and the
 atlas:
 
-- `src/introduction.md` — the *Verified means tested* paragraph now says
+- ~~`src/introduction.md` — the *Verified means tested* paragraph now says
   "every link and anchor between pages is checked to land" and "a page that
   fails any of those does not go up": the claim is that `tools/check_links.py`
   runs in `tools/deploy.sh` before the build and exits non-zero on a broken
   link, anchor, include, `SUMMARY.md` entry or redirect (`tools/deploy.sh`,
-  the line after `check_deps.py`).
+  the line after `check_deps.py`).~~ *(checked: `check_links.py` runs before the build and fails the deploy — pass 8, session O)*
 - ~~`src/maps/packages.md` — the *Where each part lives* table is now
   `src/generated/parts.md`, written from `map_source.py`'s `PARTS`. The
   mapping is a set of claims about which packages each part covers, and it

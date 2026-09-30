@@ -14,8 +14,7 @@ from `tools/map_source.py`, which reads all 7,301 files — but the four pages
 are not all one thing, and the distinction matters as much here as on the
 [Reference shelf](../reference/README.md). **The figures and the tables are
 generated**: they live in *src/generated/*, are rewritten on every deploy, and
-cannot drift from the source they describe. **The prose is written by a
-person**, and every number quoted in a sentence was typed by a session, read
+cannot drift from the source they describe. **The prose is typed**, and every number quoted in a sentence was typed by a session, read
 off one of those tables or counted from the tree where no table holds it. So a
 version bump re-derives the tables by itself and leaves the sentences around
 them to be re-read, which is what the version pass is for.
@@ -24,11 +23,11 @@ them to be re-read, which is what the version pass is for.
 flowchart LR
     D[("the 26.3 decompile")] --> T["map_source.py, on every deploy"] --> G["seven figures, seven tables"]
     G -- "included as they are" --> P["the four map pages"]
-    G -- "read and typed by a person" --> S["the sentences"] --> P
+    G -- "read and typed by a session" --> S["the sentences"] --> P
     D -. "or counted from it where no table holds the number" .-> S
 ```
 
-*The two routes into an atlas page: the figures and tables arrive by the upper one and cannot drift, and the sentences arrive by the lower one, typed by a person, which is the route a version bump has to walk again by hand.*
+*The two routes into an atlas page: the figures and tables arrive by the upper one and cannot drift, and the sentences arrive by the lower one, typed by a session, which is the route a version bump has to walk again by hand.*
 
 ## The four maps
 

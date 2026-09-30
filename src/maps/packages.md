@@ -1,6 +1,6 @@
 # Where the code is
 
-> Verified against **Minecraft 26.3** · Maps · The jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching is what this book skips.
+> Verified against **Minecraft 26.3** · Maps · The jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching is the packages Part I's *what this book skips* tours.
 
 Java Minecraft is 7,301 classes and 741,069 lines of decompiled Java 25,
 and the first surprise in it is how little of that the client owns alone.
@@ -97,8 +97,7 @@ under `net/minecraft` is written without that prefix; *itself only* means
 the files directly in the package and not its sub-packages; a package two
 parts share is counted in both and a file in no part's packages in none, so
 the total row is not the jar's. A landing page that states its part's size
-quotes its own row of this table, and everything the book skips is left out
-of every row.
+quotes its own row of this table, and the hatched packages and player reporting are left out of every row.
 
 {{#include ../generated/parts.md}}
 

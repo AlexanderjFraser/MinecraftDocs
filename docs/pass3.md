@@ -1446,7 +1446,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   named in the book only as rows of `reference/level-data-and-rules`' table of
   what a save holds: what a map records as a player walks, how its colours and
   decorations reach the client, and when the trader is due are explained
-  nowhere. Declared, not taught; a second edition's.
+  nowhere. Declared, not taught; a second edition's. *(pass 8, session O)* Now declared on `what-this-book-skips`' *Named, and not yet written*, beside the other gaps with no page.
 
 - **Part III's unnamed classes, `ServerEntityGetter` the largest.** *(pass 5,
   session F's finding; carried here by pass 8's session C, 2026-09-26, which
@@ -1473,7 +1473,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   teaches — and that twenty-one files across entities, blocks, projectiles and the server's packet listener call. Beside it, six
   of `world/attribute/modifier`'s eight classes (305). The landing page's
   *Where the part stops* now names both; no lecture explains either. Declared,
-  not taught; a second edition's.
+  not taught; a second edition's. *(pass 8, session O)* Two corrections: `world/README` frames both libraries as shapes the pages teach, not as undeclared; and the callers re-derive to twenty outside the package and its two declarers, `StructureTemplate`, `TreeGrower`, `WorldGenRegion` and `ImposterProtoChunk` among them.
 
 - **`net/minecraft/core/dispenser` has no owner, and Part II's landing page
   now says so.** *(pass 6, session B.)* Thirteen classes and 1,090 lines —
@@ -1485,7 +1485,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   *Where the part stops* declines them on those grounds rather than leaving
   them silent, which is the treatment `what-this-book-skips` gives a family
   the book does not teach. If a second edition wants them, they belong beside
-  Part V's block-interaction ledger, not here.
+  Part V's block-interaction ledger, not here. *(pass 8, session O)* The count is thirteen classes and 1,094 lines, and the twelve beside `DispenseItemBehavior` include the `BlockSource` record, which implements nothing; the landing page's count is the one to quote.
 
 - **The world border has no lecture, and this is the ruling that says so.**
   *(pass 5, session D.)* `WorldBorder` is 573 lines in Part IV's packages and
@@ -1536,14 +1536,14 @@ writes one strikes it through; a session that rules one out says why, here.*
   interest; and fire spread (`FireBlock` 517, `BaseFireBlock` 215), named only
   for `FireBlock.bootStrap`. The landing page declares three unowned mechanisms
   (the hopper, sculk spread, the state-machine family) and now says *three
-  … are declared here* rather than implying they are all.
+  … are declared here* rather than implying they are all. *(pass 8, session O)* Now declared on `what-this-book-skips`' *Named, and not yet written*.
 - **Four block-entity state machines half-adopted by other parts.** *(pass 5,
   session E; carried here by pass 6's planning session.)* `BeaconBlockEntity`
   (434 lines), `ConduitBlockEntity` (300), and the *trialspawner* (642
   unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
   named on Part VI and Part VII pages while their state machines are explained
   nowhere. The same shape as the hopper, declared the same way, and waiting for
-  the same edition.
+  the same edition. *(pass 8, session O)* `ConduitBlockEntity` is 292 lines, not 300.
 - ~~**The abstract `Level` itself**~~ — **written by session C of pass 5** as
   a paragraph after `server-level-tick`'s cast: what `Level` holds on both
   sides, what it leaves abstract, and what `ServerLevel` adds, ending on the
@@ -1725,7 +1725,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   **villager gossip** (`GossipContainer`, 274 lines, no owner anywhere — not
   `ai-goals-and-brains`' scenario and not `points-of-interest`'). The landing
   page declares all four rather than leaving the silence unexplained. A second
-  edition should take them; nothing before pass 10 should.
+  edition should take them; nothing before pass 10 should. *(pass 8, session O)* Its detail has drifted: the part is 67% named, not 40%; three pages name the minecart; `Raid` is on `points-of-interest`, `entity-lifecycle` and `scoreboard-and-data`.
 - ~~**Commands that are algorithms**~~ — `SpreadPlayersCommand`,
   `CloneCommands`, `ChaseCommand` (a debug socket protocol between two game
   instances). Part XIII, or Reference. **Session P: carried.** Three
@@ -1809,7 +1809,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   `equipment/trim`, used by Part VIII and drawn by Part XI and explained by
   neither. All four are named and declined on `items/README`; a second edition
   should take them, and villager trading is the one that most looks like a
-  page of its own.
+  page of its own. *(pass 8, session O)* Stale against 26.3: there is no `PotionBrewing` — brewing is `BrewingRecipe` and `BrewingInput` in `world/item/crafting` and the `BrewingFuel` component, as the landing page says; `CreativeModeTabs` is not the largest class in `world/item` (`Items` is); and the part is 581 files and 49,245 lines, 27% unnamed.
 
 - **Part VIII's coverage answer, which is mostly *yes*** *(pass 5, session H)*.
   Part VIII is the smallest part in the book — 29 classes and 8,135 lines —
@@ -1831,7 +1831,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   between them: what one player lying down does over the following hundred
   ticks, which refusal a bed answers with and why, and how the two halves
   meet. It is a section on a Part VIII page or a short page of its own, and it
-  is the one thing in these packages a reader will look for and not find.
+  is the one thing in these packages a reader will look for and not find. *(pass 8, session O)* The part is 32 files and 8,460 lines now, 99% named.
 
 - **Four names Part VIII carries and no page explains** *(pass 5, session H)*.
   Each is a method or field named in a list on a page that promises no
@@ -1841,7 +1841,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   what accumulates into or what reads; and `ServerPlayer.camera` with the
   camera-entity handoff behind `/spectate`, which has no owner page at all.
   The last is the largest — a spectator's camera entity is a real mechanism
-  and Part VIII, Part X and Part XIII each touch it and none explains it.
+  and Part VIII, Part X and Part XIII each touch it and none explains it. *(pass 8, session O)* Now declared on `what-this-book-skips`' *Named, and not yet written*; the names still sit in lists on `the-sword-swing` and `player-anatomy`. A second edition's.
 
 - ~~**Reference views `gen_reference.py` does not yet have**~~ — **all three
   built and published by pass 5's session N (2026-09-07)**:
@@ -1900,7 +1900,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   wrappers on `block-entity-rendering`, `ChunkSectionLayerGroup` and `ViewArea`
   and `TranslucencyPointOfView` on `visibility-and-the-frame-graph`, and the
   particle family sentence with `ParticleOptions` on `particles`. **No new
-  page, and no row carried forward.**
+  page, and no row carried forward.** *(pass 8, session O)* Its *`client/renderer/feature` and `client/renderer/gizmos` are the Reference tier's* is declared nowhere: `submit-phases` carries the feature renderers, and the skips page's declined table says nothing carries `client/renderer/gizmos`.
 
 - **Three homeless pass-3 cuts in Part XI, all placed** *(pass 5, session K)*.
   `RenderSystem.outputColorTextureOverride` / `outputDepthTextureOverride` —
@@ -1912,6 +1912,37 @@ writes one strikes it through; a session that rules one out says why, here.*
   uniform needs. The second `MaterialBaker`
   behind the block-atlas rule is named on `models-and-atlases` and the rule it
   is behind is stated there; nothing further is owed.
+
+- **Pass 8's own gaps, declared and not written** *(pass 8, session O)*. Pass 8 adds nothing (R10), so each gap a session
+  found goes here and is named where the book says what it skips. Five are declared on
+  `what-this-book-skips`' *Named, and not yet written* and had no entry here: the **carver tunnel walk**
+  (Part XII's packages); the **dragon fight**, `EnderDragonFight`, in `world/level/dimension/end`, which
+  is in no part (§7's dragon entry is the flight phases, a different mechanism); `client/multiplayer`'s
+  **joining-a-server tail** (Parts IX and X); the **server-resource-pack** prompt and download flow in
+  `client/resources/server` (Part X); and **linkfs** (`server/packs/linkfs`, Part II). Beside them, Part
+  II's `net/minecraft/util` grab-bag, which `foundations/README` declines as a family. A second edition's.
+
+- **Local difficulty has no lecture** *(pass 8, session O)*. `DifficultyInstance` and `ServerLevel.getCurrentDifficultyAt`
+  — inhabited time, the overworld clock and the moon phase — are explained on
+  `reference/level-data-and-rules` alone, a mechanism on the shelf, and their consumers are Part VI's
+  mobs (pass5.md's Session F entry, ruled second edition this session). Declared on
+  `what-this-book-skips`. A second edition's, in Part VI.
+
+- **The 1.21.11 → 26.3 drift the naming table lacks** *(pass 8, session O)*. `reference/naming-drift` was measured against
+  the 1.21.11 tree this session: most of its 309 rows record drift that had happened by 1.21.11, and
+  about thirty-five names a 1.21.11 reader will reach for and 26.3 moved have no row — among them the
+  pages' own 1.21 notes' *ItemBlockRenderTypes*, *BedRenderer*, *BlockModelDefinition*,
+  *ParticleFeatureRenderer* and *LootItemFunctionType*. The page now says it is not exhaustive even over
+  the corpus. The list is in session O's fact-check reports (naming-drift, both halves); the rows are a
+  second edition's.
+
+- **The declined table's families with no entry** *(pass 8, session O)*. `what-this-book-skips`' declined table names
+  families this queue never recorded: the Vulkan backend and the OpenGL interiors, the sixteen animation
+  definitions in `client/animation`, the worldgen features and tree kits as a catalogue, and
+  `client/quickplay`, `client/profiling` and `client/renderer/gizmos`. Each is declined with its reason
+  on that page; they are recorded here so the queue and the page agree. Part XII's landing page also
+  declines block predicates, height providers, state providers, rule tests and material rules as families
+  that the skips page's catalogue row does not list. Nothing owed but agreement.
 
 ---
 

@@ -161,11 +161,7 @@ try at a time.
 
 The species it was about to build came from a list, and that list has a
 hard-coded exception in front of it. `NaturalSpawner.mobsAt` asks
-`ChunkGenerator.getMobsAt`, which walks the structures at the position and,
-for the first one declaring a `StructureSpawnOverride` for this category,
-**replaces the biome's list entirely** with the structure's — inside a piece
-or inside the whole start, depending on the override's
-`StructureSpawnOverride.BoundingBoxType`. That is how an ocean monument spawns
+`ChunkGenerator.getMobsAt`, which walks the structures the position's chunk references and, for the first one that declares a `StructureSpawnOverride` for this category and whose box — a piece's or the whole start's, depending on the override's `StructureSpawnOverride.BoundingBoxType` — contains the position, **replaces the biome's list entirely** with the structure's. That is how an ocean monument spawns
 guardians and empties itself of axolotls, and it is a data-pack field
 (*spawn_overrides*) on the structure. Fifty-two shipped structures carry the
 field and **six** fill it in — and of the twenty-three overrides those six

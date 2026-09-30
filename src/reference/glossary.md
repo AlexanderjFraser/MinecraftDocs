@@ -1,17 +1,15 @@
 # Glossary
 
-> Verified against **Minecraft 26.3** · Reference · One sentence
+> Verified against **Minecraft 26.3** · Reference · A short entry
 > per term the rest of the corpus uses, and a link to the page that owns it.
 
 Every page in this corpus assumes the vocabulary of the pages before it.
 That is deliberate — a lecture that redefines "chunk holder" every time it
 appears is unwatchable — but it means a reader who arrives in the middle
-has no way back. This page is the way back: the terms, alphabetically, one
-sentence each, each pointing at the page where the term is actually
+has no way back. This page is the way back: the terms, alphabetically, a short entry each, each pointing at the page where the term is actually
 explained.
 
-A sentence here is a *reminder*, not a definition to rely on. If the
-sentence is all you needed, good; if it is not, the link is the point of
+An entry here is a *reminder*, not a definition to rely on. If the entry is all you needed, good; if it is not, the link is the point of
 the entry. Where a term is a class name, the class name is the entry —
 this corpus uses Mojang's names for concepts as well as for types, and
 inventing a second vocabulary to sit beside them would only double the
@@ -39,7 +37,7 @@ all of the rest for a `MessageArgument`; vanilla's live in
 `ArgumentTypeInfo`. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
 
 **Atlas** — one large texture stitched at load time out of many sprite
-files, so a chunk section can be drawn with a single bound texture. → [models and atlases](../systems/rendering/models-and-atlases.md)
+files, so a chunk section's quads can all be drawn with one bound colour texture. → [models and atlases](../systems/rendering/models-and-atlases.md)
 
 **Attribute** — a named, ranged, modifiable number on a `LivingEntity`;
 modifiers are keyed by `Identifier`, and eight attributes are not
@@ -76,10 +74,7 @@ tick; unless it overrides `Behavior.canStillUse` it stops inside the same
 environment attributes, attached to a 4×4×4 volume of the world; its mob
 spawns are one of those attributes. → [biomes](../systems/worldgen/biomes.md)
 
-**BiomeSource** — the object that answers "which biome is at this quart
-position", through the `BiomeResolver` it makes: by a climate search, from one
-fixed biome, from a checkerboard of a listed few, or — in the End — off a
-single erosion sample. → [biomes](../systems/worldgen/biomes.md)
+**BiomeSource** — the object that answers "which biome is at this quart position": by a climate search, from one fixed biome, from a checkerboard of a listed few, or, in the End, from the central island's disc and a single erosion sample beyond it; all but the fixed and checkerboard sources make a separate `BiomeResolver` to answer. → [biomes](../systems/worldgen/biomes.md)
 
 **Blaze3D** — Mojang's graphics layer: *com/mojang/blaze3d* keeps
 `RenderSystem`, the window and the frame graph, and the GPU abstraction under
@@ -87,8 +82,7 @@ it is *com/mojang/renderpearl*, with OpenGL and Vulkan backends behind one
 `GpuDevice`. → [Blaze3D](../systems/rendering/blaze3d.md)
 
 **Blend alpha** — the mixing weight `Blender` computes from the distance to
-the nearest measured old column: zero against the seam (use the old
-measurement), one out of range (use the noise). → [blending at the old-chunk border](../systems/worldgen/blending.md)
+the nearest measured old column: zero against the seam, where the old measurement sets the offset and fixed values the factor and jaggedness, and one out of range (use the noise). → [blending at the old-chunk border](../systems/worldgen/blending.md)
 
 **`BlendingData`** — the sixteen-column ring of heights, densities and biomes
 one of these measures out of its **own** chunk's blocks, on the sides
@@ -116,13 +110,11 @@ the global palette. → [blocks and states](../systems/blocks/blocks-and-states.
 post-processing, so a leaf or a fluid there is re-evaluated when the chunk
 goes live. → [blending at the old-chunk border](../systems/worldgen/blending.md)
 
-**Boss bar** — a named server-side `BossEvent` holding a name, a progress
-float and three client effects (darkened screen, boss music, world fog), broadcast to the players attached to it; the
+**Boss bar** — a `ServerBossEvent` holding a name, a progress float, a colour, an overlay style and three client effects (darkened screen, boss music, world fog), broadcast to the players attached to it; the
 `/bossbar` kind adds an integer value and maximum, persists its membership as
 UUIDs, and is `execute store`'s third sink. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again)
 
-**Brain** — the memory-and-behaviour AI used by villagers, piglins and
-axolotls, as opposed to the older goal system. → [AI](../systems/entities/ai-goals-and-brains.md)
+**Brain** — the memory-and-behaviour AI that twenty mob classes build, villagers, piglins and axolotls among them, as opposed to the older goal system. → [AI](../systems/entities/ai-goals-and-brains.md)
 
 **Brigadier** — Mojang's command-parsing library: a tree of literal and
 argument nodes with per-node requirements, shared by client and server. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
@@ -153,13 +145,11 @@ heightmaps, block entities, tick queues and a status. → [chunk anatomy](../sys
 
 **Chunk layer** — which of the three `ChunkSectionLayer` buffers a block's
 quads are meshed into — solid, cutout or translucent — decided at bake time
-from the alpha inside that quad's own patch of its sprite rather than from the
-block; the mesher only reads the answer, except for leaves, which it
+from the alpha inside that quad's own patch of its sprite, unless its material forces translucency, rather than from the block; the mesher only reads the answer, except for leaves, which it
 overrides. → [models and
 atlases](../systems/rendering/models-and-atlases.md#a-quads-chunk-layer-is-read-out-of-the-sprites-pixels)
 
-**ChunkHolder** — the server's per-chunk record of the *level* the two graphs
-computed for it, a future per threshold and status, and what changed in it this
+**ChunkHolder** — the server's per-chunk record of the *level* the loading graph computed for it, a future per threshold and status, and what changed in it this
 tick; which tickets asked for that level is `TicketStorage`'s business, not the
 holder's. → [tickets and loading](../systems/world/tickets-and-loading.md)
 
@@ -178,7 +168,7 @@ against any `DynamicOps`; the corpus's universal serialisation vocabulary. → [
 
 **CommandSourceStack** — *who is running this command, and from where*:
 position, rotation, level, entity, a `PermissionSet` and an output sink,
-immutable, so every `with…` returns a copy. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
+immutable, so a `with…` that changes something returns a copy. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
 
 **Compiled query** — the immutable `EntitySelector` a parse produces:
 thirteen fields and no grammar, resolvable any number of times
@@ -206,8 +196,7 @@ is what the objective counts. → [advancements](../systems/commands/advancement
 damage calculation and death message reads. → [damage and death](../systems/entities/damage-and-death.md)
 
 **Data component** — a typed, codec-backed value keyed by a
-`DataComponentType`: a patch over the item's prototype on a stack, a whole map
-on a block entity, read-only on an entity; what NBT item tags became. → [data components](../systems/foundations/data-components.md)
+`DataComponentType`: a patch over the item's prototype on a stack, a whole map on a block entity, a view over its own fields and its type's prototype on an entity; what NBT item tags became. → [data components](../systems/foundations/data-components.md)
 
 **Data-driven type** — the book's name for the shape a dozen systems share: a
 registry of *types*, each type a codec, and an instance a `Codec` produced from
@@ -224,8 +213,7 @@ in, owned by the light engine and never by the section. → [lighting](../system
 the server for; half the kinds the server polls, diffs and sends only when they change, and the rest it pushes as they happen. → [debugging the running game](../systems/client/debugging-the-running-game.md#the-idea)
 
 **DeltaTracker** — the client's clock: how much of a tick has elapsed, and
-the source of every partial tick in the frame but the lightmap's, which is a
-literal one. → [the client loop](../systems/client/the-client-loop.md)
+the source of every partial tick in the frame but the lightmap's and a frozen camera entity's, each a literal one. → [the client loop](../systems/client/the-client-loop.md)
 
 **Density function** — a node in the JSON-defined graph that turns a
 position into a number, but only once compiled into a `DensitySampler`: the
@@ -405,9 +393,7 @@ edge-detects. → [input and keybinds](../systems/client/input-and-keybinds.md)
 **Level** — a world: `ServerLevel` on the server, `ClientLevel` on the
 client, sharing an abstract `Level` that carries most of the behaviour —
 `ClientLevel` differs by *hollowing out* inherited methods rather than by
-implementing fewer of them. The word is also a number in two other places: a
-*ticket level* is how strongly a chunk is held, and a *permission level* is one
-of five ranks. → [the level tick](../systems/server/server-level-tick.md), [the client level](../systems/client/the-client-level.md)
+implementing fewer of them. The word is also a number elsewhere: a *ticket level* is how strongly a chunk is held, a *permission level* is one of five ranks, and an *enchantment level* is an enchantment's strength. → [the level tick](../systems/server/server-level-tick.md), [the client level](../systems/client/the-client-level.md)
 
 **Lightmap** — the small texture the client samples to turn a block-light /
 sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md)
@@ -442,11 +428,9 @@ into item stacks. → [loot tables](../systems/items/loot-tables.md)
 lines of the file are parsed once at load; a macro line is substituted and
 **re-parsed** per distinct argument tuple, cached only eight deep. → [functions and macros](../systems/commands/functions-and-macros.md)
 
-**Memory** — one typed, optionally expiring value in a `Brain`; behaviours
-are gated on which memories are present. → [AI](../systems/entities/ai-goals-and-brains.md)
+**Memory** — one typed, optionally expiring value in a `Brain`; behaviours are gated on which memories are present, absent or merely registered. → [AI](../systems/entities/ai-goals-and-brains.md)
 
-**Menu** — the server-authoritative object behind an open container screen:
-slots, a synchroniser and a state id. → [containers and menus](../systems/items/containers-and-menus.md)
+**Menu** — the object behind an open container screen, one copy on each side: slots and a state id, and on the server's copy the synchroniser that sends its changes to the client. → [containers and menus](../systems/items/containers-and-menus.md)
 
 **MinecraftServer** — the object that *is* the server: the thread, the tick
 loop, every `ServerLevel`, the player list and the registries the world was
@@ -454,7 +438,7 @@ loaded with. Singleplayer runs one too, as an `IntegratedServer` inside the
 client's process.
 → [the server tick](../systems/server/server-tick.md#the-cast)
 
-**MultiPlayerGameMode** — the client's only channel for acting on the world:
+**MultiPlayerGameMode** — the client's channel for acting on the world:
 every break, place, use and attack goes through it, and the ones that predict
 open a prediction window before they send. → [prediction and acknowledgement](../systems/client/prediction-and-acks.md)
 
@@ -498,11 +482,7 @@ graph](../systems/rendering/visibility-and-the-frame-graph.md#the-walk-that-deci
 *Does this face stop light, or hide the face against it* is a shape question
 every `BlockState` precomputes — a field on the state itself rather than
 anything in its shape cache ([math and
-primitives](math-and-primitives.md#shapes-and-collision)) — and it is what ends
-a sky column
-([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood))
-and what lets two fluid surfaces cancel ([why the wall test is
-affordable](../systems/world/fluids.md#why-the-wall-test-is-affordable)). *Ambient*
+primitives](math-and-primitives.md#shapes-and-collision)) — and it is, beside a block's light dampening, what ends a sky column ([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood)); the fluid wall test asks the same question of two blocks' *collision* shapes, to decide whether fluid may pass between them ([why the wall test is affordable](../systems/world/fluids.md#why-the-wall-test-is-affordable)). *Ambient*
 occlusion is none of that: it is the per-quad shading the mesher bakes in
 ([section meshing](../systems/rendering/section-meshing.md)). And a vibration's
 occlusion is a six-ray raycast for `BlockTags.OCCLUDES_VIBRATION_SIGNALS` that
@@ -518,10 +498,7 @@ is to say one whose save data carried a *blending_data* compound;
 ## P
 
 **Packet** — an interface: a `PacketType`, which is a name and a direction,
-and one handler method. It comes in three shapes, the wire form is a
-`StreamCodec` the phase's protocol description holds rather than something the
-class owns, and a few types are registered into more than
-one phase. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md#a-packet-is-a-value-a-name-and-a-direction)
+and one handler method. It comes in three shapes, each class but the bundle packet and its delimiter declares its wire form as a `StreamCodec`, which the phase's protocol description dispatches to by the packet's type, and two dozen types are registered into more than one phase. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md#a-packet-is-a-value-a-name-and-a-direction)
 
 **PalettedContainer** — the bit-packed storage a chunk section keeps its
 block states and biomes in, with a palette that grows as the section gets
@@ -530,8 +507,7 @@ more varied. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 **Parameter set** — the declared contract between a loot context and the
 things asked against it: a `ContextKeySet` naming which `ContextKey`s must be
 present and which may be. Building a context with a parameter the set does
-not allow, or without one it requires, throws; asking for one that is absent
-gives nothing — two of the three ways a parameter can be missing. All thirty-one
+not allow, or without one it requires, throws; asking for one that is absent gives nothing; and loading a table reports an element that reads a key its set does not allow — the three ways a parameter can be missing. All thirty-one
 sets are listed in [loot context parameter sets](loot-context-params.md). → [contexts and predicates](../systems/items/contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)
 
 **Partial tick** — the fraction of a tick elapsed at the moment a frame is
@@ -566,12 +542,11 @@ client rebuilds four of those from the op level it is told — rung zero maps to
 subtraction beside them. No packet carries a `PermissionSet` itself. → [permissions](../systems/commands/permissions.md#where-a-set-comes-from)
 
 **PlacedFeature** — a feature plus an ordered list of placement
-modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)
+modifiers; the unit a biome names. → [features and placement](../systems/worldgen/features-and-placement.md)
 
 **Player** — the shared player class: the inventory and ender chest, the open
 menu, the abilities, the food and experience bars, sleep, and the cooldowns.
-`ServerPlayer` and `LocalPlayer` are its two live subclasses and an `Avatar` is
-the rung above it.
+`ServerPlayer` is its server subclass, `LocalPlayer` and `RemotePlayer` its client ones (through `AbstractClientPlayer`), and an `Avatar` is the rung above it.
 → [player anatomy](../systems/player/player-anatomy.md#what-player-owns)
 
 **Point of interest** — a block state the game has decided is worth walking
@@ -590,8 +565,7 @@ play; each has its own packet table and its own listener. → [protocol phases](
 ## Q
 
 **Quart** — a four-block cell, the resolution biomes are stored and
-sampled at; `QuartPos` is the arithmetic, tabulated with the other packings in
-[math and primitives](math-and-primitives.md#three-long-keys).
+sampled at; `QuartPos` is the arithmetic, tabulated with the other coordinate spaces in [math and primitives](math-and-primitives.md#the-coordinate-spaces).
 → [biomes](../systems/worldgen/biomes.md)
 
 ## R
@@ -612,7 +586,7 @@ addressed by a sector table at its head. → [chunk storage](../systems/world/ch
 
 **Registry** — a frozen, id-assigning table of one kind of thing; some are
 built into the jar, some are loaded from data packs, some are sent to the
-client, and all 161 are listed in [registries](registries.md).
+client, and the 161 registry keys are listed in [registries](registries.md).
 → [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-table)
 
 **Reload listener** — the unit of a reload: one object that reads what it
@@ -655,9 +629,8 @@ lifecycle; the server is told nothing about most of them. → [GUI and screens](
 states, one of biomes, and four counters. Its light lives in the light
 engine's own storage, not on the section. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
-**Section mesh** — the compiled vertex buffers for one section
-(`CompiledSectionMesh`), rebuilt when the section is both dirty and visible —
-usually on a worker, but inline on the client thread when the chunk-builder
+**Section mesh** — what one section compiled to (`CompiledSectionMesh`): a draw record per layer into the shared vertex arenas, the visibility set, the block entities and the translucent layer's sort state, rebuilt when the section is both dirty and visible —
+usually on a worker, but inline on the Render thread when the chunk-builder
 option asks for it. → [section meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes)
 
 **Selector head** — the single character after the *@* (*a*, *e*, *n*,
@@ -676,7 +649,7 @@ watching clients were last told, and what to send them next. → [what the clien
 
 **ServerPlayer** — the server's copy of a player: the entity, the connection's
 listener, the game-mode object and the session state, all on one class.
-`LocalPlayer` is the client's answer to it and the two share `Player`.
+`LocalPlayer` is the client's answer to it, `RemotePlayer` the client's copy of anyone else, and all three share `Player`.
 → [player
 anatomy](../systems/player/player-anatomy.md#the-three-sides-of-one-player)
 
@@ -684,7 +657,7 @@ anatomy](../systems/player/player-anatomy.md#the-three-sides-of-one-player)
 that runs on both client and server, unlike a neighbour update. → [blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
 
 **Signed message** — a chat message carrying a signature over its content
-and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md#what-the-signature-covers)
+and its place in a per-player chain, so the server, and every client that holds the sender's session, can check who said it. → [chat and signing](../systems/networking/chat-and-signing.md#what-the-signature-covers)
 
 **Simulation distance** — how far the world *ticks*, as against how far you
 can see: the radius behind `TicketType.PLAYER_SIMULATION`, deciding which
@@ -694,14 +667,13 @@ chunks tick blocks, fluids and entities. → [tickets and loading](../systems/wo
 model can express, reached from an item model or a block state rather than
 from a block entity; thirteen of them. → [block-entity rendering](../systems/rendering/block-entity-rendering.md#where-rendererspecial-borrows-its-geometry)
 
-**Staging buffer** — the list an executing action appends its spawned
+**Staging buffer** — in the command engine, the list an executing action appends its spawned
 commands to, spliced onto the *head* of the queue after it runs — which is
 what makes an `ArrayDeque` behave as a call stack. → [the execution engine](../systems/commands/the-execution-engine.md#the-queue-four-moments-apart)
 
 **Status effect** — a `MobEffect` held on a `LivingEntity` with an amplifier
 and a duration; the ones that change a number mostly do it by attaching an
-attribute modifier, and a few — jump boost, slow falling, levitation — are read
-where the number is used.
+attribute modifier, and others are read where the number is used, jump boost, slow falling and levitation among them.
 → [status effects](../systems/player/status-effects.md#what-an-effect-is)
 
 **StreamCodec** — the wire counterpart of a `Codec`: encodes to and decodes
@@ -745,9 +717,7 @@ that `/tick rate` can change, or one step of the client's; a client behind
 the clock catches up to ten accumulated ticks in a frame and discards the
 rest. → [the server tick](../systems/server/server-tick.md), [the client loop](../systems/client/the-client-loop.md)
 
-**Ticket** — the reason a chunk is loaded: a type and a level, fed into two
-separate graphs, with `ChunkLevel` deciding what the level buys — a holder
-only, then full, then block-ticking, then entity-ticking. → [tickets and loading](../systems/world/tickets-and-loading.md)
+**Ticket** — the reason a chunk is loaded: a type and a level, fed by its type's flags into one or both of two separate graphs, with `ChunkLevel` deciding what the level buys — a holder still generating toward some status, then full, then block-ticking, then entity-ticking. → [tickets and loading](../systems/world/tickets-and-loading.md)
 
 **Timeline** — one clock's data-driven curve set: an optional period, the
 named instants on that clock, and one `AttributeTrack` per environment
@@ -777,18 +747,17 @@ render-distance request only clamps what it is sent; the ticket radius comes
 from the server's own number. Not *simulation distance*, which is how far
 the world ticks. → [tickets and loading](../systems/world/tickets-and-loading.md)
 
-**VoxelShape** — the collision or outline volume of a block state, held as
-a set of boxes with fast merge and sweep operations. → [math and primitives](math-and-primitives.md#shapes-and-collision)
+**VoxelShape** — the collision or outline volume of a block state, a set of boxes over a bit grid, with fast merge and sweep operations. → [math and primitives](math-and-primitives.md#shapes-and-collision)
 
 ## W
 
 **Watchdog** — `ServerWatchdog`, the daemon that treats a tick longer than
 *max-tick-time* as a dead server: it writes a crash report, calls `System.exit`,
-and halts the JVM ten seconds later whether the shutdown finished or not. → [how a server dies](../systems/server/how-a-server-dies.md#the-watchdog-that-does-not)
+and halts the JVM ten seconds later if the shutdown has not ended it by then. → [how a server dies](../systems/server/how-a-server-dies.md#the-watchdog-that-does-not)
 
 **Widget** — an `AbstractWidget`, the reusable piece of a screen: a button, a
 slider, an edit box. It is usually in all three of a screen's lists at once —
-the children that get input, the renderables that get recorded, and the
+the children that get input, the renderables that get extracted, and the
 narratables that get described.
 → [GUI and screens](../systems/client/gui-and-screens.md#the-objects-and-what-contains-what)
 

@@ -17,7 +17,7 @@ video to read.
 which is why adding a new *kind* of node takes code while adding a new graph
 takes a JSON file.
 
-**44** — registered node types (`DensityFunctions.bootstrap`): one by name,
+**Forty-four node types** are registered (`DensityFunctions.bootstrap`): one by name,
 then three context values, seven more by name, eleven unary transforms, four
 roundings, six arithmetic, and twelve last.
 
@@ -57,9 +57,9 @@ an inline object or a bare number, because every child slot is typed
 | *truncate* | `RoundFunction` | 2 | — | rounded toward zero to a multiple |
 | *add* | `BinaryFunction` | 2 | — | the sum |
 | *sub* | `BinaryFunction` | 2 | — | the difference |
-| *mul* | `BinaryFunction` | 2 | — | the product, a single sample short-circuiting when the first child is exactly zero |
+| *mul* | `BinaryFunction` | 2 | — | the product — with neither child a constant, a single sample short-circuits when the first is exactly zero |
 | *div* | `BinaryFunction` | 2 | — | the quotient, with the same short-circuit |
-| *min* | `BinaryFunction` | 2 | — | the minimum, a single sample skipping the second child when the first is already at or below its bound |
+| *min* | `BinaryFunction` | 2 | — | the minimum — with neither child a constant, a single sample skips the second when the first is already at or below the second's lower bound |
 | *max* | `BinaryFunction` | 2 | — | the maximum, with the symmetric skip |
 | *pow* | `PowFunction` | 2 | — | *base* raised to *exponent* |
 | *spline* | `SplineFunction` | inside the spline | *spline* | a `CubicSpline` whose coordinates are themselves density functions |
@@ -67,7 +67,7 @@ an inline object or a bare number, because every child slot is typed
 | *clamp* | `ClampFunction` | 1 | *min*, *max* | the child, clamped |
 | *range_choice* | `RangeChoiceFunction` | 3 | *min_inclusive*, *max_exclusive* | one of two branches, by whether the input is in range |
 | *interval_select* | `IntervalSelectFunction` | 1 + a list | *thresholds* | the branch whose ascending threshold the input first falls below |
-| *cache* | `CacheFunction` | 1 | — | delegates — requests a cache of its child |
+| *cache* | `CacheFunction` | 1 | — | nothing of its own — a request the compiler replaces with a cache of its child; left in place it refuses to compile |
 | *blend_density* | `BlendDensityFunction` | 1 | — | the child, blended toward old-terrain density where the context holds a non-empty `Blender` |
 | *interpolated* | `InterpolatedFunction` | 1 | *cell_size_xz*, *cell_size_y* | the child read at cell corners and interpolated between them |
 | *slice* | `SliceFunction` | 1 | *axis*, *coordinate* | the child read with one coordinate pinned |
@@ -93,7 +93,7 @@ reference, which has no codec at all.
 ## What the caches become
 
 `DensityFunctionCompiler.getSampler` is the
-[compile step](../systems/worldgen/density-functions.md#wrap-once-per-chunk):
+[compile step](../systems/worldgen/density-functions.md#seed-once-per-dimension):
 each dimension's `RandomState` compiles a graph the first time it is asked
 for, and no chunk rewrites anything. A *cache* node is a *request*. Before
 compiling, the compiler's rewrite inlines every `DensityFunctions.HolderHolder`
@@ -111,7 +111,7 @@ graph, which the rewrites copy rather than change, re-serialises.
 | *blend_density* | a sampler that asks the context for this chunk's [`Blender`](../systems/worldgen/blending.md#what-the-blender-actually-answers) and blends only when there is a non-empty one | not cached |
 
 A context has cache cells only when it was built with
-`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk and for each height query,
+`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk and for each height query, and the biome step, the structure starts and checks, a caching biome resolver, the spawn search and the F3 readout build their own,
 and `SamplerContext.EMPTY_UNCACHED` passes every cached read straight through.
 
 Three of the registered nodes above are the constants of one enum,
@@ -129,9 +129,7 @@ every read, which is how one compiled graph serves every chunk.
 
 Every node answers `DensityFunction.range`, an `Interval`, without a
 position. Most take theirs from a child — *cache*, *interpolated*, *slice*
-and *blend_density* all do — and no registered node stores one: the
-arithmetic family (`BinaryFunction`, `UnaryFunction`, `ClampFunction`)
-combines its children's ranges through `Interval` on every call, and
+and *blend_density* all do — and no registered node stores one: `BinaryFunction`, `UnaryFunction` and `ClampFunction` combine their children's ranges through `Interval` on every call, and
 `BlendedNoise` derives its own from its parameters. The bounds of a *parsed*
 graph are the ones the compiler reads: a noise's range comes from its
 definition, not its seed, and no rewrite changes a bound. What a bound is
@@ -154,16 +152,14 @@ asks a node for its bound until the graph is compiled.
 
 ## What vanilla actually uses
 
-Fifty-five JSON files ship under *worldgen/density_function* — four at the
-top level plus the per-dimension directories — and between them they use
+Fifty-five JSON files ship under *worldgen/density_function* — four at the top level, the rest in a directory each for the End, the Nether, the overworld and the overworld's two preset variants — and between them they use
 thirty-three of the forty-four ids. The seven `Registries.NOISE_SETTINGS`
-files, the per-dimension recipes
-[terrain](../systems/worldgen/terrain.md#the-cast) reads, write no id the
+files, the recipes [terrain](../systems/worldgen/terrain.md#the-cast) reads — two of them, *caves* and *floating_islands*, named by no shipped world preset — write no id the
 density-function files lack. All seven final densities end by adding
 *beardifier*, three of them in a file and four inline.
 
 That leaves eleven ids vanilla data never writes. *constant* is never written
-as a typed object, because a bare number is one. Nine are arithmetic: *sqrt*,
+as a typed object, because a bare number is one. Nine are maths on a value: *sqrt*,
 *reciprocal*, *log*, *sign*, *pow* and the four roundings. And *shift* — the
 three-dimensional domain warp — is
 [used by nothing](../systems/worldgen/density-functions.md#what-nothing-reaches):
